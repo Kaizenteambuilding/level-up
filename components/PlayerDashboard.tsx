@@ -43,9 +43,9 @@ export default function PlayerDashboard() {
       .select(
         'id,alias,level,xp,coins,streak_days,daily_target_minutes'
       )
-      .order('alias')
-      .limit(1)
-      .maybeSingle()
+      .order('xp', { ascending: false })
+.limit(1)
+.maybeSingle()
 
     if (error) {
       setMessage(error.message)
