@@ -38,14 +38,20 @@ export default function PlayerDashboard() {
       return
     }
 
-    const { data, error } = await supabase
-      .from('players')
-      .select(
-        'id,alias,level,xp,coins,streak_days,daily_target_minutes'
-      )
-      .order('xp', { ascending: false })
-.limit(1)
-.maybeSingle()
+    const savedPlayerId = localStorage.getItem('levelup_player_id')
+
+let query = supabase
+  .from('players')
+  .select('id,alias,level,xp,coins,streak_days,daily_target_minutes')
+
+if (savedPlayerId) {
+  query = query.eq('id', savedPlayerId)
+}
+
+const { data, error } = await query
+  .order('xp', { ascending: false })
+  .limit(1)
+  .maybeSingle()
 
     if (error) {
       setMessage(error.message)
