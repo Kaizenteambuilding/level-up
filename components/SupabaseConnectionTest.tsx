@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 
-type TestState =
-  | { status: 'idle'; message: string }
-  | { status: 'loading'; message: string }
-  | { status: 'ok'; message: string; detail?: string }
-  | { status: 'error'; message: string; detail?: string }
+type TestState = {
+  status: 'idle' | 'loading' | 'ok' | 'error'
+  message: string
+  detail?: string
+}
 
 export default function SupabaseConnectionTest(){
   const [state,setState] = useState<TestState>({
