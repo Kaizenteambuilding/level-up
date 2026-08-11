@@ -1,0 +1,19 @@
+LEVEL UP v20.1 — Prueba real de conexión Supabase
+
+CAMBIOS
+1. LEVEL UP usa ahora NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.
+2. Nueva ruta /connection.
+3. La prueba intenta leer la tabla skills de Supabase.
+4. La portada incluye el botón "PROBAR SUPABASE".
+
+CÓMO ACTUALIZAR
+1. Descomprime este ZIP.
+2. Copia TODO el contenido de la carpeta LEVEL_UP_v20_1_supabase_test.
+3. En GitHub Desktop: Repository > Show in Explorer.
+4. Pega los archivos dentro de la carpeta level-up y acepta "Reemplazar".
+5. Vuelve a GitHub Desktop.
+6. Summary: "Add Supabase connection test"
+7. Commit to main.
+8. Pulsa Push origin si aparece. Si aparece Fetch origin después, ya estará sincronizado.
+9. Vercel desplegará automáticamente.
+10. Abre la web y pulsa "PROBAR SUPABASE".
