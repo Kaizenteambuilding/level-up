@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 
 type Phase = 'warmup' | 'core' | 'transfer' | 'boss'
+type SkillKey = 'fractions_apply' | 'equation_1step' | 'percentages' | 'rectangle_area'
 
 type Question = {
-  skill: string
+  skill: SkillKey
   label: string
   difficulty: number
   seed: number
@@ -23,6 +24,24 @@ const phases: { key: Phase; label: string; count: number }[] = [
   { key: 'core', label: 'Entrenamiento', count: 4 },
   { key: 'transfer', label: 'Transferencia', count: 2 },
   { key: 'boss', label: 'MiniBoss', count: 2 },
+]
+
+// 10 retos con reparto garantizado:
+// 2 fracciones, 2 ecuaciones, 2 porcentajes, 2 geometría, 2 Boss mixtos
+const sessionPlan: { skill: SkillKey; phase: Phase; bossMode?: 'calculation' | 'transfer' }[] = [
+  { skill: 'equation_1step', phase: 'warmup' },
+  { skill: 'fractions_apply', phase: 'warmup' },
+
+  { skill: 'percentages', phase: 'core' },
+  { skill: 'rectangle_area', phase: 'core' },
+  { skill: 'fractions_apply', phase: 'core' },
+  { skill: 'equation_1step', phase: 'core' },
+
+  { skill: 'percentages', phase: 'transfer' },
+  { skill: 'rectangle_area', phase: 'transfer' },
+
+  { skill: 'fractions_apply', phase: 'boss', bossMode: 'calculation' },
+  { skill: 'equation_1step', phase: 'boss', bossMode: 'transfer' },
 ]
 
 function rng(seed: number) {
@@ -43,23 +62,16 @@ function shuffle<T>(r: () => number, items: T[]) {
 function makeQuestion(
   seed: number,
   difficulty: number,
-  phase: Phase,
-  index: number
+  planItem: { skill: SkillKey; phase: Phase; bossMode?: 'calculation' | 'transfer' }
 ): Question {
   const r = rng(seed)
   const ri = (a: number, b: number) =>
     Math.floor(r() * (b - a + 1)) + a
 
-  // En MiniBoss mezclamos y aumentamos exigencia.
-  const bossBoost = phase === 'boss' ? 1 : 0
-  const d = Math.min(5, difficulty + bossBoost)
+  const phase = planItem.phase
+  const d = Math.min(5, difficulty + (phase === 'boss' ? 1 : 0))
 
-  const selector =
-    phase === 'boss'
-      ? index % 4
-      : (index + seed) % 4
-
-  if (selector === 0) {
+  if (planItem.skill === 'equation_1step') {
     const x = ri(2, 8 + d)
     const k = ri(2, 10 + d)
     const total = x + k
@@ -72,23 +84,33 @@ function makeQuestion(
       String(k),
     ])
 
+    let prompt = `Resuelve: x + ${k} = ${total}`
+
+    if (phase === 'transfer') {
+      prompt = `Piensa en un número. Si le sumas ${k}, obtienes ${total}. ¿Qué número era?`
+    }
+
+    if (phase === 'boss') {
+      prompt =
+        planItem.bossMode === 'transfer'
+          ? `👑 BOSS · Un explorador tenía cierta energía. Tras ganar ${k} puntos termina con ${total}. ¿Con cuánta energía empezó?`
+          : `👑 BOSS · Resuelve sin pista: x + ${k} = ${total}`
+    }
+
     return {
       skill: 'equation_1step',
       label: 'Ecuaciones',
       difficulty: d,
       seed,
-      prompt:
-        phase === 'boss'
-          ? `⚔️ Fase Boss: resuelve sin pista: x + ${k} = ${total}`
-          : `Resuelve: x + ${k} = ${total}`,
+      prompt,
       options,
       answerIndex: options.indexOf(answer),
-      solution: `Restamos ${k} a ambos lados: x = ${total} - ${k} = ${x}.`,
+      solution: `Restamos ${k}: x = ${total} - ${k} = ${x}.`,
       tags: ['equivalencia', 'operacion_inversa'],
     }
   }
 
-  if (selector === 1) {
+  if (planItem.skill === 'percentages') {
     const p = [10, 20, 25, 50][ri(0, 3)]
     const amount = ri(2, 8 + d) * 20
     const result = (p * amount) / 100
@@ -101,15 +123,17 @@ function makeQuestion(
       String(((100 - p) * amount) / 100),
     ])
 
+    const prompt =
+      phase === 'transfer'
+        ? `Una tienda aplica un ${p}% de descuento sobre ${amount} €. ¿Cuántos euros representa el descuento?`
+        : `¿Cuánto es el ${p}% de ${amount}?`
+
     return {
       skill: 'percentages',
       label: 'Porcentajes',
       difficulty: d,
       seed,
-      prompt:
-        phase === 'transfer'
-          ? `Una tienda aplica un ${p}% de descuento sobre ${amount} €. ¿Cuántos euros representa el descuento?`
-          : `¿Cuánto es el ${p}% de ${amount}?`,
+      prompt,
       options,
       answerIndex: options.indexOf(answer),
       solution: `${p}/100 × ${amount} = ${result}.`,
@@ -117,7 +141,7 @@ function makeQuestion(
     }
   }
 
-  if (selector === 2) {
+  if (planItem.skill === 'rectangle_area') {
     const a = ri(3, 7 + d)
     const b = ri(2, 6 + d)
     const result = a * b
@@ -130,15 +154,17 @@ function makeQuestion(
       `${result * 2} cm²`,
     ])
 
+    const prompt =
+      phase === 'transfer'
+        ? `Una pantalla rectangular mide ${a} cm de ancho y ${b} cm de alto. ¿Qué superficie ocupa?`
+        : `Un rectángulo mide ${a} cm por ${b} cm. ¿Cuál es su área?`
+
     return {
       skill: 'rectangle_area',
       label: 'Geometría',
       difficulty: d,
       seed,
-      prompt:
-        phase === 'transfer'
-          ? `Una pantalla rectangular mide ${a} cm de ancho y ${b} cm de alto. ¿Qué superficie ocupa?`
-          : `Un rectángulo mide ${a} cm por ${b} cm. ¿Cuál es su área?`,
+      prompt,
       options,
       answerIndex: options.indexOf(answer),
       solution: `Área = base × altura = ${a} × ${b} = ${result} cm².`,
@@ -170,17 +196,25 @@ function makeQuestion(
     `${num}/${den} km`,
   ])
 
+  let prompt = `Una ruta mide ${num}/${den} km. Si la recorres ${reps} veces, ¿qué distancia total haces?`
+
+  if (phase === 'transfer') {
+    prompt = `En una excursión recorres ${num}/${den} km por tramo. Si haces ${reps} tramos iguales, ¿qué distancia completas?`
+  }
+
+  if (phase === 'boss') {
+    prompt =
+      planItem.bossMode === 'calculation'
+        ? `👑 BOSS · Calcula sin pista: ${reps} recorridos de ${num}/${den} km.`
+        : `👑 BOSS · Una ruta secreta tiene ${reps} tramos de ${num}/${den} km. ¿Qué distancia total recorres?`
+  }
+
   return {
     skill: 'fractions_apply',
     label: 'Fracciones',
     difficulty: d,
     seed,
-    prompt:
-      phase === 'transfer'
-        ? `En una excursión recorres ${num}/${den} km por tramo. Si haces ${reps} tramos iguales, ¿qué distancia completas?`
-        : phase === 'boss'
-          ? `⚔️ Fase Boss: ${reps} recorridos de ${num}/${den} km. ¿Distancia total?`
-          : `Una ruta mide ${num}/${den} km. Si la recorres ${reps} veces, ¿qué distancia total haces?`,
+    prompt,
     options,
     answerIndex: options.indexOf(answer),
     solution: `${num}/${den} × ${reps} = ${answer}.`,
@@ -205,7 +239,7 @@ export default function DailySession() {
   const [correct, setCorrect] = useState(0)
   const [total, setTotal] = useState(0)
   const [combo, setCombo] = useState(0)
-  const [errorTags, setErrorTags] = useState<Record<string, number>>({})
+  const [bestCombo, setBestCombo] = useState(0)
 
   const [finished, setFinished] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -214,10 +248,11 @@ export default function DailySession() {
   const questionStarted = useRef(Date.now())
 
   const phase = phases[phaseIndex]
+  const planItem = sessionPlan[Math.min(total, sessionPlan.length - 1)]
 
-  // Importante: la pregunta SOLO cambia cuando cambia la seed.
+  // La pregunta solo cambia al cambiar la seed.
   const q = useMemo(
-    () => makeQuestion(seed, difficulty, phase.key, total),
+    () => makeQuestion(seed, difficulty, planItem),
     [seed]
   )
 
@@ -232,13 +267,11 @@ export default function DailySession() {
       }
 
       const supabase = createSupabaseBrowserClient()
-
       if (!supabase) {
         setLoading(false)
         return
       }
 
-      // Cargamos el nivel adaptativo actual más alto del jugador.
       const { data: states } = await supabase
         .from('player_skill_state')
         .select('difficulty,mastery')
@@ -248,7 +281,10 @@ export default function DailySession() {
 
       if (states && states.length > 0) {
         setDifficulty(
-          Math.max(1, Math.min(5, Number(states[0].difficulty ?? 2)))
+          Math.max(
+            1,
+            Math.min(5, Number(states[0].difficulty ?? 2))
+          )
         )
       }
 
@@ -309,47 +345,37 @@ export default function DailySession() {
 
     if (ok) {
       setCorrect((value) => value + 1)
-      setCombo((value) => value + 1)
-    } else {
-      setCombo(0)
-      setErrorTags((current) => {
-        const next = { ...current }
-        q.tags.forEach((tag) => {
-          next[tag] = (next[tag] ?? 0) + 1
-        })
+      setCombo((value) => {
+        const next = value + 1
+        setBestCombo((best) => Math.max(best, next))
         return next
       })
+    } else {
+      setCombo(0)
     }
 
-    const repeatedError = q.tags.some(
-      (tag) => (errorTags[tag] ?? 0) >= 1
-    )
+    const speedNote =
+      ok && responseMs <= 12000
+        ? ' · ⚡ Respuesta rápida: sube el reto.'
+        : ''
 
-    const coaching =
-      !ok && repeatedError
-        ? ' · 🧠 He detectado un error repetido: el próximo reto será más asequible.'
-        : ok && responseMs <= 12000
-          ? ' · ⚡ Respuesta rápida: el motor puede subir la dificultad.'
-          : ''
+    const bossNote =
+      planItem.phase === 'boss'
+        ? ok
+          ? ' · 👑 Golpe al Boss.'
+          : ' · 🛡️ El Boss resiste.'
+        : ''
 
     setFeedback(
       (ok ? '✓ Correcto. ' : '↻ Incorrecto. ') +
         q.solution +
         ` · ${result.xp_awarded} XP guardados.` +
-        coaching
+        speedNote +
+        bossNote
     )
   }
 
   async function next() {
-    // Si hay error repetido, bajamos un nivel localmente antes del siguiente reto.
-    const hasRepeatedError = Object.values(errorTags).some(
-      (count) => count >= 2
-    )
-
-    if (hasRepeatedError) {
-      setDifficulty((d) => Math.max(1, d - 1))
-    }
-
     setAnswered(false)
     setFeedback('')
     setSeed((value) => value + 41)
@@ -389,7 +415,9 @@ export default function DailySession() {
   if (loading) {
     return (
       <section className="card">
-        <p className="muted">Preparando misión adaptativa...</p>
+        <p className="muted">
+          Preparando misión equilibrada...
+        </p>
       </section>
     )
   }
@@ -426,7 +454,7 @@ export default function DailySession() {
         </p>
 
         <p className="muted">
-          Dificultad final: {difficulty}/5 · mejor combo: 🔥 {combo}
+          Dificultad final: {difficulty}/5 · mejor combo: 🔥 {bestCombo}
         </p>
 
         <Link href="/player" className="btn primary">
@@ -445,7 +473,7 @@ export default function DailySession() {
       >
         <span className="tag">
           {phase.key === 'boss'
-            ? '👑 MINIBOSS'
+            ? '👑 MINIBOSS MULTIHABILIDAD'
             : 'DAILY QUEST · 35 MIN'}
         </span>
 
@@ -503,7 +531,7 @@ export default function DailySession() {
             >
               {phase.key === 'boss' &&
               questionInPhase + 1 === phase.count
-                ? '🏆 TERMINAR BOSS'
+                ? '🏆 DERROTAR BOSS Y TERMINAR'
                 : 'SIGUIENTE RETO'}
             </button>
           </>
