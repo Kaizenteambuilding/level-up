@@ -28,14 +28,33 @@ export default function ParentLogin() {
       password,
     })
 
-    setLoading(false)
-
     if (error) {
+      setLoading(false)
       setMessage(error.message)
       return
     }
 
-    router.push('/parent/setup')
+    // Si ya existe un jugador, vamos directamente a jugar.
+    const { data: players, error: playersError } = await supabase
+      .from('players')
+      .select('id')
+      .limit(1)
+
+    setLoading(false)
+
+    if (playersError) {
+      setMessage(playersError.message)
+      return
+    }
+
+    if (players && players.length > 0) {
+      localStorage.setItem('levelup_player_id', players[0].id)
+      router.push('/player')
+    } else {
+      // Solo la primera vez se muestra la configuración.
+      router.push('/parent/setup')
+    }
+
     router.refresh()
   }
 
@@ -61,15 +80,18 @@ export default function ParentLogin() {
       return
     }
 
-    setMessage('Cuenta creada. Ya puedes entrar.')
+    setMessage(
+      'Cuenta creada. Revisa tu correo si Supabase pide confirmación y después inicia sesión.'
+    )
   }
 
   return (
     <section className="card">
       <span className="tag">ACCESO PADRE / MADRE</span>
       <h1>Entrar en LEVEL UP</h1>
+
       <p className="muted">
-        Esta cuenta administrará los jugadores de tu familia.
+        Entra una vez y LEVEL UP abrirá directamente el perfil de juego.
       </p>
 
       <form onSubmit={signIn}>
@@ -111,7 +133,7 @@ export default function ParentLogin() {
             disabled={loading}
             type="submit"
           >
-            {loading ? 'ENTRANDO...' : 'ENTRAR'}
+            {loading ? 'ENTRANDO...' : 'ENTRAR Y JUGAR'}
           </button>
 
           <button
