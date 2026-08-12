@@ -434,35 +434,120 @@ export default function DailySession() {
   }
 
   if (finished) {
-    const accuracy = total
-      ? Math.round((correct / total) * 100)
-      : 0
+  const accuracy = total
+    ? Math.round((correct / total) * 100)
+    : 0
 
-    return (
-      <section
-        className="card"
-        style={{ textAlign: 'center', padding: 45 }}
+  const victoryTitle =
+    accuracy >= 90
+      ? 'Victoria legendaria'
+      : accuracy >= 70
+        ? 'Boss derrotado'
+        : 'Misión completada'
+
+  const victoryIcon =
+    accuracy >= 90
+      ? '🏆'
+      : accuracy >= 70
+        ? '⚔️'
+        : '🛡️'
+
+  return (
+    <section
+      className="card"
+      style={{
+        textAlign: 'center',
+        padding: 45,
+        background:
+          'radial-gradient(circle at 50% 0%, #314f2a, #0b1710 70%)',
+        border: '2px solid #7ce448',
+        boxShadow: '0 0 50px rgba(124,228,72,.18)',
+      }}
+    >
+      <div
+        style={{
+          fontSize: 100,
+          marginBottom: 10,
+        }}
       >
-        <div style={{ fontSize: 80 }}>🏆</div>
+        {victoryIcon}
+      </div>
 
-        <span className="tag">SESIÓN COMPLETADA</span>
+      <span className="tag">
+        MISIÓN COMPLETADA
+      </span>
 
-        <h1>Daily Quest superada</h1>
+      <h1>{victoryTitle}</h1>
 
-        <p className="muted">
-          {total} retos · {accuracy}% precisión · +{xp} XP
-        </p>
+      <p
+        className="muted"
+        style={{
+          fontSize: 18,
+          maxWidth: 620,
+          margin: '0 auto 24px',
+        }}
+      >
+        Has completado los 10 retos de hoy y tu progreso ya está
+        guardado en LEVEL UP.
+      </p>
 
-        <p className="muted">
-          Dificultad final: {difficulty}/5 · mejor combo: 🔥 {bestCombo}
-        </p>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: 12,
+          marginTop: 24,
+          marginBottom: 28,
+        }}
+      >
+        <div className="metric">
+          <b>{accuracy}%</b>
+          <p className="muted">precisión</p>
+        </div>
 
-        <Link href="/player" className="btn primary">
-          VOLVER AL PERFIL
-        </Link>
-      </section>
-    )
-  }
+        <div className="metric">
+          <b>+{xp} XP</b>
+          <p className="muted">recompensa</p>
+        </div>
+
+        <div className="metric">
+          <b>🔥 {bestCombo}</b>
+          <p className="muted">mejor combo</p>
+        </div>
+      </div>
+
+      <div
+        style={{
+          margin: '0 auto 28px',
+          maxWidth: 600,
+          padding: 18,
+          borderRadius: 16,
+          background: '#0b1b2d',
+          border: '1px solid #31516c',
+        }}
+      >
+        <b>
+          {accuracy >= 90
+            ? '👑 Has dominado esta misión.'
+            : accuracy >= 70
+              ? '⚔️ Buen trabajo. El Guardián ha caído.'
+              : '🧠 LEVEL UP usará tus errores para preparar la próxima misión.'}
+        </b>
+      </div>
+
+      <Link
+        href="/player"
+        className="btn primary"
+        style={{
+          fontSize: 18,
+          padding: '16px 24px',
+        }}
+      >
+        CONTINUAR AVENTURA
+      </Link>
+    </section>
+  )
+}
 
   return (
     <>
