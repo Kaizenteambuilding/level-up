@@ -467,11 +467,58 @@ export default function DailySession() {
   return (
     <>
       <section
-  className={
-    phase.key === 'boss' ? 'card boss' : 'card'
+  className="card"
+  style={
+    phase.key === 'boss'
+      ? {
+          background:
+            'radial-gradient(circle at 50% 20%, #5a1f2f, #160b12 70%)',
+          border: '2px solid #ff6872',
+          boxShadow: '0 0 40px rgba(255,104,114,.18)',
+        }
+      : undefined
   }
 >
   <span className="tag">
+    {phase.key === 'boss' && (
+  <>
+    <div
+      style={{
+        fontSize: 90,
+        textAlign: 'center',
+        marginTop: 10,
+      }}
+    >
+      👹
+    </div>
+
+    <div
+      style={{
+        textAlign: 'center',
+        fontWeight: 900,
+        fontSize: 20,
+        marginBottom: 8,
+      }}
+    >
+      Guardián del Día
+    </div>
+
+    <div className="bar" style={{ marginBottom: 18 }}>
+      <i
+        style={{
+          width:
+            questionInPhase === 0
+              ? '100%'
+              : answered
+                ? '45%'
+                : '55%',
+          background:
+            'linear-gradient(90deg,#ff6872,#ffd44d)',
+        }}
+      />
+    </div>
+  </>
+)}
     {phase.key === 'boss'
       ? '👑 MINIBOSS MULTIHABILIDAD'
       : '🗺️ DAILY QUEST · 35 MIN'}
