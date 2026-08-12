@@ -268,10 +268,22 @@ export function generateFirstEvaluationQuestion(
   }
 
   if (key === 'decimal_place_value') {
-    const t=ri(1,9), h=ri(0,9), n=`${ri(1,99)}.${t}${h}`
-    return mc(skill,d,seed,`En ${n}, ¿qué cifra ocupa las décimas?`,String(t),
-      [String(h),n.split('.')[0][0],'0'],`La primera cifra decimal es ${t}.`,['valor_posicional_decimal'])
-  }
+  const entero = ri(1, 99)
+  const decima = ri(0, 9)
+  const centesima = ri(0, 9)
+  const n = `${entero}.${decima}${centesima}`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En ${n}, ¿qué cifra ocupa las décimas?`,
+    String(decima),
+    [String(centesima), String(entero % 10), '0'],
+    `La cifra de las décimas es ${decima}.`,
+    ['valor_posicional_decimal']
+  )
+}
 
   if (key === 'decimal_compare') {
     const a=(ri(10,999)/100).toFixed(2), b=(ri(10,999)/100).toFixed(2)
