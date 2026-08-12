@@ -1,9 +1,9 @@
-import DailySession from '@/components/DailySession'
+import CurriculumDailySession from '@/components/CurriculumDailySession'
 
 export default function MissionPage() {
   return (
     <main className="shell">
-      <DailySession />
+      <CurriculumDailySession />
     </main>
   )
 }
