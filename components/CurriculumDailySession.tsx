@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import {
   generateFirstEvaluationQuestion,
@@ -27,8 +26,12 @@ const FIRST_EVAL_UNITS = ['M01', 'M02', 'M03', 'M04', 'M05']
 const SESSION_LENGTH = 10
 
 export default function CurriculumDailySession() {
-  const searchParams = useSearchParams()
-  const forcedSkillId = searchParams.get('skill')
+    const [forcedSkillId, setForcedSkillId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    setForcedSkillId(params.get('skill'))
+  }, [])
 
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [skills, setSkills] = useState<SkillRow[]>([])
