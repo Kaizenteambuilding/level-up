@@ -41,9 +41,21 @@ function mc(
   tags: string[]
 ): GeneratedQuestion {
   const r = rng(seed)
-  const pool = [answer, ...distractors].filter((v, i, a) => a.indexOf(v) === i)
-  while (pool.length < 4) pool.push(`Opción ${pool.length + 1}`)
-  const options = shuffle(r, pool.slice(0, 4))
+  const pool = [answer, ...distractors].filter(
+  (v, i, a) => a.indexOf(v) === i
+)
+
+while (pool.length < 4) {
+  const candidate = String(Number(answer) + pool.length + 1)
+
+  if (!pool.includes(candidate)) {
+    pool.push(candidate)
+  } else {
+    pool.push(String(pool.length))
+  }
+}
+
+const options = shuffle(r, pool.slice(0, 4))
   return {
     skillId: skill.id,
     label: skill.name,
