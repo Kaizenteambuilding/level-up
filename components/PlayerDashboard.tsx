@@ -33,25 +33,27 @@ export default function PlayerDashboard() {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      setMessage('Debes iniciar sesión como padre/madre.')
+      setMessage('Debes iniciar sesión.')
       setLoading(false)
       return
     }
 
     const savedPlayerId = localStorage.getItem('levelup_player_id')
 
-let query = supabase
-  .from('players')
-  .select('id,alias,level,xp,coins,streak_days,daily_target_minutes')
+    let query = supabase
+      .from('players')
+      .select(
+        'id,alias,level,xp,coins,streak_days,daily_target_minutes'
+      )
 
-if (savedPlayerId) {
-  query = query.eq('id', savedPlayerId)
-}
+    if (savedPlayerId) {
+      query = query.eq('id', savedPlayerId)
+    }
 
-const { data, error } = await query
-  .order('xp', { ascending: false })
-  .limit(1)
-  .maybeSingle()
+    const { data, error } = await query
+      .order('xp', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     if (error) {
       setMessage(error.message)
@@ -77,7 +79,7 @@ const { data, error } = await query
   if (loading) {
     return (
       <section className="card">
-        <p className="muted">Cargando jugador...</p>
+        <p className="muted">Cargando partida...</p>
       </section>
     )
   }
@@ -85,8 +87,11 @@ const { data, error } = await query
   if (!player) {
     return (
       <section className="card">
-        <h1>Sin jugador</h1>
+        <h1>Primero crea un jugador</h1>
         <p className="muted">{message}</p>
+        <Link href="/parent/setup" className="btn primary">
+          CREAR PRIMER JUGADOR
+        </Link>
       </section>
     )
   }
@@ -96,48 +101,69 @@ const { data, error } = await query
 
   return (
     <>
-      <section className="card">
-        <span className="tag">PERFIL REAL · SUPABASE</span>
+      <section
+        className="card"
+        style={{
+          minHeight: 430,
+          display: 'grid',
+          alignContent: 'center',
+        }}
+      >
+        <span className="tag">🎮 PARTIDA DE HOY</span>
 
         <h1>{player.alias}</h1>
 
         <p className="muted">
-          Este progreso ya no es una demo: viene directamente de la base
-          de datos.
+          Nivel {player.level} · {player.xp} XP · 🔥 {player.streak_days} días
         </p>
+
+        <div className="bar">
+          <i style={{ width: `${progress}%` }} />
+        </div>
+
+        <p className="muted">
+          Objetivo diario: {player.daily_target_minutes} minutos
+        </p>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 10,
+            flexWrap: 'wrap',
+            marginTop: 14,
+          }}
+        >
+          <Link
+            href="/mission"
+            className="btn primary"
+            style={{
+              fontSize: 18,
+              padding: '16px 22px',
+            }}
+          >
+            ▶ MISIÓN DE HOY
+          </Link>
+
+          <Link href="/parent" className="btn dark">
+            👨‍👦 PANEL PADRE
+          </Link>
+        </div>
+      </section>
+
+      <section className="card">
+        <h2>Tu progreso</h2>
 
         <div className="grid two">
           <div className="metric">
             <b>Nivel {player.level}</b>
             <p className="muted">{player.xp} XP totales</p>
-
-            <div className="bar">
-              <i style={{ width: `${progress}%` }} />
-            </div>
           </div>
 
           <div className="metric">
             <b>🔥 {player.streak_days}</b>
-            <p className="muted">
-              racha · objetivo {player.daily_target_minutes} min
-            </p>
+            <p className="muted">días de entrenamiento</p>
           </div>
         </div>
-
-        <br />
-
-        <Link href="/mission" className="btn primary">
-          ▶ MISIÓN DE HOY
-        </Link>
-      </section>
-
-      <section className="card">
-        <h2>Progreso persistente</h2>
-
-        <p className="muted">
-          Completa una misión, gana XP y vuelve a esta pantalla. LEVEL UP
-          leerá de nuevo el progreso guardado en Supabase.
-        </p>
       </section>
     </>
   )
