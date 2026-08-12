@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import {
   generateFirstEvaluationQuestion,
@@ -26,6 +27,9 @@ const FIRST_EVAL_UNITS = ['M01', 'M02', 'M03', 'M04', 'M05']
 const SESSION_LENGTH = 10
 
 export default function CurriculumDailySession() {
+  const searchParams = useSearchParams()
+  const forcedSkillId = searchParams.get('skill')
+
   const [playerId, setPlayerId] = useState<string | null>(null)
   const [skills, setSkills] = useState<SkillRow[]>([])
   const [states, setStates] = useState<Record<string, SkillState>>({})
@@ -37,7 +41,10 @@ export default function CurriculumDailySession() {
   const [xp, setXp] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const questionStarted = useRef(Date.now())
+
+  const testMode = Boolean(forcedSkillId)
 
   useEffect(() => {
     ;(async () => {
@@ -51,18 +58,36 @@ export default function CurriculumDailySession() {
 
       const supabase = createSupabaseBrowserClient()
       if (!supabase) {
+        setLoadError('Supabase no está configurado.')
         setLoading(false)
         return
       }
 
-      const { data: skillRows, error: skillsError } = await supabase
+      let skillsQuery = supabase
         .from('skills')
         .select('id,name,generator_key,unit_id')
-        .in('unit_id', FIRST_EVAL_UNITS)
         .eq('active', true)
 
+      if (forcedSkillId) {
+        skillsQuery = skillsQuery.eq('id', forcedSkillId)
+      } else {
+        skillsQuery = skillsQuery.in('unit_id', FIRST_EVAL_UNITS)
+      }
+
+      const { data: skillRows, error: skillsError } = await skillsQuery
+
       if (skillsError) {
-        setFeedback(skillsError.message)
+        setLoadError(skillsError.message)
+        setLoading(false)
+        return
+      }
+
+      if (!skillRows || skillRows.length === 0) {
+        setLoadError(
+          forcedSkillId
+            ? `No encuentro la habilidad ${forcedSkillId}.`
+            : 'No encuentro habilidades activas para la 1ª evaluación.'
+        )
         setLoading(false)
         return
       }
@@ -73,23 +98,30 @@ export default function CurriculumDailySession() {
         .eq('player_id', id)
 
       const stateMap: Record<string, SkillState> = {}
+
       ;(stateRows ?? []).forEach((s: any) => {
         stateMap[s.skill_id] = s
       })
 
-      setSkills((skillRows ?? []) as SkillRow[])
+      setSkills(skillRows as SkillRow[])
       setStates(stateMap)
       setLoading(false)
     })()
-  }, [])
+  }, [forcedSkillId])
 
   function chooseSkill(currentIndex: number) {
     if (!skills.length) return null
 
+    if (forcedSkillId) {
+      return skills.find((skill) => skill.id === forcedSkillId) ?? skills[0]
+    }
+
     const ranked = [...skills].sort((a, b) => {
       const am = states[a.id]?.mastery ?? 0
       const bm = states[b.id]?.mastery ?? 0
+
       if (am !== bm) return am - bm
+
       return a.id.localeCompare(b.id)
     })
 
@@ -107,9 +139,16 @@ export default function CurriculumDailySession() {
   }
 
   useEffect(() => {
-    if (loading || !skills.length || index >= SESSION_LENGTH) return
+    if (
+      loading ||
+      !skills.length ||
+      (!testMode && index >= SESSION_LENGTH)
+    ) {
+      return
+    }
 
     const skill = chooseSkill(index)
+
     if (!skill) return
 
     const difficulty = states[skill.id]?.difficulty ?? 2
@@ -125,7 +164,14 @@ export default function CurriculumDailySession() {
     setAnswered(false)
     setFeedback('')
     questionStarted.current = Date.now()
-  }, [loading, index, seed, skills.length])
+  }, [
+    loading,
+    index,
+    seed,
+    skills.length,
+    forcedSkillId,
+    testMode,
+  ])
 
   async function submit(optionIndex: number) {
     if (answered || !playerId || !question) return
@@ -139,6 +185,7 @@ export default function CurriculumDailySession() {
     )
 
     const supabase = createSupabaseBrowserClient()
+
     if (!supabase) return
 
     const { data, error } = await supabase.rpc(
@@ -192,6 +239,14 @@ export default function CurriculumDailySession() {
 
   function next() {
     setSeed((s) => s + 37)
+
+    if (testMode) {
+      setAnswered(false)
+      setFeedback('')
+      questionStarted.current = Date.now()
+      return
+    }
+
     setIndex((i) => i + 1)
   }
 
@@ -201,6 +256,19 @@ export default function CurriculumDailySession() {
         <p className="muted">
           Cargando Curriculum Engine...
         </p>
+      </section>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <section className="card">
+        <span className="tag">ERROR DE CARGA</span>
+        <h1>No se puede preparar la misión</h1>
+        <p className="muted">{loadError}</p>
+        <Link href="/player" className="btn primary">
+          VOLVER AL JUGADOR
+        </Link>
       </section>
     )
   }
@@ -216,7 +284,7 @@ export default function CurriculumDailySession() {
     )
   }
 
-  if (index >= SESSION_LENGTH) {
+  if (!testMode && index >= SESSION_LENGTH) {
     const accuracy = Math.round(
       (correct / SESSION_LENGTH) * 100
     )
@@ -266,26 +334,34 @@ export default function CurriculumDailySession() {
     <>
       <section className="card">
         <span className="tag">
-          1ª EVALUACIÓN · CURRICULUM ENGINE
+          {testMode
+            ? `🧪 MODO PRUEBA · ${question.skillId}`
+            : '1ª EVALUACIÓN · CURRICULUM ENGINE'}
         </span>
 
         <h1>
-          Reto {index + 1} de {SESSION_LENGTH}
+          {testMode
+            ? 'Prueba de habilidad'
+            : `Reto ${index + 1} de ${SESSION_LENGTH}`}
         </h1>
 
         <p className="muted">
-          LEVEL UP selecciona habilidades según el dominio real del jugador.
+          {testMode
+            ? 'Esta pantalla fuerza una habilidad concreta para poder validar su generador.'
+            : 'LEVEL UP selecciona habilidades según el dominio real del jugador.'}
         </p>
 
-        <div className="bar">
-          <i
-            style={{
-              width: `${Math.round(
-                (index / SESSION_LENGTH) * 100
-              )}%`,
-            }}
-          />
-        </div>
+        {!testMode && (
+          <div className="bar">
+            <i
+              style={{
+                width: `${Math.round(
+                  (index / SESSION_LENGTH) * 100
+                )}%`,
+              }}
+            />
+          </div>
+        )}
       </section>
 
       <section className="card">
@@ -329,9 +405,11 @@ export default function CurriculumDailySession() {
               style={{ marginTop: 14 }}
               onClick={next}
             >
-              {index + 1 === SESSION_LENGTH
-                ? 'TERMINAR SESIÓN'
-                : 'SIGUIENTE RETO'}
+              {testMode
+                ? 'GENERAR OTRA DE ESTA HABILIDAD'
+                : index + 1 === SESSION_LENGTH
+                  ? 'TERMINAR SESIÓN'
+                  : 'SIGUIENTE RETO'}
             </button>
           </>
         )}
@@ -342,13 +420,18 @@ export default function CurriculumDailySession() {
           <div className="metric">
             <b>{xp} XP</b>
             <p className="muted">
-              ganados en la sesión
+              ganados en esta pantalla
             </p>
           </div>
 
           <div className="metric">
             <b>
-              {correct}/{index + (answered ? 1 : 0)}
+              {correct}/
+              {testMode
+                ? answered
+                  ? 1
+                  : 0
+                : index + (answered ? 1 : 0)}
             </b>
             <p className="muted">
               aciertos
