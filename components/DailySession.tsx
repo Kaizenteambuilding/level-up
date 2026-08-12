@@ -119,9 +119,9 @@ export default function DailySession() {
   const phase = phases[phaseIndex]
 
   const q = useMemo(
-    () => makeQuestion(seed, difficulty, total),
-    [seed, difficulty, total]
-  )
+  () => makeQuestion(seed, difficulty, total),
+  [seed]
+)
 
   useEffect(() => {
     async function start() {
