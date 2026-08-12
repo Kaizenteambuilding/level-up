@@ -1439,23 +1439,25 @@ export function generateFirstEvaluationQuestion(
   }
 
   if (key === 'angle_measure') {
-    const angle = ri(2, 17) * 10
+  const angle1 = ri(2, 8) * 10
+  const angle2 = ri(2, 8) * 10
+  const total = angle1 + angle2
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Un ángulo mide ${angle}°. ¿Cuál es su medida?`,
-      `${angle}°`,
-      [
-        `${angle + 10}°`,
-        `${Math.max(0, angle - 10)}°`,
-        `${180 - angle}°`,
-      ],
-      `La medida indicada es ${angle}°.`,
-      ['medida_angulos']
-    )
-  }
+  return mc(
+    skill,
+    d,
+    seed,
+    `Dos ángulos miden ${angle1}° y ${angle2}°. ¿Cuánto miden entre los dos?`,
+    `${total}°`,
+    [
+      `${Math.abs(angle1 - angle2)}°`,
+      `${total + 10}°`,
+      `${Math.max(0, total - 10)}°`,
+    ],
+    `${angle1}° + ${angle2}° = ${total}°.`,
+    ['medida_angulos']
+  )
+}
 
   if (key === 'angle_relations') {
     const a = ri(2, 8) * 10
