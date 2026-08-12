@@ -45,13 +45,31 @@ function mc(
   (v, i, a) => a.indexOf(v) === i
 )
 
-while (pool.length < 4) {
-  const candidate = String(Number(answer) + pool.length + 1)
+const numericAnswer = Number(answer)
 
-  if (!pool.includes(candidate)) {
-    pool.push(candidate)
+while (pool.length < 4) {
+  if (Number.isFinite(numericAnswer)) {
+    const candidate = String(
+      numericAnswer + pool.length + 1
+    )
+
+    if (!pool.includes(candidate)) {
+      pool.push(candidate)
+    } else {
+      pool.push(String(pool.length))
+    }
   } else {
-    pool.push(String(pool.length))
+    const fallbackSymbols = ['<', '>', '=', '≤', '≥']
+
+    const candidate = fallbackSymbols.find(
+      (symbol) => !pool.includes(symbol)
+    )
+
+    if (candidate) {
+      pool.push(candidate)
+    } else {
+      break
+    }
   }
 }
 
