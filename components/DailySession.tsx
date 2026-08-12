@@ -467,31 +467,90 @@ export default function DailySession() {
   return (
     <>
       <section
-        className={
-          phase.key === 'boss' ? 'card boss' : 'card'
-        }
-      >
-        <span className="tag">
-          {phase.key === 'boss'
-            ? '👑 MINIBOSS MULTIHABILIDAD'
-            : 'DAILY QUEST · 35 MIN'}
-        </span>
+  className={
+    phase.key === 'boss' ? 'card boss' : 'card'
+  }
+>
+  <span className="tag">
+    {phase.key === 'boss'
+      ? '👑 MINIBOSS MULTIHABILIDAD'
+      : '🗺️ DAILY QUEST · 35 MIN'}
+  </span>
 
-        <h1>{phase.label}</h1>
+  <h1>{phase.label}</h1>
 
-        <p className="muted">
-          Fase {phaseIndex + 1}/4 · reto{' '}
-          {questionInPhase + 1}/{phase.count}
-        </p>
+  <p className="muted">
+    Reto {total + 1} de 10
+  </p>
 
-        <div className="bar">
-          <i
-            style={{
-              width: `${Math.round((total / 10) * 100)}%`,
-            }}
-          />
+  <div
+    style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(10, 1fr)',
+      gap: 6,
+      marginTop: 20,
+      marginBottom: 18,
+    }}
+  >
+    {Array.from({ length: 10 }).map((_, index) => {
+      const done = index < total
+      const current = index === total
+
+      return (
+        <div
+          key={index}
+          style={{
+            height: 42,
+            borderRadius: 10,
+            display: 'grid',
+            placeItems: 'center',
+            fontWeight: 900,
+            border: current
+              ? '2px solid #ffd44d'
+              : '1px solid #31516c',
+            background: done
+              ? '#244c30'
+              : current
+                ? '#3a3016'
+                : '#0b1b2d',
+            opacity: done || current ? 1 : 0.55,
+          }}
+        >
+          {index < 2
+            ? '🔥'
+            : index < 6
+              ? '⚔️'
+              : index < 8
+                ? '🗺️'
+                : '👑'}
         </div>
-      </section>
+      )
+    })}
+  </div>
+
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      gap: 8,
+      fontSize: 12,
+      fontWeight: 800,
+    }}
+  >
+    <span>🔥 Calentamiento</span>
+    <span>⚔️ Entrenamiento</span>
+    <span>🗺️ Transferencia</span>
+    <span>👑 Boss</span>
+  </div>
+
+  <div className="bar" style={{ marginTop: 16 }}>
+    <i
+      style={{
+        width: `${Math.round((total / 10) * 100)}%`,
+      }}
+    />
+  </div>
+</section>
 
       <section className="card">
         <span className="tag">
