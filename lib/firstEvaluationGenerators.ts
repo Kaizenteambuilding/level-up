@@ -641,8 +641,9 @@ export function generateFirstEvaluationQuestion(
   }
 
   if (key === 'integers_mult_div') {
-    const a = ri(-10, 10) || 2
-    const b = ri(-10, 10) || 3
+  if (seed % 2 === 0) {
+    const a = ri(-12, 12) || 3
+    const b = ri(-12, 12) || -4
     const result = a * b
 
     return mc(
@@ -652,14 +653,34 @@ export function generateFirstEvaluationQuestion(
       `Calcula (${a}) × (${b})`,
       String(result),
       [
-        String(Math.abs(result)),
-        String(-result),
         String(a + b),
+        String(-result),
+        String(Math.abs(result)),
       ],
       `Aplicamos la regla de signos. Resultado: ${result}.`,
       ['producto_enteros', 'regla_signos']
     )
   }
+
+  const divisor = (ri(2, 10)) * (seed % 3 === 0 ? -1 : 1)
+  const quotient = ri(-10, 10) || 3
+  const dividend = divisor * quotient
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula (${dividend}) ÷ (${divisor})`,
+    String(quotient),
+    [
+      String(-quotient),
+      String(Math.abs(quotient)),
+      String(dividend + divisor),
+    ],
+    `Aplicamos la regla de signos. ${dividend} ÷ ${divisor} = ${quotient}.`,
+    ['cociente_enteros', 'regla_signos']
+  )
+}
 
   if (key === 'integers_mixed') {
     const a = ri(-10, 10)
