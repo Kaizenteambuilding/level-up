@@ -2075,6 +2075,221 @@ if (key === 'graph_interpret') {
     ['interpretacion_graficas']
   )
 }
+
+// ============================================================
+// M14 · ESTADÍSTICA
+// ============================================================
+
+// M14S01 · Población, muestra e individuo
+if (key === 'stats_population') {
+  const variants = [
+    {
+      prompt: 'En un instituto se quiere estudiar la altura de todos los alumnos de 1º ESO. ¿Cuál es la población?',
+      answer: 'Todos los alumnos de 1º ESO',
+      distractors: ['Un alumno cualquiera', 'Los 20 alumnos medidos', 'Las alturas obtenidas'],
+      solution: 'La población es el conjunto completo que queremos estudiar.',
+    },
+    {
+      prompt: 'De 300 alumnos se eligen 30 para hacer una encuesta. ¿Qué son esos 30 alumnos?',
+      answer: 'La muestra',
+      distractors: ['La población', 'La variable', 'La frecuencia'],
+      solution: 'La muestra es una parte de la población seleccionada para el estudio.',
+    },
+    {
+      prompt: 'En un estudio sobre hábitos de lectura, cada alumno encuestado es...',
+      answer: 'Un individuo',
+      distractors: ['Una muestra', 'Una variable', 'Una frecuencia'],
+      solution: 'Cada elemento de la población estudiada es un individuo.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['poblacion_muestra_individuo']
+  )
+}
+
+// M14S02 · Variables estadísticas
+if (key === 'stats_variables') {
+  const variants = [
+    {
+      prompt: 'La altura de un alumno, medida en centímetros, es una variable...',
+      answer: 'Cuantitativa',
+      distractors: ['Cualitativa', 'Nominal', 'No estadística'],
+      solution: 'La altura se expresa mediante números, por eso es cuantitativa.',
+    },
+    {
+      prompt: 'El color favorito de una persona es una variable...',
+      answer: 'Cualitativa',
+      distractors: ['Cuantitativa', 'Continua', 'Numérica'],
+      solution: 'El color favorito describe una categoría, por eso es cualitativa.',
+    },
+    {
+      prompt: 'El número de hermanos de un alumno es una variable...',
+      answer: 'Cuantitativa discreta',
+      distractors: ['Cualitativa', 'Cuantitativa continua', 'Nominal'],
+      solution: 'Es numérica y toma valores enteros contables, por eso es discreta.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['variables_estadisticas']
+  )
+}
+
+// M14S03 · Tabla de frecuencias
+if (key === 'frequency_table') {
+  const data = [1, 2, 2, 3, 2, 4, 3, 2]
+  const answer = '4'
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En los datos 1, 2, 2, 3, 2, 4, 3, 2, ¿cuál es la frecuencia del valor 2?`,
+    answer,
+    ['2', '3', '5'],
+    'El número 2 aparece 4 veces.',
+    ['tabla_frecuencias']
+  )
+}
+
+// M14S04 · Gráficos estadísticos
+if (key === 'stat_charts') {
+  const variants = [
+    {
+      situation: 'comparar el número de alumnos que eligen cada deporte',
+      answer: 'Gráfico de barras',
+      distractors: ['Gráfico de líneas', 'Diagrama de sectores', 'Histograma temporal'],
+      solution: 'El gráfico de barras es adecuado para comparar categorías.',
+    },
+    {
+      situation: 'mostrar cómo se reparte un total entre varias categorías',
+      answer: 'Diagrama de sectores',
+      distractors: ['Gráfico de líneas', 'Gráfico de barras', 'Plano cartesiano'],
+      solution: 'El diagrama de sectores representa partes de un total.',
+    },
+    {
+      situation: 'mostrar cómo cambia una temperatura durante varias horas',
+      answer: 'Gráfico de líneas',
+      distractors: ['Diagrama de sectores', 'Gráfico de barras', 'Pictograma'],
+      solution: 'El gráfico de líneas muestra bien la evolución de una magnitud en el tiempo.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Qué gráfico es más adecuado para ${v.situation}?`,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['graficos_estadisticos']
+  )
+}
+
+// M14S05 · Media aritmética
+if (key === 'mean') {
+  const a = ri(2, 8)
+  const b = ri(2, 8)
+  const c = ri(2, 8)
+  const d4 = ri(2, 8)
+  const total = a + b + c + d4
+  const result = total / 4
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula la media de ${a}, ${b}, ${c} y ${d4}`,
+    String(result),
+    [
+      String(total),
+      String(Math.max(a, b, c, d4)),
+      String(Math.min(a, b, c, d4)),
+    ],
+    `Sumamos: ${a}+${b}+${c}+${d4}=${total}. Dividimos entre 4: ${total}/4=${result}.`,
+    ['media_aritmetica']
+  )
+}
+
+// M14S06 · Mediana
+if (key === 'median') {
+  const values = [
+    ri(1, 5),
+    ri(6, 10),
+    ri(11, 15),
+    ri(16, 20),
+    ri(21, 25),
+  ].sort((a, b) => a - b)
+
+  const answer = String(values[2])
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál es la mediana de ${values.join(', ')}?`,
+    answer,
+    [
+      String(values[0]),
+      String(values[4]),
+      String(values[1]),
+    ],
+    `Al haber 5 datos ordenados, la mediana es el valor central: ${answer}.`,
+    ['mediana']
+  )
+}
+
+// M14S07 · Moda
+if (key === 'mode') {
+  const repeated = ri(2, 9)
+  const others = [
+    repeated + 1,
+    repeated + 2,
+    repeated + 3,
+  ]
+
+  const values = [
+    repeated,
+    others[0],
+    repeated,
+    others[1],
+    repeated,
+    others[2],
+  ]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál es la moda de ${values.join(', ')}?`,
+    String(repeated),
+    others.map(String),
+    `La moda es el valor que más se repite. ${repeated} aparece 3 veces.`,
+    ['moda']
+  )
+}
 // Generador de reserva para habilidades aún no implementadas.
   return mc(
     skill,
