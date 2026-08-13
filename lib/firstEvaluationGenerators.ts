@@ -1963,7 +1963,119 @@ if (key === 'composite_area') {
     ['figuras_compuestas']
   )
 }
- // Generador de reserva para habilidades aún no implementadas.
+ 
+// ============================================================
+// M13 · TABLAS Y GRÁFICAS
+// ============================================================
+
+// M13S01 · Coordenadas cartesianas
+if (key === 'coordinates') {
+  const x = ri(-5, 5)
+  const y = ri(-5, 5)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Qué coordenadas tiene el punto P si está en x = ${x} e y = ${y}?`,
+    `(${x}, ${y})`,
+    [
+      `(${y}, ${x})`,
+      `(${-x}, ${y})`,
+      `(${x}, ${-y})`,
+    ],
+    `Las coordenadas se escriben como (x, y). Por tanto, P = (${x}, ${y}).`,
+    ['coordenadas_cartesianas']
+  )
+}
+
+// M13S02 · Leer tablas de valores
+if (key === 'value_tables') {
+  const x1 = ri(1, 4)
+  const factor = ri(2, 5)
+  const y1 = x1 * factor
+  const x2 = x1 + 2
+  const y2 = x2 * factor
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En una tabla, cuando x = ${x1}, y = ${y1}. Si la relación es y = ${factor}x, ¿cuánto vale y cuando x = ${x2}?`,
+    String(y2),
+    [
+      String(x2 + factor),
+      String(y1),
+      String(y2 + factor),
+    ],
+    `y = ${factor} × ${x2} = ${y2}.`,
+    ['lectura_tablas']
+  )
+}
+
+// M13S03 · Representar datos en gráficas
+if (key === 'plot_graph') {
+  const variants = [
+    {
+      situation: 'la evolución de la temperatura a lo largo de un día',
+      answer: 'Gráfico de líneas',
+      solution: 'Un gráfico de líneas permite ver claramente cómo cambia una magnitud con el tiempo.',
+      distractors: ['Gráfico de barras', 'Diagrama de sectores', 'Tabla sin gráfica'],
+    },
+    {
+      situation: 'comparar cuántos alumnos prefieren fútbol, baloncesto y tenis',
+      answer: 'Gráfico de barras',
+      solution: 'El gráfico de barras es adecuado para comparar cantidades entre categorías.',
+      distractors: ['Gráfico de líneas', 'Diagrama de sectores', 'Plano cartesiano'],
+    },
+    {
+      situation: 'mostrar qué porcentaje del presupuesto corresponde a cada categoría',
+      answer: 'Diagrama de sectores',
+      solution: 'Un diagrama de sectores representa bien las partes de un total.',
+      distractors: ['Gráfico de líneas', 'Gráfico de barras', 'Plano cartesiano'],
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Qué tipo de gráfica es más adecuada para ${v.situation}?`,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['representacion_grafica']
+  )
+}
+
+// M13S04 · Interpretar gráficas
+if (key === 'graph_interpret') {
+  const monday = ri(10, 30)
+  const tuesday = monday + ri(2, 10)
+  const wednesday = ri(8, monday)
+
+  const maxValue = Math.max(monday, tuesday, wednesday)
+  const answer =
+    maxValue === monday
+      ? 'Lunes'
+      : maxValue === tuesday
+        ? 'Martes'
+        : 'Miércoles'
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Una gráfica muestra estas ventas: lunes ${monday}, martes ${tuesday} y miércoles ${wednesday}. ¿Qué día tuvo más ventas?`,
+    answer,
+    ['Lunes', 'Martes', 'Miércoles', 'Todos igual'].filter(x => x !== answer),
+    `El valor mayor es ${maxValue}, correspondiente a ${answer.toLowerCase()}.`,
+    ['interpretacion_graficas']
+  )
+}
+// Generador de reserva para habilidades aún no implementadas.
   return mc(
     skill,
     d,
