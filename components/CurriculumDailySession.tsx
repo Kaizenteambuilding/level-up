@@ -200,7 +200,40 @@ if (!forcedSkillId) {
     forcedSkillId,
     testMode,
   ])
+useEffect(() => {
+  if (
+    testMode ||
+    !sessionId ||
+    !playerId ||
+    index < SESSION_LENGTH
+  ) {
+    return
+  }
 
+  ;(async () => {
+    const supabase = createSupabaseBrowserClient()
+
+    if (!supabase) return
+
+    const finishedAt = new Date().toISOString()
+
+    const { error } = await supabase
+      .from('study_sessions')
+      .update({
+        ended_at: finishedAt,
+        completed_at: finishedAt,
+        completed: true,
+        xp_earned: xp,
+        phase: 'done',
+      })
+      .eq('id', sessionId)
+      .eq('player_id', playerId)
+
+    if (error) {
+      console.error('No se pudo cerrar la sesión:', error)
+    }
+  })()
+}, [index, sessionId, playerId, testMode, xp])
   async function submit(optionIndex: number) {
     if (answered || !playerId || !question) return
 
