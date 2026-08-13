@@ -421,6 +421,12 @@ export default function CurriculumDailySession() {
 
         {feedback && (
           <>
+<div
+  className="metric"
+  style={{ marginTop: 16 }}
+>
+  <b>{feedback}</b>
+</div>
             <div
   className="metric"
   style={{ marginTop: 10 }}
