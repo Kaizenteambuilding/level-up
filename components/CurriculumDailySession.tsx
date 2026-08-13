@@ -371,7 +371,33 @@ export default function CurriculumDailySession() {
         <span className="tag">
           {question.label} · dificultad {question.difficulty}/5
         </span>
+{!testMode && (
+  <div
+    className="metric"
+    style={{
+      marginTop: 14,
+      marginBottom: 18,
+    }}
+  >
+    <b>🎯 REFUERZO PERSONALIZADO</b>
 
+    <p className="muted" style={{ marginBottom: 0 }}>
+      {(() => {
+        const mastery = states[question.skillId]?.mastery ?? 0
+
+        if (mastery < 50) {
+          return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`
+        }
+
+        if (mastery < 75) {
+          return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`
+        }
+
+        return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.`
+      })()}
+    </p>
+  </div>
+)}
         <p
           style={{
             fontSize: 24,
