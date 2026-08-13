@@ -234,6 +234,8 @@ if (!forcedSkillId) {
       setFeedback('Error: ' + error.message)
       return
     }
+console.log('RPC submit_levelup_attempt DATA:', data)
+console.log('SESSION ID:', sessionId)
 if (!testMode && sessionId && data?.attempt_id) {
   const { error: linkError } = await supabase
     .from('attempts')
