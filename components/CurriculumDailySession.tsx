@@ -226,6 +226,7 @@ if (!forcedSkillId) {
         p_difficulty: question.difficulty,
         p_seed: question.seed,
         p_prompt: question.prompt,
+p_session_id: sessionId,
         p_diagnostic_tags: question.tags,
       }
     )
@@ -234,18 +235,6 @@ if (!forcedSkillId) {
       setFeedback('Error: ' + error.message)
       return
     }
-console.log('RPC submit_levelup_attempt DATA:', data)
-console.log('SESSION ID:', sessionId)
-if (!testMode && sessionId && data?.attempt_id) {
-  const { error: linkError } = await supabase
-    .from('attempts')
-    .update({ session_id: sessionId })
-    .eq('id', data.attempt_id)
-
-  if (linkError) {
-    console.error('No se pudo enlazar el intento con la sesión:', linkError)
-  }
-}
     const result = data as {
       xp_awarded: number
       mastery: number
