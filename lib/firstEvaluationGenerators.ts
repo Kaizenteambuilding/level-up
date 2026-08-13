@@ -388,10 +388,10 @@ export function generateFirstEvaluationQuestion(
       `¿Cuál de estos números es múltiplo de ${n}?`,
       String(answer),
       [
-        String(answer + 1),
-        String(answer - 1),
-        String(n + k),
-      ],
+  String(answer + 1),
+  String(answer - 1),
+  String(answer + n + 1),
+],
       `${n}×${k}=${answer}.`,
       ['multiplos']
     )
