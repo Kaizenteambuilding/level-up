@@ -886,9 +886,13 @@ if (key === 'natural_word_problem') {
     )
   }
 
-  if (key === 'integers_add') {
-    const a = ri(-20, 20)
-    const b = ri(-20, 20)
+ if (key === 'integers_add') {
+  const ranges = [10, 20, 40, 80, 150]
+  const limit = ranges[d - 1]
+
+  if (d <= 2) {
+    const a = ri(-limit, limit)
+    const b = ri(-limit, limit)
     const result = a + b
 
     return mc(
@@ -902,14 +906,84 @@ if (key === 'natural_word_problem') {
         String(-result),
         String(Math.abs(a) + Math.abs(b)),
       ],
-      `Resultado: ${result}.`,
+      `Sumamos los enteros teniendo en cuenta sus signos. Resultado: ${result}.`,
       ['suma_enteros']
     )
   }
 
-  if (key === 'integers_sub') {
-    const a = ri(-20, 20)
-    const b = ri(-20, 20)
+  if (d === 3) {
+    const a = ri(-40, 40)
+    const b = ri(-40, 40)
+    const c = ri(-30, 30)
+    const result = a + b + c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a}) + (${b}) + (${c})`,
+      String(result),
+      [
+        String(a + b - c),
+        String(-(a + b + c)),
+        String(Math.abs(a) + Math.abs(b) + Math.abs(c)),
+      ],
+      `Sumamos los tres enteros paso a paso. Resultado: ${result}.`,
+      ['suma_enteros', 'tres_terminos']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(-70, 70)
+    const b = ri(-70, 70)
+    const c = ri(-50, 50)
+    const e = ri(-40, 40)
+    const result = a + b + c + e
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a}) + (${b}) + (${c}) + (${e})`,
+      String(result),
+      [
+        String(a + b + c - e),
+        String(-result),
+        String(result + 10),
+      ],
+      `Sumamos los cuatro enteros respetando sus signos. Resultado: ${result}.`,
+      ['suma_enteros', 'cuatro_terminos']
+    )
+  }
+
+  const a = ri(-120, 120)
+  const b = ri(-120, 120)
+  const c = ri(-90, 90)
+  const e = ri(-80, 80)
+  const f = ri(-60, 60)
+  const result = a + b + c + e + f
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula (${a}) + (${b}) + (${c}) + (${e}) + (${f})`,
+    String(result),
+    [
+      String(a + b + c + e - f),
+      String(-result),
+      String(result + 20),
+    ],
+    `Sumamos los cinco enteros teniendo en cuenta todos los signos. Resultado: ${result}.`,
+    ['suma_enteros', 'cinco_terminos', 'dificultad_alta']
+  )
+}
+
+if (key === 'integers_sub') {
+  if (d <= 2) {
+    const limit = d === 1 ? 10 : 25
+    const a = ri(-limit, limit)
+    const b = ri(-limit, limit)
     const result = a - b
 
     return mc(
@@ -927,6 +1001,75 @@ if (key === 'natural_word_problem') {
       ['resta_enteros']
     )
   }
+
+  if (d === 3) {
+    const a = ri(-40, 40)
+    const b = ri(-30, 30)
+    const c = ri(-30, 30)
+    const result = a - b - c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a}) - (${b}) - (${c})`,
+      String(result),
+      [
+        String(a + b - c),
+        String(a - b + c),
+        String(-result),
+      ],
+      `Restamos paso a paso, convirtiendo cada resta en suma del opuesto. Resultado: ${result}.`,
+      ['resta_enteros', 'tres_terminos']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(-70, 70)
+    const b = ri(-50, 50)
+    const c = ri(-50, 50)
+    const e = ri(-40, 40)
+    const result = a - b + c - e
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a}) - (${b}) + (${c}) - (${e})`,
+      String(result),
+      [
+        String(a + b + c - e),
+        String(a - b - c - e),
+        String(-result),
+      ],
+      `Convertimos las restas en sumas de opuestos y operamos de izquierda a derecha. Resultado: ${result}.`,
+      ['resta_enteros', 'operaciones_encadenadas']
+    )
+  }
+
+  const a = ri(-120, 120)
+  const b = ri(-90, 90)
+  const c = ri(-80, 80)
+  const e = ri(-70, 70)
+  const f = ri(-60, 60)
+
+  const result = a - b + c - e + f
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula (${a}) - (${b}) + (${c}) - (${e}) + (${f})`,
+    String(result),
+    [
+      String(a + b + c - e + f),
+      String(a - b - c - e + f),
+      String(-result),
+    ],
+    `Transformamos cada resta en suma del opuesto y resolvemos toda la expresión. Resultado: ${result}.`,
+    ['resta_enteros', 'operaciones_encadenadas', 'dificultad_alta']
+  )
+}
 
   if (key === 'integers_mult_div') {
   if (seed % 2 === 0) {
