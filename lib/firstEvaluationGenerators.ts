@@ -1498,7 +1498,270 @@ export function generateFirstEvaluationQuestion(
     )
   }
 
-  // Generador de reserva para habilidades aún no implementadas.
+ // ============================================================
+// M11 · FIGURAS GEOMÉTRICAS
+// ============================================================
+
+// M11S01 · Clasificar triángulos por lados
+if (key === 'triangle_sides') {
+  const variants = [
+    {
+      sides: '6 cm, 6 cm y 6 cm',
+      answer: 'Equilátero',
+      solution: 'Tiene sus tres lados iguales, por tanto es un triángulo equilátero.',
+    },
+    {
+      sides: '5 cm, 5 cm y 8 cm',
+      answer: 'Isósceles',
+      solution: 'Tiene dos lados iguales, por tanto es un triángulo isósceles.',
+    },
+    {
+      sides: '4 cm, 5 cm y 6 cm',
+      answer: 'Escaleno',
+      solution: 'Tiene los tres lados diferentes, por tanto es un triángulo escaleno.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un triángulo tiene lados de ${v.sides}. ¿Cómo se clasifica según sus lados?`,
+    v.answer,
+    ['Equilátero', 'Isósceles', 'Escaleno'].filter(x => x !== v.answer),
+    v.solution,
+    ['clasificacion_triangulos_lados']
+  )
+}
+
+// M11S02 · Clasificar triángulos por ángulos
+if (key === 'triangle_angles') {
+  const variants = [
+    {
+      angles: '60°, 60° y 60°',
+      answer: 'Acutángulo',
+      solution: 'Todos sus ángulos son menores de 90°, por tanto es acutángulo.',
+    },
+    {
+      angles: '90°, 55° y 35°',
+      answer: 'Rectángulo',
+      solution: 'Tiene un ángulo de 90°, por tanto es rectángulo.',
+    },
+    {
+      angles: '110°, 40° y 30°',
+      answer: 'Obtusángulo',
+      solution: 'Tiene un ángulo mayor de 90°, por tanto es obtusángulo.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un triángulo tiene ángulos de ${v.angles}. ¿Cómo se clasifica según sus ángulos?`,
+    v.answer,
+    ['Acutángulo', 'Rectángulo', 'Obtusángulo'].filter(x => x !== v.answer),
+    v.solution,
+    ['clasificacion_triangulos_angulos']
+  )
+}
+
+// M11S03 · Suma de ángulos de triángulo
+if (key === 'triangle_angle_sum') {
+  const a = ri(3, 7) * 10
+  const b = ri(4, 8) * 10
+  const missing = 180 - a - b
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Dos ángulos de un triángulo miden ${a}° y ${b}°. ¿Cuánto mide el tercer ángulo?`,
+    `${missing}°`,
+    [
+      `${missing + 10}°`,
+      `${Math.max(10, missing - 10)}°`,
+      `${180 - missing}°`,
+    ],
+    `Los ángulos de un triángulo suman 180°. Entonces 180° − ${a}° − ${b}° = ${missing}°.`,
+    ['suma_angulos_triangulo']
+  )
+}
+
+// M11S04 · Cuadriláteros
+if (key === 'quadrilaterals') {
+  const variants = [
+    {
+      clue: 'Tiene cuatro lados iguales y cuatro ángulos rectos.',
+      answer: 'Cuadrado',
+      solution: 'Un cuadrado tiene cuatro lados iguales y cuatro ángulos de 90°.',
+    },
+    {
+      clue: 'Tiene cuatro ángulos rectos y sus lados opuestos son iguales.',
+      answer: 'Rectángulo',
+      solution: 'Un rectángulo tiene cuatro ángulos rectos y lados opuestos iguales.',
+    },
+    {
+      clue: 'Tiene cuatro lados iguales, pero no necesariamente cuatro ángulos rectos.',
+      answer: 'Rombo',
+      solution: 'Un rombo se caracteriza por tener sus cuatro lados iguales.',
+    },
+    {
+      clue: 'Tiene solamente un par de lados paralelos.',
+      answer: 'Trapecio',
+      solution: 'Un trapecio tiene un par de lados paralelos.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `${v.clue} ¿Qué cuadrilátero es?`,
+    v.answer,
+    ['Cuadrado', 'Rectángulo', 'Rombo', 'Trapecio'].filter(x => x !== v.answer),
+    v.solution,
+    ['cuadrilateros']
+  )
+}
+
+// M11S05 · Polígonos regulares
+if (key === 'regular_polygons') {
+  const variants = [
+    { sides: 5, answer: 'Pentágono' },
+    { sides: 6, answer: 'Hexágono' },
+    { sides: 8, answer: 'Octógono' },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un polígono regular tiene ${v.sides} lados iguales. ¿Cómo se llama?`,
+    v.answer,
+    ['Pentágono', 'Hexágono', 'Octógono'].filter(x => x !== v.answer),
+    `Un polígono de ${v.sides} lados se llama ${v.answer.toLowerCase()}. Al ser regular, todos sus lados y ángulos son iguales.`,
+    ['poligonos_regulares']
+  )
+}
+
+// M11S06 · Circunferencia y círculo
+if (key === 'circle_elements') {
+  const variants = [
+    {
+      prompt: '¿Cómo se llama el segmento que une el centro de una circunferencia con un punto de ella?',
+      answer: 'Radio',
+      solution: 'El radio une el centro con cualquier punto de la circunferencia.',
+    },
+    {
+      prompt: '¿Cómo se llama el segmento que une dos puntos de la circunferencia pasando por el centro?',
+      answer: 'Diámetro',
+      solution: 'El diámetro pasa por el centro y une dos puntos de la circunferencia.',
+    },
+    {
+      prompt: '¿Cómo se llama la línea curva cerrada que limita un círculo?',
+      answer: 'Circunferencia',
+      solution: 'La circunferencia es la línea que forma el borde del círculo.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    ['Radio', 'Diámetro', 'Circunferencia', 'Centro'].filter(x => x !== v.answer),
+    v.solution,
+    ['elementos_circulo']
+  )
+}
+
+// M11S07 · Simetría
+if (key === 'symmetry') {
+  const variants = [
+    {
+      figure: 'un cuadrado',
+      answer: '4',
+      solution: 'Un cuadrado tiene 4 ejes de simetría.',
+      distractors: ['1', '2', '3'],
+    },
+    {
+      figure: 'un rectángulo que no es cuadrado',
+      answer: '2',
+      solution: 'Un rectángulo no cuadrado tiene 2 ejes de simetría.',
+      distractors: ['1', '3', '4'],
+    },
+    {
+      figure: 'un triángulo equilátero',
+      answer: '3',
+      solution: 'Un triángulo equilátero tiene 3 ejes de simetría.',
+      distractors: ['1', '2', '4'],
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuántos ejes de simetría tiene ${v.figure}?`,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['simetria']
+  )
+}
+
+// M11S08 · Clasificación geométrica razonada
+if (key === 'geometry_classification') {
+  const variants = [
+    {
+      prompt: 'Una figura tiene 4 lados iguales y 4 ángulos rectos. ¿Cuál es la clasificación más precisa?',
+      answer: 'Cuadrado',
+      solution: 'Al tener cuatro lados iguales y cuatro ángulos rectos, es un cuadrado.',
+      distractors: ['Rectángulo', 'Rombo', 'Trapecio'],
+    },
+    {
+      prompt: 'Un triángulo tiene lados de 7 cm, 7 cm y 10 cm. ¿Cómo se clasifica según sus lados?',
+      answer: 'Isósceles',
+      solution: 'Tiene exactamente dos lados iguales, por tanto es isósceles.',
+      distractors: ['Equilátero', 'Escaleno', 'Rectángulo'],
+    },
+    {
+      prompt: 'Un triángulo tiene un ángulo de 90°. ¿Qué clasificación según sus ángulos es necesariamente correcta?',
+      answer: 'Rectángulo',
+      solution: 'Todo triángulo que tiene un ángulo de 90° es un triángulo rectángulo.',
+      distractors: ['Acutángulo', 'Obtusángulo', 'Equilátero'],
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['clasificacion_geometrica_razonada']
+  )
+}
+
+ // Generador de reserva para habilidades aún no implementadas.
   return mc(
     skill,
     d,
@@ -1511,6 +1774,7 @@ export function generateFirstEvaluationQuestion(
       'Distractor C',
     ],
     'Esta habilidad necesita todavía una plantilla específica.',
-    ['fallback_generator']
+    
+['fallback_generator']
   )
 }
