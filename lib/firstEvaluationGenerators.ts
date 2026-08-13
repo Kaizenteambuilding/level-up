@@ -948,30 +948,50 @@ export function generateFirstEvaluationQuestion(
     )
   }
 
-  if (key === 'fraction_simplify') {
-    const baseNum = ri(1, 5)
-    const baseDen = ri(baseNum + 1, 9)
-    const k = ri(2, 5)
-    const num = baseNum * k
-    const den = baseDen * k
-    const answer = `${baseNum}/${baseDen}`
+if (key === 'fraction_simplify') {
+  const gcd = (a: number, b: number): number => {
+    a = Math.abs(a)
+    b = Math.abs(b)
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Simplifica ${num}/${den}`,
-      answer,
-      [
-        `${num - k}/${den - k}`,
-        `${baseNum}/${den}`,
-        `${num}/${baseDen}`,
-      ],
-      `Dividimos numerador y denominador entre ${k}: ${answer}.`,
-      ['simplificacion_fracciones']
-    )
+    while (b !== 0) {
+      const temp = b
+      b = a % b
+      a = temp
+    }
+
+    return a
   }
 
+  let baseNum = ri(1, 5)
+  let baseDen = ri(baseNum + 1, 9)
+
+  while (gcd(baseNum, baseDen) !== 1) {
+    baseNum = ri(1, 5)
+    baseDen = ri(baseNum + 1, 9)
+  }
+
+  const k = ri(2, 5)
+
+  const num = baseNum * k
+  const den = baseDen * k
+
+  const answer = `${baseNum}/${baseDen}`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Simplifica ${num}/${den}`,
+    answer,
+    [
+      `${num - k}/${den - k}`,
+      `${baseNum}/${den}`,
+      `${num}/${baseDen}`,
+    ],
+    `Dividimos numerador y denominador entre ${k}: ${answer}.`,
+    ['simplificacion_fracciones']
+  )
+}
   if (key === 'fraction_compare') {
     const den = ri(4, 10)
     const a = ri(1, den - 2)
