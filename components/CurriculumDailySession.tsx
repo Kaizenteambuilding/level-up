@@ -234,7 +234,16 @@ if (!forcedSkillId) {
       setFeedback('Error: ' + error.message)
       return
     }
+if (!testMode && sessionId && data?.attempt_id) {
+  const { error: linkError } = await supabase
+    .from('attempts')
+    .update({ session_id: sessionId })
+    .eq('id', data.attempt_id)
 
+  if (linkError) {
+    console.error('No se pudo enlazar el intento con la sesión:', linkError)
+  }
+}
     const result = data as {
       xp_awarded: number
       mastery: number
