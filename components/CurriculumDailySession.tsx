@@ -20,8 +20,8 @@ type SkillState = {
   mastery: number
   confidence: number
   difficulty: number
+  priority: number
 }
-
 const FIRST_EVAL_UNITS = ['M01', 'M02', 'M03', 'M04', 'M05']
 const SESSION_LENGTH = 10
 
@@ -97,7 +97,7 @@ export default function CurriculumDailySession() {
 
       const { data: stateRows } = await supabase
         .from('player_skill_state')
-        .select('skill_id,mastery,confidence,difficulty')
+        .select('skill_id,mastery,confidence,difficulty,priority')
         .eq('player_id', id)
 
       const stateMap: Record<string, SkillState> = {}
@@ -120,13 +120,18 @@ export default function CurriculumDailySession() {
     }
 
     const ranked = [...skills].sort((a, b) => {
-      const am = states[a.id]?.mastery ?? 0
-      const bm = states[b.id]?.mastery ?? 0
+  const ap = states[a.id]?.priority ?? 50
+  const bp = states[b.id]?.priority ?? 50
 
-      if (am !== bm) return am - bm
+  if (ap !== bp) return bp - ap
 
-      return a.id.localeCompare(b.id)
-    })
+  const am = states[a.id]?.mastery ?? 0
+  const bm = states[b.id]?.mastery ?? 0
+
+  if (am !== bm) return am - bm
+
+  return a.id.localeCompare(b.id)
+})
 
     const mode = currentIndex % 10
 
@@ -224,14 +229,25 @@ export default function CurriculumDailySession() {
     }
 
     setStates((current) => ({
-      ...current,
-      [question.skillId]: {
-        skill_id: question.skillId,
-        mastery: Number(result.mastery),
-        confidence: Number(result.confidence),
-        difficulty: Number(result.difficulty),
-      },
-    }))
+  ...current,
+  [question.skillId]: {
+    skill_id: question.skillId,
+    mastery: Number(result.mastery),
+    confidence: Number(result.confidence),
+    difficulty: Number(result.difficulty),
+    priority: Math.max(
+      1,
+      Math.min(
+        100,
+        Math.round(
+          50 +
+            (50 - Number(result.mastery)) * 0.8 +
+            (50 - Number(result.confidence)) * 0.4
+        )
+      )
+    ),
+  },
+}))
 
     setFeedback(
   (ok ? '✓ Correcto' : '↻ Incorrecto') +
