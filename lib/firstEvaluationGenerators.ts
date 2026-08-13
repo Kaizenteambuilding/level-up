@@ -1380,9 +1380,11 @@ if (key === 'integers_sub') {
   // =========================
 
   if (key === 'fraction_meaning') {
-    const den = ri(3, 9)
-    const num = ri(1, den - 1)
+  const den = ri(3, 12)
+  const num = ri(1, den - 1)
+  const variant = Math.floor(r() * 4)
 
+  if (variant === 0) {
     return mc(
       skill,
       d,
@@ -1395,9 +1397,59 @@ if (key === 'integers_sub') {
         'El número mayor',
       ],
       `El denominador ${den} indica en cuántas partes iguales se divide la unidad.`,
-      ['significado_fraccion']
+      ['significado_fraccion', 'denominador']
     )
   }
+
+  if (variant === 1) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `En la fracción ${num}/${den}, ¿qué indica el numerador?`,
+      'Las partes que tomamos',
+      [
+        'El total de partes iguales',
+        'El tamaño de cada parte',
+        'El resultado de dividir',
+      ],
+      `El numerador ${num} indica cuántas partes estamos tomando.`,
+      ['significado_fraccion', 'numerador']
+    )
+  }
+
+  if (variant === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una unidad se divide en ${den} partes iguales y tomamos ${num}. ¿Qué fracción representa?`,
+      `${num}/${den}`,
+      [
+        `${den}/${num}`,
+        `${num}/${den + 1}`,
+        `${Math.min(num + 1, den - 1)}/${den}`,
+      ],
+      `Tomamos ${num} de ${den} partes iguales, por eso la fracción es ${num}/${den}.`,
+      ['significado_fraccion', 'representacion']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál de estas situaciones representa la fracción ${num}/${den}?`,
+    `Tomar ${num} de ${den} partes iguales`,
+    [
+      `Tomar ${den} de ${num} partes iguales`,
+      `Dividir ${num} partes en ${den + 1}`,
+      `Tomar ${Math.min(num + 1, den)} de ${den} partes iguales`,
+    ],
+    `${num}/${den} significa tomar ${num} partes de una unidad dividida en ${den} partes iguales.`,
+    ['significado_fraccion', 'interpretacion']
+  )
+}
 
   if (key === 'fraction_equivalent') {
     const den = ri(3, 8)
