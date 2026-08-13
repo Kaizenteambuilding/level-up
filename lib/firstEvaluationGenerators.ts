@@ -1761,6 +1761,208 @@ if (key === 'geometry_classification') {
   )
 }
 
+// ============================================================
+// M12 · PERÍMETROS Y ÁREAS
+// ============================================================
+
+// M12S01 · Perímetro de polígonos
+if (key === 'perimeter') {
+  const width = ri(3, 12)
+  const height = ri(2, 10)
+  const result = 2 * (width + height)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un rectángulo mide ${width} cm de largo y ${height} cm de ancho. ¿Cuál es su perímetro?`,
+    `${result} cm`,
+    [
+      `${width * height} cm`,
+      `${width + height} cm`,
+      `${result + 2} cm`,
+    ],
+    `Perímetro = 2 × (${width} + ${height}) = ${result} cm.`,
+    ['perimetro']
+  )
+}
+
+// M12S02 · Área de rectángulo y cuadrado
+if (key === 'rectangle_square_area') {
+  if (seed % 2 === 0) {
+    const side = ri(3, 12)
+    const result = side * side
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su área?`,
+      `${result} cm²`,
+      [
+        `${side * 4} cm²`,
+        `${side * 2} cm²`,
+        `${result + side} cm²`,
+      ],
+      `Área = lado × lado = ${side} × ${side} = ${result} cm².`,
+      ['area_cuadrado']
+    )
+  }
+
+  const base = ri(4, 14)
+  const height = ri(3, 10)
+  const result = base * height
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un rectángulo mide ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
+    `${result} cm²`,
+    [
+      `${2 * (base + height)} cm²`,
+      `${base + height} cm²`,
+      `${result + base} cm²`,
+    ],
+    `Área = base × altura = ${base} × ${height} = ${result} cm².`,
+    ['area_rectangulo']
+  )
+}
+
+// M12S03 · Área de triángulo
+if (key === 'triangle_area') {
+  const base = ri(3, 12) * 2
+  const height = ri(2, 10)
+  const result = (base * height) / 2
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un triángulo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
+    `${result} cm²`,
+    [
+      `${base * height} cm²`,
+      `${base + height} cm²`,
+      `${result + height} cm²`,
+    ],
+    `Área = (base × altura) ÷ 2 = (${base} × ${height}) ÷ 2 = ${result} cm².`,
+    ['area_triangulo']
+  )
+}
+
+// M12S04 · Área de paralelogramo y trapecio
+if (key === 'quadrilateral_area') {
+  if (seed % 2 === 0) {
+    const base = ri(4, 14)
+    const height = ri(3, 10)
+    const result = base * height
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un paralelogramo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
+      `${result} cm²`,
+      [
+        `${2 * (base + height)} cm²`,
+        `${base + height} cm²`,
+        `${result + height} cm²`,
+      ],
+      `Área = base × altura = ${base} × ${height} = ${result} cm².`,
+      ['area_paralelogramo']
+    )
+  }
+
+  const base1 = ri(6, 14)
+  const base2 = ri(2, base1 - 2)
+  const height = ri(2, 8) * 2
+  const result = ((base1 + base2) * height) / 2
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un trapecio tiene bases de ${base1} cm y ${base2} cm, y altura de ${height} cm. ¿Cuál es su área?`,
+    `${result} cm²`,
+    [
+      `${(base1 + base2) * height} cm²`,
+      `${base1 * base2} cm²`,
+      `${base1 + base2 + height} cm²`,
+    ],
+    `Área = ((B + b) × h) ÷ 2 = ((${base1} + ${base2}) × ${height}) ÷ 2 = ${result} cm².`,
+    ['area_trapecio']
+  )
+}
+
+// M12S05 · Circunferencia y círculo
+if (key === 'circle_measure') {
+  const radius = ri(2, 10)
+
+  if (seed % 2 === 0) {
+    const diameter = radius * 2
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un círculo tiene radio de ${radius} cm. ¿Cuál es su diámetro?`,
+      `${diameter} cm`,
+      [
+        `${radius} cm`,
+        `${radius * 3} cm`,
+        `${diameter + 1} cm`,
+      ],
+      `El diámetro es el doble del radio: 2 × ${radius} = ${diameter} cm.`,
+      ['diametro_circulo']
+    )
+  }
+
+  const diameter = radius * 2
+  const circumference = Math.round(Math.PI * diameter * 100) / 100
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Una circunferencia tiene diámetro de ${diameter} cm. Usando π ≈ 3,14, ¿cuánto mide aproximadamente su longitud?`,
+    `${(3.14 * diameter).toFixed(2)} cm`,
+    [
+      `${(3.14 * radius).toFixed(2)} cm`,
+      `${diameter * 2} cm`,
+      `${(diameter + 3.14).toFixed(2)} cm`,
+    ],
+    `Longitud ≈ π × diámetro = 3,14 × ${diameter} = ${(3.14 * diameter).toFixed(2)} cm.`,
+    ['longitud_circunferencia']
+  )
+}
+
+// M12S06 · Figuras compuestas
+if (key === 'composite_area') {
+  const width1 = ri(3, 8)
+  const height1 = ri(2, 6)
+  const width2 = ri(2, 6)
+  const height2 = ri(2, 5)
+
+  const area1 = width1 * height1
+  const area2 = width2 * height2
+  const result = area1 + area2
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Una figura está formada por dos rectángulos sin solaparse. Uno mide ${width1} cm × ${height1} cm y el otro ${width2} cm × ${height2} cm. ¿Cuál es el área total?`,
+    `${result} cm²`,
+    [
+      `${area1} cm²`,
+      `${area2} cm²`,
+      `${result + width2} cm²`,
+    ],
+    `Área total = ${width1}×${height1} + ${width2}×${height2} = ${area1} + ${area2} = ${result} cm².`,
+    ['figuras_compuestas']
+  )
+}
  // Generador de reserva para habilidades aún no implementadas.
   return mc(
     skill,
