@@ -1051,11 +1051,14 @@ if (key === 'fraction_simplify') {
     )
   }
 
-  if (key === 'fraction_add_sub') {
-    const den = ri(4, 10)
+ if (key === 'fraction_add_sub') {
+  const den = ri(4, 10)
+
+  if (seed % 2 === 0) {
     const a = ri(1, den - 2)
     const b = ri(1, den - a)
-    const answer = `${a + b}/${den}`
+    const resultNum = a + b
+    const answer = `${resultNum}/${den}`
 
     return mc(
       skill,
@@ -1064,14 +1067,35 @@ if (key === 'fraction_simplify') {
       `Calcula ${a}/${den} + ${b}/${den}`,
       answer,
       [
-        `${a + b}/${den * 2}`,
+        `${resultNum}/${den * 2}`,
         `${a * b}/${den}`,
-        `${a + b}/${den + 1}`,
+        `${resultNum}/${den + 1}`,
       ],
-      `Mismo denominador: sumamos numeradores. Resultado: ${answer}.`,
+      `Como tienen el mismo denominador, sumamos los numeradores: ${a} + ${b} = ${resultNum}. Resultado: ${answer}.`,
       ['suma_fracciones']
     )
   }
+
+  const a = ri(2, den - 1)
+  const b = ri(1, a - 1)
+  const resultNum = a - b
+  const answer = `${resultNum}/${den}`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${a}/${den} - ${b}/${den}`,
+    answer,
+    [
+      `${a + b}/${den}`,
+      `${resultNum}/${den * 2}`,
+      `${a * b}/${den}`,
+    ],
+    `Como tienen el mismo denominador, restamos los numeradores: ${a} - ${b} = ${resultNum}. Resultado: ${answer}.`,
+    ['resta_fracciones']
+  )
+}
 
   if (key === 'fraction_multiply') {
     const a = ri(1, 5)
