@@ -1530,7 +1530,7 @@ if (key === 'triangle_sides') {
     seed,
     `Un triángulo tiene lados de ${v.sides}. ¿Cómo se clasifica según sus lados?`,
     v.answer,
-    ['Equilátero', 'Isósceles', 'Escaleno'].filter(x => x !== v.answer),
+    ['Equilátero', 'Isósceles', 'Escaleno', 'No se puede determinar'].filter(x => x !== v.answer),
     v.solution,
     ['clasificacion_triangulos_lados']
   )
@@ -1564,7 +1564,7 @@ if (key === 'triangle_angles') {
     seed,
     `Un triángulo tiene ángulos de ${v.angles}. ¿Cómo se clasifica según sus ángulos?`,
     v.answer,
-    ['Acutángulo', 'Rectángulo', 'Obtusángulo'].filter(x => x !== v.answer),
+   ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter(x => x !== v.answer),
     v.solution,
     ['clasificacion_triangulos_angulos']
   )
@@ -1647,7 +1647,7 @@ if (key === 'regular_polygons') {
     seed,
     `Un polígono regular tiene ${v.sides} lados iguales. ¿Cómo se llama?`,
     v.answer,
-    ['Pentágono', 'Hexágono', 'Octógono'].filter(x => x !== v.answer),
+    ['Pentágono', 'Hexágono', 'Octógono', 'Heptágono'].filter(x => x !== v.answer),
     `Un polígono de ${v.sides} lados se llama ${v.answer.toLowerCase()}. Al ser regular, todos sus lados y ángulos son iguales.`,
     ['poligonos_regulares']
   )
