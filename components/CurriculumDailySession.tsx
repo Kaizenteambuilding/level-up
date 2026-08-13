@@ -22,7 +22,23 @@ type SkillState = {
   difficulty: number
   priority: number
 }
-const FIRST_EVAL_UNITS = ['M01', 'M02', 'M03', 'M04', 'M05']
+const ACTIVE_CURRICULUM_UNITS = [
+  'M01',
+  'M02',
+  'M03',
+  'M04',
+  'M05',
+  'M06',
+  'M07',
+  'M08',
+  'M09',
+  'M10',
+  'M11',
+  'M12',
+  'M13',
+  'M14',
+  'M15',
+]
 const SESSION_LENGTH = 10
 
 export default function CurriculumDailySession() {
@@ -94,7 +110,7 @@ if (!forcedSkillId) {
       if (forcedSkillId) {
         skillsQuery = skillsQuery.eq('id', forcedSkillId)
       } else {
-        skillsQuery = skillsQuery.in('unit_id', FIRST_EVAL_UNITS)
+        skillsQuery = skillsQuery.in('unit_id', ACTIVE_CURRICULUM_UNITS)
       }
 
       const { data: skillRows, error: skillsError } = await skillsQuery
