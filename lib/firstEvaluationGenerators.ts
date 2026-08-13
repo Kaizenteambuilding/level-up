@@ -109,120 +109,249 @@ export function generateFirstEvaluationQuestion(
   // M01 · NÚMEROS NATURALES
   // =========================
 
-  if (key === 'natural_place_value') {
-    const thousands = ri(1, 9)
-    const hundreds = ri(0, 9)
-    const tens = ri(0, 9)
-    const units = ri(0, 9)
+ // =========================
+// M01 · NÚMEROS NATURALES
+// =========================
 
-    const n =
-      thousands * 1000 +
-      hundreds * 100 +
-      tens * 10 +
-      units
+if (key === 'natural_place_value') {
+  const digitsByDifficulty = [3, 4, 5, 6, 7]
+  const digits = digitsByDifficulty[d - 1]
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `En el número ${n}, ¿qué cifra ocupa las centenas?`,
-      String(hundreds),
-      [
-        String(thousands),
-        String(tens),
-        String(units),
-      ],
-      `La cifra de las centenas es ${hundreds}.`,
-      ['valor_posicional']
-    )
+  const min = 10 ** (digits - 1)
+  const max = 10 ** digits - 1
+  const n = ri(min, max)
+
+  const positions = [
+    { label: 'unidades', divisor: 1 },
+    { label: 'decenas', divisor: 10 },
+    { label: 'centenas', divisor: 100 },
+    { label: 'unidades de millar', divisor: 1000 },
+    { label: 'decenas de millar', divisor: 10000 },
+    { label: 'centenas de millar', divisor: 100000 },
+    { label: 'unidades de millón', divisor: 1000000 },
+  ].filter((p) => p.divisor < 10 ** digits)
+
+  const position = positions[ri(0, positions.length - 1)]
+  const answer = Math.floor(n / position.divisor) % 10
+
+  const distractors = shuffle(r, [
+    String((answer + 1) % 10),
+    String((answer + 2) % 10),
+    String((answer + 5) % 10),
+    String(Math.floor(n / 10) % 10),
+  ])
+    .filter((x) => x !== String(answer))
+    .slice(0, 3)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En el número ${n}, ¿qué cifra ocupa las ${position.label}?`,
+    String(answer),
+    distractors,
+    `La cifra que ocupa las ${position.label} es ${answer}.`,
+    ['valor_posicional']
+  )
+}
+
+if (key === 'natural_compare') {
+  const ranges = [
+    [10, 99],
+    [100, 999],
+    [1000, 9999],
+    [10000, 99999],
+    [100000, 999999],
+  ]
+
+  const [min, max] = ranges[d - 1]
+
+  let a = ri(min, max)
+  let b = ri(min, max)
+
+  if (d >= 4 && seed % 2 === 0) {
+    const base = ri(min, max - 20)
+    a = base + ri(1, 9)
+    b = base + ri(10, 19)
   }
 
-  if (key === 'natural_compare') {
-    const a = ri(100, 9999)
-    const b = ri(100, 9999)
-    const answer = a > b ? '>' : a < b ? '<' : '='
+  const answer = a > b ? '>' : a < b ? '<' : '='
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Completa: ${a} __ ${b}`,
+    answer,
+    ['<', '>', '=', '≠'].filter((x) => x !== answer),
+    `${a} ${answer} ${b}.`,
+    ['comparacion']
+  )
+}
+
+if (key === 'natural_add_sub') {
+  const maxByDifficulty = [
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+  ]
+
+  const max = maxByDifficulty[d - 1]
+  const add = seed % 2 === 0
+
+  if (add) {
+    const a = ri(Math.floor(max / 10), max)
+    const b = ri(Math.floor(max / 20), max)
+    const result = a + b
 
     return mc(
       skill,
       d,
       seed,
-      `Completa: ${a} __ ${b}`,
-      answer,
-      ['<', '>', '=', '≠'].filter((x) => x !== answer),
-      `${a} ${answer} ${b}.`,
-      ['comparacion']
-    )
-  }
-
-  if (key === 'natural_add_sub') {
-    const a = ri(100, 5000 * d)
-    const b = ri(50, a)
-    const add = seed % 2 === 0
-    const result = add ? a + b : a - b
-
-    return mc(
-      skill,
-      d,
-      seed,
-      add
-        ? `Calcula ${a} + ${b}`
-        : `Calcula ${a} - ${b}`,
+      `Calcula ${a} + ${b}`,
       String(result),
       [
         String(result + 10),
+        String(result - 10),
         String(Math.abs(a - b)),
-        String(result - 1),
       ],
-      `Resultado: ${result}.`,
-      ['calculo_naturales']
+      `${a} + ${b} = ${result}.`,
+      ['suma_naturales']
     )
   }
 
-  if (key === 'natural_mult_div') {
-    const a = ri(2, 12 + d)
-    const b = ri(2, 12 + d)
+  const a = ri(Math.floor(max / 2), max)
+  const b = ri(1, a)
+  const result = a - b
 
-    if (seed % 2 === 0) {
-      const result = a * b
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${a} - ${b}`,
+    String(result),
+    [
+      String(a + b),
+      String(Math.abs(b - a)),
+      String(result + 10),
+    ],
+    `${a} - ${b} = ${result}.`,
+    ['resta_naturales']
+  )
+}
 
-      return mc(
-        skill,
-        d,
-        seed,
-        `Calcula ${a} × ${b}`,
-        String(result),
-        [
-          String(result + a),
-          String(a + b),
-          String(result - b),
-        ],
-        `${a} × ${b} = ${result}.`,
-        ['multiplicacion']
-      )
-    }
-
-    const n = a * b
+if (key === 'natural_mult_div') {
+  if (d === 1) {
+    const a = ri(2, 10)
+    const b = ri(2, 10)
+    const result = a * b
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula ${n} ÷ ${a}`,
-      String(b),
+      `Calcula ${a} × ${b}`,
+      String(result),
       [
-        String(a),
-        String(b + 1),
-        String(n - a),
+        String(a + b),
+        String(result + a),
+        String(result - b),
       ],
-      `${n} ÷ ${a} = ${b}.`,
+      `${a} × ${b} = ${result}.`,
+      ['multiplicacion']
+    )
+  }
+
+  if (d === 2) {
+    const a = ri(2, 12)
+    const b = ri(2, 20)
+    const result = a * b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} × ${b}`,
+      String(result),
+      [
+        String(result + a),
+        String(a + b),
+        String(result - b),
+      ],
+      `${a} × ${b} = ${result}.`,
+      ['multiplicacion']
+    )
+  }
+
+  if (d === 3) {
+    const divisor = ri(2, 12)
+    const quotient = ri(2, 25)
+    const dividend = divisor * quotient
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${dividend} ÷ ${divisor}`,
+      String(quotient),
+      [
+        String(divisor),
+        String(quotient + 1),
+        String(dividend - divisor),
+      ],
+      `${dividend} ÷ ${divisor} = ${quotient}.`,
       ['division']
     )
   }
 
-  if (key === 'operation_priority') {
-    const a = ri(2, 9)
-    const b = ri(2, 8)
-    const c = ri(2, 7)
+  if (d === 4) {
+    const a = ri(12, 99)
+    const b = ri(2, 15)
+    const result = a * b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} × ${b}`,
+      String(result),
+      [
+        String(result + b),
+        String(a + b),
+        String(result - a),
+      ],
+      `${a} × ${b} = ${result}.`,
+      ['multiplicacion_avanzada']
+    )
+  }
+
+  const divisor = ri(11, 25)
+  const quotient = ri(12, 50)
+  const dividend = divisor * quotient
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${dividend} ÷ ${divisor}`,
+    String(quotient),
+    [
+      String(quotient + 1),
+      String(quotient - 1),
+      String(divisor),
+    ],
+    `${dividend} ÷ ${divisor} = ${quotient}.`,
+    ['division_avanzada']
+  )
+}
+
+if (key === 'operation_priority') {
+  if (d === 1) {
+    const a = ri(2, 10)
+    const b = ri(2, 10)
+    const c = ri(2, 10)
     const result = a + b * c
 
     return mc(
@@ -236,15 +365,127 @@ export function generateFirstEvaluationQuestion(
         String(a + b + c),
         String(a * b + c),
       ],
-      `Primero ${b}×${c}=${b * c}; después sumamos ${a}. Resultado: ${result}.`,
+      `Primero ${b} × ${c} = ${b * c}; después sumamos ${a}. Resultado: ${result}.`,
       ['jerarquia_operaciones']
     )
   }
 
-  if (key === 'natural_word_problem') {
-    const boxes = ri(3, 8 + d)
-    const perBox = ri(10, 30 + d * 5)
-    const loose = ri(1, 20)
+  if (d === 2) {
+    const a = ri(2, 15)
+    const b = ri(2, 10)
+    const c = ri(2, 10)
+    const result = a * b + c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} × ${b} + ${c}`,
+      String(result),
+      [
+        String(a * (b + c)),
+        String(a + b + c),
+        String(a * b - c),
+      ],
+      `Primero multiplicamos: ${a} × ${b} = ${a * b}. Después sumamos ${c}. Resultado: ${result}.`,
+      ['jerarquia_operaciones']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(10, 30)
+    const b = ri(2, 8)
+    const c = ri(2, 8)
+    const result = a - b * c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} - ${b} × ${c}`,
+      String(result),
+      [
+        String((a - b) * c),
+        String(a - b - c),
+        String(a + b * c),
+      ],
+      `Primero ${b} × ${c} = ${b * c}; después ${a} - ${b * c} = ${result}.`,
+      ['jerarquia_operaciones']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(2, 9)
+    const b = ri(2, 9)
+    const c = ri(2, 9)
+    const e = ri(2, 9)
+    const result = (a + b) * c - e
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a} + ${b}) × ${c} - ${e}`,
+      String(result),
+      [
+        String(a + b * c - e),
+        String((a + b) * (c - e)),
+        String(result + c),
+      ],
+      `Primero resolvemos el paréntesis: ${a} + ${b} = ${a + b}. Después multiplicamos por ${c} y finalmente restamos ${e}. Resultado: ${result}.`,
+      ['jerarquia_operaciones', 'parentesis']
+    )
+  }
+
+  const a = ri(2, 10)
+  const b = ri(2, 10)
+  const c = ri(2, 8)
+  const e = ri(2, 8)
+  const f = ri(1, 10)
+  const result = a * (b + c) - e * f
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${a} × (${b} + ${c}) - ${e} × ${f}`,
+    String(result),
+    [
+      String(a * b + c - e * f),
+      String((a + b + c) * e),
+      String(result + f),
+    ],
+    `Primero resolvemos el paréntesis y las multiplicaciones. Resultado: ${result}.`,
+    ['jerarquia_operaciones', 'parentesis', 'operaciones_combinadas']
+  )
+}
+
+if (key === 'natural_word_problem') {
+  if (d <= 2) {
+    const boxes = ri(2, 6 + d)
+    const perBox = ri(5, 20 + d * 5)
+    const result = boxes * perBox
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Hay ${boxes} cajas con ${perBox} cromos en cada caja. ¿Cuántos cromos hay en total?`,
+      String(result),
+      [
+        String(boxes + perBox),
+        String(result - perBox),
+        String(result + boxes),
+      ],
+      `${boxes} × ${perBox} = ${result}.`,
+      ['problema_naturales']
+    )
+  }
+
+  if (d === 3) {
+    const boxes = ri(3, 10)
+    const perBox = ri(10, 40)
+    const loose = ri(5, 30)
     const result = boxes * perBox + loose
 
     return mc(
@@ -258,10 +499,57 @@ export function generateFirstEvaluationQuestion(
         String(boxes * perBox),
         String(result - loose),
       ],
-      `${boxes}×${perBox}+${loose}=${result}.`,
-      ['modelizacion_naturales']
+      `${boxes} × ${perBox} + ${loose} = ${result}.`,
+      ['problema_naturales', 'dos_operaciones']
     )
   }
+
+  if (d === 4) {
+    const boxes = ri(4, 12)
+    const perBox = ri(15, 50)
+    const sold = ri(10, 50)
+    const total = boxes * perBox
+    const result = total - sold
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una tienda recibe ${boxes} cajas con ${perBox} cromos cada una. Después vende ${sold} cromos. ¿Cuántos quedan?`,
+      String(result),
+      [
+        String(total),
+        String(total + sold),
+        String(boxes + perBox - sold),
+      ],
+      `Primero ${boxes} × ${perBox} = ${total}. Después ${total} - ${sold} = ${result}.`,
+      ['problema_naturales', 'dos_operaciones']
+    )
+  }
+
+  const groups = ri(3, 8)
+  const boxesPerGroup = ri(2, 6)
+  const perBox = ri(10, 30)
+  const used = ri(10, 50)
+
+  const total = groups * boxesPerGroup * perBox
+  const result = total - used
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Hay ${groups} grupos con ${boxesPerGroup} cajas cada uno y cada caja contiene ${perBox} piezas. Se utilizan ${used} piezas. ¿Cuántas quedan?`,
+    String(result),
+    [
+      String(total),
+      String(groups * boxesPerGroup + perBox - used),
+      String(total + used),
+    ],
+    `Total inicial: ${groups} × ${boxesPerGroup} × ${perBox} = ${total}. Después restamos ${used}. Resultado: ${result}.`,
+    ['problema_naturales', 'varias_operaciones']
+  )
+}
 
   // =========================
   // M02 · POTENCIAS Y RAÍCES
