@@ -2290,6 +2290,130 @@ if (key === 'mode') {
     ['moda']
   )
 }
+
+// ============================================================
+// M15 · PROBABILIDAD
+// ============================================================
+
+// M15S01 · Experimentos aleatorios
+if (key === 'random_experiments') {
+  const variants = [
+    {
+      prompt: '¿Cuál de estas situaciones es un experimento aleatorio?',
+      answer: 'Lanzar un dado',
+      distractors: [
+        'Calcular 7 + 5',
+        'Medir una mesa con una regla',
+        'Escribir el número 10',
+      ],
+      solution: 'En un experimento aleatorio no sabemos de antemano qué resultado concreto ocurrirá.',
+    },
+    {
+      prompt: '¿Cuál de estas situaciones tiene un resultado imprevisible antes de realizarla?',
+      answer: 'Sacar una carta de una baraja mezclada',
+      distractors: [
+        'Sumar 3 + 4',
+        'Contar 10 monedas',
+        'Medir 1 metro',
+      ],
+      solution: 'Sacar una carta de una baraja mezclada es un experimento aleatorio.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['experimentos_aleatorios']
+  )
+}
+
+// M15S02 · Sucesos
+if (key === 'events') {
+  const variants = [
+    {
+      prompt: 'Al lanzar un dado, ¿cuál de estos es un suceso posible?',
+      answer: 'Obtener un número par',
+      distractors: [
+        'Obtener un 8',
+        'Obtener un 0',
+        'Obtener un número mayor que 10',
+      ],
+      solution: 'En un dado pueden salir 1, 2, 3, 4, 5 o 6. Obtener un número par es posible.',
+    },
+    {
+      prompt: 'Al lanzar una moneda, ¿cuál es un suceso seguro?',
+      answer: 'Obtener cara o cruz',
+      distractors: [
+        'Obtener dos caras a la vez',
+        'Obtener un 3',
+        'No obtener ningún resultado',
+      ],
+      solution: 'En una moneda, necesariamente sale cara o cruz.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['sucesos']
+  )
+}
+
+// M15S03 · Casos favorables y posibles
+if (key === 'favorable_possible') {
+  const favorable = ri(1, 4)
+  const possible = favorable + ri(2, 5)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En una experiencia hay ${possible} resultados posibles y ${favorable} son favorables. ¿Cuántos casos favorables hay?`,
+    String(favorable),
+    [
+      String(possible),
+      String(possible - favorable),
+      String(favorable + 1),
+    ],
+    `Los casos favorables son los que cumplen la condición: ${favorable}.`,
+    ['casos_favorables_posibles']
+  )
+}
+
+// M15S04 · Probabilidad de Laplace básica
+if (key === 'laplace_basic') {
+  const favorable = ri(1, 4)
+  const possible = favorable + ri(2, 5)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En una experiencia equiprobable hay ${possible} resultados posibles y ${favorable} favorables. ¿Cuál es la probabilidad?`,
+    `${favorable}/${possible}`,
+    [
+      `${possible}/${favorable}`,
+      `${possible - favorable}/${possible}`,
+      `${favorable}/${possible + 1}`,
+    ],
+    `Probabilidad = casos favorables / casos posibles = ${favorable}/${possible}.`,
+    ['probabilidad_laplace']
+  )
+}
 // Generador de reserva para habilidades aún no implementadas.
   return mc(
     skill,
