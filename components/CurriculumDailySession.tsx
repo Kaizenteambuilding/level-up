@@ -234,10 +234,9 @@ export default function CurriculumDailySession() {
     }))
 
     setFeedback(
-      (ok ? '✓ Correcto. ' : '↻ Incorrecto. ') +
-        question.solution +
-        ` · ${result.xp_awarded} XP · dominio ${result.mastery}/100`
-    )
+  (ok ? '✓ Correcto' : '↻ Incorrecto') +
+    ` · ${result.xp_awarded} XP · dominio ${result.mastery}/100`
+)
   }
 
   function next() {
@@ -423,11 +422,14 @@ export default function CurriculumDailySession() {
         {feedback && (
           <>
             <div
-              className="metric"
-              style={{ marginTop: 16 }}
-            >
-              <b>{feedback}</b>
-            </div>
+  className="metric"
+  style={{ marginTop: 10 }}
+>
+  <b>💡 Por qué</b>
+  <p className="muted" style={{ marginBottom: 0 }}>
+    {question.solution}
+  </p>
+</div>
 
             <button
               className="btn primary"
