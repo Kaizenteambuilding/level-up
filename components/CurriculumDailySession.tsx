@@ -34,6 +34,7 @@ export default function CurriculumDailySession() {
   }, [])
 
   const [playerId, setPlayerId] = useState<string | null>(null)
+const [sessionId, setSessionId] = useState<string | null>(null)
   const [skills, setSkills] = useState<SkillRow[]>([])
   const [states, setStates] = useState<Record<string, SkillState>>({})
   const [question, setQuestion] = useState<GeneratedQuestion | null>(null)
@@ -65,6 +66,25 @@ export default function CurriculumDailySession() {
         setLoading(false)
         return
       }
+if (!forcedSkillId) {
+  const { data: sessionData, error: sessionError } = await supabase
+    .from('study_sessions')
+    .insert({
+      player_id: id,
+      mode: 'daily',
+      phase: 'warmup',
+    })
+    .select('id')
+    .single()
+
+  if (sessionError) {
+    setLoadError('No se pudo crear la sesión: ' + sessionError.message)
+    setLoading(false)
+    return
+  }
+
+  setSessionId(sessionData.id)
+}
 
       let skillsQuery = supabase
         .from('skills')
