@@ -778,6 +778,7 @@ export function generateFirstEvaluationQuestion(
   }
 
   if (key === 'decimal_mult_div') {
+  if (seed % 2 === 0) {
     const a = ri(12, 99) / 10
     const b = ri(2, 9)
     const result = a * b
@@ -793,10 +794,30 @@ export function generateFirstEvaluationQuestion(
         (result * 10).toFixed(1),
         (result / 10).toFixed(2),
       ],
-      `Resultado: ${result.toFixed(1)}.`,
+      `Resultado: ${a.toFixed(1)} × ${b} = ${result.toFixed(1)}.`,
       ['producto_decimales']
     )
   }
+
+  const divisor = ri(2, 9)
+  const quotient = ri(12, 99) / 10
+  const dividend = quotient * divisor
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${dividend.toFixed(1)} ÷ ${divisor}`,
+    quotient.toFixed(1),
+    [
+      (dividend * divisor).toFixed(1),
+      (quotient + divisor).toFixed(1),
+      (quotient / 10).toFixed(2),
+    ],
+    `${dividend.toFixed(1)} ÷ ${divisor} = ${quotient.toFixed(1)}.`,
+    ['division_decimales']
+  )
+}
 
   if (key === 'decimal_round') {
     const n = ri(100, 999) / 100
