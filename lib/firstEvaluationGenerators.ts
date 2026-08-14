@@ -11191,10 +11191,16 @@ if (key === 'regular_polygons') {
   )
 }
 if (key === 'geometry_classification') {
-  const family = ri(0, 4)
+  type ClassificationVariant = {
+    prompt: string
+    answer: string
+    distractors: string[]
+    solution: string
+    tag: string
+  }
 
-  if (d === 1) {
-    const variants = [
+  const variantsByDifficulty: Record<number, ClassificationVariant[]> = {
+    1: [
       {
         prompt: 'Una figura tiene 4 lados iguales y 4 ángulos rectos. ¿Cuál es la clasificación más precisa?',
         answer: 'Cuadrado',
@@ -11203,301 +11209,375 @@ if (key === 'geometry_classification') {
         tag: 'cuadrado_basico',
       },
       {
-        prompt: 'Una figura tiene 4 ángulos rectos y lados opuestos iguales. ¿Cuál es?',
+        prompt: 'Una figura tiene 4 ángulos rectos y sus lados opuestos son iguales. ¿Cuál es?',
         answer: 'Rectángulo',
         distractors: ['Rombo', 'Trapecio', 'Triángulo'],
-        solution: 'Cuatro ángulos rectos identifican un rectángulo; no es necesario que todos los lados sean iguales.',
+        solution: 'Un cuadrilátero con cuatro ángulos rectos es un rectángulo.',
         tag: 'rectangulo_basico',
       },
       {
-        prompt: 'Un triángulo tiene exactamente dos lados iguales. ¿Cuál es?',
+        prompt: 'Un triángulo tiene exactamente dos lados iguales. ¿Cómo se clasifica por sus lados?',
         answer: 'Isósceles',
         distractors: ['Equilátero', 'Escaleno', 'Rectángulo'],
         solution: 'Un triángulo con exactamente dos lados iguales es isósceles.',
         tag: 'isosceles_basico',
       },
       {
-        prompt: 'Una figura tiene un solo par de lados paralelos. ¿Cuál es la clasificación más precisa?',
+        prompt: 'Un triángulo tiene sus tres lados diferentes. ¿Cómo se clasifica por sus lados?',
+        answer: 'Escaleno',
+        distractors: ['Equilátero', 'Isósceles', 'Rectángulo'],
+        solution: 'Si los tres lados son distintos, es escaleno.',
+        tag: 'escaleno_basico',
+      },
+      {
+        prompt: 'Un triángulo tiene sus tres lados iguales. ¿Cómo se clasifica por sus lados?',
+        answer: 'Equilátero',
+        distractors: ['Isósceles', 'Escaleno', 'Rectángulo'],
+        solution: 'Tres lados iguales definen un triángulo equilátero.',
+        tag: 'equilatero_basico',
+      },
+      {
+        prompt: 'Una figura tiene un solo par de lados paralelos. ¿Qué cuadrilátero es?',
         answer: 'Trapecio',
-        distractors: ['Cuadrado', 'Rombo', 'Triángulo'],
-        solution: 'Un cuadrilátero con un único par de lados paralelos es un trapecio.',
+        distractors: ['Cuadrado', 'Rombo', 'Rectángulo'],
+        solution: 'Un cuadrilátero con un solo par de lados paralelos es un trapecio.',
         tag: 'trapecio_basico',
       },
       {
-        prompt: 'Un triángulo tiene sus tres lados diferentes. ¿Cómo se clasifica según sus lados?',
+        prompt: 'Una figura tiene cuatro lados iguales, pero no todos sus ángulos son rectos. ¿Cuál puede ser?',
+        answer: 'Rombo',
+        distractors: ['Rectángulo', 'Trapecio', 'Triángulo'],
+        solution: 'Un rombo tiene cuatro lados iguales y no necesita cuatro ángulos rectos.',
+        tag: 'rombo_basico',
+      },
+      {
+        prompt: '¿Cuál de estas figuras tiene exactamente tres lados?',
+        answer: 'Triángulo',
+        distractors: ['Cuadrado', 'Pentágono', 'Trapecio'],
+        solution: 'Todo triángulo tiene exactamente tres lados.',
+        tag: 'tres_lados',
+      },
+      {
+        prompt: '¿Cuál de estas figuras tiene cuatro lados?',
+        answer: 'Cuadrilátero',
+        distractors: ['Triángulo', 'Pentágono', 'Hexágono'],
+        solution: 'Los cuadriláteros tienen cuatro lados.',
+        tag: 'cuatro_lados',
+      },
+      {
+        prompt: '¿Qué figura tiene cuatro lados iguales y puede no tener ángulos rectos?',
+        answer: 'Rombo',
+        distractors: ['Rectángulo', 'Trapecio', 'Triángulo'],
+        solution: 'La propiedad característica indicada es la de un rombo.',
+        tag: 'rombo_definicion',
+      },
+    ],
+    2: [
+      {
+        prompt: 'Un triángulo tiene un ángulo de 90°. ¿Cómo se clasifica según sus ángulos?',
+        answer: 'Rectángulo',
+        distractors: ['Acutángulo', 'Obtusángulo', 'Equilátero'],
+        solution: 'Un triángulo con un ángulo de 90° es rectángulo.',
+        tag: 'triangulo_rectangulo',
+      },
+      {
+        prompt: 'Un triángulo tiene un ángulo de 120°. ¿Cómo se clasifica según sus ángulos?',
+        answer: 'Obtusángulo',
+        distractors: ['Acutángulo', 'Rectángulo', 'Equilátero'],
+        solution: 'Al tener un ángulo mayor de 90°, es obtusángulo.',
+        tag: 'triangulo_obtuso',
+      },
+      {
+        prompt: 'Un triángulo tiene sus tres ángulos menores de 90°. ¿Cómo se clasifica?',
+        answer: 'Acutángulo',
+        distractors: ['Rectángulo', 'Obtusángulo', 'Escaleno'],
+        solution: 'Si los tres ángulos son agudos, el triángulo es acutángulo.',
+        tag: 'triangulo_agudo',
+      },
+      {
+        prompt: 'Una figura tiene dos pares de lados opuestos paralelos y cuatro ángulos rectos. ¿Cuál puede ser?',
+        answer: 'Rectángulo',
+        distractors: ['Trapecio', 'Triángulo', 'Pentágono'],
+        solution: 'Un rectángulo tiene dos pares de lados paralelos y cuatro ángulos rectos.',
+        tag: 'rectangulo_propiedades',
+      },
+      {
+        prompt: '¿Cuál de estas descripciones corresponde a un cuadrado?',
+        answer: 'Cuatro lados iguales y cuatro ángulos rectos',
+        distractors: ['Dos lados iguales y un ángulo recto', 'Un solo par de lados paralelos', 'Tres lados iguales'],
+        solution: 'Un cuadrado tiene cuatro lados iguales y cuatro ángulos rectos.',
+        tag: 'describir_cuadrado',
+      },
+      {
+        prompt: '¿Cuál de estas descripciones corresponde a un rombo?',
+        answer: 'Cuatro lados iguales',
+        distractors: ['Exactamente tres lados', 'Cuatro ángulos rectos obligatoriamente', 'Un solo par de lados paralelos'],
+        solution: 'La propiedad básica de un rombo es tener cuatro lados iguales.',
+        tag: 'describir_rombo',
+      },
+      {
+        prompt: 'Un triángulo tiene ángulos de 50°, 60° y 70°. ¿Cómo se clasifica según sus ángulos?',
+        answer: 'Acutángulo',
+        distractors: ['Rectángulo', 'Obtusángulo', 'Equilátero'],
+        solution: 'Los tres ángulos son menores de 90°.',
+        tag: 'angulos_50_60_70',
+      },
+      {
+        prompt: 'Un triángulo tiene ángulos de 30°, 60° y 90°. ¿Cómo se clasifica según sus ángulos?',
+        answer: 'Rectángulo',
+        distractors: ['Acutángulo', 'Obtusángulo', 'Isósceles'],
+        solution: 'Tiene un ángulo de 90°, así que es rectángulo.',
+        tag: 'angulos_30_60_90',
+      },
+      {
+        prompt: 'Un triángulo tiene ángulos de 100°, 40° y 40°. ¿Cómo se clasifica según sus ángulos?',
+        answer: 'Obtusángulo',
+        distractors: ['Acutángulo', 'Rectángulo', 'Equilátero'],
+        solution: 'Tiene un ángulo de 100°, mayor de 90°.',
+        tag: 'angulos_100_40_40',
+      },
+      {
+        prompt: 'Un cuadrilátero tiene dos pares de lados paralelos y cuatro lados iguales. ¿Cuál puede ser?',
+        answer: 'Rombo',
+        distractors: ['Trapecio', 'Triángulo', 'Pentágono'],
+        solution: 'Cuatro lados iguales y lados opuestos paralelos describen un rombo.',
+        tag: 'rombo_paralelos',
+      },
+    ],
+    3: [
+      {
+        prompt: '¿Cuál de estas afirmaciones es correcta?',
+        answer: 'Todo cuadrado es también un rectángulo',
+        distractors: ['Todo rectángulo es un cuadrado', 'Todo rombo tiene cuatro ángulos rectos', 'Todo trapecio tiene cuatro lados iguales'],
+        solution: 'Un cuadrado cumple todas las propiedades de un rectángulo.',
+        tag: 'inclusion_cuadrado_rectangulo',
+      },
+      {
+        prompt: '¿Cuál de estas afirmaciones es correcta sobre un cuadrado?',
+        answer: 'También puede clasificarse como rombo',
+        distractors: ['Nunca es un rectángulo', 'Tiene solo un par de lados paralelos', 'Sus lados no tienen por qué ser iguales'],
+        solution: 'Tiene cuatro lados iguales, por lo que también cumple la definición de rombo.',
+        tag: 'inclusion_cuadrado_rombo',
+      },
+      {
+        prompt: 'Un cuadrilátero tiene cuatro lados iguales y cuatro ángulos rectos. ¿Qué nombre es el más específico?',
+        answer: 'Cuadrado',
+        distractors: ['Rombo', 'Rectángulo', 'Paralelogramo'],
+        solution: 'Aunque cumple varias categorías, cuadrado es la más específica.',
+        tag: 'nombre_mas_especifico',
+      },
+      {
+        prompt: 'Un triángulo tiene lados 5 cm, 5 cm y 8 cm. ¿Cuál es su clasificación por lados?',
+        answer: 'Isósceles',
+        distractors: ['Equilátero', 'Escaleno', 'Rectángulo'],
+        solution: 'Tiene exactamente dos lados iguales.',
+        tag: 'clasificar_lados_5_5_8',
+      },
+      {
+        prompt: 'Un triángulo tiene lados 4 cm, 5 cm y 6 cm. ¿Cómo se clasifica por sus lados?',
         answer: 'Escaleno',
         distractors: ['Equilátero', 'Isósceles', 'Rectángulo'],
-        solution: 'Si los tres lados son distintos, el triángulo es escaleno.',
-        tag: 'escaleno_basico',
+        solution: 'Los tres lados tienen longitudes distintas.',
+        tag: 'clasificar_lados_4_5_6',
       },
-    ]
-    const v = variants[family]
-    return mc(
-      skill, d, seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['clasificacion_geometrica_razonada', `family:${v.tag}`]
-    )
+      {
+        prompt: 'Un triángulo tiene ángulos 45°, 45° y 90°. ¿Cuál es su clasificación completa?',
+        answer: 'Isósceles rectángulo',
+        distractors: ['Escaleno rectángulo', 'Equilátero acutángulo', 'Isósceles obtusángulo'],
+        solution: 'Tiene dos ángulos iguales y uno recto.',
+        tag: 'isosceles_rectangulo',
+      },
+      {
+        prompt: '¿Qué propiedad basta para asegurar que un triángulo es equilátero?',
+        answer: 'Que sus tres lados sean iguales',
+        distractors: ['Que tenga dos lados iguales', 'Que tenga un ángulo recto', 'Que tenga dos ángulos agudos'],
+        solution: 'Tres lados iguales definen un triángulo equilátero.',
+        tag: 'condicion_equilatero',
+      },
+      {
+        prompt: '¿Qué propiedad basta para asegurar que un cuadrilátero es un rectángulo?',
+        answer: 'Que tenga cuatro ángulos rectos',
+        distractors: ['Que tenga dos lados iguales', 'Que tenga cuatro lados', 'Que tenga una diagonal'],
+        solution: 'Un cuadrilátero con cuatro ángulos rectos es un rectángulo.',
+        tag: 'condicion_rectangulo',
+      },
+      {
+        prompt: 'Un cuadrado comparte con un rectángulo la propiedad de...',
+        answer: 'Tener cuatro ángulos rectos',
+        distractors: ['Tener siempre cuatro lados de distinta longitud', 'Tener un solo par de lados paralelos', 'Tener tres vértices'],
+        solution: 'Ambos tienen cuatro ángulos de 90°.',
+        tag: 'propiedad_comun_rectangulo',
+      },
+      {
+        prompt: 'Un cuadrado comparte con un rombo la propiedad de...',
+        answer: 'Tener cuatro lados iguales',
+        distractors: ['Tener siempre cuatro ángulos rectos', 'Tener un solo par de lados paralelos', 'Tener tres lados'],
+        solution: 'Tanto cuadrado como rombo tienen cuatro lados iguales.',
+        tag: 'propiedad_comun_rombo',
+      },
+    ],
+    4: [
+      {
+        prompt: 'Una figura tiene cuatro lados iguales, lados opuestos paralelos y ningún ángulo recto. ¿Cuál es la clasificación más precisa?',
+        answer: 'Rombo',
+        distractors: ['Cuadrado', 'Rectángulo', 'Trapecio'],
+        solution: 'Tiene cuatro lados iguales pero no ángulos rectos, así que es rombo y no cuadrado.',
+        tag: 'rombo_preciso',
+      },
+      {
+        prompt: '¿Qué información adicional permite asegurar que un rectángulo es también un cuadrado?',
+        answer: 'Que sus cuatro lados sean iguales',
+        distractors: ['Que tenga cuatro ángulos rectos', 'Que sus lados opuestos sean paralelos', 'Que tenga dos diagonales'],
+        solution: 'Para pasar de rectángulo a cuadrado hace falta que los cuatro lados sean iguales.',
+        tag: 'rectangulo_a_cuadrado',
+      },
+      {
+        prompt: '¿Cuál de estas descripciones es imposible para un triángulo?',
+        answer: 'Tener dos ángulos de 100°',
+        distractors: ['Tener un ángulo de 90°', 'Tener tres ángulos de 60°', 'Tener un ángulo de 120°'],
+        solution: 'Dos ángulos de 100° ya sumarían 200°.',
+        tag: 'descripcion_imposible',
+      },
+      {
+        prompt: 'Un cuadrilátero tiene exactamente un par de lados paralelos. ¿Qué clasificación es la más adecuada?',
+        answer: 'Trapecio',
+        distractors: ['Rectángulo', 'Rombo', 'Cuadrado'],
+        solution: 'Con exactamente un par de lados paralelos se clasifica como trapecio.',
+        tag: 'trapecio_preciso',
+      },
+      {
+        prompt: 'Un triángulo tiene dos lados iguales y un ángulo de 100°. ¿Qué podemos afirmar?',
+        answer: 'Es isósceles y obtusángulo',
+        distractors: ['Es equilátero y acutángulo', 'Es escaleno y rectángulo', 'Es isósceles y rectángulo'],
+        solution: 'Dos lados iguales lo hacen isósceles; un ángulo mayor de 90° lo hace obtusángulo.',
+        tag: 'doble_clasificacion',
+      },
+      {
+        prompt: 'Un triángulo tiene dos ángulos de 45°. ¿Cuál es su clasificación completa?',
+        answer: 'Isósceles rectángulo',
+        distractors: ['Equilátero acutángulo', 'Escaleno rectángulo', 'Isósceles obtusángulo'],
+        solution: 'El tercer ángulo es 90° y los dos ángulos iguales implican dos lados iguales.',
+        tag: '45_45_clasificacion',
+      },
+      {
+        prompt: '¿Cuál de estas condiciones NO basta por sí sola para asegurar que un cuadrilátero sea cuadrado?',
+        answer: 'Tener cuatro lados iguales',
+        distractors: ['Tener cuatro lados iguales y cuatro ángulos rectos', 'Ser rectángulo y tener cuatro lados iguales', 'Ser rombo y tener un ángulo recto'],
+        solution: 'Cuatro lados iguales también pueden describir un rombo no cuadrado.',
+        tag: 'condicion_no_suficiente',
+      },
+      {
+        prompt: 'Un cuadrilátero es rectángulo y además sus lados consecutivos tienen la misma longitud. ¿Qué figura es?',
+        answer: 'Cuadrado',
+        distractors: ['Trapecio', 'Rombo no cuadrado', 'Triángulo'],
+        solution: 'Un rectángulo con lados consecutivos iguales tiene los cuatro lados iguales: es cuadrado.',
+        tag: 'rectangulo_lados_iguales',
+      },
+      {
+        prompt: 'Un rombo tiene un ángulo de 90°. ¿Qué clasificación más específica recibe?',
+        answer: 'Cuadrado',
+        distractors: ['Trapecio', 'Rectángulo no cuadrado', 'Triángulo'],
+        solution: 'En un rombo, un ángulo recto obliga a que los cuatro sean rectos; por tanto es cuadrado.',
+        tag: 'rombo_angulo_recto',
+      },
+      {
+        prompt: 'Un triángulo tiene lados 6 cm, 6 cm y 6 cm. ¿Qué clasificación por ángulos se deduce?',
+        answer: 'Acutángulo',
+        distractors: ['Rectángulo', 'Obtusángulo', 'No se puede saber'],
+        solution: 'Todo equilátero tiene tres ángulos de 60°, así que es acutángulo.',
+        tag: 'equilatero_a_acutangulo',
+      },
+    ],
+    5: [
+      {
+        prompt: '¿Qué información adicional permite distinguir con seguridad un cuadrado de un rectángulo no cuadrado?',
+        answer: 'Que los cuatro lados tengan la misma longitud',
+        distractors: ['Que tenga cuatro ángulos rectos', 'Que tenga dos pares de lados paralelos', 'Que tenga cuatro vértices'],
+        solution: 'Ambos tienen ángulos rectos; el cuadrado además tiene los cuatro lados iguales.',
+        tag: 'distinguir_cuadrado_rectangulo',
+      },
+      {
+        prompt: 'Sabemos que un cuadrilátero tiene cuatro lados iguales. ¿Qué NO podemos asegurar?',
+        answer: 'Que tenga cuatro ángulos rectos',
+        distractors: ['Que es un rombo', 'Que sus cuatro lados tienen la misma longitud', 'Que tiene cuatro vértices'],
+        solution: 'Un rombo puede no tener ángulos rectos.',
+        tag: 'informacion_insuficiente',
+      },
+      {
+        prompt: '¿Qué ejemplo demuestra que la afirmación “todo rectángulo es un cuadrado” es falsa?',
+        answer: 'Un rectángulo de 6 cm por 4 cm',
+        distractors: ['Un cuadrado de lado 5 cm', 'Un rombo de lado 4 cm', 'Un triángulo equilátero'],
+        solution: 'Tiene cuatro ángulos rectos, pero no cuatro lados iguales.',
+        tag: 'contraejemplo_rectangulo',
+      },
+      {
+        prompt: 'Un cuadrilátero tiene lados opuestos paralelos y todos sus ángulos iguales. ¿Cuál es la conclusión más precisa sin conocer la longitud de sus lados?',
+        answer: 'Es un rectángulo, pero no podemos asegurar que sea cuadrado',
+        distractors: ['Es necesariamente un cuadrado', 'Es necesariamente un rombo', 'Es un trapecio con un solo par de lados paralelos'],
+        solution: 'Cuatro ángulos iguales son rectos; sin lados iguales no puede asegurarse que sea cuadrado.',
+        tag: 'conclusion_precisa',
+      },
+      {
+        prompt: '¿Cuál de estas afirmaciones sobre la clasificación geométrica es falsa?',
+        answer: 'Todo rombo es un cuadrado',
+        distractors: ['Todo cuadrado es un rombo', 'Todo cuadrado es un rectángulo', 'Todo cuadrado es un cuadrilátero'],
+        solution: 'Un rombo no necesita tener ángulos rectos.',
+        tag: 'afirmacion_falsa',
+      },
+      {
+        prompt: 'Un triángulo es isósceles y uno de sus ángulos mide 100°. ¿Cuánto miden los otros dos ángulos?',
+        answer: '40° y 40°',
+        distractors: ['80° y 0°', '50° y 30°', '100° y 100°'],
+        solution: 'Quedan 80° y, al ser isósceles, se reparten en dos ángulos iguales de 40°.',
+        tag: 'isosceles_100',
+      },
+      {
+        prompt: 'Un cuadrilátero es a la vez rectángulo y rombo. ¿Qué figura debe ser?',
+        answer: 'Cuadrado',
+        distractors: ['Trapecio', 'Paralelogramo no rectangular', 'Triángulo'],
+        solution: 'Ser rectángulo aporta ángulos rectos y ser rombo aporta cuatro lados iguales.',
+        tag: 'interseccion_rectangulo_rombo',
+      },
+      {
+        prompt: '¿Cuál es el mejor contraejemplo para “todo cuadrilátero con cuatro lados iguales tiene cuatro ángulos rectos”?',
+        answer: 'Un rombo no cuadrado',
+        distractors: ['Un cuadrado', 'Un rectángulo de 6 por 4', 'Un trapecio'],
+        solution: 'Un rombo no cuadrado tiene cuatro lados iguales y no tiene cuatro ángulos rectos.',
+        tag: 'contraejemplo_cuatro_lados',
+      },
+      {
+        prompt: 'Un triángulo tiene dos ángulos iguales y ninguno mide 90°. ¿Qué podemos asegurar sobre sus lados?',
+        answer: 'Tiene al menos dos lados iguales',
+        distractors: ['Los tres lados son distintos', 'Los tres lados son iguales necesariamente', 'Tiene un lado de longitud 90'],
+        solution: 'Ángulos iguales se oponen a lados iguales; por tanto es al menos isósceles.',
+        tag: 'angulos_iguales_lados',
+      },
+      {
+        prompt: '¿Qué conjunto de propiedades describe necesariamente un cuadrado?',
+        answer: 'Cuatro lados iguales, cuatro ángulos rectos y dos pares de lados paralelos',
+        distractors: ['Cuatro lados iguales y un solo par de lados paralelos', 'Cuatro ángulos rectos y tres lados iguales', 'Dos lados iguales y ningún lado paralelo'],
+        solution: 'El cuadrado reúne simultáneamente esas tres propiedades.',
+        tag: 'propiedades_necesarias_cuadrado',
+      },
+    ],
   }
 
-  if (d === 2) {
-    if (family === 0) {
-      return mc(
-        skill, d, seed,
-        'Un triángulo tiene un ángulo de 90°. ¿Cómo se clasifica según sus ángulos?',
-        'Rectángulo',
-        ['Acutángulo', 'Obtusángulo', 'Equilátero'],
-        'Un triángulo con un ángulo recto es rectángulo.',
-        ['clasificacion_geometrica_razonada', 'family:triangulo_rectangulo']
-      )
-    }
-
-    if (family === 1) {
-      return mc(
-        skill, d, seed,
-        'Un triángulo tiene un ángulo de 120°. ¿Cómo se clasifica según sus ángulos?',
-        'Obtusángulo',
-        ['Acutángulo', 'Rectángulo', 'Equilátero'],
-        'Al tener un ángulo mayor de 90°, es obtusángulo.',
-        ['clasificacion_geometrica_razonada', 'family:triangulo_obtuso']
-      )
-    }
-
-    if (family === 2) {
-      return mc(
-        skill, d, seed,
-        'Un triángulo tiene tres ángulos menores de 90°. ¿Cómo se clasifica según sus ángulos?',
-        'Acutángulo',
-        ['Rectángulo', 'Obtusángulo', 'Escaleno'],
-        'Si los tres ángulos son agudos, el triángulo es acutángulo.',
-        ['clasificacion_geometrica_razonada', 'family:triangulo_agudo']
-      )
-    }
-
-    if (family === 3) {
-      return mc(
-        skill, d, seed,
-        'Una figura tiene cuatro lados iguales, pero no todos sus ángulos son rectos. ¿Cuál puede ser?',
-        'Rombo',
-        ['Rectángulo', 'Trapecio', 'Triángulo'],
-        'Un rombo tiene cuatro lados iguales y no necesita tener cuatro ángulos rectos.',
-        ['clasificacion_geometrica_razonada', 'family:rombo_basico']
-      )
-    }
-
-    return mc(
-      skill, d, seed,
-      'Una figura tiene dos pares de lados opuestos paralelos y cuatro ángulos rectos. ¿Cuál puede ser?',
-      'Rectángulo',
-      ['Trapecio', 'Triángulo', 'Pentágono'],
-      'Un rectángulo tiene dos pares de lados paralelos y cuatro ángulos rectos.',
-      ['clasificacion_geometrica_razonada', 'family:rectangulo_propiedades']
-    )
-  }
-
-  if (d === 3) {
-    if (family === 0) {
-      return mc(
-        skill, d, seed,
-        '¿Cuál de estas afirmaciones es correcta?',
-        'Todo cuadrado es también un rectángulo',
-        [
-          'Todo rectángulo es un cuadrado',
-          'Todo rombo tiene cuatro ángulos rectos',
-          'Todo trapecio tiene cuatro lados iguales',
-        ],
-        'Un cuadrado cumple todas las propiedades de un rectángulo y además tiene cuatro lados iguales.',
-        ['clasificacion_geometrica_razonada', 'family:inclusion_cuadrado_rectangulo']
-      )
-    }
-
-    if (family === 1) {
-      return mc(
-        skill, d, seed,
-        '¿Cuál de estas afirmaciones es correcta?',
-        'Todo cuadrado es también un rombo',
-        [
-          'Todo rombo es un cuadrado',
-          'Todo rectángulo es un rombo',
-          'Todo trapecio es un cuadrado',
-        ],
-        'El cuadrado tiene los cuatro lados iguales, por lo que cumple la definición de rombo.',
-        ['clasificacion_geometrica_razonada', 'family:inclusion_cuadrado_rombo']
-      )
-    }
-
-    if (family === 2) {
-      return mc(
-        skill, d, seed,
-        'Un cuadrilátero tiene cuatro lados iguales y cuatro ángulos rectos. ¿Qué nombre es el más específico?',
-        'Cuadrado',
-        ['Rombo', 'Rectángulo', 'Paralelogramo'],
-        'Aunque también es rombo y rectángulo, el nombre más específico es cuadrado.',
-        ['clasificacion_geometrica_razonada', 'family:nombre_mas_especifico']
-      )
-    }
-
-    if (family === 3) {
-      return mc(
-        skill, d, seed,
-        'Un triángulo tiene lados 5 cm, 5 cm y 8 cm. ¿Cuál es su clasificación por lados?',
-        'Isósceles',
-        ['Equilátero', 'Escaleno', 'Rectángulo'],
-        'Tiene exactamente dos lados iguales, por lo que es isósceles.',
-        ['clasificacion_geometrica_razonada', 'family:clasificar_lados_numericos']
-      )
-    }
-
-    return mc(
-      skill, d, seed,
-      'Un triángulo tiene ángulos 50°, 60° y 70°. ¿Cómo se clasifica según sus ángulos?',
-      'Acutángulo',
-      ['Rectángulo', 'Obtusángulo', 'Equilátero'],
-      'Los tres ángulos son menores de 90°, así que es acutángulo.',
-      ['clasificacion_geometrica_razonada', 'family:clasificar_angulos_numericos']
-    )
-  }
-
-  if (d === 4) {
-    if (family === 0) {
-      return mc(
-        skill, d, seed,
-        'Una figura tiene cuatro lados iguales, lados opuestos paralelos y ningún ángulo recto. ¿Cuál es la clasificación más precisa?',
-        'Rombo',
-        ['Cuadrado', 'Rectángulo', 'Trapecio'],
-        'Los cuatro lados iguales identifican un rombo; al no tener ángulos rectos, no es un cuadrado.',
-        ['clasificacion_geometrica_razonada', 'family:rombo_preciso']
-      )
-    }
-
-    if (family === 1) {
-      return mc(
-        skill, d, seed,
-        '¿Qué información adicional permite asegurar que un rectángulo es también un cuadrado?',
-        'Que sus cuatro lados sean iguales',
-        [
-          'Que tenga cuatro ángulos rectos',
-          'Que sus lados opuestos sean paralelos',
-          'Que tenga dos diagonales',
-        ],
-        'Todo rectángulo ya tiene ángulos rectos y lados opuestos paralelos; para ser cuadrado necesita cuatro lados iguales.',
-        ['clasificacion_geometrica_razonada', 'family:rectangulo_a_cuadrado']
-      )
-    }
-
-    if (family === 2) {
-      return mc(
-        skill, d, seed,
-        '¿Cuál de estas descripciones es imposible para un triángulo?',
-        'Tener dos ángulos de 100°',
-        [
-          'Tener un ángulo de 90°',
-          'Tener tres ángulos de 60°',
-          'Tener un ángulo de 120°',
-        ],
-        'Dos ángulos de 100° ya sumarían 200°, más de los 180° de un triángulo.',
-        ['clasificacion_geometrica_razonada', 'family:descripcion_imposible']
-      )
-    }
-
-    if (family === 3) {
-      return mc(
-        skill, d, seed,
-        'Un cuadrilátero tiene exactamente un par de lados paralelos. ¿Qué clasificación es la más adecuada?',
-        'Trapecio',
-        ['Rectángulo', 'Rombo', 'Cuadrado'],
-        'Con exactamente un par de lados paralelos se clasifica como trapecio.',
-        ['clasificacion_geometrica_razonada', 'family:trapecio_preciso']
-      )
-    }
-
-    return mc(
-      skill, d, seed,
-      'Un triángulo tiene dos lados iguales y un ángulo de 100°. ¿Qué podemos afirmar?',
-      'Es isósceles y obtusángulo',
-      [
-        'Es equilátero y acutángulo',
-        'Es escaleno y rectángulo',
-        'Es isósceles y rectángulo',
-      ],
-      'Dos lados iguales lo hacen isósceles y un ángulo mayor de 90° lo hace obtusángulo.',
-      ['clasificacion_geometrica_razonada', 'family:doble_clasificacion']
-    )
-  }
-
-  if (family === 0) {
-    return mc(
-      skill, d, seed,
-      '¿Qué información adicional permite distinguir con seguridad un cuadrado de un rectángulo no cuadrado?',
-      'Que los cuatro lados tengan la misma longitud',
-      [
-        'Que tenga cuatro ángulos rectos',
-        'Que tenga dos pares de lados paralelos',
-        'Que tenga cuatro vértices',
-      ],
-      'Ambos tienen cuatro ángulos rectos y lados opuestos paralelos; el cuadrado además tiene los cuatro lados iguales.',
-      ['clasificacion_geometrica_razonada', 'family:distinguir_cuadrado_rectangulo', 'dificultad_alta']
-    )
-  }
-
-  if (family === 1) {
-    return mc(
-      skill, d, seed,
-      'Sabemos que un cuadrilátero tiene cuatro lados iguales. ¿Qué NO podemos asegurar?',
-      'Que tenga cuatro ángulos rectos',
-      [
-        'Que es un rombo',
-        'Que sus cuatro lados tienen la misma longitud',
-        'Que tiene cuatro vértices',
-      ],
-      'Un rombo puede no tener ángulos rectos; hacen falta más datos para asegurar que sea cuadrado.',
-      ['clasificacion_geometrica_razonada', 'family:informacion_insuficiente', 'dificultad_alta']
-    )
-  }
-
-  if (family === 2) {
-    return mc(
-      skill, d, seed,
-      '¿Qué ejemplo demuestra que la afirmación “todo rectángulo es un cuadrado” es falsa?',
-      'Un rectángulo de 6 cm por 4 cm',
-      [
-        'Un cuadrado de lado 5 cm',
-        'Un rombo de lado 4 cm',
-        'Un triángulo equilátero',
-      ],
-      'Un rectángulo de 6 por 4 tiene cuatro ángulos rectos, pero no cuatro lados iguales.',
-      ['clasificacion_geometrica_razonada', 'family:contraejemplo_rectangulo', 'dificultad_alta']
-    )
-  }
-
-  if (family === 3) {
-    return mc(
-      skill, d, seed,
-      'Un triángulo tiene dos ángulos de 45°. ¿Cuál es su clasificación completa?',
-      'Isósceles rectángulo',
-      [
-        'Equilátero acutángulo',
-        'Escaleno rectángulo',
-        'Isósceles obtusángulo',
-      ],
-      'El tercer ángulo mide 90°. Dos ángulos iguales implican dos lados iguales: es isósceles rectángulo.',
-      ['clasificacion_geometrica_razonada', 'family:clasificacion_completa_triangulo', 'dificultad_alta']
-    )
-  }
+  const variants = variantsByDifficulty[d]
+  const v = variants[ri(0, variants.length - 1)]
 
   return mc(
-    skill, d, seed,
-    'Un cuadrilátero tiene lados opuestos paralelos y todos sus ángulos iguales. ¿Cuál es la conclusión más precisa que puede asegurarse sin conocer la longitud de los lados?',
-    'Es un rectángulo, pero no podemos asegurar que sea cuadrado',
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
     [
-      'Es necesariamente un cuadrado',
-      'Es necesariamente un rombo',
-      'Es necesariamente un trapecio con un solo par de lados paralelos',
-    ],
-    'Cuatro ángulos iguales en un cuadrilátero son de 90°. Sin saber si los cuatro lados son iguales, no podemos asegurar que sea cuadrado.',
-    ['clasificacion_geometrica_razonada', 'family:conclusion_precisa', 'dificultad_alta']
+      'clasificacion_geometrica_razonada',
+      `family:${v.tag}`,
+      `dificultad_${d}`,
+    ]
   )
 }
 

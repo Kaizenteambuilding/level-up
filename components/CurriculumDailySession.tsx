@@ -255,11 +255,16 @@ let nextQuestion = generateFirstEvaluationQuestion(
   candidateSeed
 )
 
-for (let attempt = 0; attempt < 30; attempt++) {
+for (let attempt = 0; attempt < 80; attempt++) {
   const template = questionTemplate(nextQuestion.prompt)
   const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
 
-  const repeatsTemplate = recentTemplates.current.includes(template)
+  // Si el generador identifica una familia pedagógica, esa familia es la
+  // unidad correcta de anti-repetición. No bloqueamos dos familias distintas
+  // solo porque al normalizar números sus textos se parezcan.
+  const repeatsTemplate = family
+    ? false
+    : recentTemplates.current.includes(template)
   const repeatsFamily = family
     ? recentFamilies.current.includes(`${skill.id}:${family}`)
     : false
@@ -268,8 +273,10 @@ for (let attempt = 0; attempt < 30; attempt++) {
     break
   }
 
+  // Saltos bien separados evitan que el LCG de la sesión y el LCG interno
+  // del generador recorran siempre el mismo subconjunto de familias.
   candidateSeed =
-    (Math.imul(candidateSeed, 1664525) + 1013904223) >>> 0
+    (seed + Math.imul(attempt + 1, 0x9e3779b9)) >>> 0
 
   nextQuestion = generateFirstEvaluationQuestion(
     skill,
@@ -293,7 +300,7 @@ if (family) {
   recentFamilies.current = [
     familyKey,
     ...recentFamilies.current.filter((item) => item !== familyKey),
-  ].slice(0, 3)
+  ].slice(0, skill.id === 'M11S06' ? 9 : 3)
 }
 
 setQuestion(nextQuestion)
