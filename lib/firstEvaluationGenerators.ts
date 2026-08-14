@@ -7054,103 +7054,207 @@ if (key === 'triangle_types') {
 }
 
 if (key === 'quadrilateral_types') {
+  const names = ['Cuadrado', 'Rectángulo', 'Rombo', 'Paralelogramo', 'Trapecio']
+  const otherNames = (answer: string) => names.filter((x) => x !== answer).slice(0, 3)
+
+  // 25 familias pedagógicas reales: 5 por nivel de dificultad.
   if (d === 1) {
-    const variants = [
-      {
-        prompt: 'Tiene cuatro lados iguales y cuatro ángulos rectos. ¿Qué figura es?',
-        answer: 'Cuadrado',
-      },
-      {
-        prompt: 'Tiene cuatro ángulos rectos y los lados opuestos iguales. ¿Qué figura es?',
-        answer: 'Rectángulo',
-      },
-      {
-        prompt: 'Tiene cuatro lados iguales, pero sus ángulos no tienen por qué ser rectos. ¿Qué figura es?',
-        answer: 'Rombo',
-      },
-      {
-        prompt: 'Tiene un solo par de lados paralelos. ¿Qué tipo de cuadrilátero es?',
-        answer: 'Trapecio',
-      },
-    ]
+    const family = ri(0, 4)
 
-    const v = variants[ri(0, variants.length - 1)]
+    if (family === 0) {
+      const variants = [
+        ['Tiene cuatro lados iguales y cuatro ángulos rectos.', 'Cuadrado', 'Un cuadrado cumple simultáneamente ambas propiedades.'],
+        ['Tiene cuatro ángulos rectos y los lados opuestos son iguales.', 'Rectángulo', 'Un rectángulo tiene cuatro ángulos de 90° y lados opuestos iguales.'],
+        ['Tiene cuatro lados iguales, sin exigir ángulos rectos.', 'Rombo', 'La propiedad característica indicada es la de un rombo.'],
+        ['Tiene dos pares de lados opuestos paralelos.', 'Paralelogramo', 'Un paralelogramo tiene sus dos pares de lados opuestos paralelos.'],
+        ['Tiene exactamente un par de lados paralelos.', 'Trapecio', 'Con la convención usada aquí, un trapecio tiene exactamente un par de lados paralelos.'],
+      ] as const
+      const v = variants[ri(0, variants.length - 1)]
+      return mc(skill, d, seed, `${v[0]} ¿Qué cuadrilátero describe?`, v[1], otherNames(v[1]), v[2], ['cuadrilateros', 'family:identify_by_properties'])
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      ['Cuadrado', 'Rectángulo', 'Rombo', 'Trapecio'].filter(
-        (x) => x !== v.answer
-      ),
-      `La descripción corresponde a un ${v.answer.toLowerCase()}.`,
-      ['cuadrilateros']
-    )
+    if (family === 1) {
+      const answer = ['Cuadrado', 'Rectángulo', 'Rombo', 'Trapecio'][ri(0, 3)]
+      const facts: Record<string, string> = {
+        Cuadrado: 'Tiene cuatro lados iguales y cuatro ángulos rectos',
+        Rectángulo: 'Tiene cuatro ángulos rectos',
+        Rombo: 'Tiene cuatro lados iguales',
+        Trapecio: 'Tiene exactamente un par de lados paralelos',
+      }
+      return mc(skill, d, seed, `¿Qué afirmación describe correctamente un ${answer.toLowerCase()}?`, facts[answer], [
+        'Tiene exactamente tres lados', 'Todos sus ángulos tienen que ser agudos', 'No puede tener ningún lado paralelo'
+      ], `La propiedad correcta es: ${facts[answer].toLowerCase()}.`, ['cuadrilateros', 'family:recognize_fact'])
+    }
+
+    if (family === 2) {
+      const pair = [['Cuadrado', 4], ['Rectángulo', 2], ['Rombo', 2], ['Paralelogramo', 2], ['Trapecio', 1]][ri(0, 4)] as [string, number]
+      const answer = pair[1] === 1 ? '1 par' : `${pair[1]} pares`
+      return mc(skill, d, seed, `¿Cuántos pares de lados paralelos tiene un ${pair[0].toLowerCase()}?`, answer,
+        ['0 pares', '1 par', '2 pares', '4 pares'].filter((x) => x !== answer).slice(0, 3),
+        `Un ${pair[0].toLowerCase()} tiene ${answer} de lados paralelos.`, ['cuadrilateros', 'family:parallel_pairs'])
+    }
+
+    if (family === 3) {
+      const shape = ['Cuadrado', 'Rectángulo'][ri(0, 1)]
+      return mc(skill, d, seed, `¿Cuánto mide cada ángulo interior de un ${shape.toLowerCase()}?`, '90°', ['45°', '60°', '120°'],
+        `Los cuatro ángulos interiores de un ${shape.toLowerCase()} son rectos: 90°.`, ['cuadrilateros', 'family:right_angles'])
+    }
+
+    const shape = ['Cuadrado', 'Rombo'][ri(0, 1)]
+    return mc(skill, d, seed, `¿Qué propiedad comparten siempre un cuadrado y un rombo?`, 'Sus cuatro lados tienen la misma longitud',
+      ['Sus cuatro ángulos son rectos', 'Tienen exactamente un par de lados paralelos', 'Sus diagonales tienen siempre la misma longitud'],
+      `Tanto el cuadrado como el rombo tienen sus cuatro lados iguales.`, ['cuadrilateros', 'family:shared_equal_sides'])
   }
 
   if (d === 2) {
-    return mc(
-      skill,
-      d,
-      seed,
-      '¿Qué propiedad comparten siempre un cuadrado y un rectángulo?',
-      'Tienen cuatro ángulos rectos',
-      [
-        'Tienen siempre los cuatro lados iguales',
-        'Tienen exactamente un par de lados paralelos',
-        'Sus diagonales nunca se cortan',
-      ],
-      'Tanto el cuadrado como el rectángulo tienen cuatro ángulos de 90°.',
-      ['cuadrilateros', 'propiedades']
-    )
+    const family = ri(0, 4)
+
+    if (family === 0) {
+      const promptType = ri(0, 1)
+      if (promptType === 0) return mc(skill, d, seed,
+        'Una figura tiene cuatro ángulos rectos, pero no tiene los cuatro lados iguales. ¿Cuál es la clasificación más precisa?',
+        'Rectángulo', ['Cuadrado', 'Rombo', 'Trapecio'],
+        'Los cuatro ángulos rectos la hacen rectángulo; al no tener cuatro lados iguales, no es cuadrado.', ['cuadrilateros', 'family:distinguish_rectangle_square'])
+      return mc(skill, d, seed,
+        'Una figura tiene cuatro lados iguales, pero uno de sus ángulos no mide 90°. ¿Cuál es la clasificación más precisa?',
+        'Rombo', ['Cuadrado', 'Rectángulo', 'Trapecio'],
+        'Cuatro lados iguales permiten clasificarla como rombo; al no tener cuatro ángulos rectos, no es cuadrado.', ['cuadrilateros', 'family:distinguish_rhombus_square'])
+    }
+
+    if (family === 1) return mc(skill, d, seed,
+      '¿Cuál de estas afirmaciones es siempre verdadera para todo cuadrado?',
+      'También es un rectángulo y un rombo', ['No es un paralelogramo', 'Tiene exactamente un par de lados paralelos', 'Sus diagonales nunca son iguales'],
+      'Un cuadrado tiene cuatro ángulos rectos y cuatro lados iguales, así que cumple las definiciones de rectángulo y rombo.', ['cuadrilateros', 'family:class_inclusion'])
+
+    if (family === 2) {
+      const angle = [70, 80, 110, 120][ri(0, 3)]
+      const opposite = angle
+      return mc(skill, d, seed, `En un paralelogramo, un ángulo interior mide ${angle}°. ¿Cuánto mide el ángulo opuesto?`, `${opposite}°`,
+        [`${180-angle}°`, `${90-angle/2}°`, `${angle+10}°`],
+        'En todo paralelogramo, los ángulos opuestos son iguales.', ['cuadrilateros', 'family:opposite_angles_basic'])
+    }
+
+    if (family === 3) {
+      const angle = [55, 65, 72, 105, 118][ri(0, 4)]
+      return mc(skill, d, seed, `En un paralelogramo, un ángulo mide ${angle}°. ¿Cuánto mide uno de sus ángulos adyacentes?`, `${180-angle}°`,
+        [`${angle}°`, `${Math.round(90-angle/2)}°`, `${180-angle+10}°`],
+        `Los ángulos consecutivos de un paralelogramo son suplementarios: 180°-${angle}°=${180-angle}°.`, ['cuadrilateros', 'family:adjacent_angles_basic'])
+    }
+
+    return mc(skill, d, seed,
+      '¿Cuál de estas situaciones es imposible en un cuadrilátero?',
+      'Tener cinco ángulos interiores', ['Tener cuatro lados', 'Tener dos diagonales', 'Tener cuatro vértices'],
+      'Por definición, un cuadrilátero tiene cuatro lados, cuatro vértices y cuatro ángulos interiores.', ['cuadrilateros', 'family:impossible_basic'])
   }
 
   if (d === 3) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Una figura tiene cuatro lados iguales y dos pares de lados paralelos, pero no tiene ángulos rectos. ¿Cuál es?',
-      'Rombo',
-      ['Cuadrado', 'Rectángulo', 'Trapecio'],
-      'Un rombo tiene cuatro lados iguales; no necesita tener ángulos rectos.',
-      ['cuadrilateros', 'clasificacion']
-    )
+    const family = ri(0, 4)
+
+    if (family === 0) {
+      const a = ri(60, 120), b = ri(60, 120), c = ri(60, 120)
+      const fourth = 360 - a - b - c
+      if (fourth > 10 && fourth < 170) return mc(skill, d, seed,
+        `Tres ángulos de un cuadrilátero miden ${a}°, ${b}° y ${c}°. ¿Cuánto mide el cuarto?`, `${fourth}°`,
+        [`${180-fourth}°`, `${fourth+10}°`, `${Math.max(10, fourth-10)}°`],
+        `La suma de los ángulos interiores de un cuadrilátero es 360°: 360-${a}-${b}-${c}=${fourth}°.`, ['cuadrilateros', 'family:fourth_angle'])
+      return mc(skill, d, seed, '¿Cuánto suman los cuatro ángulos interiores de cualquier cuadrilátero?', '360°', ['180°', '270°', '540°'],
+        'Todo cuadrilátero puede dividirse en dos triángulos; 2×180°=360°.', ['cuadrilateros', 'family:fourth_angle'])
+    }
+
+    if (family === 1) {
+      const acute = ri(45, 85), obtuse = 180 - acute
+      return mc(skill, d, seed,
+        `Un paralelogramo tiene un ángulo de ${acute}°. ¿Cuál es la lista correcta de sus cuatro ángulos?`,
+        `${acute}°, ${obtuse}°, ${acute}°, ${obtuse}°`,
+        [`${acute}°, ${acute}°, ${obtuse}°, ${obtuse}°`, `90°, 90°, 90°, 90°`, `${acute}°, ${obtuse}°, ${obtuse}°, ${obtuse}°`],
+        'Los opuestos son iguales y los consecutivos suman 180°.', ['cuadrilateros', 'family:all_parallelogram_angles'])
+    }
+
+    if (family === 2) return mc(skill, d, seed,
+      '¿Qué propiedad de las diagonales permite distinguir siempre un rectángulo de un paralelogramo cualquiera?',
+      'En el rectángulo las diagonales tienen la misma longitud', ['En el rectángulo hay una sola diagonal', 'En el rectángulo las diagonales no se cortan', 'En el rectángulo las diagonales son lados'],
+      'Las diagonales de un rectángulo son congruentes; un paralelogramo general no tiene por qué tenerlas iguales.', ['cuadrilateros', 'family:rectangle_diagonals'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Un cuadrilátero tiene sus cuatro lados iguales y sus diagonales se cortan perpendicularmente. ¿Qué clasificación encaja mejor sin suponer ángulos rectos?',
+      'Rombo', ['Rectángulo', 'Trapecio', 'Paralelogramo sin más información'],
+      'Cuatro lados iguales y diagonales perpendiculares son propiedades de un rombo; no se han dado cuatro ángulos rectos.', ['cuadrilateros', 'family:rhombus_diagonals'])
+
+    const top = ri(50, 120)
+    return mc(skill, d, seed,
+      `En un trapecio isósceles, uno de los ángulos de una base mide ${top}°. ¿Cuánto mide el otro ángulo de esa misma base?`, `${top}°`,
+      [`${180-top}°`, '90°', `${top+20}°`],
+      'En un trapecio isósceles, los dos ángulos apoyados sobre una misma base son iguales.', ['cuadrilateros', 'family:isosceles_trapezoid_base_angles'])
   }
 
   if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
-      '¿Cuál de estas afirmaciones es correcta?',
-      'Todo cuadrado es también un rectángulo',
-      [
-        'Todo rectángulo es un cuadrado',
-        'Todo trapecio es un cuadrado',
-        'Todo rombo tiene cuatro ángulos rectos',
-      ],
-      'Un cuadrado cumple todas las propiedades de un rectángulo y además tiene los cuatro lados iguales.',
-      ['cuadrilateros', 'inclusion', 'razonamiento']
-    )
+    const family = ri(0, 4)
+
+    if (family === 0) return mc(skill, d, seed,
+      '¿Qué condición basta por sí sola para asegurar que un paralelogramo es un rectángulo?',
+      'Uno de sus ángulos es recto', ['Dos lados consecutivos son distintos', 'Sus lados opuestos son paralelos', 'Tiene dos diagonales'],
+      'En un paralelogramo, si un ángulo es de 90°, los consecutivos también lo son y los cuatro resultan rectos.', ['cuadrilateros', 'family:sufficient_rectangle'])
+
+    if (family === 1) return mc(skill, d, seed,
+      '¿Qué condición basta por sí sola para asegurar que un rectángulo es un cuadrado?',
+      'Dos lados consecutivos tienen la misma longitud', ['Sus diagonales son iguales', 'Tiene cuatro ángulos rectos', 'Sus lados opuestos son paralelos'],
+      'En un rectángulo los lados opuestos ya son iguales; si dos consecutivos también lo son, los cuatro lados quedan iguales.', ['cuadrilateros', 'family:sufficient_square'])
+
+    if (family === 2) {
+      const x = ri(20, 55)
+      const a = 2*x, b = 180-a
+      return mc(skill, d, seed,
+        `En un paralelogramo, dos ángulos consecutivos miden 2x y ${b}°. ¿Cuánto vale x?`, `${x}°`,
+        [`${x+10}°`, `${Math.max(5,x-10)}°`, `${90-x}°`],
+        `Los consecutivos suman 180°: 2x+${b}=180, por lo que 2x=${180-b} y x=${x}.`, ['cuadrilateros', 'family:solve_x_parallelogram'])
+    }
+
+    if (family === 3) return mc(skill, d, seed,
+      'Un alumno afirma: «Si un cuadrilátero tiene cuatro lados iguales, entonces es un cuadrado». ¿Cuál es el mejor análisis?',
+      'Es falso: puede ser un rombo sin ángulos rectos', ['Es verdadero por definición', 'Es falso porque un cuadrado no tiene lados iguales', 'Es verdadero solo si tiene exactamente un par de lados paralelos'],
+      'Tener cuatro lados iguales no obliga a que los cuatro ángulos sean de 90°; un rombo es un contraejemplo.', ['cuadrilateros', 'family:error_analysis_equal_sides'])
+
+    return mc(skill, d, seed,
+      'Ordena de más específica a más general la clasificación de una figura con cuatro lados iguales y cuatro ángulos rectos.',
+      'Cuadrado → rectángulo/paralelogramo y rombo → cuadrilátero',
+      ['Cuadrilátero → cuadrado → triángulo', 'Trapecio → rombo → cuadrado', 'Rectángulo → triángulo → cuadrado'],
+      'El cuadrado pertenece a varias clases más generales: es rectángulo, rombo, paralelogramo y cuadrilátero.', ['cuadrilateros', 'family:classification_hierarchy'])
   }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    'Un cuadrilátero tiene dos pares de lados opuestos paralelos y cuatro ángulos rectos. ¿Qué información adicional permitiría asegurar que es un cuadrado y no solo un rectángulo?',
-    'Que sus cuatro lados sean iguales',
-    [
-      'Que tenga cuatro vértices',
-      'Que sus lados opuestos sean paralelos',
-      'Que sus diagonales se corten',
-    ],
-    'Para pasar de rectángulo a cuadrado necesitamos además que los cuatro lados tengan la misma longitud.',
-    ['cuadrilateros', 'razonamiento', 'dificultad_alta']
-  )
+  const family = ri(0, 4)
+
+  if (family === 0) {
+    const x = ri(20, 40)
+    const angles = [x, 2*x, 3*x, 360-6*x]
+    return mc(skill, d, seed,
+      `Tres ángulos de un cuadrilátero miden x, 2x y 3x. El cuarto mide ${angles[3]}°. ¿Cuánto vale x?`, `${x}°`,
+      [`${x+5}°`, `${Math.max(5,x-5)}°`, `${2*x}°`],
+      `x+2x+3x+${angles[3]}=360; entonces 6x=${360-angles[3]} y x=${x}.`, ['cuadrilateros', 'family:multi_step_angle_equation'])
+  }
+
+  if (family === 1) return mc(skill, d, seed,
+    'Un cuadrilátero tiene diagonales de la misma longitud. ¿Podemos concluir necesariamente que es un rectángulo?',
+    'No; esa propiedad por sí sola no basta', ['Sí, siempre', 'Sí, y además tiene que ser un cuadrado', 'No, porque ningún rectángulo tiene diagonales iguales'],
+    'La igualdad de las diagonales aparece en los rectángulos, pero por sí sola no caracteriza a todos los cuadriláteros.', ['cuadrilateros', 'family:converse_diagonals'])
+
+  if (family === 2) {
+    const k = ri(15, 30)
+    const angles = [2*k, 3*k, 2*k, 3*k]
+    return mc(skill, d, seed,
+      `Los ángulos de un paralelogramo están en la razón 2:3:2:3. ¿Cuánto mide el ángulo menor?`, `${2*36}°`,
+      ['60°', '90°', '108°'],
+      'Hay 10 partes en total y suman 360°, así que cada parte vale 36°. El ángulo menor mide 2×36°=72°.', ['cuadrilateros', 'family:angle_ratio'])
+  }
+
+  if (family === 3) return mc(skill, d, seed,
+    'Se sabe que una figura es a la vez rectángulo y rombo. ¿Qué se puede concluir necesariamente?',
+    'Es un cuadrado', ['Es un trapecio con un solo par de lados paralelos', 'No puede existir', 'Tiene algún ángulo distinto de 90°'],
+    'Ser rectángulo aporta cuatro ángulos rectos y ser rombo aporta cuatro lados iguales; juntas son las propiedades de un cuadrado.', ['cuadrilateros', 'family:intersection_classes'])
+
+  return mc(skill, d, seed,
+    '¿Cuál es el contraejemplo más directo a la afirmación «todo paralelogramo con lados opuestos iguales es un rectángulo»?',
+    'Un paralelogramo oblicuo sin ángulos rectos', ['Un cuadrado', 'Un rectángulo', 'Un triángulo rectángulo'],
+    'Todo paralelogramo ya tiene lados opuestos iguales; uno oblicuo muestra que esa propiedad no obliga a tener ángulos rectos.', ['cuadrilateros', 'family:counterexample_parallelogram'])
 }
 
 if (key === 'circle_elements') {
