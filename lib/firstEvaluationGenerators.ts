@@ -10338,57 +10338,353 @@ if (key === 'triangle_angles') {
 
 
 if (key === 'triangle_angle_sum') {
-  if (d <= 2) {
-    const a = ri(30, 80)
-    const b = ri(30, Math.min(80, 140 - a))
-    const missing = 180 - a - b
+  const makeMissing = () => {
+    const a = ri(20, 80)
+    const b = ri(20, Math.min(100, 150 - a))
+    const c = 180 - a - b
+    return [a, b, c] as const
+  }
+
+  if (d === 1) {
+    const family = ri(0, 4)
+
+    if (family === 0) {
+      const [a, b, c] = makeMissing()
+      return mc(
+        skill, d, seed,
+        `Dos ángulos de un triángulo miden ${a}° y ${b}°. ¿Cuánto mide el tercero?`,
+        `${c}°`,
+        [`${a + b}°`, `${c + 10}°`, `${Math.max(5, c - 10)}°`],
+        `Los ángulos interiores suman 180°: 180-${a}-${b}=${c}°.` ,
+        ['suma_angulos_triangulo', 'family:missing_direct']
+      )
+    }
+
+    if (family === 1) {
+      const [a, b, c] = makeMissing()
+      return mc(
+        skill, d, seed,
+        `¿Cuál de estas ternas puede ser la medida de los tres ángulos de un triángulo?`,
+        `${a}°, ${b}° y ${c}°`,
+        [`${a}°, ${b}° y ${c + 10}°`, `${a}°, ${b + 20}° y ${c}°`, `${a + 15}°, ${b}° y ${c + 5}°`],
+        'Los tres ángulos de un triángulo deben sumar exactamente 180°.',
+        ['suma_angulos_triangulo', 'family:valid_triple']
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill, d, seed,
+        '¿Cuánto suman siempre los tres ángulos interiores de cualquier triángulo?',
+        '180°',
+        ['90°', '270°', '360°'],
+        'La suma de los ángulos interiores de todo triángulo es 180°.',
+        ['suma_angulos_triangulo', 'family:sum_rule']
+      )
+    }
+
+    if (family === 3) {
+      const a = ri(25, 70)
+      const b = 90 - a
+      return mc(
+        skill, d, seed,
+        `Un triángulo rectángulo tiene un ángulo agudo de ${a}°. ¿Cuánto mide el otro ángulo agudo?`,
+        `${b}°`,
+        [`${90 + a}°`, `${180 - a}°`, `${a}°`],
+        `Como ya hay un ángulo de 90°, los otros dos suman 90°: 90-${a}=${b}°.` ,
+        ['suma_angulos_triangulo', 'family:right_triangle_easy']
+      )
+    }
+
+    const base = ri(40, 80)
+    const vertex = 180 - 2 * base
     return mc(
       skill, d, seed,
-      `Dos ángulos de un triángulo miden ${a}° y ${b}°. ¿Cuánto mide el tercer ángulo?`,
-      `${missing}°`,
-      [`${missing + 10}°`, `${Math.max(10, missing - 10)}°`, `${a + b}°`],
-      `Los ángulos de un triángulo suman 180°: 180-${a}-${b}=${missing}°.`,
-      ['suma_angulos_triangulo']
+      `Un triángulo isósceles tiene dos ángulos iguales de ${base}°. ¿Cuánto mide el tercer ángulo?`,
+      `${vertex}°`,
+      [`${180 - base}°`, `${base}°`, `${vertex + 10}°`],
+      `El tercer ángulo es 180-${base}-${base}=${vertex}°.` ,
+      ['suma_angulos_triangulo', 'family:isosceles_easy']
+    )
+  }
+
+  if (d === 2) {
+    const family = ri(0, 4)
+
+    if (family === 0) {
+      const [a, b, c] = makeMissing()
+      return mc(
+        skill, d, seed,
+        `En un triángulo, dos ángulos miden ${a}° y ${b}°. ¿Qué operación calcula correctamente el tercero?`,
+        `180° - ${a}° - ${b}°`,
+        [`${a}° + ${b}°`, `180° - ${a}° + ${b}°`, `360° - ${a}° - ${b}°`],
+        `El tercero mide ${c}° porque la suma interior debe ser 180°.` ,
+        ['suma_angulos_triangulo', 'family:choose_operation']
+      )
+    }
+
+    if (family === 1) {
+      const c = ri(30, 100)
+      const remaining = 180 - c
+      return mc(
+        skill, d, seed,
+        `Un triángulo tiene un ángulo de ${c}°. ¿Cuánto deben sumar los otros dos ángulos?`,
+        `${remaining}°`,
+        [`${c}°`, `${180 + c}°`, `${90 - Math.min(c, 90)}°`],
+        `Los otros dos deben sumar 180-${c}=${remaining}°.` ,
+        ['suma_angulos_triangulo', 'family:remaining_pair_sum']
+      )
+    }
+
+    if (family === 2) {
+      const equal = ri(35, 75)
+      const vertex = 180 - 2 * equal
+      return mc(
+        skill, d, seed,
+        `Un triángulo isósceles tiene dos ángulos iguales. Si cada uno mide ${equal}°, ¿cuánto mide el ángulo desigual?`,
+        `${vertex}°`,
+        [`${180 - equal}°`, `${equal / 2}°`, `${vertex + equal}°`],
+        `El ángulo desigual mide 180-2×${equal}=${vertex}°.` ,
+        ['suma_angulos_triangulo', 'family:isosceles_vertex']
+      )
+    }
+
+    if (family === 3) {
+      const first = ri(20, 65)
+      const second = ri(20, 65)
+      const third = 180 - first - second
+      const wrongThird = third + 10
+      return mc(
+        skill, d, seed,
+        `Un alumno afirma que un triángulo con ángulos ${first}°, ${second}° y ${wrongThird}° es posible. ¿Qué ocurre?`,
+        'No es posible porque no suman 180°',
+        ['Sí es posible', 'Solo sería posible si fuera isósceles', 'Solo sería posible si fuera rectángulo'],
+        `La suma es ${first + second + wrongThird}°, no 180°.` ,
+        ['suma_angulos_triangulo', 'family:detect_invalid_sum']
+      )
+    }
+
+    const acute = ri(20, 70)
+    const other = 90 - acute
+    return mc(
+      skill, d, seed,
+      `En un triángulo rectángulo, los dos ángulos agudos suman 90°. Si uno mide ${acute}°, ¿cuánto mide el otro?`,
+      `${other}°`,
+      [`${180 - acute}°`, `${acute}°`, `${90 + acute}°`],
+      `90-${acute}=${other}°.` ,
+      ['suma_angulos_triangulo', 'family:right_triangle_pair']
     )
   }
 
   if (d === 3) {
-    const acute = ri(20, 70)
-    const missing = 90 - acute
+    const family = ri(0, 4)
+
+    if (family === 0) {
+      const x = ri(20, 50)
+      const y = x + ri(10, 30)
+      const z = 180 - x - y
+      return mc(
+        skill, d, seed,
+        `Un triángulo tiene ángulos ${x}°, ${y}° y uno desconocido. ¿Cuál es el desconocido y cómo se clasifica el triángulo por sus ángulos?`,
+        `${z}°; ${z === 90 ? 'rectángulo' : z > 90 ? 'obtusángulo' : 'acutángulo'}`,
+        [`${x + y}°; acutángulo`, `${180 - y}°; rectángulo`, `${z + 10}°; obtusángulo`],
+        `El tercer ángulo es ${z}°. Con ello se determina la clasificación.` ,
+        ['suma_angulos_triangulo', 'family:missing_and_classify']
+      )
+    }
+
+    if (family === 1) {
+      const exterior = ri(100, 150)
+      const adjacent = 180 - exterior
+      const remote1 = ri(20, exterior - 20)
+      const remote2 = exterior - remote1
+      return mc(
+        skill, d, seed,
+        `Un ángulo exterior de un triángulo mide ${exterior}°. Uno de los interiores no adyacentes mide ${remote1}°. ¿Cuánto mide el otro interior no adyacente?`,
+        `${remote2}°`,
+        [`${adjacent}°`, `${180 - remote1}°`, `${remote1}°`],
+        `Un ángulo exterior es igual a la suma de los dos interiores no adyacentes: ${exterior}-${remote1}=${remote2}°.` ,
+        ['suma_angulos_triangulo', 'family:exterior_remote']
+      )
+    }
+
+    if (family === 2) {
+      const base = ri(30, 70)
+      const vertex = 180 - 2 * base
+      return mc(
+        skill, d, seed,
+        `En un triángulo isósceles, el ángulo del vértice mide ${vertex}°. ¿Cuánto mide cada ángulo de la base?`,
+        `${base}°`,
+        [`${180 - vertex}°`, `${vertex / 2}°`, `${90 - base}°`],
+        `Los dos ángulos de la base son iguales y suman ${180 - vertex}°; cada uno mide ${base}°.` ,
+        ['suma_angulos_triangulo', 'family:isosceles_base']
+      )
+    }
+
+    if (family === 3) {
+      const a = ri(25, 70)
+      const b = ri(25, 70)
+      const c = 180 - a - b
+      return mc(
+        skill, d, seed,
+        `¿Cuál de estas afirmaciones es necesariamente cierta para un triángulo con dos ángulos de ${a}° y ${b}°?`,
+        `El tercer ángulo mide ${c}°`,
+        [`El tercer ángulo mide ${a + b}°`, 'El triángulo tiene que ser isósceles', 'El triángulo tiene que ser rectángulo'],
+        `La suma interior obliga a que el tercero sea 180-${a}-${b}=${c}°.` ,
+        ['suma_angulos_triangulo', 'family:necessary_statement']
+      )
+    }
+
+    const a = ri(25, 55)
+    const b = ri(25, 55)
+    const c = 180 - a - b
     return mc(
       skill, d, seed,
-      `Un triángulo rectángulo tiene un ángulo agudo de ${acute}°. ¿Cuánto mide el otro ángulo agudo?`,
-      `${missing}°`,
-      [`${90 + acute}°`, `${180 - acute}°`, `${acute}°`],
-      `Los dos ángulos agudos de un triángulo rectángulo suman 90°: ${missing}°.`,
-      ['suma_angulos_triangulo', 'triangulo_rectangulo']
+      `Un triángulo tiene ángulos ${a}°, ${b}° y ${c}°. Si aumentamos el primero 10°, ¿qué debe ocurrir para que siga siendo un triángulo?`,
+      'Disminuir en total 10° entre los otros dos ángulos',
+      ['Aumentar también 10° otro ángulo', 'No cambiar ningún otro ángulo', 'Hacer que la suma total sea 190°'],
+      'La suma debe seguir siendo 180°, así que cualquier aumento debe compensarse con una disminución igual.' ,
+      ['suma_angulos_triangulo', 'family:preserve_sum']
     )
   }
 
   if (d === 4) {
-    const vertex = ri(20, 100) * 2 % 100 + 20
-    const safeVertex = Math.min(100, Math.max(20, vertex))
-    const base = (180 - safeVertex) / 2
+    const family = ri(0, 4)
+
+    if (family === 0) {
+      const x = ri(20, 50)
+      const second = 2 * x
+      const third = 180 - x - second
+      return mc(
+        skill, d, seed,
+        `En un triángulo, el segundo ángulo mide el doble que el primero. Si el primero mide ${x}°, ¿cuánto mide el tercero?`,
+        `${third}°`,
+        [`${180 - x}°`, `${x + second}°`, `${third + x}°`],
+        `Los dos conocidos suman ${x + second}°. El tercero mide 180-${x + second}=${third}°.` ,
+        ['suma_angulos_triangulo', 'family:double_relation']
+      )
+    }
+
+    if (family === 1) {
+      const x = ri(20, 40)
+      const second = x + 20
+      const third = 180 - x - second
+      return mc(
+        skill, d, seed,
+        `Dos ángulos de un triángulo se diferencian en 20°. El menor mide ${x}°. ¿Cuánto mide el tercero si el otro mide ${second}°?`,
+        `${third}°`,
+        [`${180 - x}°`, `${x + second}°`, `${third - 20}°`],
+        `El tercer ángulo es 180-${x}-${second}=${third}°.` ,
+        ['suma_angulos_triangulo', 'family:difference_relation']
+      )
+    }
+
+    if (family === 2) {
+      const exterior = ri(110, 150)
+      const adjacent = 180 - exterior
+      return mc(
+        skill, d, seed,
+        `Un ángulo exterior de un triángulo mide ${exterior}°. ¿Cuánto mide el ángulo interior adyacente?`,
+        `${adjacent}°`,
+        [`${exterior}°`, `${180 + exterior}°`, `${adjacent + 10}°`],
+        `Son suplementarios: 180-${exterior}=${adjacent}°.` ,
+        ['suma_angulos_triangulo', 'family:exterior_adjacent']
+      )
+    }
+
+    if (family === 3) {
+      const equal = ri(35, 70)
+      const vertex = 180 - 2 * equal
+      return mc(
+        skill, d, seed,
+        `Un triángulo isósceles tiene un ángulo exterior en el vértice de ${180 - vertex}°. ¿Cuánto mide cada ángulo de la base?`,
+        `${equal}°`,
+        [`${vertex}°`, `${180 - equal}°`, `${equal / 2}°`],
+        `El ángulo interior del vértice es ${vertex}°. Los otros dos son iguales y miden ${equal}° cada uno.` ,
+        ['suma_angulos_triangulo', 'family:isosceles_exterior']
+      )
+    }
+
+    const a = ri(20, 60)
+    const b = ri(20, 60)
+    const c = 180 - a - b
     return mc(
       skill, d, seed,
-      `Un triángulo isósceles tiene un ángulo desigual de ${safeVertex}°. ¿Cuánto mide cada uno de los otros dos ángulos?`,
-      `${base}°`,
-      [`${180 - safeVertex}°`, `${safeVertex / 2}°`, `${90 - base}°`],
-      `Los otros dos ángulos son iguales y suman ${180 - safeVertex}°; cada uno mide ${base}°.`,
-      ['suma_angulos_triangulo', 'isosceles']
+      `Un alumno calcula el tercer ángulo como 180-${a}=${180 - a}°, olvidando restar también ${b}°. ¿Cuál debería ser el resultado correcto?`,
+      `${c}°`,
+      [`${180 - a}°`, `${a + b}°`, `${180 - b}°`],
+      `Hay que restar los dos ángulos conocidos: 180-${a}-${b}=${c}°.` ,
+      ['suma_angulos_triangulo', 'family:spot_calculation_error']
     )
   }
 
-  const x = ri(20, 60)
-  const second = x + ri(10, 30)
-  const third = 180 - x - second
+  const family = ri(0, 4)
+
+  if (family === 0) {
+    const x = ri(20, 40)
+    const second = 2 * x
+    const third = 180 - 3 * x
+    return mc(
+      skill, d, seed,
+      `Los ángulos de un triángulo son x, 2x y ${third}°. Si x=${x}°, ¿qué comprobación demuestra que los datos son coherentes?`,
+      `${x}+${second}+${third}=180°`,
+      [`${x}+${second}=180°`, `${second}+${third}=90°`, `${x}+${third}=180°`],
+      'La comprobación correcta es verificar que los tres ángulos suman 180°.',
+      ['suma_angulos_triangulo', 'family:algebraic_check']
+    )
+  }
+
+  if (family === 1) {
+    const ratioA = 2
+    const ratioB = 3
+    const ratioC = 4
+    const unit = 180 / (ratioA + ratioB + ratioC)
+    return mc(
+      skill, d, seed,
+      'Los ángulos de un triángulo están en razón 2:3:4. ¿Cuánto mide el ángulo mayor?',
+      `${ratioC * unit}°`,
+      [`${ratioA * unit}°`, `${ratioB * unit}°`, '90°'],
+      `Hay 9 partes en total; cada parte mide 20°. El mayor ocupa 4 partes: 80°.` ,
+      ['suma_angulos_triangulo', 'family:ratio_angles']
+    )
+  }
+
+  if (family === 2) {
+    return mc(
+      skill, d, seed,
+      '¿Cuál de estas situaciones es imposible en un triángulo?',
+      'Tener dos ángulos de 100°',
+      ['Tener dos ángulos de 40°', 'Tener un ángulo de 90°', 'Tener tres ángulos de 60°'],
+      'Dos ángulos de 100° ya sumarían 200°, superando los 180° totales.' ,
+      ['suma_angulos_triangulo', 'family:impossibility_reasoning']
+    )
+  }
+
+  if (family === 3) {
+    const a = ri(25, 60)
+    const b = ri(25, 60)
+    const c = 180 - a - b
+    return mc(
+      skill, d, seed,
+      `Un triángulo tiene ángulos ${a}°, ${b}° y ${c}°. Se aumenta el primero 15° y se reduce el tercero 15°. ¿Qué ocurre con la suma total?`,
+      'Sigue siendo 180°',
+      ['Pasa a 195°', 'Pasa a 165°', 'No se puede saber'],
+      'Los cambios +15° y -15° se compensan; la suma sigue siendo 180°.' ,
+      ['suma_angulos_triangulo', 'family:compensating_changes']
+    )
+  }
+
+  const exterior = ri(110, 150)
+  const remote1 = ri(20, exterior - 20)
+  const remote2 = exterior - remote1
+  const adjacent = 180 - exterior
   return mc(
     skill, d, seed,
-    `En un triángulo, un ángulo mide ${x}° y otro mide ${second}°. ¿Qué afirmación sobre el tercero es correcta?`,
-    `Mide ${third}°`,
-    [`Mide ${x + second}°`, `Mide ${180 - second}°`, 'No se puede determinar'],
-    `La suma interior es 180°: 180-${x}-${second}=${third}°.`,
-    ['suma_angulos_triangulo', 'razonamiento', 'dificultad_alta']
+    `Un ángulo exterior mide ${exterior}° y uno de los interiores no adyacentes mide ${remote1}°. ¿Qué pareja de medidas completa correctamente el triángulo?`,
+    `${remote2}° para el otro remoto y ${adjacent}° para el adyacente`,
+    [`${adjacent}° y ${remote2}°`, `${exterior}° y ${adjacent}°`, `${remote1}° y ${180 - remote1}°`],
+    `El otro remoto mide ${exterior}-${remote1}=${remote2}° y el adyacente mide 180-${exterior}=${adjacent}°.` ,
+    ['suma_angulos_triangulo', 'family:combined_exterior']
   )
 }
 
