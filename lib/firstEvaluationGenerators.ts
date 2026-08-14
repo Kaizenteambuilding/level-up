@@ -1627,67 +1627,159 @@ if (key === 'fraction_simplify') {
   }
 
   if (key === 'fraction_word_problem') {
-    const den = ri(3, 8)
-    const num = ri(1, den - 1)
-    const reps = ri(2, 4)
-    const answer = `${num * reps}/${den}`
+  const den = ri(3, 9)
+  const num = ri(1, den - 1)
+  const reps = ri(2, 5)
+  const answer = `${num * reps}/${den}`
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Cada vuelta mide ${num}/${den} km. Si haces ${reps} vueltas, ¿qué distancia recorres?`,
-      answer,
-      [
-        `${num}/${den * reps}`,
-        `${num + reps}/${den}`,
-        `${num}/${den}`,
-      ],
-      `${num}/${den} × ${reps} = ${answer} km.`,
-      ['problema_fracciones']
-    )
-  }
+  const variants = [
+    {
+      prompt: `Cada vuelta mide ${num}/${den} km. Si haces ${reps} vueltas, ¿qué distancia recorres?`,
+      solution: `${num}/${den} × ${reps} = ${answer} km.`,
+    },
+    {
+      prompt: `Marta bebe ${num}/${den} de litro de agua cada vez. Si bebe esa cantidad ${reps} veces, ¿cuántos litros bebe en total?`,
+      solution: `${num}/${den} × ${reps} = ${answer} litros.`,
+    },
+    {
+      prompt: `Para una manualidad se usan ${num}/${den} metros de cinta. Si haces ${reps} manualidades iguales, ¿cuántos metros de cinta necesitas?`,
+      solution: `${num}/${den} × ${reps} = ${answer} metros.`,
+    },
+    {
+      prompt: `Un robot avanza ${num}/${den} metros en cada movimiento. Si realiza ${reps} movimientos iguales, ¿qué distancia avanza?`,
+      solution: `${num}/${den} × ${reps} = ${answer} metros.`,
+    },
+    {
+      prompt: `Cada botella contiene ${num}/${den} de litro de zumo. Si tienes ${reps} botellas, ¿cuántos litros hay en total?`,
+      solution: `${num}/${den} × ${reps} = ${answer} litros.`,
+    },
+    {
+      prompt: `Cada tramo de un recorrido mide ${num}/${den} km. Si completas ${reps} tramos iguales, ¿qué distancia recorres?`,
+      solution: `${num}/${den} × ${reps} = ${answer} km.`,
+    },
+  ]
+
+  const variant = variants[ri(0, variants.length - 1)]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    variant.prompt,
+    answer,
+    [
+      `${num}/${den * reps}`,
+      `${num + reps}/${den}`,
+      `${num}/${den}`,
+    ],
+    variant.solution,
+    ['problema_fracciones']
+  )
+}
 
   // =========================
   // M08 · PROPORCIONALIDAD Y PORCENTAJES
   // =========================
 
-  if (key === 'ratio') {
-    const a = ri(2, 8)
-    const b = ri(2, 8)
+ if (key === 'ratio') {
+  const a = ri(2, 9)
+  const b = ri(2, 9)
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `En una clase hay ${a} chicos por cada ${b} chicas. ¿Cuál es la razón chicos:chicas?`,
-      `${a}:${b}`,
-      [
-        `${b}:${a}`,
-        `${a + b}:1`,
-        `${a * b}:1`,
-      ],
-      `La razón es ${a}:${b}.`,
-      ['razon']
-    )
-  }
+  const variants = [
+    {
+      prompt: `En una clase hay ${a} chicos por cada ${b} chicas. ¿Cuál es la razón chicos:chicas?`,
+      answer: `${a}:${b}`,
+      solution: `La razón chicos:chicas es ${a}:${b}.`,
+    },
+    {
+      prompt: `Una caja tiene ${a} lápices rojos por cada ${b} lápices azules. ¿Cuál es la razón rojos:azules?`,
+      answer: `${a}:${b}`,
+      solution: `La razón rojos:azules es ${a}:${b}.`,
+    },
+    {
+      prompt: `En una mezcla se usan ${a} vasos de agua por cada ${b} vasos de zumo. ¿Cuál es la razón agua:zumo?`,
+      answer: `${a}:${b}`,
+      solution: `La razón agua:zumo es ${a}:${b}.`,
+    },
+    {
+      prompt: `Un equipo consigue ${a} victorias por cada ${b} derrotas. ¿Cuál es la razón victorias:derrotas?`,
+      answer: `${a}:${b}`,
+      solution: `La razón victorias:derrotas es ${a}:${b}.`,
+    },
+    {
+      prompt: `En una bolsa hay ${a} fichas verdes por cada ${b} fichas amarillas. ¿Cuál es la razón verdes:amarillas?`,
+      answer: `${a}:${b}`,
+      solution: `La razón verdes:amarillas es ${a}:${b}.`,
+    },
+  ]
 
-  if (key === 'direct_proportion_recognize') {
-    return mc(
-      skill,
-      d,
-      seed,
-      `Si compras el doble de cuadernos al mismo precio unitario, ¿pagas el doble?`,
-      'Sí',
-      [
-        'No',
-        'Solo a veces',
-        'No se puede saber',
-      ],
-      `Es una relación de proporcionalidad directa.`,
-      ['proporcionalidad_directa']
-    )
-  }
+  const variant = variants[ri(0, variants.length - 1)]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    variant.prompt,
+    variant.answer,
+    [
+      `${b}:${a}`,
+      `${a + b}:1`,
+      `${a * b}:1`,
+    ],
+    variant.solution,
+    ['razon']
+  )
+}
+
+ if (key === 'direct_proportion_recognize') {
+  const variants = [
+    {
+      prompt: 'Si compras el doble de cuadernos al mismo precio unitario, ¿pagas el doble?',
+      answer: 'Sí',
+      solution: 'Es una relación de proporcionalidad directa: al duplicar la cantidad, se duplica el precio total.',
+    },
+    {
+      prompt: 'Si 3 botellas iguales cuestan una cantidad, ¿6 botellas al mismo precio unitario cuestan el doble?',
+      answer: 'Sí',
+      solution: 'Al duplicar el número de botellas manteniendo el mismo precio por unidad, el coste total se duplica.',
+    },
+    {
+      prompt: 'Si recorres el doble de distancia manteniendo siempre la misma velocidad, ¿tardas el doble de tiempo?',
+      answer: 'Sí',
+      solution: 'A velocidad constante, al duplicar la distancia también se duplica el tiempo.',
+    },
+    {
+      prompt: 'Si necesitas 2 huevos para una receta y haces el triple de cantidad, ¿necesitas el triple de huevos?',
+      answer: 'Sí',
+      solution: 'Al multiplicar por tres la cantidad de receta, los ingredientes también se multiplican por tres.',
+    },
+    {
+      prompt: 'Si 4 entradas cuestan 20 € y todas tienen el mismo precio, ¿8 entradas cuestan 40 €?',
+      answer: 'Sí',
+      solution: 'Al duplicar el número de entradas, el precio total también se duplica: es proporcionalidad directa.',
+    },
+    {
+      prompt: 'Si duplicas el número de personas que comparten una pizza, ¿cada persona recibe el doble de pizza?',
+      answer: 'No',
+      solution: 'No es proporcionalidad directa. Si la pizza es la misma y hay más personas, la cantidad por persona disminuye.',
+    },
+  ]
+
+  const variant = variants[ri(0, variants.length - 1)]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    variant.prompt,
+    variant.answer,
+    variant.answer === 'Sí'
+      ? ['No', 'Solo a veces', 'No se puede saber']
+      : ['Sí', 'Siempre', 'El doble'],
+    variant.solution,
+    ['proporcionalidad_directa']
+  )
+}
 
   if (key === 'direct_proportion_table') {
     const x = ri(2, 8)
