@@ -325,7 +325,7 @@ p_session_id: sessionId,
   }
 
   function next() {
-    setSeed((s) => s + 37)
+    setSeed((s) => (Math.imul(s, 1664525) + 1013904223) >>> 0)
 
     if (testMode) {
       setAnswered(false)
