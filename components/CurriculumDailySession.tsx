@@ -41,12 +41,38 @@ const ACTIVE_CURRICULUM_UNITS = [
 ]
 const SESSION_LENGTH = 10
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function retryJwtFuture<T extends { error?: { message?: string } | null }>(
+  operation: () => Promise<T>,
+  attempts = 3
+): Promise<T> {
+  let result = await operation()
+
+  for (let attempt = 1; attempt < attempts; attempt++) {
+    const message = result.error?.message ?? ''
+
+    if (!message.toLowerCase().includes('jwt issued at future')) {
+      break
+    }
+
+    await sleep(700 * attempt)
+    result = await operation()
+  }
+
+  return result
+}
+
 export default function CurriculumDailySession() {
-    const [forcedSkillId, setForcedSkillId] = useState<string | null>(null)
+  const [forcedSkillId, setForcedSkillId] = useState<string | null>(null)
+  const [queryReady, setQueryReady] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     setForcedSkillId(params.get('skill'))
+    setQueryReady(true)
   }, [])
 
   const [playerId, setPlayerId] = useState<string | null>(null)
@@ -76,6 +102,8 @@ function questionTemplate(prompt: string) {
   const testMode = Boolean(forcedSkillId)
 
   useEffect(() => {
+    if (!queryReady) return
+
     ;(async () => {
       const id = localStorage.getItem('levelup_player_id')
       setPlayerId(id)
@@ -92,15 +120,18 @@ function questionTemplate(prompt: string) {
         return
       }
 if (!forcedSkillId) {
-  const { data: sessionData, error: sessionError } = await supabase
-    .from('study_sessions')
-    .insert({
-      player_id: id,
-      mode: 'daily',
-      phase: 'warmup',
-    })
-    .select('id')
-    .single()
+  const { data: sessionData, error: sessionError } = await retryJwtFuture(
+    async () =>
+      await supabase
+        .from('study_sessions')
+        .insert({
+          player_id: id,
+          mode: 'daily',
+          phase: 'warmup',
+        })
+        .select('id')
+        .single()
+  )
 
   if (sessionError) {
     setLoadError('No se pudo crear la sesión: ' + sessionError.message)
@@ -111,18 +142,24 @@ if (!forcedSkillId) {
   setSessionId(sessionData.id)
 }
 
-      let skillsQuery = supabase
-        .from('skills')
-        .select('id,name,generator_key,unit_id')
-        .eq('active', true)
+      const loadSkills = async () => {
+        let skillsQuery = supabase
+          .from('skills')
+          .select('id,name,generator_key,unit_id')
+          .eq('active', true)
 
-      if (forcedSkillId) {
-        skillsQuery = skillsQuery.eq('id', forcedSkillId)
-      } else {
-        skillsQuery = skillsQuery.in('unit_id', ACTIVE_CURRICULUM_UNITS)
+        if (forcedSkillId) {
+          skillsQuery = skillsQuery.eq('id', forcedSkillId)
+        } else {
+          skillsQuery = skillsQuery.in('unit_id', ACTIVE_CURRICULUM_UNITS)
+        }
+
+        return await skillsQuery
       }
 
-      const { data: skillRows, error: skillsError } = await skillsQuery
+      const { data: skillRows, error: skillsError } = await retryJwtFuture(
+        loadSkills
+      )
 
       if (skillsError) {
         setLoadError(skillsError.message)
@@ -140,10 +177,13 @@ if (!forcedSkillId) {
         return
       }
 
-      const { data: stateRows } = await supabase
-        .from('player_skill_state')
-        .select('skill_id,mastery,confidence,difficulty,priority')
-        .eq('player_id', id)
+      const { data: stateRows } = await retryJwtFuture(
+        async () =>
+          await supabase
+            .from('player_skill_state')
+            .select('skill_id,mastery,confidence,difficulty,priority')
+            .eq('player_id', id)
+      )
 
       const stateMap: Record<string, SkillState> = {}
 
@@ -155,7 +195,7 @@ if (!forcedSkillId) {
       setStates(stateMap)
       setLoading(false)
     })()
-  }, [forcedSkillId])
+  }, [forcedSkillId, queryReady])
 
   function chooseSkill(currentIndex: number) {
     if (!skills.length) return null
@@ -302,19 +342,19 @@ useEffect(() => {
 
     if (!supabase) return
 
-    const { data, error } = await supabase.rpc(
-      'submit_levelup_attempt',
-      {
-        p_player_id: playerId,
-        p_skill_id: question.skillId,
-        p_correct: ok,
-        p_response_ms: responseMs,
-        p_difficulty: question.difficulty,
-        p_seed: question.seed,
-        p_prompt: question.prompt,
-p_session_id: sessionId,
-        p_diagnostic_tags: question.tags,
-      }
+    const { data, error } = await retryJwtFuture(
+      async () =>
+        await supabase.rpc('submit_levelup_attempt', {
+          p_player_id: playerId,
+          p_skill_id: question.skillId,
+          p_correct: ok,
+          p_response_ms: responseMs,
+          p_difficulty: question.difficulty,
+          p_seed: question.seed,
+          p_prompt: question.prompt,
+          p_session_id: sessionId,
+          p_diagnostic_tags: question.tags,
+        })
     )
 
     if (error) {
