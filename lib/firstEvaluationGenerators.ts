@@ -9588,6 +9588,333 @@ if (key === 'laplace_basic') {
   )
 }
 
+// =========================
+// COMPATIBILIDAD CON CLAVES ACTIVAS DE SUPABASE
+// Recuperadas para evitar que habilidades activas caigan al fallback.
+// =========================
+
+if (key === 'integers_order') {
+    const a = -ri(2, 20)
+    const b = -ri(2, 20)
+    const answer = a > b ? '>' : a < b ? '<' : '='
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Completa: ${a} __ ${b}`,
+      answer,
+      ['<', '>', '=', '≠'].filter((x) => x !== answer),
+      `En la recta numérica, el número que está más a la derecha es mayor.`,
+      ['orden_enteros']
+    )
+  }
+
+if (key === 'absolute_opposite') {
+    const n = ri(2, 30)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es el valor absoluto de -${n}?`,
+      String(n),
+      [
+        String(-n),
+        String(n + 1),
+        '0',
+      ],
+      `|-${n}|=${n}.`,
+      ['valor_absoluto']
+    )
+  }
+
+if (key === 'integers_mixed') {
+    const a = ri(-10, 10)
+    const b = ri(2, 8)
+    const c = ri(-6, 6)
+    const result = a + b * c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} + ${b} × (${c})`,
+      String(result),
+      [
+        String((a + b) * c),
+        String(a + b + c),
+        String(a - b * c),
+      ],
+      `Primero ${b}×(${c})=${b * c}; después sumamos ${a}.`,
+      ['jerarquia_enteros']
+    )
+  }
+
+if (key === 'algebra_translate') {
+    const k = ri(2, 9)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cómo se escribe "el doble de un número más ${k}"?`,
+      `2x + ${k}`,
+      [
+        `2(x + ${k})`,
+        `x + ${k * 2}`,
+        `x² + ${k}`,
+      ],
+      `El doble de x es 2x; después sumamos ${k}.`,
+      ['lenguaje_algebraico']
+    )
+  }
+
+if (key === 'like_terms') {
+    const a = ri(2, 7)
+    const b = ri(2, 7)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica ${a}x + ${b}x`,
+      `${a + b}x`,
+      [
+        `${a * b}x`,
+        `${a + b}x²`,
+        `${a}x + ${b}`,
+      ],
+      `Son términos semejantes: (${a}+${b})x = ${a + b}x.`,
+      ['terminos_semejantes']
+    )
+  }
+
+if (key === 'equation_multi_step') {
+    const x = ri(2, 8)
+    const a = ri(2, 5)
+    const b = ri(1, 8)
+    const total = a * x + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}x + ${b} = ${total}`,
+      String(x),
+      [
+        String(total - b),
+        String(total / a),
+        String(x + 1),
+      ],
+      `${a}x=${total - b}; x=${total - b}/${a}=${x}.`,
+      ['ecuacion_varios_pasos']
+    )
+  }
+
+if (key === 'equation_check') {
+    const x = ri(2, 9)
+    const k = ri(2, 8)
+    const total = x + k
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Es x = ${x} solución de x + ${k} = ${total}?`,
+      'Sí',
+      [
+        'No',
+        'Solo si x=0',
+        'No se puede comprobar',
+      ],
+      `${x}+${k}=${total}, por tanto sí.`,
+      ['comprobar_ecuacion']
+    )
+  }
+
+if (key === 'triangle_sides') {
+  const variants = [
+    {
+      sides: '6 cm, 6 cm y 6 cm',
+      answer: 'Equilátero',
+      solution: 'Tiene sus tres lados iguales, por tanto es un triángulo equilátero.',
+    },
+    {
+      sides: '5 cm, 5 cm y 8 cm',
+      answer: 'Isósceles',
+      solution: 'Tiene dos lados iguales, por tanto es un triángulo isósceles.',
+    },
+    {
+      sides: '4 cm, 5 cm y 6 cm',
+      answer: 'Escaleno',
+      solution: 'Tiene los tres lados diferentes, por tanto es un triángulo escaleno.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un triángulo tiene lados de ${v.sides}. ¿Cómo se clasifica según sus lados?`,
+    v.answer,
+    ['Equilátero', 'Isósceles', 'Escaleno', 'No se puede determinar'].filter(x => x !== v.answer),
+    v.solution,
+    ['clasificacion_triangulos_lados']
+  )
+}
+
+if (key === 'triangle_angles') {
+  const variants = [
+    {
+      angles: '60°, 60° y 60°',
+      answer: 'Acutángulo',
+      solution: 'Todos sus ángulos son menores de 90°, por tanto es acutángulo.',
+    },
+    {
+      angles: '90°, 55° y 35°',
+      answer: 'Rectángulo',
+      solution: 'Tiene un ángulo de 90°, por tanto es rectángulo.',
+    },
+    {
+      angles: '110°, 40° y 30°',
+      answer: 'Obtusángulo',
+      solution: 'Tiene un ángulo mayor de 90°, por tanto es obtusángulo.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un triángulo tiene ángulos de ${v.angles}. ¿Cómo se clasifica según sus ángulos?`,
+    v.answer,
+   ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter(x => x !== v.answer),
+    v.solution,
+    ['clasificacion_triangulos_angulos']
+  )
+}
+
+if (key === 'triangle_angle_sum') {
+  const a = ri(3, 7) * 10
+  const b = ri(4, 8) * 10
+  const missing = 180 - a - b
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Dos ángulos de un triángulo miden ${a}° y ${b}°. ¿Cuánto mide el tercer ángulo?`,
+    `${missing}°`,
+    [
+      `${missing + 10}°`,
+      `${Math.max(10, missing - 10)}°`,
+      `${180 - missing}°`,
+    ],
+    `Los ángulos de un triángulo suman 180°. Entonces 180° − ${a}° − ${b}° = ${missing}°.`,
+    ['suma_angulos_triangulo']
+  )
+}
+
+if (key === 'quadrilaterals') {
+  const variants = [
+    {
+      clue: 'Tiene cuatro lados iguales y cuatro ángulos rectos.',
+      answer: 'Cuadrado',
+      solution: 'Un cuadrado tiene cuatro lados iguales y cuatro ángulos de 90°.',
+    },
+    {
+      clue: 'Tiene cuatro ángulos rectos y sus lados opuestos son iguales.',
+      answer: 'Rectángulo',
+      solution: 'Un rectángulo tiene cuatro ángulos rectos y lados opuestos iguales.',
+    },
+    {
+      clue: 'Tiene cuatro lados iguales, pero no necesariamente cuatro ángulos rectos.',
+      answer: 'Rombo',
+      solution: 'Un rombo se caracteriza por tener sus cuatro lados iguales.',
+    },
+    {
+      clue: 'Tiene solamente un par de lados paralelos.',
+      answer: 'Trapecio',
+      solution: 'Un trapecio tiene un par de lados paralelos.',
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `${v.clue} ¿Qué cuadrilátero es?`,
+    v.answer,
+    ['Cuadrado', 'Rectángulo', 'Rombo', 'Trapecio'].filter(x => x !== v.answer),
+    v.solution,
+    ['cuadrilateros']
+  )
+}
+
+if (key === 'regular_polygons') {
+  const variants = [
+    { sides: 5, answer: 'Pentágono' },
+    { sides: 6, answer: 'Hexágono' },
+    { sides: 8, answer: 'Octógono' },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un polígono regular tiene ${v.sides} lados iguales. ¿Cómo se llama?`,
+    v.answer,
+    ['Pentágono', 'Hexágono', 'Octógono', 'Heptágono'].filter(x => x !== v.answer),
+    `Un polígono de ${v.sides} lados se llama ${v.answer.toLowerCase()}. Al ser regular, todos sus lados y ángulos son iguales.`,
+    ['poligonos_regulares']
+  )
+}
+
+if (key === 'geometry_classification') {
+  const variants = [
+    {
+      prompt: 'Una figura tiene 4 lados iguales y 4 ángulos rectos. ¿Cuál es la clasificación más precisa?',
+      answer: 'Cuadrado',
+      solution: 'Al tener cuatro lados iguales y cuatro ángulos rectos, es un cuadrado.',
+      distractors: ['Rectángulo', 'Rombo', 'Trapecio'],
+    },
+    {
+      prompt: 'Un triángulo tiene lados de 7 cm, 7 cm y 10 cm. ¿Cómo se clasifica según sus lados?',
+      answer: 'Isósceles',
+      solution: 'Tiene exactamente dos lados iguales, por tanto es isósceles.',
+      distractors: ['Equilátero', 'Escaleno', 'Rectángulo'],
+    },
+    {
+      prompt: 'Un triángulo tiene un ángulo de 90°. ¿Qué clasificación según sus ángulos es necesariamente correcta?',
+      answer: 'Rectángulo',
+      solution: 'Todo triángulo que tiene un ángulo de 90° es un triángulo rectángulo.',
+      distractors: ['Acutángulo', 'Obtusángulo', 'Equilátero'],
+    },
+  ]
+
+  const v = variants[seed % variants.length]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.distractors,
+    v.solution,
+    ['clasificacion_geometrica_razonada']
+  )
+}
+
 // Generador de reserva para habilidades aún no implementadas.
 return mc(
   skill,
