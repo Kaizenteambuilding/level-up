@@ -552,14 +552,18 @@ if (key === 'natural_word_problem') {
 }
 
   // =========================
-  // M02 · POTENCIAS Y RAÍCES
-  // =========================
+ // =========================
+// M02 · POTENCIAS Y RAÍCES
+// =========================
 
-  if (key === 'powers_meaning') {
-    const base = ri(2, 7)
-    const exponent = ri(2, 4)
-    const answer =
-      Array(exponent).fill(String(base)).join(' × ')
+if (key === 'powers_meaning') {
+  const base = ri(2, d <= 2 ? 5 : 9)
+  const exponent = ri(2, d <= 2 ? 3 : 5)
+
+  if (d <= 2) {
+    const answer = Array(exponent)
+      .fill(String(base))
+      .join(' × ')
 
     return mc(
       skill,
@@ -569,37 +573,106 @@ if (key === 'natural_word_problem') {
       answer,
       [
         `${base} × ${exponent}`,
-        `${exponent} × ${exponent}`,
         `${base} + ${base}`,
+        `${exponent} × ${exponent}`,
       ],
-      `Es multiplicar ${base} por sí mismo ${exponent} veces.`,
+      `Significa multiplicar ${base} por sí mismo ${exponent} veces.`,
       ['potencia_significado']
     )
   }
 
-  if (key === 'powers_compute') {
-    const base = ri(2, 5 + d)
-    const exponent = ri(2, 3 + (d > 3 ? 1 : 0))
-    const result = base ** exponent
+  if (d === 3) {
+    const product = Array(exponent)
+      .fill(String(base))
+      .join(' × ')
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula ${base}^${exponent}`,
-      String(result),
+      `¿Qué potencia representa ${product}?`,
+      `${base}^${exponent}`,
       [
-        String(base * exponent),
-        String(result + base),
-        String(base ** (exponent - 1)),
+        `${exponent}^${base}`,
+        `${base * exponent}^2`,
+        `${base}^${exponent - 1}`,
       ],
-      `${base}^${exponent} = ${result}.`,
-      ['potencias']
+      `${base} aparece como factor ${exponent} veces, por tanto es ${base}^${exponent}.`,
+      ['potencia_significado', 'representacion']
     )
   }
 
-  if (key === 'powers_ten') {
-    const exponent = ri(1, 5)
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `En la potencia ${base}^${exponent}, ¿qué representa el exponente ${exponent}?`,
+      `El número de veces que se multiplica ${base} por sí mismo`,
+      [
+        `El resultado de la potencia`,
+        `El número que se suma a ${base}`,
+        `La base de la potencia`,
+      ],
+      `El exponente indica cuántas veces aparece la base como factor.`,
+      ['potencia_significado', 'base_exponente']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál de estas expresiones representa correctamente ${base}^${exponent}?`,
+    Array(exponent).fill(String(base)).join(' × '),
+    [
+      `${base} × ${exponent}`,
+      Array(Math.max(2, exponent - 1))
+        .fill(String(base))
+        .join(' × '),
+      Array(exponent)
+        .fill(String(exponent))
+        .join(' × '),
+    ],
+    `${base}^${exponent} significa multiplicar ${base} por sí mismo exactamente ${exponent} veces.`,
+    ['potencia_significado', 'dificultad_alta']
+  )
+}
+
+if (key === 'powers_compute') {
+  const configs = [
+    { baseMax: 5, expMin: 2, expMax: 2 },
+    { baseMax: 7, expMin: 2, expMax: 3 },
+    { baseMax: 9, expMin: 2, expMax: 4 },
+    { baseMax: 10, expMin: 3, expMax: 4 },
+    { baseMax: 8, expMin: 4, expMax: 5 },
+  ]
+
+  const config = configs[d - 1]
+
+  const base = ri(2, config.baseMax)
+  const exponent = ri(config.expMin, config.expMax)
+  const result = base ** exponent
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${base}^${exponent}`,
+    String(result),
+    [
+      String(base * exponent),
+      String(base ** Math.max(1, exponent - 1)),
+      String(result + base),
+    ],
+    `${base}^${exponent} = ${result}.`,
+    ['potencias', `dificultad_${d}`]
+  )
+}
+
+if (key === 'powers_ten') {
+  if (d === 1) {
+    const exponent = ri(1, 3)
     const result = 10 ** exponent
 
     return mc(
@@ -610,7 +683,7 @@ if (key === 'natural_word_problem') {
       String(result),
       [
         String(exponent * 10),
-        String(10 ** (exponent - 1)),
+        String(10 ** Math.max(0, exponent - 1)),
         String(result + 10),
       ],
       `10^${exponent} es 1 seguido de ${exponent} ceros.`,
@@ -618,30 +691,195 @@ if (key === 'natural_word_problem') {
     )
   }
 
-  if (key === 'powers_properties') {
-    const base = ri(2, 5)
+  if (d === 2) {
+    const exponent = ri(2, 5)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuántos ceros tiene el número 10^${exponent}?`,
+      String(exponent),
+      [
+        String(exponent + 1),
+        String(exponent - 1),
+        '10',
+      ],
+      `10^${exponent} es 1 seguido de ${exponent} ceros.`,
+      ['potencias_base_10', 'ceros']
+    )
+  }
+
+  if (d === 3) {
+    const exponent = ri(2, 6)
+    const n = 10 ** exponent
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué potencia de 10 es ${n}?`,
+      `10^${exponent}`,
+      [
+        `10^${exponent - 1}`,
+        `10^${exponent + 1}`,
+        `${exponent}^10`,
+      ],
+      `${n} es 1 seguido de ${exponent} ceros, por tanto es 10^${exponent}.`,
+      ['potencias_base_10', 'reconocer_potencia']
+    )
+  }
+
+  if (d === 4) {
+    const n = ri(2, 9)
+    const exponent = ri(2, 5)
+    const result = n * 10 ** exponent
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${n} × 10^${exponent}`,
+      String(result),
+      [
+        String(n * exponent * 10),
+        String(n * 10 ** (exponent - 1)),
+        String(result + n),
+      ],
+      `Multiplicar por 10^${exponent} desplaza ${exponent} posiciones: resultado ${result}.`,
+      ['potencias_base_10', 'multiplicacion']
+    )
+  }
+
+  const a = ri(2, 5)
+  const b = ri(2, 4)
+  const resultExponent = a + b
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Simplifica 10^${a} × 10^${b}`,
+    `10^${resultExponent}`,
+    [
+      `10^${a * b}`,
+      `10^${Math.abs(a - b)}`,
+      `20^${resultExponent}`,
+    ],
+    `Al multiplicar potencias de base 10, sumamos exponentes: ${a} + ${b} = ${resultExponent}.`,
+    ['potencias_base_10', 'propiedades']
+  )
+}
+
+if (key === 'powers_properties') {
+  const base = ri(2, d >= 4 ? 7 : 5)
+
+  if (d === 1) {
     const m = ri(2, 4)
     const n = ri(1, 3)
-    const answer = `${base}^${m + n}`
 
     return mc(
       skill,
       d,
       seed,
       `Simplifica ${base}^${m} × ${base}^${n}`,
-      answer,
+      `${base}^${m + n}`,
       [
         `${base}^${m * n}`,
+        `${base}^${Math.abs(m - n)}`,
         `${base * 2}^${m + n}`,
-        `${base}^${m - n}`,
       ],
-      `Al multiplicar potencias de la misma base, se suman los exponentes: ${m}+${n}=${m + n}.`,
-      ['propiedades_potencias']
+      `Al multiplicar potencias de la misma base, sumamos exponentes: ${m} + ${n} = ${m + n}.`,
+      ['propiedades_potencias', 'producto']
     )
   }
 
-  if (key === 'sqrt_exact') {
-    const root = ri(2, 12)
+  if (d === 2) {
+    const n = ri(1, 3)
+    const m = ri(n + 2, n + 5)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica ${base}^${m} ÷ ${base}^${n}`,
+      `${base}^${m - n}`,
+      [
+        `${base}^${m + n}`,
+        `${base}^${m * n}`,
+        `${base}^${n}`,
+      ],
+      `Al dividir potencias de la misma base, restamos exponentes: ${m} - ${n} = ${m - n}.`,
+      ['propiedades_potencias', 'cociente']
+    )
+  }
+
+  if (d === 3) {
+    const m = ri(2, 4)
+    const n = ri(2, 3)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica (${base}^${m})^${n}`,
+      `${base}^${m * n}`,
+      [
+        `${base}^${m + n}`,
+        `${base}^${m}`,
+        `${base * n}^${m}`,
+      ],
+      `En una potencia de otra potencia multiplicamos exponentes: ${m} × ${n} = ${m * n}.`,
+      ['propiedades_potencias', 'potencia_de_potencia']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(2, 4)
+    const b = ri(1, 3)
+    const c = ri(1, 3)
+    const resultExp = a + b - c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica (${base}^${a} × ${base}^${b}) ÷ ${base}^${c}`,
+      `${base}^${resultExp}`,
+      [
+        `${base}^${a + b + c}`,
+        `${base}^${a * b - c}`,
+        `${base}^${Math.abs(a - b - c)}`,
+      ],
+      `Primero sumamos los exponentes del producto y después restamos el del cociente: ${a}+${b}-${c}=${resultExp}.`,
+      ['propiedades_potencias', 'operaciones_combinadas']
+    )
+  }
+
+  const a = ri(2, 3)
+  const b = ri(2, 3)
+  const c = ri(1, 3)
+  const resultExp = a * b + c
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Simplifica (${base}^${a})^${b} × ${base}^${c}`,
+    `${base}^${resultExp}`,
+    [
+      `${base}^${a + b + c}`,
+      `${base}^${a * (b + c)}`,
+      `${base}^${a * b - c}`,
+    ],
+    `Primero multiplicamos exponentes: ${a}×${b}=${a * b}. Después sumamos ${c}: ${a * b}+${c}=${resultExp}.`,
+    ['propiedades_potencias', 'operaciones_combinadas', 'dificultad_alta']
+  )
+}
+
+if (key === 'sqrt_exact') {
+  if (d === 1) {
+    const root = ri(2, 10)
     const n = root * root
 
     return mc(
@@ -651,22 +889,110 @@ if (key === 'natural_word_problem') {
       `Calcula √${n}`,
       String(root),
       [
-        String(root * 2),
-        String(n / 2),
+        String(root + 1),
         String(root - 1),
+        String(root * 2),
       ],
-      `Porque ${root}×${root}=${n}.`,
+      `Como ${root} × ${root} = ${n}, entonces √${n} = ${root}.`,
       ['raiz_cuadrada']
     )
   }
 
-  // =========================
-  // M03 · DIVISIBILIDAD
-  // =========================
+  if (d === 2) {
+    const root = ri(8, 15)
+    const n = root * root
 
-  if (key === 'multiples') {
-    const n = ri(2, 12)
-    const k = ri(3, 8)
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula √${n}`,
+      String(root),
+      [
+        String(root + 1),
+        String(root - 2),
+        String(n / 2),
+      ],
+      `${root}² = ${n}, por tanto √${n} = ${root}.`,
+      ['raiz_cuadrada']
+    )
+  }
+
+  if (d === 3) {
+    const root = ri(4, 16)
+    const n = root * root
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué número elevado al cuadrado da ${n}?`,
+      String(root),
+      [
+        String(root + 2),
+        String(root - 1),
+        String(root * 2),
+      ],
+      `${root} × ${root} = ${n}.`,
+      ['raiz_cuadrada', 'operacion_inversa']
+    )
+  }
+
+  if (d === 4) {
+    const r1 = ri(3, 12)
+    const r2 = ri(2, 10)
+    const n1 = r1 * r1
+    const n2 = r2 * r2
+    const result = r1 + r2
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula √${n1} + √${n2}`,
+      String(result),
+      [
+        String(r1 * r2),
+        String(Math.abs(r1 - r2)),
+        String(result + 1),
+      ],
+      `√${n1}=${r1} y √${n2}=${r2}. Por tanto ${r1}+${r2}=${result}.`,
+      ['raiz_cuadrada', 'suma_raices']
+    )
+  }
+
+  const r1 = ri(6, 15)
+  const r2 = ri(2, r1 - 1)
+  const n1 = r1 * r1
+  const n2 = r2 * r2
+  const result = r1 - r2
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula √${n1} - √${n2}`,
+    String(result),
+    [
+      String(r1 + r2),
+      String(r1 * r2),
+      String(result + 2),
+    ],
+    `√${n1}=${r1} y √${n2}=${r2}. Entonces ${r1}-${r2}=${result}.`,
+    ['raiz_cuadrada', 'resta_raices', 'dificultad_alta']
+  )
+}
+
+ // =========================
+// M03 · DIVISIBILIDAD
+// =========================
+
+if (key === 'multiples') {
+  const maxBase = [6, 10, 15, 20, 30][d - 1]
+  const n = ri(2, maxBase)
+
+  if (d <= 2) {
+    const k = ri(2, 8 + d)
     const answer = n * k
 
     return mc(
@@ -676,58 +1002,273 @@ if (key === 'natural_word_problem') {
       `¿Cuál de estos números es múltiplo de ${n}?`,
       String(answer),
       [
-  String(answer + 1),
-  String(answer - 1),
-  String(answer + n + 1),
-],
-      `${n}×${k}=${answer}.`,
+        String(answer + 1),
+        String(answer - 1),
+        String(answer + n + 1),
+      ],
+      `${answer} es múltiplo de ${n} porque ${n} × ${k} = ${answer}.`,
       ['multiplos']
     )
   }
 
-  if (key === 'divisors') {
-    const n = ri(3, 12)
-    const k = ri(2, 8)
-    const total = n * k
+  if (d === 3) {
+    const k = ri(5, 15)
+    const previous = n * k
+    const answer = n * (k + 1)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Después de ${previous}, ¿cuál es el siguiente múltiplo positivo de ${n}?`,
+      String(answer),
+      [
+        String(previous + 1),
+        String(previous + n - 1),
+        String(answer + n),
+      ],
+      `Los múltiplos de ${n} avanzan de ${n} en ${n}. ${previous} + ${n} = ${answer}.`,
+      ['multiplos', 'secuencia']
+    )
+  }
+
+  if (d === 4) {
+    const k1 = ri(3, 8)
+    const k2 = k1 + ri(2, 5)
+    const a = n * k1
+    const b = n * k2
+    const answer = 'Sí'
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Son ${a} y ${b} múltiplos de ${n}?`,
+      answer,
+      [
+        'No',
+        `Solo ${a}`,
+        `Solo ${b}`,
+      ],
+      `${a}=${n}×${k1} y ${b}=${n}×${k2}, así que ambos son múltiplos de ${n}.`,
+      ['multiplos', 'razonamiento']
+    )
+  }
+
+  const k = ri(8, 20)
+  const multiple = n * k
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un número es múltiplo de ${n} y está entre ${multiple - n} y ${multiple + n}. ¿Cuál puede ser?`,
+    String(multiple),
+    [
+      String(multiple - 1),
+      String(multiple + 1),
+      String(multiple + Math.max(2, Math.floor(n / 2))),
+    ],
+    `${multiple}=${n}×${k}, por tanto es múltiplo de ${n}.`,
+    ['multiplos', 'dificultad_alta']
+  )
+}
+
+if (key === 'divisors') {
+  if (d <= 2) {
+    const divisor = ri(2, d === 1 ? 8 : 12)
+    const k = ri(2, 10)
+    const total = divisor * k
 
     return mc(
       skill,
       d,
       seed,
       `¿Cuál de estos números es divisor de ${total}?`,
-      String(n),
+      String(divisor),
       [
-        String(n + 1),
-        String(k + 1),
+        String(divisor + 1),
         String(total - 1),
+        String(total + 1),
       ],
-      `${total} ÷ ${n} = ${k}, sin resto.`,
+      `${total} ÷ ${divisor} = ${k}, sin resto.`,
       ['divisores']
     )
   }
 
-  if (key === 'divisibility_rules') {
-    const n = ri(10, 99) * 3
+  if (d === 3) {
+    const a = ri(2, 8)
+    const b = ri(2, 8)
+    const total = a * b
 
     return mc(
       skill,
       d,
       seed,
-      `¿Es ${n} divisible entre 3?`,
+      `¿Es ${a} divisor de ${total}?`,
       'Sí',
       [
         'No',
-        'Solo entre 2',
-        'Solo entre 5',
+        'Solo si el cociente es 1',
+        'No se puede saber',
       ],
-      `La suma de sus cifras es múltiplo de 3.`,
-      ['criterio_divisibilidad_3']
+      `${total} ÷ ${a} = ${b}, que es exacto.`,
+      ['divisores', 'division_exacta']
     )
   }
 
-  if (key === 'prime_numbers') {
-    const primes = [2,3,5,7,11,13,17,19,23,29]
-    const p = primes[ri(0, primes.length - 1)]
+  if (d === 4) {
+    const a = ri(2, 6)
+    const b = ri(2, 6)
+    const c = ri(2, 5)
+    const total = a * b * c
+    const divisor = a * b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál de estos números es divisor de ${total}?`,
+      String(divisor),
+      [
+        String(divisor + 1),
+        String(total - 1),
+        String(divisor + c),
+      ],
+      `${total} ÷ ${divisor} = ${c}, sin resto.`,
+      ['divisores', 'compuestos']
+    )
+  }
+
+  const a = ri(3, 9)
+  const b = ri(3, 9)
+  const total = a * b
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Si ${total} = ${a} × ${b}, ¿qué afirmación es correcta?`,
+    `${a} y ${b} son divisores de ${total}`,
+    [
+      `${total} es divisor de ${a}`,
+      `${a + b} es siempre divisor de ${total}`,
+      `Solo ${a} es divisor de ${total}`,
+    ],
+    `Como ${total}=${a}×${b}, tanto ${a} como ${b} dividen exactamente a ${total}.`,
+    ['divisores', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'divisibility_rules') {
+  const rules = [
+    {
+      divisor: 2,
+      make: () => ri(10, 99) * 2,
+      explanation: 'Su última cifra es par.',
+    },
+    {
+      divisor: 3,
+      make: () => ri(10, 99) * 3,
+      explanation: 'La suma de sus cifras es múltiplo de 3.',
+    },
+    {
+      divisor: 5,
+      make: () => ri(2, 30) * 5,
+      explanation: 'Termina en 0 o en 5.',
+    },
+    {
+      divisor: 10,
+      make: () => ri(2, 30) * 10,
+      explanation: 'Termina en 0.',
+    },
+  ]
+
+  if (d <= 2) {
+    const rule = rules[ri(0, d === 1 ? 1 : 3)]
+    const n = rule.make()
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Es ${n} divisible entre ${rule.divisor}?`,
+      'Sí',
+      [
+        'No',
+        'Solo si es primo',
+        'No se puede saber',
+      ],
+      rule.explanation,
+      ['criterios_divisibilidad']
+    )
+  }
+
+  if (d === 3) {
+    const n = ri(10, 80) * 6
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Por cuáles de estos números es divisible ${n}?`,
+      '2 y 3',
+      [
+        'Solo 2',
+        'Solo 3',
+        'Solo 5',
+      ],
+      `${n} es par y además es múltiplo de 3, por tanto es divisible entre 2 y entre 3.`,
+      ['criterios_divisibilidad', 'varios_criterios']
+    )
+  }
+
+  if (d === 4) {
+    const n = ri(10, 50) * 30
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `El número ${n} es divisible entre...`,
+      '2, 3, 5 y 10',
+      [
+        'Solo 2 y 3',
+        'Solo 5 y 10',
+        'Solo 3 y 5',
+      ],
+      `${n} es múltiplo de 30, por lo que cumple los criterios de 2, 3, 5 y 10.`,
+      ['criterios_divisibilidad', 'combinados']
+    )
+  }
+
+  const base = ri(10, 40)
+  const n = base * 15
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Sabemos que ${n} es múltiplo de 15. ¿Qué afirmación es necesariamente cierta?`,
+    'Es divisible entre 3 y entre 5',
+    [
+      'Es siempre divisible entre 2',
+      'Es siempre divisible entre 10',
+      'Es siempre un número primo',
+    ],
+    `Como 15=3×5, todo múltiplo de 15 es divisible entre 3 y entre 5.`,
+    ['criterios_divisibilidad', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'prime_numbers') {
+  const smallPrimes = [2, 3, 5, 7, 11, 13, 17, 19]
+  const mediumPrimes = [23, 29, 31, 37, 41, 43, 47]
+  const largePrimes = [53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+
+  if (d <= 2) {
+    const list = d === 1 ? smallPrimes : [...smallPrimes, ...mediumPrimes]
+    const p = list[ri(0, list.length - 1)]
 
     return mc(
       skill,
@@ -740,46 +1281,183 @@ if (key === 'natural_word_problem') {
         String(p * 3),
         String((p + 1) * 2),
       ],
-      `${p} solo tiene dos divisores positivos: 1 y ${p}.`,
+      `${p} tiene exactamente dos divisores positivos: 1 y ${p}.`,
       ['primos']
     )
   }
 
-  if (key === 'prime_factorization') {
-    const a = [2,3,5][ri(0, 2)]
-    const b = [2,3,5,7][ri(0, 3)]
-    const n = a * b
+  if (d === 3) {
+    const p = mediumPrimes[ri(0, mediumPrimes.length - 1)]
 
     return mc(
       skill,
       d,
       seed,
-      `Una descomposición en factores primos de ${n} es:`,
-      `${a} × ${b}`,
+      `¿Es ${p} un número primo?`,
+      'Sí',
       [
-        `1 × ${n}`,
-        `${n} × 1`,
-        `${a + b} × 1`,
+        'No',
+        'Solo si es par',
+        'No se puede determinar',
       ],
-      `${n}=${a}×${b}.`,
-      ['factorizacion']
+      `${p} solo es divisible entre 1 y ${p}.`,
+      ['primos', 'reconocimiento']
     )
   }
 
-  if (key === 'gcd') {
-    const g = ri(2, 6)
-    const a = g * ri(2, 5)
-    const b = g * ri(2, 5)
+  if (d === 4) {
+    const p = largePrimes[ri(0, largePrimes.length - 1)]
+    const composite1 = ri(6, 12) * ri(2, 5)
+    const composite2 = ri(5, 10) * ri(3, 6)
 
-    const divisors: number[] = []
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál de estos números es primo?`,
+      String(p),
+      [
+        String(composite1),
+        String(composite2),
+        String(p * 2),
+      ],
+      `${p} no tiene divisores positivos distintos de 1 y de sí mismo.`,
+      ['primos', 'numeros_mayores']
+    )
+  }
 
-    for (let x = 1; x <= Math.min(a, b); x++) {
-      if (a % x === 0 && b % x === 0) {
-        divisors.push(x)
-      }
+  const p = largePrimes[ri(0, largePrimes.length - 1)]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Qué afirmación sobre ${p} es correcta?`,
+    `Sus únicos divisores positivos son 1 y ${p}`,
+    [
+      `Es divisible entre 2`,
+      `Tiene exactamente tres divisores`,
+      `Es múltiplo de 5`,
+    ],
+    `${p} es primo porque tiene exactamente dos divisores positivos.`,
+    ['primos', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'prime_factorization') {
+  const primes = [2, 3, 5, 7]
+
+  if (d === 1) {
+    const a = primes[ri(0, 2)]
+    const b = primes[ri(0, 2)]
+    const factors = [a, b].sort((x, y) => x - y)
+    const n = a * b
+    const answer = factors.join(' × ')
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Descompón ${n} en factores primos`,
+      answer,
+      [
+        `1 × ${n}`,
+        `${a + b} × 1`,
+        `${n} × 1`,
+      ],
+      `${n} = ${answer}.`,
+      ['factorizacion_primos']
+    )
+  }
+
+  if (d <= 3) {
+    const count = d === 2 ? 3 : 4
+    const factors = Array.from(
+      { length: count },
+      () => primes[ri(0, d === 2 ? 2 : 3)]
+    ).sort((x, y) => x - y)
+
+    const n = factors.reduce((acc, value) => acc * value, 1)
+    const answer = factors.join(' × ')
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Descompón ${n} en factores primos`,
+      answer,
+      [
+        `1 × ${n}`,
+        `${factors[0]} × ${n}`,
+        `${factors.reduce((a, b) => a + b, 0)} × 1`,
+      ],
+      `${n} = ${answer}.`,
+      ['factorizacion_primos', `dificultad_${d}`]
+    )
+  }
+
+  if (d === 4) {
+    const p = primes[ri(0, 2)]
+    const q = primes[ri(1, 3)]
+    const n = p * p * q
+    const answer = `${p}^2 × ${q}`
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Escribe la descomposición en factores primos de ${n} usando potencias cuando sea posible`,
+      answer,
+      [
+        `${p} × ${q}^2`,
+        `${p}^3 × ${q}`,
+        `${p + q}^2`,
+      ],
+      `${n}=${p}×${p}×${q}=${p}^2×${q}.`,
+      ['factorizacion_primos', 'potencias']
+    )
+  }
+
+  const p = primes[ri(0, 2)]
+  const q = primes[ri(1, 3)]
+  const n = p * p * q * q
+  const answer = `${p}^2 × ${q}^2`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Descompón ${n} completamente en factores primos`,
+    answer,
+    [
+      `${p} × ${q}`,
+      `${p}^2 × ${q}`,
+      `${p} × ${q}^2`,
+    ],
+    `${n}=${p}×${p}×${q}×${q}=${p}^2×${q}^2.`,
+    ['factorizacion_primos', 'potencias', 'dificultad_alta']
+  )
+}
+
+if (key === 'gcd') {
+  const gcdValue = (x: number, y: number): number => {
+    x = Math.abs(x)
+    y = Math.abs(y)
+
+    while (y !== 0) {
+      const temp = y
+      y = x % y
+      x = temp
     }
 
-    const result = Math.max(...divisors)
+    return x
+  }
+
+  if (d <= 2) {
+    const g = ri(2, d === 1 ? 5 : 8)
+    const a = g * ri(2, 6)
+    const b = g * ri(2, 6)
+    const result = gcdValue(a, b)
 
     return mc(
       skill,
@@ -788,28 +1466,102 @@ if (key === 'natural_word_problem') {
       `Calcula MCD(${a}, ${b})`,
       String(result),
       [
-        String(g),
-        String(a * b),
         String(Math.min(a, b)),
-      ].filter((x) => x !== String(result)),
-      `El mayor divisor común es ${result}.`,
+        String(a * b),
+        String(result + 1),
+      ],
+      `El mayor número que divide exactamente a ${a} y ${b} es ${result}.`,
       ['mcd']
     )
   }
 
-  if (key === 'lcm') {
-    const a = ri(2, 8)
-    const b = ri(2, 8)
+  if (d === 3) {
+    const g = ri(3, 10)
+    const a = g * ri(3, 9)
+    const b = g * ri(4, 10)
+    const result = gcdValue(a, b)
 
-    const gcd = (x: number, y: number) => {
-      while (y) {
-        ;[x, y] = [y, x % y]
-      }
-      return x
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula el máximo común divisor de ${a} y ${b}`,
+      String(result),
+      [
+        String(g),
+        String(result * 2),
+        String(Math.min(a, b)),
+      ].filter((x) => x !== String(result)),
+      `El MCD de ${a} y ${b} es ${result}.`,
+      ['mcd', 'numeros_mayores']
+    )
+  }
+
+  if (d === 4) {
+    const g = ri(2, 8)
+    const a = g * ri(4, 10)
+    const b = g * ri(5, 12)
+    const c = g * ri(3, 9)
+    const result = gcdValue(gcdValue(a, b), c)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula MCD(${a}, ${b}, ${c})`,
+      String(result),
+      [
+        String(g),
+        String(result + 2),
+        String(Math.min(a, b, c)),
+      ].filter((x) => x !== String(result)),
+      `El mayor divisor común de los tres números es ${result}.`,
+      ['mcd', 'tres_numeros']
+    )
+  }
+
+  const g = ri(3, 12)
+  const a = g * ri(5, 12)
+  const b = g * ri(6, 14)
+  const result = gcdValue(a, b)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Se quieren hacer grupos iguales usando ${a} objetos de un tipo y ${b} de otro, sin que sobre ninguno. ¿Cuál es el mayor número de grupos posibles?`,
+    String(result),
+    [
+      String(a + b),
+      String(Math.min(a, b)),
+      String(result + 1),
+    ],
+    `El mayor número de grupos posibles es MCD(${a}, ${b}) = ${result}.`,
+    ['mcd', 'problema', 'dificultad_alta']
+  )
+}
+
+if (key === 'lcm') {
+  const gcdValue = (x: number, y: number): number => {
+    x = Math.abs(x)
+    y = Math.abs(y)
+
+    while (y !== 0) {
+      const temp = y
+      y = x % y
+      x = temp
     }
 
-    const result =
-      Math.abs(a * b) / gcd(a, b)
+    return x
+  }
+
+  const lcmValue = (x: number, y: number) =>
+    Math.abs(x * y) / gcdValue(x, y)
+
+  if (d <= 2) {
+    const a = ri(2, d === 1 ? 6 : 10)
+    const b = ri(2, d === 1 ? 6 : 10)
+    const result = lcmValue(a, b)
 
     return mc(
       skill,
@@ -820,12 +1572,75 @@ if (key === 'natural_word_problem') {
       [
         String(a * b),
         String(Math.max(a, b)),
-        String(gcd(a, b)),
-      ],
-      `El mínimo común múltiplo es ${result}.`,
+        String(gcdValue(a, b)),
+      ].filter((x) => x !== String(result)),
+      `El mínimo común múltiplo de ${a} y ${b} es ${result}.`,
       ['mcm']
     )
   }
+
+  if (d === 3) {
+    const a = ri(4, 12)
+    const b = ri(5, 15)
+    const result = lcmValue(a, b)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es el menor múltiplo positivo común de ${a} y ${b}?`,
+      String(result),
+      [
+        String(a * b),
+        String(a + b),
+        String(Math.max(a, b)),
+      ].filter((x) => x !== String(result)),
+      `Ese número es el mcm(${a}, ${b}) = ${result}.`,
+      ['mcm', 'reconocimiento']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(2, 7)
+    const b = ri(3, 8)
+    const c = ri(4, 9)
+    const result = lcmValue(lcmValue(a, b), c)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula mcm(${a}, ${b}, ${c})`,
+      String(result),
+      [
+        String(a * b * c),
+        String(Math.max(a, b, c)),
+        String(result + Math.min(a, b, c)),
+      ].filter((x) => x !== String(result)),
+      `El menor múltiplo común de los tres números es ${result}.`,
+      ['mcm', 'tres_numeros']
+    )
+  }
+
+  const a = ri(3, 8)
+  const b = ri(4, 10)
+  const result = lcmValue(a, b)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Dos señales se repiten cada ${a} y ${b} minutos. Si coinciden ahora, ¿dentro de cuántos minutos volverán a coincidir?`,
+    String(result),
+    [
+      String(a + b),
+      String(a * b),
+      String(Math.max(a, b)),
+    ].filter((x) => x !== String(result)),
+    `Volverán a coincidir al cabo del mcm(${a}, ${b}) = ${result} minutos.`,
+    ['mcm', 'problema', 'dificultad_alta']
+  )
+}
 
   // =========================
   // M04 · NÚMEROS ENTEROS
