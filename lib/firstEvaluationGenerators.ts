@@ -6197,29 +6197,133 @@ if (key === 'equation_word_problem') {
 }
 
   // =========================
-  // M10 · RECTAS Y ÁNGULOS
-  // =========================
+// M10 · RECTAS Y ÁNGULOS
+// =========================
 
-  if (key === 'geometry_lines') {
+if (key === 'geometry_lines') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'Dos rectas que nunca se cortan y mantienen siempre la misma distancia son...',
+        answer: 'Paralelas',
+        solution: 'Las rectas paralelas nunca se cortan y mantienen siempre la misma distancia.',
+      },
+      {
+        prompt: 'Dos rectas que se cortan formando cuatro ángulos rectos son...',
+        answer: 'Perpendiculares',
+        solution: 'Las rectas perpendiculares se cortan formando ángulos de 90°.',
+      },
+      {
+        prompt: 'Dos rectas que se cortan en un punto son...',
+        answer: 'Secantes',
+        solution: 'Las rectas secantes tienen un punto de corte.',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
     return mc(
       skill,
       d,
       seed,
-      `Dos rectas que nunca se cortan y mantienen siempre la misma distancia son...`,
-      'Paralelas',
-      [
-        'Perpendiculares',
-        'Secantes',
-        'Segmentos',
-      ],
-      `Son rectas paralelas.`,
+      v.prompt,
+      v.answer,
+      ['Paralelas', 'Perpendiculares', 'Secantes', 'Segmentos'].filter(
+        (x) => x !== v.answer
+      ),
+      v.solution,
       ['rectas']
     )
   }
 
-  if (key === 'angle_types') {
-    const angle =
-      [35, 90, 120, 180][ri(0, 3)]
+  if (d === 2) {
+    const variants = [
+      {
+        prompt: 'Dos carreteras mantienen siempre la misma separación y no llegan a cruzarse. ¿Qué relación tienen?',
+        answer: 'Son paralelas',
+        solution: 'Mantener siempre la misma distancia sin cortarse corresponde a rectas paralelas.',
+      },
+      {
+        prompt: 'Dos calles se cruzan formando un ángulo de 90°. ¿Qué relación tienen?',
+        answer: 'Son perpendiculares',
+        solution: 'Si se cortan formando 90°, son perpendiculares.',
+      },
+      {
+        prompt: 'Dos líneas se cruzan formando ángulos que no son rectos. ¿Qué tipo de rectas son?',
+        answer: 'Secantes',
+        solution: 'Al cortarse en un punto son secantes, aunque no sean perpendiculares.',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Son paralelas', 'Son perpendiculares', 'Son secantes', 'Son segmentos'].filter(
+        (x) => x !== v.answer
+      ),
+      v.solution,
+      ['rectas', 'contexto']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas afirmaciones es correcta?',
+      'Dos rectas perpendiculares también son secantes',
+      [
+        'Dos rectas paralelas siempre son secantes',
+        'Dos rectas secantes siempre son perpendiculares',
+        'Dos rectas paralelas forman un ángulo de 90°',
+      ],
+      'Las rectas perpendiculares se cortan en un punto, así que son un caso particular de rectas secantes.',
+      ['rectas', 'razonamiento']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Dos rectas se cortan formando un ángulo de 65°. ¿Cómo se clasifican?',
+      'Secantes no perpendiculares',
+      [
+        'Paralelas',
+        'Perpendiculares',
+        'Coincidentes',
+      ],
+      'Se cortan, por tanto son secantes. Como no forman 90°, no son perpendiculares.',
+      ['rectas', 'clasificacion']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Qué condición garantiza que dos rectas de un plano sean paralelas?',
+    'Que no tengan ningún punto en común y mantengan dirección constante',
+    [
+      'Que se corten formando 90°',
+      'Que tengan exactamente un punto en común',
+      'Que midan la misma longitud',
+    ],
+    'Dos rectas paralelas tienen la misma dirección y no se cortan.',
+    ['rectas', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'angle_types') {
+  if (d === 1) {
+    const angle = [30, 45, 60, 90, 120, 150, 180][ri(0, 6)]
 
     const answer =
       angle < 90
@@ -6236,39 +6340,246 @@ if (key === 'equation_word_problem') {
       seed,
       `¿Qué tipo de ángulo mide ${angle}°?`,
       answer,
-      [
-        'Agudo',
-        'Recto',
-        'Obtuso',
-        'Llano',
-      ].filter((x) => x !== answer),
+      ['Agudo', 'Recto', 'Obtuso', 'Llano'].filter((x) => x !== answer),
       `Un ángulo de ${angle}° es ${answer.toLowerCase()}.`,
       ['tipo_angulo']
     )
   }
 
-  if (key === 'angle_measure') {
-  const angle1 = ri(2, 8) * 10
-  const angle2 = ri(2, 8) * 10
-  const total = angle1 + angle2
+  if (d === 2) {
+    const type = ri(0, 2)
+
+    if (type === 0) {
+      const angle = ri(10, 89)
+
+      return mc(
+        skill,
+        d,
+        seed,
+        `Un ángulo mide ${angle}°. ¿Cómo se clasifica?`,
+        'Agudo',
+        ['Recto', 'Obtuso', 'Llano'],
+        'Todo ángulo mayor de 0° y menor de 90° es agudo.',
+        ['tipo_angulo']
+      )
+    }
+
+    if (type === 1) {
+      const angle = ri(91, 179)
+
+      return mc(
+        skill,
+        d,
+        seed,
+        `Un ángulo mide ${angle}°. ¿Cómo se clasifica?`,
+        'Obtuso',
+        ['Agudo', 'Recto', 'Llano'],
+        'Todo ángulo mayor de 90° y menor de 180° es obtuso.',
+        ['tipo_angulo']
+      )
+    }
+
+    const angle = ri(181, 300)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un ángulo mide ${angle}°. ¿Cómo se clasifica?`,
+      'Cóncavo',
+      ['Agudo', 'Obtuso', 'Llano'],
+      'Un ángulo mayor de 180° y menor de 360° es cóncavo.',
+      ['tipo_angulo', 'concavo']
+    )
+  }
+
+  if (d === 3) {
+    const variants = [
+      {
+        prompt: '¿Cuál de estos ángulos es agudo?',
+        answer: '72°',
+        distractors: ['90°', '120°', '180°'],
+      },
+      {
+        prompt: '¿Cuál de estos ángulos es obtuso?',
+        answer: '135°',
+        distractors: ['45°', '90°', '180°'],
+      },
+      {
+        prompt: '¿Cuál de estos ángulos es llano?',
+        answer: '180°',
+        distractors: ['60°', '90°', '140°'],
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      `La respuesta correcta es ${v.answer}.`,
+      ['tipo_angulo', 'reconocimiento']
+    )
+  }
+
+  if (d === 4) {
+    const angle = ri(20, 80)
+    const supplementary = 180 - angle
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un ángulo mide ${angle}°. Su suplementario mide ${supplementary}°. ¿Qué tipo de ángulo es el suplementario?`,
+      supplementary < 90 ? 'Agudo' : supplementary === 90 ? 'Recto' : 'Obtuso',
+      ['Agudo', 'Recto', 'Obtuso', 'Llano'].filter((x) => {
+        const correct =
+          supplementary < 90
+            ? 'Agudo'
+            : supplementary === 90
+              ? 'Recto'
+              : 'Obtuso'
+        return x !== correct
+      }),
+      `El suplementario mide ${supplementary}°.`,
+      ['tipo_angulo', 'suplementarios']
+    )
+  }
+
+  const a = ri(20, 80)
+  const b = ri(100, 170)
 
   return mc(
     skill,
     d,
     seed,
-    `Dos ángulos miden ${angle1}° y ${angle2}°. ¿Cuánto miden entre los dos?`,
-    `${total}°`,
+    `¿Cuál de estas afirmaciones es correcta sobre los ángulos ${a}° y ${b}°?`,
+    `${a}° es agudo y ${b}° es obtuso`,
     [
-      `${Math.abs(angle1 - angle2)}°`,
-      `${total + 10}°`,
-      `${Math.max(0, total - 10)}°`,
+      `${a}° es obtuso y ${b}° es agudo`,
+      'Los dos son rectos',
+      'Los dos son agudos',
     ],
-    `${angle1}° + ${angle2}° = ${total}°.`,
-    ['medida_angulos']
+    `${a}° es menor de 90° y ${b}° está entre 90° y 180°.`,
+    ['tipo_angulo', 'comparacion', 'dificultad_alta']
   )
 }
 
-  if (key === 'angle_relations') {
+if (key === 'angle_measure') {
+  if (d === 1) {
+    const angle1 = ri(2, 7) * 10
+    const angle2 = ri(2, 7) * 10
+    const total = angle1 + angle2
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dos ángulos miden ${angle1}° y ${angle2}°. ¿Cuánto miden entre los dos?`,
+      `${total}°`,
+      [
+        `${Math.abs(angle1 - angle2)}°`,
+        `${total + 10}°`,
+        `${Math.max(0, total - 10)}°`,
+      ],
+      `${angle1}° + ${angle2}° = ${total}°.`,
+      ['medida_angulos']
+    )
+  }
+
+  if (d === 2) {
+    const total = ri(9, 17) * 10
+    const known = ri(2, total / 10 - 1) * 10
+    const missing = total - known
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dos ángulos suman ${total}°. Si uno mide ${known}°, ¿cuánto mide el otro?`,
+      `${missing}°`,
+      [
+        `${total + known}°`,
+        `${known}°`,
+        `${Math.abs(total - missing)}°`,
+      ],
+      `${total}° - ${known}° = ${missing}°.`,
+      ['medida_angulos', 'angulo_desconocido']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(2, 6) * 10
+    const b = ri(2, 6) * 10
+    const c = ri(2, 6) * 10
+    const total = a + b + c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Tres ángulos miden ${a}°, ${b}° y ${c}°. ¿Cuánto suman?`,
+      `${total}°`,
+      [
+        `${a + b}°`,
+        `${Math.abs(a + b - c)}°`,
+        `${total + 10}°`,
+      ],
+      `${a}+${b}+${c}=${total}°.`,
+      ['medida_angulos', 'tres_angulos']
+    )
+  }
+
+  if (d === 4) {
+    const total = 180
+    const a = ri(3, 7) * 10
+    const b = ri(3, 7) * 10
+    const missing = total - a - b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Tres ángulos forman un ángulo llano. Dos miden ${a}° y ${b}°. ¿Cuánto mide el tercero?`,
+      `${missing}°`,
+      [
+        `${180 - a}°`,
+        `${180 - b}°`,
+        `${a + b}°`,
+      ],
+      `Un ángulo llano mide 180°. Entonces 180-${a}-${b}=${missing}°.`,
+      ['medida_angulos', 'varios_pasos']
+    )
+  }
+
+  const total = 360
+  const a = ri(4, 9) * 10
+  const b = ri(4, 9) * 10
+  const c = ri(4, 9) * 10
+  const missing = total - a - b - c
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Alrededor de un punto hay cuatro ángulos. Tres miden ${a}°, ${b}° y ${c}°. ¿Cuánto mide el cuarto?`,
+    `${missing}°`,
+    [
+      `${180 - a}°`,
+      `${a + b + c}°`,
+      `${360 - a - b}°`,
+    ],
+    `Los ángulos alrededor de un punto suman 360°. 360-${a}-${b}-${c}=${missing}°.`,
+    ['medida_angulos', 'alrededor_punto', 'dificultad_alta']
+  )
+}
+
+if (key === 'angle_relations') {
+  if (d === 1) {
     const a = ri(2, 8) * 10
     const answer = 90 - a
 
@@ -6288,7 +6599,87 @@ if (key === 'equation_word_problem') {
     )
   }
 
-  if (key === 'parallel_angles') {
+  if (d === 2) {
+    const a = ri(2, 16) * 10
+    const answer = 180 - a
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dos ángulos son suplementarios. Si uno mide ${a}°, ¿cuánto mide el otro?`,
+      `${answer}°`,
+      [
+        `${90 - Math.min(a, 90)}°`,
+        `${a}°`,
+        `${180 + a}°`,
+      ],
+      `Los suplementarios suman 180°. 180-${a}=${answer}°.`,
+      ['angulos_suplementarios']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(3, 15) * 10
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dos ángulos opuestos por el vértice. Si uno mide ${a}°, ¿cuánto mide el otro?`,
+      `${a}°`,
+      [
+        `${180 - a}°`,
+        `${90 - Math.min(a, 90)}°`,
+        `${a + 10}°`,
+      ],
+      'Los ángulos opuestos por el vértice tienen la misma medida.',
+      ['angulos_opuestos_vertice']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(3, 15) * 10
+    const adjacent = 180 - a
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dos rectas se cortan. Uno de los ángulos mide ${a}°. ¿Cuánto mide uno de sus ángulos adyacentes?`,
+      `${adjacent}°`,
+      [
+        `${a}°`,
+        `${90 - Math.min(a, 90)}°`,
+        `${a + 20}°`,
+      ],
+      `Los ángulos adyacentes formados por dos rectas suman 180°. ${180}-${a}=${adjacent}°.`,
+      ['angulos_adyacentes', 'suplementarios']
+    )
+  }
+
+  const a = ri(3, 8) * 10
+  const complement = 90 - a
+  const supplementary = 180 - a
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un ángulo mide ${a}°. ¿Cuánto miden respectivamente su complementario y su suplementario?`,
+    `${complement}° y ${supplementary}°`,
+    [
+      `${supplementary}° y ${complement}°`,
+      `${a}° y ${180 - a}°`,
+      `${90 + a}° y ${180 + a}°`,
+    ],
+    `Complementario: 90-${a}=${complement}°. Suplementario: 180-${a}=${supplementary}°.`,
+    ['relaciones_angulos', 'dificultad_alta']
+  )
+}
+
+if (key === 'parallel_angles') {
+  if (d === 1) {
     const angle = ri(3, 14) * 10
 
     return mc(
@@ -6307,305 +6698,832 @@ if (key === 'equation_word_problem') {
     )
   }
 
- // ============================================================
-// M11 · FIGURAS GEOMÉTRICAS
-// ============================================================
-
-// M11S01 · Clasificar triángulos por lados
-if (key === 'triangle_sides') {
-  const variants = [
-    {
-      sides: '6 cm, 6 cm y 6 cm',
-      answer: 'Equilátero',
-      solution: 'Tiene sus tres lados iguales, por tanto es un triángulo equilátero.',
-    },
-    {
-      sides: '5 cm, 5 cm y 8 cm',
-      answer: 'Isósceles',
-      solution: 'Tiene dos lados iguales, por tanto es un triángulo isósceles.',
-    },
-    {
-      sides: '4 cm, 5 cm y 6 cm',
-      answer: 'Escaleno',
-      solution: 'Tiene los tres lados diferentes, por tanto es un triángulo escaleno.',
-    },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Un triángulo tiene lados de ${v.sides}. ¿Cómo se clasifica según sus lados?`,
-    v.answer,
-    ['Equilátero', 'Isósceles', 'Escaleno', 'No se puede determinar'].filter(x => x !== v.answer),
-    v.solution,
-    ['clasificacion_triangulos_lados']
-  )
-}
-
-// M11S02 · Clasificar triángulos por ángulos
-if (key === 'triangle_angles') {
-  const variants = [
-    {
-      angles: '60°, 60° y 60°',
-      answer: 'Acutángulo',
-      solution: 'Todos sus ángulos son menores de 90°, por tanto es acutángulo.',
-    },
-    {
-      angles: '90°, 55° y 35°',
-      answer: 'Rectángulo',
-      solution: 'Tiene un ángulo de 90°, por tanto es rectángulo.',
-    },
-    {
-      angles: '110°, 40° y 30°',
-      answer: 'Obtusángulo',
-      solution: 'Tiene un ángulo mayor de 90°, por tanto es obtusángulo.',
-    },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Un triángulo tiene ángulos de ${v.angles}. ¿Cómo se clasifica según sus ángulos?`,
-    v.answer,
-   ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter(x => x !== v.answer),
-    v.solution,
-    ['clasificacion_triangulos_angulos']
-  )
-}
-
-// M11S03 · Suma de ángulos de triángulo
-if (key === 'triangle_angle_sum') {
-  const a = ri(3, 7) * 10
-  const b = ri(4, 8) * 10
-  const missing = 180 - a - b
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Dos ángulos de un triángulo miden ${a}° y ${b}°. ¿Cuánto mide el tercer ángulo?`,
-    `${missing}°`,
-    [
-      `${missing + 10}°`,
-      `${Math.max(10, missing - 10)}°`,
-      `${180 - missing}°`,
-    ],
-    `Los ángulos de un triángulo suman 180°. Entonces 180° − ${a}° − ${b}° = ${missing}°.`,
-    ['suma_angulos_triangulo']
-  )
-}
-
-// M11S04 · Cuadriláteros
-if (key === 'quadrilaterals') {
-  const variants = [
-    {
-      clue: 'Tiene cuatro lados iguales y cuatro ángulos rectos.',
-      answer: 'Cuadrado',
-      solution: 'Un cuadrado tiene cuatro lados iguales y cuatro ángulos de 90°.',
-    },
-    {
-      clue: 'Tiene cuatro ángulos rectos y sus lados opuestos son iguales.',
-      answer: 'Rectángulo',
-      solution: 'Un rectángulo tiene cuatro ángulos rectos y lados opuestos iguales.',
-    },
-    {
-      clue: 'Tiene cuatro lados iguales, pero no necesariamente cuatro ángulos rectos.',
-      answer: 'Rombo',
-      solution: 'Un rombo se caracteriza por tener sus cuatro lados iguales.',
-    },
-    {
-      clue: 'Tiene solamente un par de lados paralelos.',
-      answer: 'Trapecio',
-      solution: 'Un trapecio tiene un par de lados paralelos.',
-    },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `${v.clue} ¿Qué cuadrilátero es?`,
-    v.answer,
-    ['Cuadrado', 'Rectángulo', 'Rombo', 'Trapecio'].filter(x => x !== v.answer),
-    v.solution,
-    ['cuadrilateros']
-  )
-}
-
-// M11S05 · Polígonos regulares
-if (key === 'regular_polygons') {
-  const variants = [
-    { sides: 5, answer: 'Pentágono' },
-    { sides: 6, answer: 'Hexágono' },
-    { sides: 8, answer: 'Octógono' },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Un polígono regular tiene ${v.sides} lados iguales. ¿Cómo se llama?`,
-    v.answer,
-    ['Pentágono', 'Hexágono', 'Octógono', 'Heptágono'].filter(x => x !== v.answer),
-    `Un polígono de ${v.sides} lados se llama ${v.answer.toLowerCase()}. Al ser regular, todos sus lados y ángulos son iguales.`,
-    ['poligonos_regulares']
-  )
-}
-
-// M11S06 · Circunferencia y círculo
-if (key === 'circle_elements') {
-  const variants = [
-    {
-      prompt: '¿Cómo se llama el segmento que une el centro de una circunferencia con un punto de ella?',
-      answer: 'Radio',
-      solution: 'El radio une el centro con cualquier punto de la circunferencia.',
-    },
-    {
-      prompt: '¿Cómo se llama el segmento que une dos puntos de la circunferencia pasando por el centro?',
-      answer: 'Diámetro',
-      solution: 'El diámetro pasa por el centro y une dos puntos de la circunferencia.',
-    },
-    {
-      prompt: '¿Cómo se llama la línea curva cerrada que limita un círculo?',
-      answer: 'Circunferencia',
-      solution: 'La circunferencia es la línea que forma el borde del círculo.',
-    },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    v.prompt,
-    v.answer,
-    ['Radio', 'Diámetro', 'Circunferencia', 'Centro'].filter(x => x !== v.answer),
-    v.solution,
-    ['elementos_circulo']
-  )
-}
-
-// M11S07 · Simetría
-if (key === 'symmetry') {
-  const variants = [
-    {
-      figure: 'un cuadrado',
-      answer: '4',
-      solution: 'Un cuadrado tiene 4 ejes de simetría.',
-      distractors: ['1', '2', '3'],
-    },
-    {
-      figure: 'un rectángulo que no es cuadrado',
-      answer: '2',
-      solution: 'Un rectángulo no cuadrado tiene 2 ejes de simetría.',
-      distractors: ['1', '3', '4'],
-    },
-    {
-      figure: 'un triángulo equilátero',
-      answer: '3',
-      solution: 'Un triángulo equilátero tiene 3 ejes de simetría.',
-      distractors: ['1', '2', '4'],
-    },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `¿Cuántos ejes de simetría tiene ${v.figure}?`,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['simetria']
-  )
-}
-
-// M11S08 · Clasificación geométrica razonada
-if (key === 'geometry_classification') {
-  const variants = [
-    {
-      prompt: 'Una figura tiene 4 lados iguales y 4 ángulos rectos. ¿Cuál es la clasificación más precisa?',
-      answer: 'Cuadrado',
-      solution: 'Al tener cuatro lados iguales y cuatro ángulos rectos, es un cuadrado.',
-      distractors: ['Rectángulo', 'Rombo', 'Trapecio'],
-    },
-    {
-      prompt: 'Un triángulo tiene lados de 7 cm, 7 cm y 10 cm. ¿Cómo se clasifica según sus lados?',
-      answer: 'Isósceles',
-      solution: 'Tiene exactamente dos lados iguales, por tanto es isósceles.',
-      distractors: ['Equilátero', 'Escaleno', 'Rectángulo'],
-    },
-    {
-      prompt: 'Un triángulo tiene un ángulo de 90°. ¿Qué clasificación según sus ángulos es necesariamente correcta?',
-      answer: 'Rectángulo',
-      solution: 'Todo triángulo que tiene un ángulo de 90° es un triángulo rectángulo.',
-      distractors: ['Acutángulo', 'Obtusángulo', 'Equilátero'],
-    },
-  ]
-
-  const v = variants[seed % variants.length]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    v.prompt,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['clasificacion_geometrica_razonada']
-  )
-}
-
-// ============================================================
-// M12 · PERÍMETROS Y ÁREAS
-// ============================================================
-
-// M12S01 · Perímetro de polígonos
-if (key === 'perimeter') {
-  const width = ri(3, 12)
-  const height = ri(2, 10)
-  const result = 2 * (width + height)
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Un rectángulo mide ${width} cm de largo y ${height} cm de ancho. ¿Cuál es su perímetro?`,
-    `${result} cm`,
-    [
-      `${width * height} cm`,
-      `${width + height} cm`,
-      `${result + 2} cm`,
-    ],
-    `Perímetro = 2 × (${width} + ${height}) = ${result} cm.`,
-    ['perimetro']
-  )
-}
-
-// M12S02 · Área de rectángulo y cuadrado
-if (key === 'rectangle_square_area') {
-  if (seed % 2 === 0) {
-    const side = ri(3, 12)
-    const result = side * side
+  if (d === 2) {
+    const angle = ri(3, 14) * 10
 
     return mc(
       skill,
       d,
       seed,
+      `Dos rectas paralelas son cortadas por una secante. Un ángulo alterno interno mide ${angle}°. ¿Cuánto mide su alterno interno?`,
+      `${angle}°`,
+      [
+        `${180 - angle}°`,
+        `${90 - Math.min(angle, 90)}°`,
+        `${angle + 20}°`,
+      ],
+      'Los ángulos alternos internos entre rectas paralelas son iguales.',
+      ['angulos_paralelas', 'alternos_internos']
+    )
+  }
+
+  if (d === 3) {
+    const angle = ri(3, 14) * 10
+    const supplementary = 180 - angle
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En dos rectas paralelas cortadas por una secante, un ángulo interior mide ${angle}°. ¿Cuánto mide el ángulo interior del mismo lado de la secante?`,
+      `${supplementary}°`,
+      [
+        `${angle}°`,
+        `${90 - Math.min(angle, 90)}°`,
+        `${supplementary + 10}°`,
+      ],
+      `Los ángulos interiores del mismo lado son suplementarios: 180-${angle}=${supplementary}°.`,
+      ['angulos_paralelas', 'interiores_mismo_lado']
+    )
+  }
+
+  if (d === 4) {
+    const angle = ri(4, 13) * 10
+    const supplementary = 180 - angle
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una secante corta dos rectas paralelas. Si uno de los ángulos es ${angle}°, ¿qué dos medidas distintas aparecerán entre los ocho ángulos formados?`,
+      `${angle}° y ${supplementary}°`,
+      [
+        `${angle}° y 90°`,
+        `${supplementary}° y 90°`,
+        `Solo ${angle}°`,
+      ],
+      `Los ángulos iguales conservan ${angle}° y los adyacentes miden ${supplementary}°.`,
+      ['angulos_paralelas', 'razonamiento']
+    )
+  }
+
+  const angle = ri(3, 14) * 10
+  const supplementary = 180 - angle
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Dos rectas paralelas son cortadas por una secante. Si un ángulo exterior mide ${angle}°, ¿cuánto puede medir un ángulo interior adyacente?`,
+    `${supplementary}°`,
+    [
+      `${angle}°`,
+      `${90 - Math.min(angle, 90)}°`,
+      `${angle + 10}°`,
+    ],
+    `Los ángulos adyacentes son suplementarios: 180-${angle}=${supplementary}°.`,
+    ['angulos_paralelas', 'exteriores', 'dificultad_alta']
+  )
+}
+
+ // =========================
+// M11 · FIGURAS GEOMÉTRICAS
+// =========================
+
+if (key === 'polygon_classification') {
+  if (d === 1) {
+    const sides = [3, 4, 5, 6, 8][ri(0, 4)]
+    const names: Record<number, string> = {
+      3: 'Triángulo',
+      4: 'Cuadrilátero',
+      5: 'Pentágono',
+      6: 'Hexágono',
+      8: 'Octógono',
+    }
+    const answer = names[sides]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cómo se llama un polígono de ${sides} lados?`,
+      answer,
+      ['Triángulo', 'Cuadrilátero', 'Pentágono', 'Hexágono', 'Octógono']
+        .filter((x) => x !== answer)
+        .slice(0, 3),
+      `Un polígono de ${sides} lados se llama ${answer.toLowerCase()}.`,
+      ['poligonos', 'clasificacion']
+    )
+  }
+
+  if (d === 2) {
+    const variants = [
+      {
+        prompt: 'Una figura cerrada tiene 5 lados y 5 vértices. ¿Qué figura es?',
+        answer: 'Pentágono',
+      },
+      {
+        prompt: 'Una señal tiene forma de polígono de 8 lados. ¿Cómo se llama esa figura?',
+        answer: 'Octógono',
+      },
+      {
+        prompt: 'Una figura cerrada está formada por 6 segmentos. ¿Cómo se clasifica?',
+        answer: 'Hexágono',
+      },
+      {
+        prompt: 'Una figura cerrada tiene exactamente 4 lados. ¿A qué familia pertenece?',
+        answer: 'Cuadriláteros',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Triángulo', 'Cuadriláteros', 'Pentágono', 'Hexágono', 'Octógono']
+        .filter((x) => x !== v.answer)
+        .slice(0, 3),
+      `La figura descrita corresponde a ${v.answer.toLowerCase()}.`,
+      ['poligonos', 'reconocimiento']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas afirmaciones sobre los polígonos es correcta?',
+      'Un pentágono tiene cinco lados y cinco vértices',
+      [
+        'Un hexágono tiene cinco lados',
+        'Todo cuadrilátero es un cuadrado',
+        'Un triángulo tiene cuatro vértices',
+      ],
+      'En un polígono hay tantos vértices como lados. Un pentágono tiene cinco de cada.',
+      ['poligonos', 'razonamiento']
+    )
+  }
+
+  if (d === 4) {
+    const sides = ri(5, 10)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un polígono tiene ${sides} vértices. ¿Cuántos lados tiene?`,
+      String(sides),
+      [
+        String(sides - 1),
+        String(sides + 1),
+        String(sides * 2),
+      ],
+      `Un polígono tiene el mismo número de lados que de vértices: ${sides}.`,
+      ['poligonos', 'lados_vertices']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Cuál de estas figuras NO es un polígono?',
+    'Una figura cerrada cuyo borde contiene un arco de circunferencia',
+    [
+      'Una figura cerrada formada por tres segmentos',
+      'Una figura cerrada formada por cinco segmentos',
+      'Una figura cerrada formada por ocho segmentos',
+    ],
+    'Los polígonos están formados únicamente por segmentos rectos.',
+    ['poligonos', 'propiedades', 'dificultad_alta']
+  )
+}
+
+if (key === 'triangle_types') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'Un triángulo tiene sus tres lados iguales. ¿Cómo se llama?',
+        answer: 'Equilátero',
+      },
+      {
+        prompt: 'Un triángulo tiene exactamente dos lados iguales. ¿Cómo se llama?',
+        answer: 'Isósceles',
+      },
+      {
+        prompt: 'Un triángulo tiene sus tres lados de distinta longitud. ¿Cómo se llama?',
+        answer: 'Escaleno',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Equilátero', 'Isósceles', 'Escaleno', 'Rectángulo'].filter(
+        (x) => x !== v.answer
+      ),
+      `Por sus lados, ese triángulo es ${v.answer.toLowerCase()}.`,
+      ['triangulos', 'clasificacion_lados']
+    )
+  }
+
+  if (d === 2) {
+    const variants = [
+      {
+        angles: '60°, 60° y 60°',
+        answer: 'Acutángulo',
+        explanation: 'Todos sus ángulos son menores de 90°.',
+      },
+      {
+        angles: '90°, 55° y 35°',
+        answer: 'Rectángulo',
+        explanation: 'Tiene un ángulo de 90°.',
+      },
+      {
+        angles: '110°, 40° y 30°',
+        answer: 'Obtusángulo',
+        explanation: 'Tiene un ángulo mayor de 90°.',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un triángulo tiene ángulos de ${v.angles}. ¿Cómo se clasifica según sus ángulos?`,
+      v.answer,
+      ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'Equilátero'].filter(
+        (x) => x !== v.answer
+      ),
+      v.explanation,
+      ['triangulos', 'clasificacion_angulos']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(3, 7)
+    const b = a
+    const c = ri(2, 8)
+
+    if (c === a) {
+      return mc(
+        skill,
+        d,
+        seed,
+        `Un triángulo tiene lados de ${a} cm, ${b} cm y ${c} cm. ¿Cómo se clasifica por sus lados?`,
+        'Equilátero',
+        ['Isósceles', 'Escaleno', 'Rectángulo'],
+        'Los tres lados tienen la misma longitud, por lo que es equilátero.',
+        ['triangulos', 'clasificacion_lados']
+      )
+    }
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un triángulo tiene lados de ${a} cm, ${b} cm y ${c} cm. ¿Cómo se clasifica por sus lados?`,
+      'Isósceles',
+      ['Equilátero', 'Escaleno', 'Rectángulo'],
+      `Dos lados miden ${a} cm, por lo que es isósceles.`,
+      ['triangulos', 'clasificacion_lados']
+    )
+  }
+
+  if (d === 4) {
+    const angle1 = ri(3, 7) * 10
+    const angle2 = ri(3, 7) * 10
+    const angle3 = 180 - angle1 - angle2
+
+    const answer =
+      angle1 === 90 || angle2 === 90 || angle3 === 90
+        ? 'Rectángulo'
+        : angle1 > 90 || angle2 > 90 || angle3 > 90
+          ? 'Obtusángulo'
+          : 'Acutángulo'
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dos ángulos de un triángulo miden ${angle1}° y ${angle2}°. ¿Cómo se clasifica el triángulo según sus ángulos?`,
+      answer,
+      ['Acutángulo', 'Rectángulo', 'Obtusángulo'].filter((x) => x !== answer),
+      `El tercer ángulo mide 180-${angle1}-${angle2}=${angle3}°. Por tanto es ${answer.toLowerCase()}.`,
+      ['triangulos', 'angulos', 'varios_pasos']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Cuál de estas afirmaciones es necesariamente cierta?',
+    'Todo triángulo equilátero es también acutángulo',
+    [
+      'Todo triángulo isósceles es rectángulo',
+      'Todo triángulo escaleno es obtusángulo',
+      'Todo triángulo rectángulo es equilátero',
+    ],
+    'Un triángulo equilátero tiene tres ángulos de 60°, por lo que todos son agudos.',
+    ['triangulos', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'quadrilateral_types') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'Tiene cuatro lados iguales y cuatro ángulos rectos. ¿Qué figura es?',
+        answer: 'Cuadrado',
+      },
+      {
+        prompt: 'Tiene cuatro ángulos rectos y los lados opuestos iguales. ¿Qué figura es?',
+        answer: 'Rectángulo',
+      },
+      {
+        prompt: 'Tiene cuatro lados iguales, pero sus ángulos no tienen por qué ser rectos. ¿Qué figura es?',
+        answer: 'Rombo',
+      },
+      {
+        prompt: 'Tiene un solo par de lados paralelos. ¿Qué tipo de cuadrilátero es?',
+        answer: 'Trapecio',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Cuadrado', 'Rectángulo', 'Rombo', 'Trapecio'].filter(
+        (x) => x !== v.answer
+      ),
+      `La descripción corresponde a un ${v.answer.toLowerCase()}.`,
+      ['cuadrilateros']
+    )
+  }
+
+  if (d === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Qué propiedad comparten siempre un cuadrado y un rectángulo?',
+      'Tienen cuatro ángulos rectos',
+      [
+        'Tienen siempre los cuatro lados iguales',
+        'Tienen exactamente un par de lados paralelos',
+        'Sus diagonales nunca se cortan',
+      ],
+      'Tanto el cuadrado como el rectángulo tienen cuatro ángulos de 90°.',
+      ['cuadrilateros', 'propiedades']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Una figura tiene cuatro lados iguales y dos pares de lados paralelos, pero no tiene ángulos rectos. ¿Cuál es?',
+      'Rombo',
+      ['Cuadrado', 'Rectángulo', 'Trapecio'],
+      'Un rombo tiene cuatro lados iguales; no necesita tener ángulos rectos.',
+      ['cuadrilateros', 'clasificacion']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas afirmaciones es correcta?',
+      'Todo cuadrado es también un rectángulo',
+      [
+        'Todo rectángulo es un cuadrado',
+        'Todo trapecio es un cuadrado',
+        'Todo rombo tiene cuatro ángulos rectos',
+      ],
+      'Un cuadrado cumple todas las propiedades de un rectángulo y además tiene los cuatro lados iguales.',
+      ['cuadrilateros', 'inclusion', 'razonamiento']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    'Un cuadrilátero tiene dos pares de lados opuestos paralelos y cuatro ángulos rectos. ¿Qué información adicional permitiría asegurar que es un cuadrado y no solo un rectángulo?',
+    'Que sus cuatro lados sean iguales',
+    [
+      'Que tenga cuatro vértices',
+      'Que sus lados opuestos sean paralelos',
+      'Que sus diagonales se corten',
+    ],
+    'Para pasar de rectángulo a cuadrado necesitamos además que los cuatro lados tengan la misma longitud.',
+    ['cuadrilateros', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'circle_elements') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'El segmento que une el centro de una circunferencia con uno de sus puntos se llama...',
+        answer: 'Radio',
+      },
+      {
+        prompt: 'El segmento que une dos puntos de una circunferencia pasando por el centro se llama...',
+        answer: 'Diámetro',
+      },
+      {
+        prompt: 'Un segmento que une dos puntos de una circunferencia se llama...',
+        answer: 'Cuerda',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Radio', 'Diámetro', 'Cuerda', 'Arco'].filter((x) => x !== v.answer),
+      `Ese elemento se denomina ${v.answer.toLowerCase()}.`,
+      ['circunferencia', 'elementos']
+    )
+  }
+
+  if (d === 2) {
+    const radius = ri(2, 12)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una circunferencia tiene radio de ${radius} cm. ¿Cuánto mide su diámetro?`,
+      `${radius * 2} cm`,
+      [
+        `${radius} cm`,
+        `${radius + 2} cm`,
+        `${radius * 4} cm`,
+      ],
+      `El diámetro es el doble del radio: ${radius}×2=${radius * 2} cm.`,
+      ['circunferencia', 'radio_diametro']
+    )
+  }
+
+  if (d === 3) {
+    const radius = ri(2, 12)
+    const diameter = radius * 2
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `El diámetro de una circunferencia mide ${diameter} cm. ¿Cuánto mide el radio?`,
+      `${radius} cm`,
+      [
+        `${diameter} cm`,
+        `${diameter * 2} cm`,
+        `${Math.max(1, radius - 1)} cm`,
+      ],
+      `El radio es la mitad del diámetro: ${diameter}÷2=${radius} cm.`,
+      ['circunferencia', 'radio_diametro']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas afirmaciones es siempre cierta?',
+      'Todo diámetro es también una cuerda',
+      [
+        'Toda cuerda es un diámetro',
+        'Todo radio es una cuerda',
+        'Todo arco pasa por el centro',
+      ],
+      'Un diámetro une dos puntos de la circunferencia, así que cumple la definición de cuerda; además pasa por el centro.',
+      ['circunferencia', 'razonamiento']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    'Una cuerda pasa exactamente por el centro de una circunferencia. ¿Qué podemos afirmar?',
+    'Esa cuerda es un diámetro',
+    [
+      'Esa cuerda es un radio',
+      'La cuerda deja de pertenecer a la circunferencia',
+      'Su longitud es la mitad del radio',
+    ],
+    'Una cuerda que pasa por el centro es precisamente un diámetro.',
+    ['circunferencia', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'symmetry') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: '¿Cuántos ejes de simetría tiene un cuadrado?',
+        answer: '4',
+        distractors: ['1', '2', '3'],
+        solution: 'El cuadrado tiene cuatro ejes de simetría.',
+      },
+      {
+        prompt: '¿Cuántos ejes de simetría tiene un rectángulo que no es cuadrado?',
+        answer: '2',
+        distractors: ['1', '3', '4'],
+        solution: 'Un rectángulo no cuadrado tiene dos ejes de simetría.',
+      },
+      {
+        prompt: '¿Cuántos ejes de simetría tiene un triángulo equilátero?',
+        answer: '3',
+        distractors: ['1', '2', '4'],
+        solution: 'Cada vértice del triángulo equilátero determina un eje de simetría.',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['simetria']
+    )
+  }
+
+  if (d === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas figuras tiene infinitos ejes de simetría?',
+      'Círculo',
+      ['Cuadrado', 'Rectángulo', 'Triángulo equilátero'],
+      'Cualquier diámetro de un círculo puede actuar como eje de simetría.',
+      ['simetria', 'figuras']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Un triángulo tiene exactamente un eje de simetría. ¿Qué tipo de triángulo puede ser?',
+      'Isósceles no equilátero',
+      ['Escaleno', 'Equilátero', 'Ningún triángulo'],
+      'Un triángulo isósceles no equilátero tiene un único eje de simetría.',
+      ['simetria', 'triangulos']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Una figura se dobla por una línea y las dos mitades coinciden exactamente. ¿Qué representa esa línea?',
+      'Un eje de simetría',
+      ['Una diagonal cualquiera', 'Un radio', 'Una secante'],
+      'Un eje de simetría divide una figura en dos partes que coinciden al superponerse.',
+      ['simetria', 'concepto']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Cuál de estas afirmaciones es correcta?',
+    'Un cuadrado tiene más ejes de simetría que un rectángulo no cuadrado',
+    [
+      'Todo triángulo tiene al menos un eje de simetría',
+      'Un círculo tiene exactamente cuatro ejes de simetría',
+      'Un triángulo escaleno tiene tres ejes de simetría',
+    ],
+    'El cuadrado tiene 4 ejes y un rectángulo no cuadrado tiene 2.',
+    ['simetria', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'solid_figures') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'Un cuerpo geométrico tiene 6 caras cuadradas iguales. ¿Cuál es?',
+        answer: 'Cubo',
+      },
+      {
+        prompt: 'Un cuerpo tiene dos bases circulares iguales y una superficie lateral curva. ¿Cuál es?',
+        answer: 'Cilindro',
+      },
+      {
+        prompt: 'Un cuerpo tiene una base circular y termina en un vértice. ¿Cuál es?',
+        answer: 'Cono',
+      },
+      {
+        prompt: 'Un cuerpo es completamente redondo y todos sus puntos están a la misma distancia del centro. ¿Cuál es?',
+        answer: 'Esfera',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Cubo', 'Cilindro', 'Cono', 'Esfera'].filter((x) => x !== v.answer),
+      `La descripción corresponde a ${v.answer.toLowerCase()}.`,
+      ['cuerpos_geometricos']
+    )
+  }
+
+  if (d === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Qué cuerpo geométrico puede rodar y además tiene dos bases circulares planas?',
+      'Cilindro',
+      ['Cubo', 'Pirámide', 'Prisma rectangular'],
+      'El cilindro tiene una superficie curva y dos bases circulares.',
+      ['cuerpos_geometricos', 'propiedades']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estos cuerpos NO tiene vértices?',
+      'Esfera',
+      ['Cubo', 'Pirámide', 'Prisma triangular'],
+      'La esfera no tiene caras planas, aristas ni vértices.',
+      ['cuerpos_geometricos', 'vertices']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Un cuerpo tiene dos bases poligonales iguales y paralelas unidas por caras laterales. ¿Qué familia de cuerpos describe?',
+      'Prismas',
+      ['Pirámides', 'Conos', 'Esferas'],
+      'Los prismas tienen dos bases iguales y paralelas.',
+      ['cuerpos_geometricos', 'prismas']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Qué diferencia esencial existe entre un prisma y una pirámide?',
+    'El prisma tiene dos bases iguales y paralelas; la pirámide tiene una base y un vértice común para las caras laterales',
+    [
+      'El prisma siempre tiene base circular',
+      'La pirámide tiene dos bases iguales y paralelas',
+      'Todos los prismas tienen seis caras cuadradas',
+    ],
+    'La estructura de las bases permite distinguir prismas y pirámides.',
+    ['cuerpos_geometricos', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+// =========================
+// M12 · PERÍMETROS Y ÁREAS
+// =========================
+
+// M12S01 · Perímetro de polígonos
+if (key === 'perimeter') {
+  if (d === 1) {
+    const side = ri(3, 12)
+    const result = side * 4
+
+    return mc(
+      skill, d, seed,
+      `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su perímetro?`,
+      `${result} cm`,
+      [
+        `${side * side} cm`,
+        `${side * 2} cm`,
+        `${result + side} cm`,
+      ],
+      `Perímetro = 4 × ${side} = ${result} cm.`,
+      ['perimetro', 'cuadrado']
+    )
+  }
+
+  if (d === 2) {
+    const width = ri(3, 12)
+    const height = ri(2, 10)
+    const result = 2 * (width + height)
+
+    return mc(
+      skill, d, seed,
+      `Un rectángulo mide ${width} cm de largo y ${height} cm de ancho. ¿Cuál es su perímetro?`,
+      `${result} cm`,
+      [
+        `${width * height} cm`,
+        `${width + height} cm`,
+        `${result + 2} cm`,
+      ],
+      `Perímetro = 2 × (${width} + ${height}) = ${result} cm.`,
+      ['perimetro', 'rectangulo']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(3, 9)
+    const b = ri(3, 9)
+    const c = ri(3, 9)
+    const result = a + b + c
+
+    return mc(
+      skill, d, seed,
+      `Un terreno triangular tiene lados de ${a} m, ${b} m y ${c} m. ¿Cuántos metros de valla hacen falta para rodearlo?`,
+      `${result} m`,
+      [
+        `${a * b} m`,
+        `${result + c} m`,
+        `${a + b} m`,
+      ],
+      `Hay que calcular el perímetro: ${a}+${b}+${c}=${result} m.`,
+      ['perimetro', 'problema']
+    )
+  }
+
+  if (d === 4) {
+    const width = ri(4, 12)
+    const height = ri(3, 10)
+    const perimeter = 2 * (width + height)
+
+    return mc(
+      skill, d, seed,
+      `Un rectángulo tiene ${width} cm de largo y un perímetro de ${perimeter} cm. ¿Cuánto mide su ancho?`,
+      `${height} cm`,
+      [
+        `${perimeter - width} cm`,
+        `${width + height} cm`,
+        `${height * 2} cm`,
+      ],
+      `La mitad del perímetro es ${perimeter / 2}. Entonces el ancho es ${perimeter / 2}-${width}=${height} cm.`,
+      ['perimetro', 'medida_desconocida']
+    )
+  }
+
+  const side = ri(4, 15)
+  const perimeter = side * 4
+
+  return mc(
+    skill, d, seed,
+    `Una parcela cuadrada necesita ${perimeter} m de valla para cerrar todo su contorno. ¿Cuánto mide cada lado?`,
+    `${side} m`,
+    [
+      `${perimeter / 2} m`,
+      `${side * 2} m`,
+      `${perimeter - 4} m`,
+    ],
+    `En un cuadrado los cuatro lados son iguales: ${perimeter}÷4=${side} m.`,
+    ['perimetro', 'problema_inverso', 'dificultad_alta']
+  )
+}
+
+// M12S02 · Área de rectángulo y cuadrado
+if (key === 'rectangle_square_area') {
+  if (d === 1) {
+    const side = ri(3, 12)
+    const result = side * side
+
+    return mc(
+      skill, d, seed,
       `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su área?`,
       `${result} cm²`,
       [
@@ -6618,59 +7536,174 @@ if (key === 'rectangle_square_area') {
     )
   }
 
-  const base = ri(4, 14)
-  const height = ri(3, 10)
-  const result = base * height
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Un rectángulo mide ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
-    `${result} cm²`,
-    [
-      `${2 * (base + height)} cm²`,
-      `${base + height} cm²`,
-      `${result + base} cm²`,
-    ],
-    `Área = base × altura = ${base} × ${height} = ${result} cm².`,
-    ['area_rectangulo']
-  )
-}
-
-// M12S03 · Área de triángulo
-if (key === 'triangle_area') {
-  const base = ri(3, 12) * 2
-  const height = ri(2, 10)
-  const result = (base * height) / 2
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Un triángulo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
-    `${result} cm²`,
-    [
-      `${base * height} cm²`,
-      `${base + height} cm²`,
-      `${result + height} cm²`,
-    ],
-    `Área = (base × altura) ÷ 2 = (${base} × ${height}) ÷ 2 = ${result} cm².`,
-    ['area_triangulo']
-  )
-}
-
-// M12S04 · Área de paralelogramo y trapecio
-if (key === 'quadrilateral_area') {
-  if (seed % 2 === 0) {
+  if (d === 2) {
     const base = ri(4, 14)
     const height = ri(3, 10)
     const result = base * height
 
     return mc(
-      skill,
-      d,
-      seed,
+      skill, d, seed,
+      `Un rectángulo mide ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
+      `${result} cm²`,
+      [
+        `${2 * (base + height)} cm²`,
+        `${base + height} cm²`,
+        `${result + base} cm²`,
+      ],
+      `Área = ${base} × ${height} = ${result} cm².`,
+      ['area_rectangulo']
+    )
+  }
+
+  if (d === 3) {
+    const base = ri(4, 15)
+    const height = ri(3, 10)
+    const result = base * height
+
+    const contexts = [
+      `Una pared rectangular mide ${base} m de largo y ${height} m de alto. ¿Qué superficie tiene?`,
+      `Un jardín rectangular mide ${base} m por ${height} m. ¿Cuál es su área?`,
+      `Una pista rectangular mide ${base} m de largo y ${height} m de ancho. ¿Qué superficie ocupa?`,
+    ]
+
+    return mc(
+      skill, d, seed,
+      contexts[ri(0, contexts.length - 1)],
+      `${result} m²`,
+      [
+        `${2 * (base + height)} m²`,
+        `${base + height} m²`,
+        `${result + height} m²`,
+      ],
+      `Área = ${base} × ${height} = ${result} m².`,
+      ['area_rectangulo', 'problema']
+    )
+  }
+
+  if (d === 4) {
+    const height = ri(3, 10)
+    const base = ri(4, 14)
+    const area = base * height
+
+    return mc(
+      skill, d, seed,
+      `Un rectángulo tiene un área de ${area} cm² y una altura de ${height} cm. ¿Cuánto mide su base?`,
+      `${base} cm`,
+      [
+        `${area - height} cm`,
+        `${base + height} cm`,
+        `${height * 2} cm`,
+      ],
+      `Base = área ÷ altura = ${area}÷${height}=${base} cm.`,
+      ['area_rectangulo', 'medida_desconocida']
+    )
+  }
+
+  const side = ri(4, 12)
+  const area = side * side
+  const perimeter = side * 4
+
+  return mc(
+    skill, d, seed,
+    `Un cuadrado tiene un área de ${area} cm². ¿Cuál es su perímetro?`,
+    `${perimeter} cm`,
+    [
+      `${area * 4} cm`,
+      `${side * 2} cm`,
+      `${area / 2} cm`,
+    ],
+    `Si el área es ${area} cm², el lado mide ${side} cm. Perímetro = 4×${side}=${perimeter} cm.`,
+    ['area_cuadrado', 'perimetro', 'varios_pasos', 'dificultad_alta']
+  )
+}
+
+// M12S03 · Área de triángulo
+if (key === 'triangle_area') {
+  if (d <= 2) {
+    const base = ri(3, 12) * 2
+    const height = ri(2, 10)
+    const result = (base * height) / 2
+
+    return mc(
+      skill, d, seed,
+      `Un triángulo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
+      `${result} cm²`,
+      [
+        `${base * height} cm²`,
+        `${base + height} cm²`,
+        `${result + height} cm²`,
+      ],
+      `Área = (${base} × ${height}) ÷ 2 = ${result} cm².`,
+      ['area_triangulo']
+    )
+  }
+
+  if (d === 3) {
+    const base = ri(4, 14) * 2
+    const height = ri(3, 10)
+    const result = (base * height) / 2
+
+    return mc(
+      skill, d, seed,
+      `Una parcela triangular tiene ${base} m de base y ${height} m de altura. ¿Qué superficie ocupa?`,
+      `${result} m²`,
+      [
+        `${base * height} m²`,
+        `${base + height} m²`,
+        `${result * 2 + height} m²`,
+      ],
+      `Área del triángulo = (${base}×${height})÷2=${result} m².`,
+      ['area_triangulo', 'problema']
+    )
+  }
+
+  if (d === 4) {
+    const height = ri(3, 10)
+    const base = ri(3, 12) * 2
+    const area = (base * height) / 2
+
+    return mc(
+      skill, d, seed,
+      `Un triángulo tiene un área de ${area} cm² y una altura de ${height} cm. ¿Cuánto mide su base?`,
+      `${base} cm`,
+      [
+        `${area / height} cm`,
+        `${area - height} cm`,
+        `${base / 2} cm`,
+      ],
+      `Base = (2×área)÷altura = (2×${area})÷${height}=${base} cm.`,
+      ['area_triangulo', 'medida_desconocida']
+    )
+  }
+
+  const base = ri(4, 12) * 2
+  const height = ri(3, 10)
+  const rectangleArea = base * height
+  const triangleArea = rectangleArea / 2
+
+  return mc(
+    skill, d, seed,
+    `Un rectángulo de ${base} cm por ${height} cm se corta por una diagonal formando dos triángulos iguales. ¿Cuál es el área de cada triángulo?`,
+    `${triangleArea} cm²`,
+    [
+      `${rectangleArea} cm²`,
+      `${base + height} cm²`,
+      `${triangleArea * 2 + height} cm²`,
+    ],
+    `El rectángulo ocupa ${rectangleArea} cm². La diagonal lo divide en dos partes iguales: ${rectangleArea}÷2=${triangleArea} cm².`,
+    ['area_triangulo', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+// M12S04 · Área de paralelogramo y trapecio
+if (key === 'quadrilateral_area') {
+  if (d <= 2) {
+    const base = ri(4, 14)
+    const height = ri(3, 10)
+    const result = base * height
+
+    return mc(
+      skill, d, seed,
       `Un paralelogramo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
       `${result} cm²`,
       [
@@ -6678,43 +7711,77 @@ if (key === 'quadrilateral_area') {
         `${base + height} cm²`,
         `${result + height} cm²`,
       ],
-      `Área = base × altura = ${base} × ${height} = ${result} cm².`,
+      `Área = base × altura = ${base}×${height}=${result} cm².`,
       ['area_paralelogramo']
     )
   }
 
-  const base1 = ri(6, 14)
-  const base2 = ri(2, base1 - 2)
-  const height = ri(2, 8) * 2
-  const result = ((base1 + base2) * height) / 2
+  if (d === 3) {
+    const base1 = ri(6, 14)
+    const base2 = ri(2, base1 - 2)
+    const height = ri(2, 8) * 2
+    const result = ((base1 + base2) * height) / 2
+
+    return mc(
+      skill, d, seed,
+      `Un trapecio tiene bases de ${base1} cm y ${base2} cm y altura de ${height} cm. ¿Cuál es su área?`,
+      `${result} cm²`,
+      [
+        `${(base1 + base2) * height} cm²`,
+        `${base1 * base2} cm²`,
+        `${base1 + base2 + height} cm²`,
+      ],
+      `Área = ((${base1}+${base2})×${height})÷2=${result} cm².`,
+      ['area_trapecio']
+    )
+  }
+
+  if (d === 4) {
+    const base = ri(5, 14)
+    const height = ri(3, 10)
+    const area = base * height
+
+    return mc(
+      skill, d, seed,
+      `Un paralelogramo tiene un área de ${area} cm² y una base de ${base} cm. ¿Cuál es su altura?`,
+      `${height} cm`,
+      [
+        `${area - base} cm`,
+        `${base + height} cm`,
+        `${height * 2} cm`,
+      ],
+      `Altura = área ÷ base = ${area}÷${base}=${height} cm.`,
+      ['area_paralelogramo', 'medida_desconocida']
+    )
+  }
+
+  const base1 = ri(8, 16)
+  const base2 = ri(3, base1 - 2)
+  const height = ri(2, 7) * 2
+  const area = ((base1 + base2) * height) / 2
 
   return mc(
-    skill,
-    d,
-    seed,
-    `Un trapecio tiene bases de ${base1} cm y ${base2} cm, y altura de ${height} cm. ¿Cuál es su área?`,
-    `${result} cm²`,
+    skill, d, seed,
+    `Una parcela con forma de trapecio tiene bases de ${base1} m y ${base2} m y altura de ${height} m. Si cada metro cuadrado cuesta 2 €, ¿cuánto cuesta cubrir toda la parcela?`,
+    `${area * 2} €`,
     [
-      `${(base1 + base2) * height} cm²`,
-      `${base1 * base2} cm²`,
-      `${base1 + base2 + height} cm²`,
+      `${area} €`,
+      `${(base1 + base2) * height * 2} €`,
+      `${area + 2} €`,
     ],
-    `Área = ((B + b) × h) ÷ 2 = ((${base1} + ${base2}) × ${height}) ÷ 2 = ${result} cm².`,
-    ['area_trapecio']
+    `Primero calculamos el área: ${area} m². Después: ${area}×2=${area * 2} €.`,
+    ['area_trapecio', 'problema', 'varios_pasos', 'dificultad_alta']
   )
 }
 
 // M12S05 · Circunferencia y círculo
 if (key === 'circle_measure') {
-  const radius = ri(2, 10)
-
-  if (seed % 2 === 0) {
+  if (d === 1) {
+    const radius = ri(2, 10)
     const diameter = radius * 2
 
     return mc(
-      skill,
-      d,
-      seed,
+      skill, d, seed,
       `Un círculo tiene radio de ${radius} cm. ¿Cuál es su diámetro?`,
       `${diameter} cm`,
       [
@@ -6722,57 +7789,173 @@ if (key === 'circle_measure') {
         `${radius * 3} cm`,
         `${diameter + 1} cm`,
       ],
-      `El diámetro es el doble del radio: 2 × ${radius} = ${diameter} cm.`,
+      `Diámetro = 2×radio = 2×${radius}=${diameter} cm.`,
       ['diametro_circulo']
     )
   }
 
-  const diameter = radius * 2
-  const circumference = Math.round(Math.PI * diameter * 100) / 100
+  if (d === 2) {
+    const diameter = ri(2, 10) * 2
+    const radius = diameter / 2
+
+    return mc(
+      skill, d, seed,
+      `Una circunferencia tiene ${diameter} cm de diámetro. ¿Cuál es su radio?`,
+      `${radius} cm`,
+      [
+        `${diameter} cm`,
+        `${diameter * 2} cm`,
+        `${radius + 2} cm`,
+      ],
+      `Radio = diámetro÷2 = ${diameter}÷2=${radius} cm.`,
+      ['radio_circulo']
+    )
+  }
+
+  if (d === 3) {
+    const diameter = ri(2, 10) * 2
+    const result = 3.14 * diameter
+
+    return mc(
+      skill, d, seed,
+      `Una circunferencia tiene diámetro de ${diameter} cm. Usando π ≈ 3,14, ¿cuánto mide aproximadamente su longitud?`,
+      `${result.toFixed(2)} cm`,
+      [
+        `${(3.14 * (diameter / 2)).toFixed(2)} cm`,
+        `${(diameter * 2).toFixed(2)} cm`,
+        `${(diameter + 3.14).toFixed(2)} cm`,
+      ],
+      `Longitud ≈ π×diámetro = 3,14×${diameter}=${result.toFixed(2)} cm.`,
+      ['longitud_circunferencia']
+    )
+  }
+
+  if (d === 4) {
+    const radius = ri(2, 10)
+    const area = 3.14 * radius * radius
+
+    return mc(
+      skill, d, seed,
+      `Un círculo tiene radio de ${radius} cm. Usando π ≈ 3,14, ¿cuál es aproximadamente su área?`,
+      `${area.toFixed(2)} cm²`,
+      [
+        `${(3.14 * radius * 2).toFixed(2)} cm²`,
+        `${(3.14 * radius).toFixed(2)} cm²`,
+        `${(radius * radius).toFixed(2)} cm²`,
+      ],
+      `Área ≈ π×r² = 3,14×${radius}²=${area.toFixed(2)} cm².`,
+      ['area_circulo']
+    )
+  }
+
+  const radius = ri(2, 8)
+  const circumference = 2 * 3.14 * radius
+  const area = 3.14 * radius * radius
 
   return mc(
-    skill,
-    d,
-    seed,
-    `Una circunferencia tiene diámetro de ${diameter} cm. Usando π ≈ 3,14, ¿cuánto mide aproximadamente su longitud?`,
-    `${(3.14 * diameter).toFixed(2)} cm`,
+    skill, d, seed,
+    `Una pista circular tiene radio de ${radius} m. Usando π ≈ 3,14, ¿qué pareja indica correctamente su longitud exterior y su área?`,
+    `${circumference.toFixed(2)} m y ${area.toFixed(2)} m²`,
     [
-      `${(3.14 * radius).toFixed(2)} cm`,
-      `${diameter * 2} cm`,
-      `${(diameter + 3.14).toFixed(2)} cm`,
+      `${area.toFixed(2)} m y ${circumference.toFixed(2)} m²`,
+      `${(3.14 * radius).toFixed(2)} m y ${area.toFixed(2)} m²`,
+      `${circumference.toFixed(2)} m y ${(radius * radius).toFixed(2)} m²`,
     ],
-    `Longitud ≈ π × diámetro = 3,14 × ${diameter} = ${(3.14 * diameter).toFixed(2)} cm.`,
-    ['longitud_circunferencia']
+    `Longitud = 2πr ≈ ${circumference.toFixed(2)} m. Área = πr² ≈ ${area.toFixed(2)} m².`,
+    ['circulo', 'longitud', 'area', 'dificultad_alta']
   )
 }
 
 // M12S06 · Figuras compuestas
 if (key === 'composite_area') {
-  const width1 = ri(3, 8)
-  const height1 = ri(2, 6)
-  const width2 = ri(2, 6)
-  const height2 = ri(2, 5)
+  if (d <= 2) {
+    const width1 = ri(3, 8)
+    const height1 = ri(2, 6)
+    const width2 = ri(2, 6)
+    const height2 = ri(2, 5)
+    const area1 = width1 * height1
+    const area2 = width2 * height2
+    const result = area1 + area2
 
-  const area1 = width1 * height1
-  const area2 = width2 * height2
-  const result = area1 + area2
+    return mc(
+      skill, d, seed,
+      `Una figura está formada por dos rectángulos sin solaparse. Uno mide ${width1} cm × ${height1} cm y el otro ${width2} cm × ${height2} cm. ¿Cuál es el área total?`,
+      `${result} cm²`,
+      [
+        `${area1} cm²`,
+        `${area2} cm²`,
+        `${result + width2} cm²`,
+      ],
+      `Área total = ${area1}+${area2}=${result} cm².`,
+      ['figuras_compuestas']
+    )
+  }
+
+  if (d === 3) {
+    const bigW = ri(7, 12)
+    const bigH = ri(6, 10)
+    const cutW = ri(2, 4)
+    const cutH = ri(2, 4)
+    const result = bigW * bigH - cutW * cutH
+
+    return mc(
+      skill, d, seed,
+      `Una figura se obtiene de un rectángulo de ${bigW} cm × ${bigH} cm quitando una esquina rectangular de ${cutW} cm × ${cutH} cm. ¿Qué área queda?`,
+      `${result} cm²`,
+      [
+        `${bigW * bigH} cm²`,
+        `${cutW * cutH} cm²`,
+        `${result + cutW * cutH} cm²`,
+      ],
+      `Área = ${bigW}×${bigH} - ${cutW}×${cutH} = ${result} cm².`,
+      ['figuras_compuestas', 'resta_areas']
+    )
+  }
+
+  if (d === 4) {
+    const rectW = ri(5, 10)
+    const rectH = ri(3, 7)
+    const triBase = ri(3, 8) * 2
+    const triHeight = ri(2, 6)
+    const rectArea = rectW * rectH
+    const triArea = (triBase * triHeight) / 2
+    const result = rectArea + triArea
+
+    return mc(
+      skill, d, seed,
+      `Una figura está formada por un rectángulo de ${rectW} cm × ${rectH} cm y un triángulo de base ${triBase} cm y altura ${triHeight} cm, sin solaparse. ¿Cuál es el área total?`,
+      `${result} cm²`,
+      [
+        `${rectArea} cm²`,
+        `${rectArea + triBase * triHeight} cm²`,
+        `${triArea} cm²`,
+      ],
+      `Rectángulo: ${rectArea} cm². Triángulo: ${triArea} cm². Total: ${result} cm².`,
+      ['figuras_compuestas', 'rectangulo_triangulo']
+    )
+  }
+
+  const bigW = ri(8, 14)
+  const bigH = ri(7, 12)
+  const cutW = ri(2, 5)
+  const cutH = ri(2, 5)
+  const remainingArea = bigW * bigH - cutW * cutH
+  const price = ri(2, 5)
+  const cost = remainingArea * price
 
   return mc(
-    skill,
-    d,
-    seed,
-    `Una figura está formada por dos rectángulos sin solaparse. Uno mide ${width1} cm × ${height1} cm y el otro ${width2} cm × ${height2} cm. ¿Cuál es el área total?`,
-    `${result} cm²`,
+    skill, d, seed,
+    `Un suelo rectangular de ${bigW} m × ${bigH} m tiene una zona de ${cutW} m × ${cutH} m que no se va a cubrir. Si cubrir cada m² cuesta ${price} €, ¿cuál es el coste total?`,
+    `${cost} €`,
     [
-      `${area1} cm²`,
-      `${area2} cm²`,
-      `${result + width2} cm²`,
+      `${bigW * bigH * price} €`,
+      `${remainingArea} €`,
+      `${cutW * cutH * price} €`,
     ],
-    `Área total = ${width1}×${height1} + ${width2}×${height2} = ${area1} + ${area2} = ${result} cm².`,
-    ['figuras_compuestas']
+    `Área útil = ${bigW * bigH}-${cutW * cutH}=${remainingArea} m². Coste = ${remainingArea}×${price}=${cost} €.`,
+    ['figuras_compuestas', 'problema', 'varios_pasos', 'dificultad_alta']
   )
-}
- 
+} 
 // ============================================================
 // M13 · TABLAS Y GRÁFICAS
 // ============================================================
