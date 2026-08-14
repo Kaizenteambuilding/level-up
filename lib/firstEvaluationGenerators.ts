@@ -1643,32 +1643,122 @@ if (key === 'lcm') {
 }
 
   // =========================
-  // M04 · NÚMEROS ENTEROS
-  // =========================
+// M04 · NÚMEROS ENTEROS
+// =========================
 
-  if (key === 'integers_context') {
-    const t = ri(1, 12)
+if (key === 'integers_context') {
+  const variants = [
+    {
+      prompt: 'Un ascensor está 3 plantas bajo la planta baja. ¿Qué número entero representa su posición?',
+      answer: '-3',
+      distractors: ['3', '0', '-2'],
+      solution: 'Las plantas bajo la planta baja se representan con números negativos.',
+    },
+    {
+      prompt: 'La temperatura es de 5 °C bajo cero. ¿Qué número entero la representa?',
+      answer: '-5',
+      distractors: ['5', '0', '-4'],
+      solution: 'Una temperatura bajo cero se representa con un número negativo.',
+    },
+    {
+      prompt: 'Un submarino está a 8 metros bajo el nivel del mar. ¿Qué número representa su posición?',
+      answer: '-8',
+      distractors: ['8', '0', '-7'],
+      solution: 'Las posiciones bajo el nivel del mar se representan con números negativos.',
+    },
+    {
+      prompt: 'Un jugador gana 6 puntos. ¿Qué número entero representa el cambio en su puntuación?',
+      answer: '+6',
+      distractors: ['-6', '0', '+5'],
+      solution: 'Una ganancia se representa mediante un número positivo.',
+    },
+  ]
+
+  if (d <= 2) {
+    const v = variants[ri(0, variants.length - 1)]
 
     return mc(
       skill,
       d,
       seed,
-      `La temperatura está ${t} grados bajo cero. ¿Qué número entero la representa?`,
-      String(-t),
-      [
-        String(t),
-        '0',
-        String(-t - 1),
-      ],
-      `Bajo cero se representa con signo negativo: ${-t}.`,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
       ['enteros_contexto']
     )
   }
 
-  if (key === 'integers_order') {
-    const a = -ri(2, 20)
-    const b = -ri(2, 20)
-    const answer = a > b ? '>' : a < b ? '<' : '='
+  const amount = ri(3, d === 3 ? 10 : 20)
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una cuenta tiene un saldo de ${amount} € y se produce un cargo de ${amount + 4} €. ¿Qué número entero representa el saldo final?`,
+      '-4',
+      [
+        '4',
+        String(amount + 4),
+        String(-amount),
+      ],
+      `${amount} - ${amount + 4} = -4. El saldo queda 4 € por debajo de cero.`,
+      ['enteros_contexto', 'saldo']
+    )
+  }
+
+  if (d === 4) {
+    const start = ri(-10, 5)
+    const change = ri(6, 15)
+    const result = start - change
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `La temperatura era de ${start} °C y baja ${change} °C. ¿Qué temperatura queda?`,
+      `${result} °C`,
+      [
+        `${start + change} °C`,
+        `${Math.abs(result)} °C`,
+        `${-change} °C`,
+      ],
+      `${start} - ${change} = ${result}.`,
+      ['enteros_contexto', 'cambios']
+    )
+  }
+
+  const start = ri(-15, -3)
+  const rise = ri(4, 12)
+  const fall = ri(5, 14)
+  const result = start + rise - fall
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un submarino está a ${start} m respecto al nivel del mar. Sube ${rise} m y después baja ${fall} m. ¿A qué nivel queda?`,
+    `${result} m`,
+    [
+      `${start + rise + fall} m`,
+      `${Math.abs(result)} m`,
+      `${start - rise + fall} m`,
+    ],
+    `${start} + ${rise} - ${fall} = ${result}.`,
+    ['enteros_contexto', 'varios_cambios', 'dificultad_alta']
+  )
+}
+
+if (key === 'integers_compare') {
+  const limit = [6, 10, 20, 50, 100][d - 1]
+  let a = ri(-limit, limit)
+  let b = ri(-limit, limit)
+
+  while (a === b) b = ri(-limit, limit)
+
+  if (d <= 2) {
+    const answer = a > b ? '>' : '<'
 
     return mc(
       skill,
@@ -1676,220 +1766,347 @@ if (key === 'lcm') {
       seed,
       `Completa: ${a} __ ${b}`,
       answer,
-      ['<', '>', '=', '≠'].filter((x) => x !== answer),
-      `En la recta numérica, el número que está más a la derecha es mayor.`,
-      ['orden_enteros']
-    )
-  }
-
-  if (key === 'absolute_opposite') {
-    const n = ri(2, 30)
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es el valor absoluto de -${n}?`,
-      String(n),
-      [
-        String(-n),
-        String(n + 1),
-        '0',
-      ],
-      `|-${n}|=${n}.`,
-      ['valor_absoluto']
-    )
-  }
-
- if (key === 'integers_add') {
-  const ranges = [10, 20, 40, 80, 150]
-  const limit = ranges[d - 1]
-
-  if (d <= 2) {
-    const a = ri(-limit, limit)
-    const b = ri(-limit, limit)
-    const result = a + b
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula (${a}) + (${b})`,
-      String(result),
-      [
-        String(a - b),
-        String(-result),
-        String(Math.abs(a) + Math.abs(b)),
-      ],
-      `Sumamos los enteros teniendo en cuenta sus signos. Resultado: ${result}.`,
-      ['suma_enteros']
+      ['<', '>', '=', '≤'].filter((x) => x !== answer),
+      `En la recta numérica, ${a} está ${a > b ? 'a la derecha' : 'a la izquierda'} de ${b}.`,
+      ['comparar_enteros']
     )
   }
 
   if (d === 3) {
-    const a = ri(-40, 40)
-    const b = ri(-40, 40)
-    const c = ri(-30, 30)
-    const result = a + b + c
+    const values = [ri(-limit, -1), ri(-limit, -1), ri(0, limit)]
+    const answer = String(Math.max(...values))
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula (${a}) + (${b}) + (${c})`,
+      `¿Cuál es el mayor de estos números: ${values.join(', ')}?`,
+      answer,
+      values.map(String).filter((x) => x !== answer).concat([String(-limit)]),
+      `El número mayor es ${answer}.`,
+      ['comparar_enteros', 'orden']
+    )
+  }
+
+  if (d === 4) {
+    const x = ri(2, limit)
+    const values = [-x, x, 0, -x - 1]
+    const answer = String(-x - 1)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es el menor de estos números: ${values.join(', ')}?`,
+      answer,
+      values.map(String).filter((v) => v !== answer),
+      `Entre números negativos, el que tiene mayor valor absoluto está más a la izquierda. El menor es ${answer}.`,
+      ['comparar_enteros', 'orden']
+    )
+  }
+
+  const x = ri(10, limit)
+  const y = ri(1, 9)
+  const values = [-x, -(x - y), x - y, -y]
+  const sorted = [...values].sort((m, n) => m - n)
+  const answer = sorted.join(' < ')
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál es el orden correcto de menor a mayor para ${values.join(', ')}?`,
+    answer,
+    [
+      [...sorted].reverse().join(' < '),
+      [sorted[1], sorted[0], sorted[2], sorted[3]].join(' < '),
+      [sorted[0], sorted[2], sorted[1], sorted[3]].join(' < '),
+    ],
+    `En la recta numérica el orden es ${answer}.`,
+    ['comparar_enteros', 'orden_multiple', 'dificultad_alta']
+  )
+}
+
+if (key === 'integers_number_line') {
+  const limit = [5, 10, 15, 25, 40][d - 1]
+
+  if (d === 1) {
+    const n = ri(-limit, limit)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una recta numérica, ¿qué número está inmediatamente a la derecha de ${n}?`,
+      String(n + 1),
+      [
+        String(n - 1),
+        String(-n),
+        String(n + 2),
+      ],
+      `Al movernos una posición a la derecha sumamos 1: ${n} + 1 = ${n + 1}.`,
+      ['recta_numerica']
+    )
+  }
+
+  if (d === 2) {
+    const n = ri(-limit, limit)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una recta numérica, ¿qué número está inmediatamente a la izquierda de ${n}?`,
+      String(n - 1),
+      [
+        String(n + 1),
+        String(-n),
+        String(n - 2),
+      ],
+      `Al movernos una posición a la izquierda restamos 1: ${n} - 1 = ${n - 1}.`,
+      ['recta_numerica']
+    )
+  }
+
+  if (d === 3) {
+    const start = ri(-10, 5)
+    const steps = ri(2, 8)
+    const answer = start + steps
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Partes de ${start} en la recta numérica y avanzas ${steps} posiciones a la derecha. ¿Dónde llegas?`,
+      String(answer),
+      [
+        String(start - steps),
+        String(steps),
+        String(answer + 1),
+      ],
+      `${start} + ${steps} = ${answer}.`,
+      ['recta_numerica', 'desplazamiento']
+    )
+  }
+
+  if (d === 4) {
+    const start = ri(-5, 15)
+    const steps = ri(5, 15)
+    const answer = start - steps
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Partes de ${start} y retrocedes ${steps} posiciones en la recta numérica. ¿Dónde llegas?`,
+      String(answer),
+      [
+        String(start + steps),
+        String(-answer),
+        String(answer - 1),
+      ],
+      `Retroceder significa restar: ${start} - ${steps} = ${answer}.`,
+      ['recta_numerica', 'desplazamiento']
+    )
+  }
+
+  const start = ri(-15, 10)
+  const right = ri(5, 15)
+  const left = ri(5, 15)
+  const answer = start + right - left
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Desde ${start} avanzas ${right} posiciones a la derecha y después ${left} a la izquierda. ¿En qué número terminas?`,
+    String(answer),
+    [
+      String(start + right + left),
+      String(start - right + left),
+      String(Math.abs(answer)),
+    ],
+    `${start} + ${right} - ${left} = ${answer}.`,
+    ['recta_numerica', 'varios_desplazamientos', 'dificultad_alta']
+  )
+}
+
+if (key === 'integers_add') {
+  const limit = [6, 10, 20, 40, 75][d - 1]
+  const a = ri(-limit, limit)
+  const b = ri(-limit, limit)
+  const result = a + b
+
+  if (d <= 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} + (${b})`,
       String(result),
       [
-        String(a + b - c),
-        String(-(a + b + c)),
-        String(Math.abs(a) + Math.abs(b) + Math.abs(c)),
+        String(a - b),
+        String(-result),
+        String(result + 1),
       ],
-      `Sumamos los tres enteros paso a paso. Resultado: ${result}.`,
+      `${a} + (${b}) = ${result}.`,
+      ['suma_enteros', `dificultad_${d}`]
+    )
+  }
+
+  if (d === 3) {
+    const c = ri(-10, 10)
+    const answer = a + b + c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} + (${b}) + (${c})`,
+      String(answer),
+      [
+        String(a + b - c),
+        String(-answer),
+        String(answer + 2),
+      ],
+      `${a} + (${b}) + (${c}) = ${answer}.`,
       ['suma_enteros', 'tres_terminos']
     )
   }
 
   if (d === 4) {
-    const a = ri(-70, 70)
-    const b = ri(-70, 70)
-    const c = ri(-50, 50)
-    const e = ri(-40, 40)
-    const result = a + b + c + e
+    const c = ri(-20, 20)
+    const answer = a + b + c
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula (${a}) + (${b}) + (${c}) + (${e})`,
-      String(result),
+      `La temperatura cambia así: ${a >= 0 ? '+' : ''}${a} °C, ${b >= 0 ? '+' : ''}${b} °C y ${c >= 0 ? '+' : ''}${c} °C. ¿Cuál es el cambio total?`,
+      `${answer} °C`,
       [
-        String(a + b + c - e),
-        String(-result),
-        String(result + 10),
+        `${Math.abs(answer)} °C`,
+        `${a + b - c} °C`,
+        `${answer + 1} °C`,
       ],
-      `Sumamos los cuatro enteros respetando sus signos. Resultado: ${result}.`,
-      ['suma_enteros', 'cuatro_terminos']
+      `Sumamos los tres cambios: ${a} + (${b}) + (${c}) = ${answer}.`,
+      ['suma_enteros', 'contexto']
     )
   }
 
-  const a = ri(-120, 120)
-  const b = ri(-120, 120)
-  const c = ri(-90, 90)
-  const e = ri(-80, 80)
-  const f = ri(-60, 60)
-  const result = a + b + c + e + f
+  const c = ri(-30, 30)
+  const d4 = ri(-20, 20)
+  const answer = a + b + c + d4
 
   return mc(
     skill,
     d,
     seed,
-    `Calcula (${a}) + (${b}) + (${c}) + (${e}) + (${f})`,
-    String(result),
+    `Calcula ${a} + (${b}) + (${c}) + (${d4})`,
+    String(answer),
     [
-      String(a + b + c + e - f),
-      String(-result),
-      String(result + 20),
+      String(a + b + c - d4),
+      String(-answer),
+      String(answer + 5),
     ],
-    `Sumamos los cinco enteros teniendo en cuenta todos los signos. Resultado: ${result}.`,
-    ['suma_enteros', 'cinco_terminos', 'dificultad_alta']
+    `Sumando todos los términos obtenemos ${answer}.`,
+    ['suma_enteros', 'cuatro_terminos', 'dificultad_alta']
   )
 }
 
 if (key === 'integers_sub') {
-  if (d <= 2) {
-    const limit = d === 1 ? 10 : 25
-    const a = ri(-limit, limit)
-    const b = ri(-limit, limit)
-    const result = a - b
+  const limit = [6, 10, 20, 40, 75][d - 1]
+  const a = ri(-limit, limit)
+  const b = ri(-limit, limit)
+  const result = a - b
 
+  if (d <= 2) {
     return mc(
       skill,
       d,
       seed,
-      `Calcula (${a}) - (${b})`,
+      `Calcula ${a} - (${b})`,
       String(result),
       [
         String(a + b),
         String(-result),
-        String(b - a),
+        String(result - 1),
       ],
-      `Restar ${b} equivale a sumar su opuesto. Resultado: ${result}.`,
-      ['resta_enteros']
+      `${a} - (${b}) = ${result}.`,
+      ['resta_enteros', `dificultad_${d}`]
     )
   }
 
   if (d === 3) {
-    const a = ri(-40, 40)
-    const b = ri(-30, 30)
-    const c = ri(-30, 30)
-    const result = a - b - c
+    const c = ri(-10, 10)
+    const answer = a - b - c
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula (${a}) - (${b}) - (${c})`,
-      String(result),
+      `Calcula ${a} - (${b}) - (${c})`,
+      String(answer),
       [
         String(a + b - c),
         String(a - b + c),
-        String(-result),
+        String(-answer),
       ],
-      `Restamos paso a paso, convirtiendo cada resta en suma del opuesto. Resultado: ${result}.`,
+      `${a} - (${b}) - (${c}) = ${answer}.`,
       ['resta_enteros', 'tres_terminos']
     )
   }
 
   if (d === 4) {
-    const a = ri(-70, 70)
-    const b = ri(-50, 50)
-    const c = ri(-50, 50)
-    const e = ri(-40, 40)
-    const result = a - b + c - e
+    const start = ri(-20, 20)
+    const change = ri(-20, 20)
+    const answer = start - change
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula (${a}) - (${b}) + (${c}) - (${e})`,
-      String(result),
+      `Un marcador está en ${start}. Se le resta (${change}). ¿Cuál es el nuevo valor?`,
+      String(answer),
       [
-        String(a + b + c - e),
-        String(a - b - c - e),
-        String(-result),
+        String(start + change),
+        String(-answer),
+        String(answer + 2),
       ],
-      `Convertimos las restas en sumas de opuestos y operamos de izquierda a derecha. Resultado: ${result}.`,
-      ['resta_enteros', 'operaciones_encadenadas']
+      `${start} - (${change}) = ${answer}.`,
+      ['resta_enteros', 'contexto']
     )
   }
 
-  const a = ri(-120, 120)
-  const b = ri(-90, 90)
-  const c = ri(-80, 80)
-  const e = ri(-70, 70)
-  const f = ri(-60, 60)
-
-  const result = a - b + c - e + f
+  const c = ri(-25, 25)
+  const answer = a - b + c
 
   return mc(
     skill,
     d,
     seed,
-    `Calcula (${a}) - (${b}) + (${c}) - (${e}) + (${f})`,
-    String(result),
+    `Calcula ${a} - (${b}) + (${c})`,
+    String(answer),
     [
-      String(a + b + c - e + f),
-      String(a - b - c - e + f),
-      String(-result),
+      String(a + b + c),
+      String(a - b - c),
+      String(-answer),
     ],
-    `Transformamos cada resta en suma del opuesto y resolvemos toda la expresión. Resultado: ${result}.`,
-    ['resta_enteros', 'operaciones_encadenadas', 'dificultad_alta']
+    `${a} - (${b}) + (${c}) = ${answer}.`,
+    ['resta_enteros', 'operaciones_combinadas', 'dificultad_alta']
   )
 }
 
-  if (key === 'integers_mult_div') {
-  if (seed % 2 === 0) {
-    const a = ri(-12, 12) || 3
-    const b = ri(-12, 12) || -4
+if (key === 'integers_mult_div') {
+  const maxFactor = [5, 8, 10, 12, 15][d - 1]
+  const aAbs = ri(2, maxFactor)
+  const bAbs = ri(2, maxFactor)
+  const signA = r() < 0.5 ? -1 : 1
+  const signB = r() < 0.5 ? -1 : 1
+  const a = aAbs * signA
+  const b = bAbs * signB
+
+  if (d <= 2) {
     const result = a * b
 
     return mc(
@@ -1899,39 +2116,103 @@ if (key === 'integers_sub') {
       `Calcula (${a}) × (${b})`,
       String(result),
       [
-        String(a + b),
         String(-result),
+        String(a + b),
         String(Math.abs(result)),
-      ],
-      `Aplicamos la regla de signos. Resultado: ${result}.`,
-      ['producto_enteros', 'regla_signos']
+      ].filter((x) => x !== String(result)),
+      `Aplicamos la regla de los signos: (${a}) × (${b}) = ${result}.`,
+      ['multiplicacion_enteros']
     )
   }
 
-  const divisor = (ri(2, 10)) * (seed % 3 === 0 ? -1 : 1)
-  const quotient = ri(-10, 10) || 3
-  const dividend = divisor * quotient
+  if (d === 3) {
+    const divisor = b
+    const quotient = a
+    const dividend = divisor * quotient
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${dividend}) ÷ (${divisor})`,
+      String(quotient),
+      [
+        String(-quotient),
+        String(dividend * divisor),
+        String(Math.abs(quotient)),
+      ].filter((x) => x !== String(quotient)),
+      `(${dividend}) ÷ (${divisor}) = ${quotient}.`,
+      ['division_enteros']
+    )
+  }
+
+  if (d === 4) {
+    const c = ri(2, 6) * (r() < 0.5 ? -1 : 1)
+    const result = a * b * c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a}) × (${b}) × (${c})`,
+      String(result),
+      [
+        String(-result),
+        String(a * b + c),
+        String(Math.abs(result)),
+      ].filter((x) => x !== String(result)),
+      `Aplicamos sucesivamente la regla de los signos y obtenemos ${result}.`,
+      ['multiplicacion_enteros', 'tres_factores']
+    )
+  }
+
+  const c = ri(2, 6) * (r() < 0.5 ? -1 : 1)
+  const numerator = a * b * c
+  const result = numerator / c
 
   return mc(
     skill,
     d,
     seed,
-    `Calcula (${dividend}) ÷ (${divisor})`,
-    String(quotient),
+    `Calcula [(${a}) × (${b}) × (${c})] ÷ (${c})`,
+    String(result),
     [
-      String(-quotient),
-      String(Math.abs(quotient)),
-      String(dividend + divisor),
-    ],
-    `Aplicamos la regla de signos. ${dividend} ÷ ${divisor} = ${quotient}.`,
-    ['cociente_enteros', 'regla_signos']
+      String(-result),
+      String(a * b * c),
+      String(a + b),
+    ].filter((x) => x !== String(result)),
+    `El factor (${c}) se cancela al dividir: queda (${a}) × (${b}) = ${result}.`,
+    ['enteros_mult_div', 'operaciones_combinadas', 'dificultad_alta']
   )
 }
 
-  if (key === 'integers_mixed') {
+if (key === 'integers_combined') {
+  if (d === 1) {
+    const a = ri(-8, 8)
+    const b = ri(-8, 8)
+    const c = ri(-5, 5)
+    const result = a + b - c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} + (${b}) - (${c})`,
+      String(result),
+      [
+        String(a + b + c),
+        String(a - b - c),
+        String(-result),
+      ],
+      `Operamos de izquierda a derecha: resultado ${result}.`,
+      ['operaciones_combinadas_enteros']
+    )
+  }
+
+  if (d === 2) {
     const a = ri(-10, 10)
-    const b = ri(2, 8)
-    const c = ri(-6, 6)
+    const b = ri(2, 6)
+    const c = ri(-5, 5)
     const result = a + b * c
 
     return mc(
@@ -1942,23 +2223,201 @@ if (key === 'integers_sub') {
       String(result),
       [
         String((a + b) * c),
-        String(a + b + c),
         String(a - b * c),
+        String(-result),
       ],
-      `Primero ${b}×(${c})=${b * c}; después sumamos ${a}.`,
-      ['jerarquia_enteros']
+      `Primero hacemos la multiplicación: ${b} × (${c}) = ${b * c}. Después sumamos ${a}: ${result}.`,
+      ['operaciones_combinadas_enteros', 'jerarquia']
     )
   }
 
-  // =========================
-  // M05 · NÚMEROS DECIMALES
-  // =========================
+  if (d === 3) {
+    const a = ri(-8, 8)
+    const b = ri(-8, 8)
+    const c = ri(2, 5)
+    const result = (a + b) * c
 
-  if (key === 'decimal_place_value') {
-    const integerPart = ri(1, 99)
-    const tenths = ri(0, 9)
-    const hundredths = ri(0, 9)
-    const n = `${integerPart}.${tenths}${hundredths}`
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula (${a} + ${b}) × ${c}`,
+      String(result),
+      [
+        String(a + b * c),
+        String((a - b) * c),
+        String(-result),
+      ],
+      `Primero resolvemos el paréntesis: ${a}+${b}=${a + b}. Después multiplicamos por ${c}: ${result}.`,
+      ['operaciones_combinadas_enteros', 'parentesis']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(-10, 10)
+    const b = ri(2, 6)
+    const c = ri(-6, 6)
+    const e = ri(-8, 8)
+    const result = a - b * c + e
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a} - ${b} × (${c}) + (${e})`,
+      String(result),
+      [
+        String((a - b) * c + e),
+        String(a + b * c + e),
+        String(-result),
+      ],
+      `Primero multiplicamos y después sumamos/restamos: resultado ${result}.`,
+      ['operaciones_combinadas_enteros', 'jerarquia']
+    )
+  }
+
+  const a = ri(-8, 8)
+  const b = ri(-8, 8)
+  const c = ri(2, 5)
+  const e = ri(-10, 10)
+  const f = ri(2, 5)
+  const result = (a + b) * c - e * f
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula (${a} + ${b}) × ${c} - (${e}) × ${f}`,
+    String(result),
+    [
+      String(a + b * c - e * f),
+      String((a + b) * (c - e) * f),
+      String(-result),
+    ],
+    `Resolvemos primero el paréntesis y las multiplicaciones. El resultado final es ${result}.`,
+    ['operaciones_combinadas_enteros', 'jerarquia', 'dificultad_alta']
+  )
+}
+
+if (key === 'integers_word_problem') {
+  const variants = ri(0, d <= 2 ? 2 : 4)
+
+  if (variants === 0) {
+    const start = ri(-10, 5)
+    const rise = ri(3, 12)
+    const answer = start + rise
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `La temperatura es de ${start} °C y sube ${rise} °C. ¿Cuál es la nueva temperatura?`,
+      `${answer} °C`,
+      [
+        `${start - rise} °C`,
+        `${Math.abs(answer)} °C`,
+        `${rise} °C`,
+      ],
+      `${start} + ${rise} = ${answer}.`,
+      ['problema_enteros', 'temperatura']
+    )
+  }
+
+  if (variants === 1) {
+    const start = ri(-20, -3)
+    const rise = ri(4, 15)
+    const answer = start + rise
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un submarino está a ${start} m respecto al nivel del mar y asciende ${rise} m. ¿A qué nivel queda?`,
+      `${answer} m`,
+      [
+        `${start - rise} m`,
+        `${Math.abs(answer)} m`,
+        `${rise} m`,
+      ],
+      `${start} + ${rise} = ${answer}.`,
+      ['problema_enteros', 'altura']
+    )
+  }
+
+  if (variants === 2) {
+    const balance = ri(5, 30)
+    const charge = ri(balance + 1, balance + 20)
+    const answer = balance - charge
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Tienes ${balance} € en una cuenta y se carga un recibo de ${charge} €. ¿Cuál es el saldo final?`,
+      `${answer} €`,
+      [
+        `${Math.abs(answer)} €`,
+        `${balance + charge} €`,
+        `${-charge} €`,
+      ],
+      `${balance} - ${charge} = ${answer}.`,
+      ['problema_enteros', 'saldo']
+    )
+  }
+
+  if (variants === 3) {
+    const start = ri(-15, 10)
+    const up = ri(4, 12)
+    const down = ri(4, 12)
+    const answer = start + up - down
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un ascensor está en la planta ${start}. Sube ${up} plantas y después baja ${down}. ¿En qué planta termina?`,
+      String(answer),
+      [
+        String(start + up + down),
+        String(start - up + down),
+        String(Math.abs(answer)),
+      ],
+      `${start} + ${up} - ${down} = ${answer}.`,
+      ['problema_enteros', 'varios_cambios']
+    )
+  }
+
+  const start = ri(-20, 5)
+  const change1 = ri(5, 15)
+  const change2 = ri(5, 15)
+  const change3 = ri(3, 10)
+  const answer = start + change1 - change2 + change3
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `La temperatura empieza en ${start} °C, sube ${change1} °C, baja ${change2} °C y vuelve a subir ${change3} °C. ¿Cuál es la temperatura final?`,
+    `${answer} °C`,
+    [
+      `${start + change1 + change2 + change3} °C`,
+      `${start - change1 - change2 + change3} °C`,
+      `${Math.abs(answer)} °C`,
+    ],
+    `${start} + ${change1} - ${change2} + ${change3} = ${answer}.`,
+    ['problema_enteros', 'varios_cambios', 'dificultad_alta']
+  )
+}
+
+ // =========================
+// M05 · NÚMEROS DECIMALES
+// =========================
+
+if (key === 'decimal_place_value') {
+  if (d === 1) {
+    const integerPart = ri(1, 20)
+    const tenths = ri(1, 9)
+    const n = `${integerPart}.${tenths}`
 
     return mc(
       skill,
@@ -1967,25 +2426,109 @@ if (key === 'integers_sub') {
       `En ${n}, ¿qué cifra ocupa las décimas?`,
       String(tenths),
       [
-        String(hundredths),
         String(integerPart % 10),
         '0',
+        String((tenths + 1) % 10),
       ],
-      `La cifra de las décimas es ${tenths}.`,
+      `La primera cifra después de la coma decimal es la de las décimas: ${tenths}.`,
       ['valor_posicional_decimal']
     )
   }
 
-  if (key === 'decimal_compare') {
-    const a = (ri(10, 999) / 100).toFixed(2)
-    const b = (ri(10, 999) / 100).toFixed(2)
+  if (d === 2) {
+    const integerPart = ri(1, 50)
+    const tenths = ri(0, 9)
+    const hundredths = ri(1, 9)
+    const n = `${integerPart}.${tenths}${hundredths}`
 
-    const answer =
-      Number(a) > Number(b)
-        ? '>'
-        : Number(a) < Number(b)
-          ? '<'
-          : '='
+    return mc(
+      skill,
+      d,
+      seed,
+      `En ${n}, ¿qué cifra ocupa las centésimas?`,
+      String(hundredths),
+      [
+        String(tenths),
+        String(integerPart % 10),
+        '0',
+      ],
+      `La segunda cifra después de la coma es la de las centésimas: ${hundredths}.`,
+      ['valor_posicional_decimal', 'centesimas']
+    )
+  }
+
+  if (d === 3) {
+    const integerPart = ri(10, 99)
+    const tenths = ri(0, 9)
+    const hundredths = ri(0, 9)
+    const thousandths = ri(1, 9)
+    const n = `${integerPart}.${tenths}${hundredths}${thousandths}`
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En ${n}, ¿qué cifra ocupa las milésimas?`,
+      String(thousandths),
+      [
+        String(hundredths),
+        String(tenths),
+        String(integerPart % 10),
+      ],
+      `La tercera cifra después de la coma es la de las milésimas: ${thousandths}.`,
+      ['valor_posicional_decimal', 'milesimas']
+    )
+  }
+
+  if (d === 4) {
+    const integerPart = ri(10, 999)
+    const tenths = ri(1, 9)
+    const hundredths = ri(0, 9)
+    const n = `${integerPart}.${tenths}${hundredths}`
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En ${n}, ¿qué valor representa la cifra ${tenths} situada en las décimas?`,
+      `${tenths / 10}`,
+      [
+        `${tenths}`,
+        `${tenths / 100}`,
+        `${tenths * 10}`,
+      ],
+      `Una cifra situada en las décimas representa esa cifra dividida entre 10: ${tenths}/10 = ${tenths / 10}.`,
+      ['valor_posicional_decimal', 'valor_cifra']
+    )
+  }
+
+  const integerPart = ri(100, 999)
+  const tenths = ri(1, 9)
+  const hundredths = ri(1, 9)
+  const thousandths = ri(1, 9)
+  const n = `${integerPart}.${tenths}${hundredths}${thousandths}`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `En ${n}, ¿qué valor representa la cifra ${hundredths} situada en las centésimas?`,
+    `${hundredths / 100}`,
+    [
+      `${hundredths / 10}`,
+      `${hundredths}`,
+      `${hundredths / 1000}`,
+    ],
+    `La cifra ${hundredths} está en las centésimas, por tanto representa ${hundredths}/100 = ${hundredths / 100}.`,
+    ['valor_posicional_decimal', 'valor_cifra', 'dificultad_alta']
+  )
+}
+
+if (key === 'decimal_compare') {
+  if (d === 1) {
+    const a = (ri(10, 99) / 10).toFixed(1)
+    const b = (ri(10, 99) / 10).toFixed(1)
+    const answer = Number(a) > Number(b) ? '>' : Number(a) < Number(b) ? '<' : '='
 
     return mc(
       skill,
@@ -1999,33 +2542,200 @@ if (key === 'integers_sub') {
     )
   }
 
-  if (key === 'decimal_add_sub') {
-    const a = ri(100, 999) / 10
-    const b = ri(10, 500) / 10
-    const add = seed % 2 === 0
-    const result = add ? a + b : a - b
+  if (d === 2) {
+    const a = (ri(100, 999) / 100).toFixed(2)
+    const b = (ri(100, 999) / 100).toFixed(2)
+    const answer = Number(a) > Number(b) ? '>' : Number(a) < Number(b) ? '<' : '='
 
     return mc(
       skill,
       d,
       seed,
-      add
-        ? `Calcula ${a.toFixed(1)} + ${b.toFixed(1)}`
-        : `Calcula ${a.toFixed(1)} - ${b.toFixed(1)}`,
+      `Completa: ${a} __ ${b}`,
+      answer,
+      ['<', '>', '=', '≠'].filter((x) => x !== answer),
+      `${a} ${answer} ${b}.`,
+      ['comparacion_decimales', 'centesimas']
+    )
+  }
+
+  if (d === 3) {
+    const base = ri(10, 99)
+    const tenths = ri(0, 9)
+    const h1 = ri(0, 8)
+    const h2 = h1 + 1
+
+    const a = `${base}.${tenths}${h1}`
+    const b = `${base}.${tenths}${h2}`
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Completa: ${a} __ ${b}`,
+      '<',
+      ['>', '=', '≠'],
+      `Coinciden hasta las décimas; en las centésimas, ${h1} < ${h2}. Por tanto ${a} < ${b}.`,
+      ['comparacion_decimales', 'cifras_cercanas']
+    )
+  }
+
+  if (d === 4) {
+    const a = (ri(1000, 9999) / 1000).toFixed(3)
+    const b = (ri(1000, 9999) / 1000).toFixed(3)
+
+    const values = [Number(a), Number(b)]
+    const answer = String(Math.max(...values))
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es mayor: ${a} o ${b}?`,
+      answer,
+      [
+        String(Math.min(...values)),
+        'Son iguales',
+        'No se puede saber',
+      ],
+      `Comparando cifra a cifra, el mayor es ${answer}.`,
+      ['comparacion_decimales', 'milesimas']
+    )
+  }
+
+  const a = ri(1000, 9999) / 1000
+  const b = ri(1000, 9999) / 1000
+  const c = ri(1000, 9999) / 1000
+  const values = [a, b, c]
+  const sorted = [...values].sort((x, y) => x - y)
+  const answer = sorted.map((x) => x.toFixed(3)).join(' < ')
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Ordena de menor a mayor: ${values.map((x) => x.toFixed(3)).join(', ')}`,
+    answer,
+    [
+      [...sorted].reverse().map((x) => x.toFixed(3)).join(' < '),
+      [sorted[1], sorted[0], sorted[2]].map((x) => x.toFixed(3)).join(' < '),
+      [sorted[0], sorted[2], sorted[1]].map((x) => x.toFixed(3)).join(' < '),
+    ],
+    `El orden correcto es ${answer}.`,
+    ['comparacion_decimales', 'orden_multiple', 'dificultad_alta']
+  )
+}
+
+if (key === 'decimal_add_sub') {
+  if (d === 1) {
+    const a = ri(10, 99) / 10
+    const b = ri(10, 99) / 10
+    const result = a + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a.toFixed(1)} + ${b.toFixed(1)}`,
       result.toFixed(1),
       [
         (result + 1).toFixed(1),
         (result - 0.1).toFixed(1),
         String(Math.round(result)),
       ],
-      `Alineamos las comas. Resultado: ${result.toFixed(1)}.`,
-      ['suma_resta_decimales']
+      `Alineamos las comas y sumamos: ${a.toFixed(1)} + ${b.toFixed(1)} = ${result.toFixed(1)}.`,
+      ['suma_decimales']
     )
   }
 
-  if (key === 'decimal_mult_div') {
-  if (seed % 2 === 0) {
-    const a = ri(12, 99) / 10
+  if (d === 2) {
+    const a = ri(100, 999) / 100
+    const b = ri(10, 500) / 100
+    const result = a + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a.toFixed(2)} + ${b.toFixed(2)}`,
+      result.toFixed(2),
+      [
+        (result + 0.1).toFixed(2),
+        (result - 0.01).toFixed(2),
+        String(Math.round(result)),
+      ],
+      `Alineamos las comas y sumamos: resultado ${result.toFixed(2)}.`,
+      ['suma_decimales', 'centesimas']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(500, 1500) / 100
+    const b = ri(100, Math.floor(a * 100)) / 100
+    const result = a - b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a.toFixed(2)} - ${b.toFixed(2)}`,
+      result.toFixed(2),
+      [
+        (a + b).toFixed(2),
+        (result + 0.1).toFixed(2),
+        Math.abs(b - a).toFixed(2),
+      ],
+      `Alineamos las comas y restamos: ${a.toFixed(2)} - ${b.toFixed(2)} = ${result.toFixed(2)}.`,
+      ['resta_decimales']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(100, 999) / 100
+    const b = ri(100, 999) / 100
+    const c = ri(10, 500) / 100
+    const result = a + b - c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a.toFixed(2)} + ${b.toFixed(2)} - ${c.toFixed(2)}`,
+      result.toFixed(2),
+      [
+        (a + b + c).toFixed(2),
+        (result + 1).toFixed(2),
+        (result - 0.1).toFixed(2),
+      ],
+      `Primero sumamos y después restamos. Resultado: ${result.toFixed(2)}.`,
+      ['suma_resta_decimales', 'varias_operaciones']
+    )
+  }
+
+  const a = ri(1000, 9999) / 1000
+  const b = ri(1000, 9999) / 1000
+  const c = ri(100, 900) / 1000
+  const result = a - b + c
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${a.toFixed(3)} - ${b.toFixed(3)} + ${c.toFixed(3)}`,
+    result.toFixed(3),
+    [
+      (a + b + c).toFixed(3),
+      (result + 0.1).toFixed(3),
+      (result - 0.01).toFixed(3),
+    ],
+    `Operamos respetando las posiciones decimales. Resultado: ${result.toFixed(3)}.`,
+    ['suma_resta_decimales', 'milesimas', 'dificultad_alta']
+  )
+}
+
+if (key === 'decimal_mult_div') {
+  if (d === 1) {
+    const a = ri(11, 99) / 10
     const b = ri(2, 9)
     const result = a * b
 
@@ -2040,32 +2750,97 @@ if (key === 'integers_sub') {
         (result * 10).toFixed(1),
         (result / 10).toFixed(2),
       ],
-      `Resultado: ${a.toFixed(1)} × ${b} = ${result.toFixed(1)}.`,
-      ['producto_decimales']
+      `${a.toFixed(1)} × ${b} = ${result.toFixed(1)}.`,
+      ['multiplicacion_decimales']
     )
   }
 
-  const divisor = ri(2, 9)
-  const quotient = ri(12, 99) / 10
-  const dividend = quotient * divisor
+  if (d === 2) {
+    const divisor = ri(2, 9)
+    const quotient = ri(11, 99) / 10
+    const dividend = quotient * divisor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${dividend.toFixed(1)} ÷ ${divisor}`,
+      quotient.toFixed(1),
+      [
+        (quotient * 10).toFixed(1),
+        (quotient + divisor).toFixed(1),
+        (quotient / 10).toFixed(2),
+      ],
+      `${dividend.toFixed(1)} ÷ ${divisor} = ${quotient.toFixed(1)}.`,
+      ['division_decimales']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(11, 99) / 10
+    const b = ri(11, 99) / 10
+    const result = a * b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a.toFixed(1)} × ${b.toFixed(1)}`,
+      result.toFixed(2),
+      [
+        (a + b).toFixed(2),
+        (result * 10).toFixed(2),
+        (result / 10).toFixed(2),
+      ],
+      `Multiplicamos como enteros y colocamos dos cifras decimales. Resultado: ${result.toFixed(2)}.`,
+      ['multiplicacion_decimales', 'dos_decimales']
+    )
+  }
+
+  if (d === 4) {
+    const divisor = ri(11, 50) / 10
+    const quotient = ri(2, 15)
+    const dividend = divisor * quotient
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${dividend.toFixed(1)} ÷ ${divisor.toFixed(1)}`,
+      String(quotient),
+      [
+        String(quotient + 1),
+        String(quotient - 1),
+        String(Math.round(dividend)),
+      ],
+      `${dividend.toFixed(1)} ÷ ${divisor.toFixed(1)} = ${quotient}.`,
+      ['division_decimales', 'divisor_decimal']
+    )
+  }
+
+  const a = ri(10, 99) / 10
+  const b = ri(10, 50) / 10
+  const c = ri(2, 5)
+  const result = (a * b) / c
 
   return mc(
     skill,
     d,
     seed,
-    `Calcula ${dividend.toFixed(1)} ÷ ${divisor}`,
-    quotient.toFixed(1),
+    `Calcula (${a.toFixed(1)} × ${b.toFixed(1)}) ÷ ${c}`,
+    result.toFixed(2),
     [
-      (dividend * divisor).toFixed(1),
-      (quotient + divisor).toFixed(1),
-      (quotient / 10).toFixed(2),
+      (a * b * c).toFixed(2),
+      ((a + b) / c).toFixed(2),
+      (result + 1).toFixed(2),
     ],
-    `${dividend.toFixed(1)} ÷ ${divisor} = ${quotient.toFixed(1)}.`,
-    ['division_decimales']
+    `Primero multiplicamos ${a.toFixed(1)} × ${b.toFixed(1)} y después dividimos entre ${c}. Resultado: ${result.toFixed(2)}.`,
+    ['multiplicacion_division_decimales', 'operaciones_combinadas', 'dificultad_alta']
   )
 }
 
-  if (key === 'decimal_round') {
+if (key === 'decimal_round') {
+  if (d === 1) {
     const n = ri(100, 999) / 100
     const answer = n.toFixed(1)
 
@@ -2080,115 +2855,630 @@ if (key === 'integers_sub') {
         String(Math.floor(n)),
         (n + 0.1).toFixed(1),
       ],
-      `Resultado: ${answer}.`,
-      ['redondeo']
+      `Miramos la cifra de las centésimas. Resultado: ${answer}.`,
+      ['redondeo_decimales']
     )
   }
 
-  // =========================
-  // M06 · SISTEMA MÉTRICO Y MEDIDA
-  // =========================
+  if (d === 2) {
+    const n = ri(1000, 9999) / 1000
+    const answer = n.toFixed(2)
 
-  if (key === 'metric_length') {
-    const metres = ri(2, 90)
-    const answer = String(metres * 100)
+    return mc(
+      skill,
+      d,
+      seed,
+      `Redondea ${n.toFixed(3)} a las centésimas`,
+      answer,
+      [
+        n.toFixed(3),
+        n.toFixed(1),
+        (n + 0.01).toFixed(2),
+      ],
+      `Miramos la cifra de las milésimas y redondeamos a centésimas: ${answer}.`,
+      ['redondeo_decimales', 'centesimas']
+    )
+  }
+
+  if (d === 3) {
+    const n = ri(100, 9999) / 100
+    const answer = String(Math.round(n))
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Redondea ${n.toFixed(2)} a las unidades`,
+      answer,
+      [
+        String(Math.floor(n)),
+        String(Math.ceil(n)),
+        n.toFixed(1),
+      ].filter((x) => x !== answer),
+      `Observamos la parte decimal y redondeamos a la unidad más cercana: ${answer}.`,
+      ['redondeo_decimales', 'unidades']
+    )
+  }
+
+  if (d === 4) {
+    const n = ri(10000, 99999) / 10000
+    const answer = n.toFixed(3)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Redondea ${n.toFixed(4)} a las milésimas`,
+      answer,
+      [
+        n.toFixed(4),
+        n.toFixed(2),
+        (n + 0.001).toFixed(3),
+      ],
+      `Miramos la cuarta cifra decimal y redondeamos a milésimas: ${answer}.`,
+      ['redondeo_decimales', 'milesimas']
+    )
+  }
+
+  const n = ri(10000, 99999) / 1000
+  const toTenths = n.toFixed(1)
+  const toHundredths = n.toFixed(2)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `El número es ${n.toFixed(3)}. ¿Cuál es su redondeo correcto a décimas y centésimas?`,
+    `${toTenths} y ${toHundredths}`,
+    [
+      `${toHundredths} y ${toTenths}`,
+      `${n.toFixed(3)} y ${toHundredths}`,
+      `${Math.floor(n)} y ${toTenths}`,
+    ],
+    `A décimas: ${toTenths}. A centésimas: ${toHundredths}.`,
+    ['redondeo_decimales', 'doble_redondeo', 'dificultad_alta']
+  )
+}
+
+ // =========================
+// M06 · SISTEMA MÉTRICO Y MEDIDA
+// =========================
+
+if (key === 'metric_length') {
+  if (d === 1) {
+    const metres = ri(2, 50)
+    const answer = metres * 100
 
     return mc(
       skill,
       d,
       seed,
       `Convierte ${metres} m a centímetros`,
-      answer,
+      String(answer),
       [
         String(metres * 10),
         String(metres * 1000),
         String(metres),
       ],
-      `${metres} m = ${answer} cm.`,
+      `${metres} m = ${answer} cm porque 1 m = 100 cm.`,
       ['conversion_longitud']
     )
   }
 
-  if (key === 'metric_mass') {
+  if (d === 2) {
+    const km = ri(2, 20)
+    const answer = km * 1000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Convierte ${km} km a metros`,
+      String(answer),
+      [
+        String(km * 100),
+        String(km * 10),
+        String(km * 10000),
+      ],
+      `${km} km = ${answer} m porque 1 km = 1000 m.`,
+      ['conversion_longitud', 'kilometros']
+    )
+  }
+
+  if (d === 3) {
+    const cm = ri(200, 5000)
+    const answer = cm / 100
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Convierte ${cm} cm a metros`,
+      String(answer),
+      [
+        String(cm / 10),
+        String(cm / 1000),
+        String(cm * 100),
+      ],
+      `${cm} cm ÷ 100 = ${answer} m.`,
+      ['conversion_longitud', 'conversion_inversa']
+    )
+  }
+
+  if (d === 4) {
+    const metres = ri(2, 25)
+    const centimetres = ri(10, 99)
+    const answer = metres * 100 + centimetres
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuántos centímetros son ${metres} m y ${centimetres} cm?`,
+      String(answer),
+      [
+        String(metres * 10 + centimetres),
+        String(metres * 1000 + centimetres),
+        String(metres + centimetres),
+      ],
+      `${metres} m = ${metres * 100} cm. Sumamos ${centimetres} cm: ${answer} cm.`,
+      ['conversion_longitud', 'medidas_compuestas']
+    )
+  }
+
+  const km = ri(1, 9)
+  const metres = ri(100, 900)
+  const answer = km * 1000 + metres
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Una ruta tiene ${km} km y ${metres} m. ¿Cuántos metros mide en total?`,
+    String(answer),
+    [
+      String(km * 100 + metres),
+      String(km * 1000 - metres),
+      String(km + metres),
+    ],
+    `${km} km = ${km * 1000} m. Sumamos ${metres}: ${answer} m.`,
+    ['conversion_longitud', 'problema', 'dificultad_alta']
+  )
+}
+
+if (key === 'metric_mass') {
+  if (d === 1) {
     const kg = ri(2, 20)
-    const answer = String(kg * 1000)
+    const answer = kg * 1000
 
     return mc(
       skill,
       d,
       seed,
       `Convierte ${kg} kg a gramos`,
-      answer,
+      String(answer),
       [
         String(kg * 100),
         String(kg * 10),
         String(kg),
       ],
-      `${kg} kg = ${answer} g.`,
+      `${kg} kg = ${answer} g porque 1 kg = 1000 g.`,
       ['conversion_masa']
     )
   }
 
-  if (key === 'metric_capacity') {
+  if (d === 2) {
+    const grams = ri(2, 20) * 1000
+    const answer = grams / 1000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Convierte ${grams} g a kilogramos`,
+      String(answer),
+      [
+        String(grams / 100),
+        String(grams / 10),
+        String(grams),
+      ],
+      `${grams} g ÷ 1000 = ${answer} kg.`,
+      ['conversion_masa', 'conversion_inversa']
+    )
+  }
+
+  if (d === 3) {
+    const kg = ri(2, 15)
+    const grams = ri(100, 900)
+    const answer = kg * 1000 + grams
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuántos gramos son ${kg} kg y ${grams} g?`,
+      String(answer),
+      [
+        String(kg * 100 + grams),
+        String(kg * 1000 - grams),
+        String(kg + grams),
+      ],
+      `${kg} kg = ${kg * 1000} g. Sumamos ${grams} g: ${answer} g.`,
+      ['conversion_masa', 'medidas_compuestas']
+    )
+  }
+
+  if (d === 4) {
+    const packs = ri(2, 8)
+    const gramsPerPack = ri(2, 9) * 250
+    const totalGrams = packs * gramsPerPack
+    const answer = totalGrams / 1000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Hay ${packs} paquetes de ${gramsPerPack} g cada uno. ¿Cuántos kilogramos pesan en total?`,
+      String(answer),
+      [
+        String(totalGrams),
+        String(answer + 1),
+        String(packs + gramsPerPack),
+      ],
+      `${packs} × ${gramsPerPack} = ${totalGrams} g. Dividimos entre 1000: ${answer} kg.`,
+      ['conversion_masa', 'problema']
+    )
+  }
+
+  const startKg = ri(3, 12)
+  const removedGrams = ri(2, 8) * 250
+  const totalGrams = startKg * 1000
+  const remainingGrams = totalGrams - removedGrams
+  const answer = remainingGrams / 1000
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Una caja pesa ${startKg} kg. Se retiran ${removedGrams} g. ¿Cuántos kilogramos pesa ahora?`,
+    String(answer),
+    [
+      String(startKg + removedGrams / 1000),
+      String(remainingGrams),
+      String(startKg - removedGrams),
+    ],
+    `${startKg} kg = ${totalGrams} g. Restamos ${removedGrams} g y quedan ${remainingGrams} g = ${answer} kg.`,
+    ['conversion_masa', 'problema', 'dificultad_alta']
+  )
+}
+
+if (key === 'metric_capacity') {
+  if (d === 1) {
     const litres = ri(2, 15)
-    const answer = String(litres * 1000)
+    const answer = litres * 1000
 
     return mc(
       skill,
       d,
       seed,
       `Convierte ${litres} L a mililitros`,
-      answer,
+      String(answer),
       [
         String(litres * 100),
         String(litres * 10),
         String(litres),
       ],
-      `${litres} L = ${answer} mL.`,
+      `${litres} L = ${answer} mL porque 1 L = 1000 mL.`,
       ['conversion_capacidad']
     )
   }
 
-  if (key === 'metric_area_units') {
+  if (d === 2) {
+    const ml = ri(2, 15) * 1000
+    const answer = ml / 1000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Convierte ${ml} mL a litros`,
+      String(answer),
+      [
+        String(ml / 100),
+        String(ml / 10),
+        String(ml),
+      ],
+      `${ml} mL ÷ 1000 = ${answer} L.`,
+      ['conversion_capacidad', 'conversion_inversa']
+    )
+  }
+
+  if (d === 3) {
+    const litres = ri(1, 8)
+    const ml = ri(1, 9) * 100
+    const answer = litres * 1000 + ml
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuántos mililitros son ${litres} L y ${ml} mL?`,
+      String(answer),
+      [
+        String(litres * 100 + ml),
+        String(litres * 1000 - ml),
+        String(litres + ml),
+      ],
+      `${litres} L = ${litres * 1000} mL. Sumamos ${ml}: ${answer} mL.`,
+      ['conversion_capacidad', 'medidas_compuestas']
+    )
+  }
+
+  if (d === 4) {
+    const bottles = ri(2, 8)
+    const mlEach = [250, 500, 750][ri(0, 2)]
+    const totalMl = bottles * mlEach
+    const answer = totalMl / 1000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Hay ${bottles} botellas de ${mlEach} mL cada una. ¿Cuántos litros contienen en total?`,
+      String(answer),
+      [
+        String(totalMl),
+        String(answer + 1),
+        String(bottles + mlEach),
+      ],
+      `${bottles} × ${mlEach} = ${totalMl} mL = ${answer} L.`,
+      ['conversion_capacidad', 'problema']
+    )
+  }
+
+  const litres = ri(3, 10)
+  const usedMl = ri(2, 8) * 250
+  const startMl = litres * 1000
+  const remainingMl = startMl - usedMl
+  const answer = remainingMl / 1000
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un depósito contiene ${litres} L. Se utilizan ${usedMl} mL. ¿Cuántos litros quedan?`,
+    String(answer),
+    [
+      String(litres + usedMl / 1000),
+      String(remainingMl),
+      String(litres - usedMl),
+    ],
+    `${litres} L = ${startMl} mL. Restamos ${usedMl}: quedan ${remainingMl} mL = ${answer} L.`,
+    ['conversion_capacidad', 'problema', 'dificultad_alta']
+  )
+}
+
+if (key === 'metric_area_units') {
+  if (d === 1) {
     const m2 = ri(2, 12)
-    const answer = String(m2 * 10000)
+    const answer = m2 * 10000
 
     return mc(
       skill,
       d,
       seed,
       `Convierte ${m2} m² a cm²`,
-      answer,
+      String(answer),
       [
         String(m2 * 100),
         String(m2 * 1000),
         String(m2 * 10),
       ],
-      `1 m² = 10000 cm². Resultado: ${answer} cm².`,
+      `1 m² = 10000 cm². Por tanto ${m2} m² = ${answer} cm².`,
       ['conversion_superficie']
     )
   }
 
-  if (key === 'sexagesimal_time') {
+  if (d === 2) {
+    const m2 = ri(2, 20)
+    const answer = m2 * 100
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Convierte ${m2} m² a dm²`,
+      String(answer),
+      [
+        String(m2 * 10),
+        String(m2 * 1000),
+        String(m2),
+      ],
+      `1 m² = 100 dm². Resultado: ${answer} dm².`,
+      ['conversion_superficie', 'decimetros_cuadrados']
+    )
+  }
+
+  if (d === 3) {
+    const m2 = ri(2, 15)
+    const cm2 = m2 * 10000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuántos m² son ${cm2} cm²?`,
+      String(m2),
+      [
+        String(cm2 / 100),
+        String(cm2 / 1000),
+        String(m2 * 10),
+      ],
+      `${cm2} cm² ÷ 10000 = ${m2} m².`,
+      ['conversion_superficie', 'conversion_inversa']
+    )
+  }
+
+  if (d === 4) {
+    const side = ri(2, 10)
+    const areaM2 = side * side
+    const answer = areaM2 * 10000
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un cuadrado tiene ${side} m de lado. ¿Cuál es su área en cm²?`,
+      String(answer),
+      [
+        String(areaM2 * 100),
+        String(side * 10000),
+        String(areaM2),
+      ],
+      `Área = ${side} × ${side} = ${areaM2} m². Como 1 m² = 10000 cm², son ${answer} cm².`,
+      ['conversion_superficie', 'area', 'problema']
+    )
+  }
+
+  const width = ri(3, 12)
+  const height = ri(2, 10)
+  const areaM2 = width * height
+  const answer = areaM2 * 10000
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un terreno rectangular mide ${width} m por ${height} m. ¿Cuál es su superficie en cm²?`,
+    String(answer),
+    [
+      String(areaM2),
+      String(areaM2 * 100),
+      String((width + height) * 10000),
+    ],
+    `Área = ${width} × ${height} = ${areaM2} m². Multiplicamos por 10000: ${answer} cm².`,
+    ['conversion_superficie', 'area', 'problema', 'dificultad_alta']
+  )
+}
+
+if (key === 'sexagesimal_time') {
+  if (d === 1) {
     const hours = ri(1, 5)
     const minutes = ri(1, 50)
-    const answer = String(hours * 60 + minutes)
+    const answer = hours * 60 + minutes
 
     return mc(
       skill,
       d,
       seed,
       `¿Cuántos minutos son ${hours} h y ${minutes} min?`,
-      answer,
+      String(answer),
       [
         String(hours * 100 + minutes),
         String(hours * 60),
         String(hours + minutes),
       ],
-      `${hours}×60 + ${minutes} = ${answer} minutos.`,
+      `${hours} × 60 + ${minutes} = ${answer} minutos.`,
       ['sistema_sexagesimal']
     )
   }
+
+  if (d === 2) {
+    const hours = ri(1, 5)
+    const minutes = ri(1, 10) * 5
+    const total = hours * 60 + minutes
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Convierte ${total} minutos a horas y minutos`,
+      `${hours} h ${minutes} min`,
+      [
+        `${hours + 1} h ${minutes} min`,
+        `${hours} h ${Math.max(0, minutes - 10)} min`,
+        `${total} h`,
+      ],
+      `${total} minutos = ${hours} horas y ${minutes} minutos.`,
+      ['sistema_sexagesimal', 'conversion_inversa']
+    )
+  }
+
+  if (d === 3) {
+    const minutes = ri(2, 9)
+    const seconds = ri(1, 50)
+    const answer = minutes * 60 + seconds
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuántos segundos son ${minutes} min y ${seconds} s?`,
+      String(answer),
+      [
+        String(minutes * 100 + seconds),
+        String(minutes * 60),
+        String(minutes + seconds),
+      ],
+      `${minutes} × 60 + ${seconds} = ${answer} segundos.`,
+      ['sistema_sexagesimal', 'segundos']
+    )
+  }
+
+  if (d === 4) {
+    const startHour = ri(8, 16)
+    const startMinute = ri(0, 5) * 10
+    const duration = ri(2, 8) * 10
+    const startTotal = startHour * 60 + startMinute
+    const endTotal = startTotal + duration
+    const endHour = Math.floor(endTotal / 60)
+    const endMinute = endTotal % 60
+    const answer = `${endHour}:${String(endMinute).padStart(2, '0')}`
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una actividad empieza a las ${startHour}:${String(startMinute).padStart(2, '0')} y dura ${duration} minutos. ¿A qué hora termina?`,
+      answer,
+      [
+        `${startHour}:${String((startMinute + duration) % 60).padStart(2, '0')}`,
+        `${endHour + 1}:${String(endMinute).padStart(2, '0')}`,
+        `${Math.max(0, endHour - 1)}:${String(endMinute).padStart(2, '0')}`,
+      ],
+      `Sumamos ${duration} minutos a la hora inicial. Termina a las ${answer}.`,
+      ['sistema_sexagesimal', 'duracion']
+    )
+  }
+
+  const startHour = ri(8, 14)
+  const startMinute = ri(0, 5) * 10
+  const durationHours = ri(1, 3)
+  const durationMinutes = ri(1, 5) * 10
+
+  const startTotal = startHour * 60 + startMinute
+  const durationTotal = durationHours * 60 + durationMinutes
+  const endTotal = startTotal + durationTotal
+
+  const endHour = Math.floor(endTotal / 60)
+  const endMinute = endTotal % 60
+  const answer = `${endHour}:${String(endMinute).padStart(2, '0')}`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Un viaje comienza a las ${startHour}:${String(startMinute).padStart(2, '0')} y dura ${durationHours} h ${durationMinutes} min. ¿A qué hora termina?`,
+    answer,
+    [
+      `${startHour + durationHours}:${String(startMinute).padStart(2, '0')}`,
+      `${endHour + 1}:${String(endMinute).padStart(2, '0')}`,
+      `${Math.max(0, endHour - 1)}:${String(endMinute).padStart(2, '0')}`,
+    ],
+    `Pasamos la duración a minutos y la sumamos a la hora inicial. El viaje termina a las ${answer}.`,
+    ['sistema_sexagesimal', 'problema_tiempo', 'dificultad_alta']
+  )
+}
 
   // =========================
   // M07 · FRACCIONES
