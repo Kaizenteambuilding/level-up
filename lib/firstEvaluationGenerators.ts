@@ -10831,7 +10831,7 @@ if (key === 'quadrilaterals') {
 }
 
 if (key === 'regular_polygons') {
-  const family = (seed >>> 0) % 5
+  const family = ri(0, 4)
 
   if (d === 1) {
     if (family === 0) {
@@ -11191,7 +11191,7 @@ if (key === 'regular_polygons') {
   )
 }
 if (key === 'geometry_classification') {
-  const family = (seed >>> 0) % 5
+  const family = ri(0, 4)
 
   if (d === 1) {
     const variants = [
