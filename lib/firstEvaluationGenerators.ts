@@ -69,10 +69,18 @@ function mc(
       const suffix = numberMatch[2]
       candidate = `${numericAnswer + fallbackStep}${suffix}`
     } else {
-      const fallbackSymbols = ['<', '>', '=', '≠', '≤', '≥']
-      candidate =
-        fallbackSymbols.find((symbol) => !pool.includes(symbol)) ??
-        `Otra opción ${fallbackStep}`
+      // Los símbolos de comparación solo son distractores válidos cuando
+      // la propia respuesta es un símbolo. Antes se usaban como relleno
+      // para cualquier pregunta y podían aparecer opciones como "<" en
+      // ejercicios de geometría.
+      const comparisonSymbols = ['<', '>', '=', '≠', '≤', '≥']
+      if (comparisonSymbols.includes(answer)) {
+        candidate =
+          comparisonSymbols.find((symbol) => !pool.includes(symbol)) ??
+          `Otra opción ${fallbackStep}`
+      } else {
+        candidate = `Otra opción ${fallbackStep}`
+      }
     }
 
     fallbackStep += 1
@@ -10092,7 +10100,7 @@ if (key === 'triangle_angles') {
         skill, d, seed,
         `Dos ángulos de un triángulo miden ${a}° y ${b}°. Sin dibujarlo, ¿cómo se clasifica según sus ángulos?`,
         answer,
-        ['Acutángulo', 'Rectángulo', 'Obtusángulo'].filter((x) => x !== answer),
+        ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter((x) => x !== answer),
         `El tercer ángulo mide ${c}°. Con ese dato se clasifica como ${answer.toLowerCase()}.`,
         ['clasificacion_triangulos_angulos', 'family:missing_angle_then_classify']
       )
@@ -10148,7 +10156,7 @@ if (key === 'triangle_angles') {
         skill, d, seed,
         `Un ángulo exterior de un triángulo mide ${exterior}°. El interior adyacente mide ${interior}° y otro interior mide ${other}°. ¿Cómo se clasifica el triángulo según sus ángulos?`,
         answer,
-        ['Acutángulo', 'Rectángulo', 'Obtusángulo'].filter((x) => x !== answer),
+        ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter((x) => x !== answer),
         `El tercer ángulo es ${third}°. Por tanto el triángulo es ${answer.toLowerCase()}.`,
         ['clasificacion_triangulos_angulos', 'family:exterior_angle']
       )
