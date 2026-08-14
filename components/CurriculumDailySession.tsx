@@ -63,7 +63,16 @@ const [sessionId, setSessionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const questionStarted = useRef(Date.now())
+const recentTemplates = useRef<string[]>([])
 
+function questionTemplate(prompt: string) {
+  return prompt
+    .toLowerCase()
+    .replace(/\d+(?:[.,]\d+)?\/\d+(?:[.,]\d+)?/g, '#/#')
+    .replace(/\d+(?:[.,]\d+)?/g, '#')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
   const testMode = Boolean(forcedSkillId)
 
   useEffect(() => {
@@ -197,13 +206,41 @@ if (!forcedSkillId) {
 
     const difficulty = states[skill.id]?.difficulty ?? 2
 
-    setQuestion(
-      generateFirstEvaluationQuestion(
-        skill,
-        difficulty,
-        seed
-      )
-    )
+    let candidateSeed = seed
+
+let nextQuestion = generateFirstEvaluationQuestion(
+  skill,
+  difficulty,
+  candidateSeed
+)
+
+for (let attempt = 0; attempt < 20; attempt++) {
+  const template = questionTemplate(nextQuestion.prompt)
+
+  if (!recentTemplates.current.includes(template)) {
+    break
+  }
+
+  candidateSeed =
+    (Math.imul(candidateSeed, 1664525) + 1013904223) >>> 0
+
+  nextQuestion = generateFirstEvaluationQuestion(
+    skill,
+    difficulty,
+    candidateSeed
+  )
+}
+
+const template = questionTemplate(nextQuestion.prompt)
+
+recentTemplates.current = [
+  template,
+  ...recentTemplates.current.filter(
+    (item) => item !== template
+  ),
+].slice(0, 10)
+
+setQuestion(nextQuestion)
 
     setAnswered(false)
     setFeedback('')
