@@ -90,6 +90,7 @@ const [sessionId, setSessionId] = useState<string | null>(null)
   const [loadError, setLoadError] = useState('')
   const questionStarted = useRef(Date.now())
 const recentTemplates = useRef<string[]>([])
+const recentFamilies = useRef<string[]>([])
 
 function questionTemplate(prompt: string) {
   return prompt
@@ -254,10 +255,16 @@ let nextQuestion = generateFirstEvaluationQuestion(
   candidateSeed
 )
 
-for (let attempt = 0; attempt < 20; attempt++) {
+for (let attempt = 0; attempt < 30; attempt++) {
   const template = questionTemplate(nextQuestion.prompt)
+  const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
 
-  if (!recentTemplates.current.includes(template)) {
+  const repeatsTemplate = recentTemplates.current.includes(template)
+  const repeatsFamily = family
+    ? recentFamilies.current.includes(`${skill.id}:${family}`)
+    : false
+
+  if (!repeatsTemplate && !repeatsFamily) {
     break
   }
 
@@ -272,6 +279,7 @@ for (let attempt = 0; attempt < 20; attempt++) {
 }
 
 const template = questionTemplate(nextQuestion.prompt)
+const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
 
 recentTemplates.current = [
   template,
@@ -279,6 +287,14 @@ recentTemplates.current = [
     (item) => item !== template
   ),
 ].slice(0, 10)
+
+if (family) {
+  const familyKey = `${skill.id}:${family}`
+  recentFamilies.current = [
+    familyKey,
+    ...recentFamilies.current.filter((item) => item !== familyKey),
+  ].slice(0, 3)
+}
 
 setQuestion(nextQuestion)
 
