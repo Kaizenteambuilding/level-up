@@ -7956,79 +7956,309 @@ if (key === 'composite_area') {
     ['figuras_compuestas', 'problema', 'varios_pasos', 'dificultad_alta']
   )
 } 
-// ============================================================
+// =========================
 // M13 · TABLAS Y GRÁFICAS
-// ============================================================
+// =========================
 
 // M13S01 · Coordenadas cartesianas
 if (key === 'coordinates') {
-  const x = ri(-5, 5)
-  const y = ri(-5, 5)
+  if (d === 1) {
+    const x = ri(0, 6)
+    const y = ri(0, 6)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué coordenadas tiene el punto P si está en x = ${x} e y = ${y}?`,
+      `(${x}, ${y})`,
+      [
+        `(${y}, ${x})`,
+        `(${-x}, ${y})`,
+        `(${x}, ${-y})`,
+      ],
+      `Las coordenadas se escriben como (x, y). P = (${x}, ${y}).`,
+      ['coordenadas_cartesianas']
+    )
+  }
+
+  if (d === 2) {
+    let x = ri(-6, 6)
+    let y = ri(-6, 6)
+
+    if (x === 0) x = 2
+    if (y === 0) y = -3
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un punto está ${Math.abs(x)} unidades ${x > 0 ? 'a la derecha' : 'a la izquierda'} del origen y ${Math.abs(y)} unidades ${y > 0 ? 'por encima' : 'por debajo'}. ¿Cuáles son sus coordenadas?`,
+      `(${x}, ${y})`,
+      [
+        `(${y}, ${x})`,
+        `(${-x}, ${y})`,
+        `(${x}, ${-y})`,
+      ],
+      `El desplazamiento horizontal da x=${x} y el vertical y=${y}.`,
+      ['coordenadas_cartesianas', 'signos']
+    )
+  }
+
+  if (d === 3) {
+    const quadrant = ri(1, 4)
+
+    const answer =
+      quadrant === 1
+        ? 'x positiva, y positiva'
+        : quadrant === 2
+          ? 'x negativa, y positiva'
+          : quadrant === 3
+            ? 'x negativa, y negativa'
+            : 'x positiva, y negativa'
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué signos tienen las coordenadas de un punto situado en el cuadrante ${quadrant}?`,
+      answer,
+      [
+        'x positiva, y positiva',
+        'x negativa, y positiva',
+        'x negativa, y negativa',
+        'x positiva, y negativa',
+      ].filter((x) => x !== answer),
+      `En el cuadrante ${quadrant}, los signos son: ${answer}.`,
+      ['coordenadas_cartesianas', 'cuadrantes']
+    )
+  }
+
+  if (d === 4) {
+    const x = ri(-6, 6)
+    const y = ri(-6, 6)
+    const moveX = ri(2, 6)
+    const moveY = ri(2, 6)
+
+    const newX = x + moveX
+    const newY = y - moveY
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `El punto P está en (${x}, ${y}). Se desplaza ${moveX} unidades a la derecha y ${moveY} hacia abajo. ¿Dónde queda?`,
+      `(${newX}, ${newY})`,
+      [
+        `(${x - moveX}, ${y - moveY})`,
+        `(${x + moveX}, ${y + moveY})`,
+        `(${newY}, ${newX})`,
+      ],
+      `Derecha: x+${moveX}. Abajo: y-${moveY}. Resultado: (${newX}, ${newY}).`,
+      ['coordenadas_cartesianas', 'desplazamientos']
+    )
+  }
+
+  const x = ri(-8, 8)
+  const y = ri(-8, 8)
+  const reflectedX = -x
 
   return mc(
     skill,
     d,
     seed,
-    `¿Qué coordenadas tiene el punto P si está en x = ${x} e y = ${y}?`,
-    `(${x}, ${y})`,
+    `El punto P = (${x}, ${y}) se refleja respecto del eje Y. ¿Cuáles son las coordenadas de su imagen?`,
+    `(${reflectedX}, ${y})`,
     [
-      `(${y}, ${x})`,
-      `(${-x}, ${y})`,
       `(${x}, ${-y})`,
+      `(${-x}, ${-y})`,
+      `(${y}, ${x})`,
     ],
-    `Las coordenadas se escriben como (x, y). Por tanto, P = (${x}, ${y}).`,
-    ['coordenadas_cartesianas']
+    `Al reflejar respecto del eje Y cambia el signo de x y se conserva y: (${reflectedX}, ${y}).`,
+    ['coordenadas_cartesianas', 'simetria', 'dificultad_alta']
   )
 }
 
 // M13S02 · Leer tablas de valores
 if (key === 'value_tables') {
-  const x1 = ri(1, 4)
-  const factor = ri(2, 5)
-  const y1 = x1 * factor
+  if (d === 1) {
+    const factor = ri(2, 5)
+    const x = ri(2, 8)
+    const y = x * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una tabla se cumple y = ${factor}x. ¿Cuánto vale y cuando x = ${x}?`,
+      String(y),
+      [
+        String(x + factor),
+        String(x),
+        String(y + factor),
+      ],
+      `y = ${factor} × ${x} = ${y}.`,
+      ['lectura_tablas']
+    )
+  }
+
+  if (d === 2) {
+    const factor = ri(2, 6)
+    const x1 = ri(1, 4)
+    const x2 = x1 + ri(2, 5)
+    const y1 = x1 * factor
+    const y2 = x2 * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una tabla contiene (${x1}, ${y1}) y sigue la regla y = ${factor}x. ¿Qué pareja corresponde a x = ${x2}?`,
+      `(${x2}, ${y2})`,
+      [
+        `(${x2}, ${y1})`,
+        `(${y2}, ${x2})`,
+        `(${x2}, ${x2 + factor})`,
+      ],
+      `Para x=${x2}: y=${factor}×${x2}=${y2}.`,
+      ['lectura_tablas', 'pares_valores']
+    )
+  }
+
+  if (d === 3) {
+    const factor = ri(2, 7)
+    const x = ri(2, 8)
+    const y = factor * x
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una tabla de proporcionalidad aparece x=${x}, y=${y}. ¿Cuál es la constante y/x?`,
+      String(factor),
+      [
+        String(x),
+        String(y),
+        String(x + factor),
+      ],
+      `${y}÷${x}=${factor}.`,
+      ['lectura_tablas', 'constante']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(2, 5)
+    const b = ri(1, 8)
+    const x = ri(2, 8)
+    const y = a * x + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una tabla sigue la regla y = ${a}x + ${b}. ¿Qué valor de y corresponde a x = ${x}?`,
+      String(y),
+      [
+        String(a + x + b),
+        String(a * (x + b)),
+        String(y - b),
+      ],
+      `Sustituimos x=${x}: y=${a}×${x}+${b}=${y}.`,
+      ['lectura_tablas', 'regla_lineal']
+    )
+  }
+
+  const a = ri(2, 5)
+  const b = ri(-6, 6)
+  const x1 = ri(1, 5)
   const x2 = x1 + 2
-  const y2 = x2 * factor
+
+  const y1 = a * x1 + b
+  const y2 = a * x2 + b
 
   return mc(
     skill,
     d,
     seed,
-    `En una tabla, cuando x = ${x1}, y = ${y1}. Si la relación es y = ${factor}x, ¿cuánto vale y cuando x = ${x2}?`,
-    String(y2),
+    `Una tabla contiene los pares (${x1}, ${y1}) y (${x2}, ${y2}). ¿Qué regla los relaciona?`,
+    `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
     [
-      String(x2 + factor),
-      String(y1),
-      String(y2 + factor),
+      `y = ${a + 1}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
+      `y = ${a}x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}`,
+      `y = x + ${a}`,
     ],
-    `y = ${factor} × ${x2} = ${y2}.`,
-    ['lectura_tablas']
+    `Los dos pares cumplen y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}.`,
+    ['lectura_tablas', 'deducir_regla', 'dificultad_alta']
   )
 }
 
-// M13S03 · Representar datos en gráficas
+// M13S03 · Elegir representación gráfica
 if (key === 'plot_graph') {
-  const variants = [
+  const easy = [
     {
-      situation: 'la evolución de la temperatura a lo largo de un día',
+      situation: 'mostrar cómo cambia la temperatura a lo largo de un día',
       answer: 'Gráfico de líneas',
-      solution: 'Un gráfico de líneas permite ver claramente cómo cambia una magnitud con el tiempo.',
-      distractors: ['Gráfico de barras', 'Diagrama de sectores', 'Tabla sin gráfica'],
+      solution: 'El gráfico de líneas muestra bien la evolución de una magnitud con el tiempo.',
+      distractors: ['Gráfico de barras', 'Diagrama de sectores', 'Pictograma'],
     },
     {
-      situation: 'comparar cuántos alumnos prefieren fútbol, baloncesto y tenis',
+      situation: 'comparar el número de alumnos que prefieren fútbol, baloncesto y tenis',
       answer: 'Gráfico de barras',
-      solution: 'El gráfico de barras es adecuado para comparar cantidades entre categorías.',
+      solution: 'Las barras permiten comparar fácilmente categorías diferentes.',
       distractors: ['Gráfico de líneas', 'Diagrama de sectores', 'Plano cartesiano'],
     },
     {
       situation: 'mostrar qué porcentaje del presupuesto corresponde a cada categoría',
       answer: 'Diagrama de sectores',
-      solution: 'Un diagrama de sectores representa bien las partes de un total.',
+      solution: 'Un diagrama de sectores representa partes de un total.',
       distractors: ['Gráfico de líneas', 'Gráfico de barras', 'Plano cartesiano'],
     },
   ]
 
-  const v = variants[seed % variants.length]
+  const medium = [
+    {
+      situation: 'comparar las ventas de cinco tiendas durante el mismo mes',
+      answer: 'Gráfico de barras',
+      solution: 'Se comparan categorías independientes: las cinco tiendas.',
+      distractors: ['Gráfico de líneas', 'Plano cartesiano', 'Diagrama de dispersión'],
+    },
+    {
+      situation: 'seguir la evolución del número de visitantes de una web durante doce meses',
+      answer: 'Gráfico de líneas',
+      solution: 'Nos interesa observar cómo cambia una variable a lo largo del tiempo.',
+      distractors: ['Diagrama de sectores', 'Pictograma', 'Gráfico circular'],
+    },
+    {
+      situation: 'mostrar cómo se reparte el tiempo diario entre dormir, estudiar, ocio y deporte',
+      answer: 'Diagrama de sectores',
+      solution: 'Las categorías forman partes de un total diario.',
+      distractors: ['Gráfico de líneas', 'Plano cartesiano', 'Diagrama de dispersión'],
+    },
+  ]
+
+  const hard = [
+    {
+      situation: 'estudiar si existe relación entre las horas de estudio y la nota obtenida por distintos alumnos',
+      answer: 'Diagrama de dispersión',
+      solution: 'Un diagrama de dispersión permite estudiar la relación entre dos variables numéricas.',
+      distractors: ['Diagrama de sectores', 'Pictograma', 'Gráfico de barras'],
+    },
+    {
+      situation: 'representar la trayectoria de puntos definidos mediante parejas (x, y)',
+      answer: 'Plano cartesiano',
+      solution: 'Las parejas ordenadas se representan mediante coordenadas en un plano cartesiano.',
+      distractors: ['Diagrama de sectores', 'Pictograma', 'Gráfico circular'],
+    },
+    {
+      situation: 'comparar frecuencias de varias categorías y detectar rápidamente cuál es la mayor',
+      answer: 'Gráfico de barras',
+      solution: 'Las alturas de las barras permiten comparar las frecuencias directamente.',
+      distractors: ['Diagrama de dispersión', 'Plano cartesiano', 'Gráfico de líneas'],
+    },
+  ]
+
+  const pool = d <= 2 ? easy : d <= 4 ? medium : hard
+  const v = pool[ri(0, pool.length - 1)]
 
   return mc(
     skill,
@@ -8038,155 +8268,576 @@ if (key === 'plot_graph') {
     v.answer,
     v.distractors,
     v.solution,
-    ['representacion_grafica']
+    ['representacion_grafica', `dificultad_${d}`]
   )
 }
 
 // M13S04 · Interpretar gráficas
 if (key === 'graph_interpret') {
-  const monday = ri(10, 30)
-  const tuesday = monday + ri(2, 10)
-  const wednesday = ri(8, monday)
+  if (d === 1) {
+    const a = ri(10, 25)
+    const b = ri(10, 25)
+    const c = Math.max(a, b) + ri(2, 8)
 
-  const maxValue = Math.max(monday, tuesday, wednesday)
-  const answer =
-    maxValue === monday
-      ? 'Lunes'
-      : maxValue === tuesday
-        ? 'Martes'
-        : 'Miércoles'
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un gráfico de barras muestra: fútbol ${a}, baloncesto ${b} y tenis ${c}. ¿Qué deporte tiene mayor frecuencia?`,
+      'Tenis',
+      ['Fútbol', 'Baloncesto', 'Todos igual'],
+      `El valor mayor es ${c}, correspondiente a tenis.`,
+      ['interpretacion_graficas', 'maximo']
+    )
+  }
+
+  if (d === 2) {
+    const monday = ri(10, 30)
+    const tuesday = monday + ri(3, 10)
+    const wednesday = ri(8, monday)
+    const difference = tuesday - wednesday
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una gráfica muestra ventas de ${monday} el lunes, ${tuesday} el martes y ${wednesday} el miércoles. ¿Cuántas ventas más hubo el martes que el miércoles?`,
+      String(difference),
+      [
+        String(tuesday + wednesday),
+        String(tuesday - monday),
+        String(monday - wednesday),
+      ],
+      `${tuesday}-${wednesday}=${difference}.`,
+      ['interpretacion_graficas', 'diferencia']
+    )
+  }
+
+  if (d === 3) {
+    const jan = ri(10, 20)
+    const feb = jan + ri(2, 8)
+    const mar = feb + ri(2, 8)
+    const increase = mar - jan
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un gráfico de líneas registra ${jan} unidades en enero, ${feb} en febrero y ${mar} en marzo. ¿Cuánto ha aumentado desde enero hasta marzo?`,
+      String(increase),
+      [
+        String(mar + jan),
+        String(feb - jan),
+        String(mar),
+      ],
+      `${mar}-${jan}=${increase}.`,
+      ['interpretacion_graficas', 'evolucion']
+    )
+  }
+
+  if (d === 4) {
+    const values = [
+      ri(10, 30),
+      ri(10, 30),
+      ri(10, 30),
+      ri(10, 30),
+    ]
+
+    const total = values.reduce((sum, value) => sum + value, 0)
+    const average = total / values.length
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una gráfica muestra cuatro valores: ${values.join(', ')}. ¿Cuál es su media?`,
+      String(average),
+      [
+        String(total),
+        String(Math.max(...values)),
+        String(Math.min(...values)),
+      ],
+      `Sumamos: ${total}. Dividimos entre 4: ${total}÷4=${average}.`,
+      ['interpretacion_graficas', 'media']
+    )
+  }
+
+  const start = ri(20, 40)
+  const peak = start + ri(8, 20)
+  const end = peak - ri(3, 10)
+  const netChange = end - start
 
   return mc(
     skill,
     d,
     seed,
-    `Una gráfica muestra estas ventas: lunes ${monday}, martes ${tuesday} y miércoles ${wednesday}. ¿Qué día tuvo más ventas?`,
-    answer,
-    ['Lunes', 'Martes', 'Miércoles', 'Todos igual'].filter(x => x !== answer),
-    `El valor mayor es ${maxValue}, correspondiente a ${answer.toLowerCase()}.`,
-    ['interpretacion_graficas']
+    `Una gráfica de líneas comienza en ${start}, sube hasta ${peak} y termina en ${end}. ¿Cuál es el cambio neto entre el inicio y el final?`,
+    String(netChange),
+    [
+      String(peak - start),
+      String(peak - end),
+      String(end + start),
+    ],
+    `El cambio neto compara únicamente el valor final con el inicial: ${end}-${start}=${netChange}.`,
+    ['interpretacion_graficas', 'cambio_neto', 'dificultad_alta']
   )
 }
-
-// ============================================================
+// =========================
 // M14 · ESTADÍSTICA
-// ============================================================
+// =========================
 
 // M14S01 · Población, muestra e individuo
 if (key === 'stats_population') {
-  const variants = [
+  const easy = [
     {
-      prompt: 'En un instituto se quiere estudiar la altura de todos los alumnos de 1º ESO. ¿Cuál es la población?',
+      prompt:
+        'En un instituto se quiere estudiar la altura de todos los alumnos de 1º ESO. ¿Cuál es la población?',
       answer: 'Todos los alumnos de 1º ESO',
-      distractors: ['Un alumno cualquiera', 'Los 20 alumnos medidos', 'Las alturas obtenidas'],
-      solution: 'La población es el conjunto completo que queremos estudiar.',
+      distractors: [
+        'Un alumno cualquiera',
+        'Los 20 alumnos medidos',
+        'Las alturas obtenidas',
+      ],
+      solution:
+        'La población es el conjunto completo que se quiere estudiar.',
     },
     {
-      prompt: 'De 300 alumnos se eligen 30 para hacer una encuesta. ¿Qué son esos 30 alumnos?',
+      prompt:
+        'De 500 clientes se eligen 50 para responder una encuesta. ¿Qué son esos 50 clientes?',
       answer: 'La muestra',
-      distractors: ['La población', 'La variable', 'La frecuencia'],
-      solution: 'La muestra es una parte de la población seleccionada para el estudio.',
+      distractors: [
+        'La población',
+        'La variable',
+        'La frecuencia',
+      ],
+      solution:
+        'La muestra es una parte de la población utilizada para realizar el estudio.',
     },
     {
-      prompt: 'En un estudio sobre hábitos de lectura, cada alumno encuestado es...',
+      prompt:
+        'En un estudio sobre hábitos deportivos, cada persona encuestada es...',
       answer: 'Un individuo',
-      distractors: ['Una muestra', 'Una variable', 'Una frecuencia'],
-      solution: 'Cada elemento de la población estudiada es un individuo.',
+      distractors: [
+        'Una muestra',
+        'Una variable',
+        'Una frecuencia',
+      ],
+      solution:
+        'Cada elemento de la población es un individuo.',
     },
   ]
 
-  const v = variants[seed % variants.length]
+  if (d <= 2) {
+    const v = easy[ri(0, easy.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['poblacion_muestra_individuo']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Una ciudad tiene 20.000 habitantes. Se entrevista a 400 para estudiar sus hábitos de transporte. ¿Cuál es la muestra?',
+      'Los 400 habitantes entrevistados',
+      [
+        'Los 20.000 habitantes',
+        'Los medios de transporte',
+        'Una sola persona entrevistada',
+      ],
+      'La muestra está formada por las 400 personas seleccionadas.',
+      ['poblacion_muestra_individuo', 'contexto']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'En un estudio sobre el tiempo de uso del móvil de todos los alumnos de un centro, se seleccionan 80 alumnos. ¿Cuál es la población?',
+      'Todos los alumnos del centro',
+      [
+        'Los 80 alumnos seleccionados',
+        'El tiempo de uso del móvil',
+        'Cada teléfono móvil',
+      ],
+      'La población es el conjunto total sobre el que se desea obtener información.',
+      ['poblacion_muestra_individuo', 'razonamiento']
+    )
+  }
 
   return mc(
     skill,
     d,
     seed,
-    v.prompt,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['poblacion_muestra_individuo']
+    'Se estudia el consumo eléctrico de todas las viviendas de una ciudad usando datos de 600 viviendas seleccionadas. ¿Qué afirmación es correcta?',
+    'Las viviendas de la ciudad forman la población y las 600 seleccionadas forman la muestra',
+    [
+      'Las 600 viviendas forman la población',
+      'El consumo eléctrico es la muestra',
+      'Cada ciudad es un individuo',
+    ],
+    'La población es el conjunto completo y la muestra es el subconjunto observado.',
+    ['poblacion_muestra_individuo', 'razonamiento', 'dificultad_alta']
   )
 }
 
 // M14S02 · Variables estadísticas
 if (key === 'stats_variables') {
-  const variants = [
-    {
-      prompt: 'La altura de un alumno, medida en centímetros, es una variable...',
-      answer: 'Cuantitativa',
-      distractors: ['Cualitativa', 'Nominal', 'No estadística'],
-      solution: 'La altura se expresa mediante números, por eso es cuantitativa.',
-    },
-    {
-      prompt: 'El color favorito de una persona es una variable...',
-      answer: 'Cualitativa',
-      distractors: ['Cuantitativa', 'Continua', 'Numérica'],
-      solution: 'El color favorito describe una categoría, por eso es cualitativa.',
-    },
-    {
-      prompt: 'El número de hermanos de un alumno es una variable...',
-      answer: 'Cuantitativa discreta',
-      distractors: ['Cualitativa', 'Cuantitativa continua', 'Nominal'],
-      solution: 'Es numérica y toma valores enteros contables, por eso es discreta.',
-    },
-  ]
+  if (d === 1) {
+    const variants = [
+      {
+        prompt:
+          'La altura de una persona, medida en centímetros, es una variable...',
+        answer: 'Cuantitativa',
+        distractors: [
+          'Cualitativa',
+          'No estadística',
+          'Nominal',
+        ],
+        solution:
+          'La altura se expresa mediante números.',
+      },
+      {
+        prompt:
+          'El color favorito de una persona es una variable...',
+        answer: 'Cualitativa',
+        distractors: [
+          'Cuantitativa',
+          'Continua',
+          'Numérica',
+        ],
+        solution:
+          'El color favorito describe una categoría.',
+      },
+    ]
 
-  const v = variants[seed % variants.length]
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['variables_estadisticas']
+    )
+  }
+
+  if (d === 2) {
+    const variants = [
+      {
+        prompt:
+          'El número de hermanos de un alumno es una variable...',
+        answer: 'Cuantitativa discreta',
+        distractors: [
+          'Cualitativa',
+          'Cuantitativa continua',
+          'No estadística',
+        ],
+        solution:
+          'Es numérica y solo puede tomar valores enteros contables.',
+      },
+      {
+        prompt:
+          'El número de libros leídos durante un mes es una variable...',
+        answer: 'Cuantitativa discreta',
+        distractors: [
+          'Cualitativa',
+          'Cuantitativa continua',
+          'Nominal',
+        ],
+        solution:
+          'Los libros se cuentan mediante números enteros.',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['variables_estadisticas', 'discreta']
+    )
+  }
+
+  if (d === 3) {
+    const variants = [
+      'La masa de una persona medida con precisión',
+      'La temperatura de una habitación',
+      'El tiempo empleado en recorrer una distancia',
+    ]
+
+    const variable = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${variable} es una variable...`,
+      'Cuantitativa continua',
+      [
+        'Cuantitativa discreta',
+        'Cualitativa',
+        'No estadística',
+      ],
+      'Puede tomar cualquier valor dentro de un intervalo, por eso es continua.',
+      ['variables_estadisticas', 'continua']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas variables es cualitativa?',
+      'El medio de transporte utilizado para ir al instituto',
+      [
+        'La distancia recorrida en kilómetros',
+        'El número de hermanos',
+        'La temperatura corporal',
+      ],
+      'El medio de transporte describe categorías, no cantidades numéricas.',
+      ['variables_estadisticas', 'clasificacion']
+    )
+  }
 
   return mc(
     skill,
     d,
     seed,
-    v.prompt,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['variables_estadisticas']
+    '¿Qué pareja está correctamente clasificada?',
+    'Número de mascotas: cuantitativa discreta; altura: cuantitativa continua',
+    [
+      'Número de mascotas: continua; altura: discreta',
+      'Color de ojos: cuantitativa; altura: cualitativa',
+      'Temperatura: discreta; deporte favorito: cuantitativa',
+    ],
+    'Las mascotas se cuentan y la altura se mide sobre una escala continua.',
+    ['variables_estadisticas', 'razonamiento', 'dificultad_alta']
   )
 }
 
 // M14S03 · Tabla de frecuencias
 if (key === 'frequency_table') {
-  const data = [1, 2, 2, 3, 2, 4, 3, 2]
-  const answer = '4'
+  if (d === 1) {
+    const target = ri(1, 5)
+    const frequency = ri(2, 5)
+
+    const values = [
+      target,
+      target + 1,
+      target,
+      target + 2,
+      target,
+      target + 3,
+    ]
+
+    if (frequency >= 4) values.push(target)
+    if (frequency >= 5) values.push(target)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En los datos ${values.join(', ')}, ¿cuál es la frecuencia del valor ${target}?`,
+      String(frequency),
+      [
+        String(Math.max(1, frequency - 1)),
+        String(frequency + 1),
+        String(values.length),
+      ],
+      `El valor ${target} aparece ${frequency} veces.`,
+      ['tabla_frecuencias']
+    )
+  }
+
+  if (d === 2) {
+    const a = ri(1, 4)
+    const b = a + 1
+    const c = a + 2
+
+    const freqA = ri(1, 3)
+    const freqB = ri(3, 5)
+    const freqC = ri(1, 2)
+
+    const total = freqA + freqB + freqC
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una tabla muestra: ${a} aparece ${freqA} veces, ${b} aparece ${freqB} veces y ${c} aparece ${freqC} veces. ¿Cuántos datos hay en total?`,
+      String(total),
+      [
+        String(freqB),
+        String(a + b + c),
+        String(total + 1),
+      ],
+      `Sumamos las frecuencias: ${freqA}+${freqB}+${freqC}=${total}.`,
+      ['tabla_frecuencias', 'frecuencia_total']
+    )
+  }
+
+  if (d === 3) {
+    const total = ri(20, 50)
+    const frequency = ri(5, total - 5)
+    const relative = frequency / total
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En un grupo de ${total} personas, ${frequency} eligen una opción. ¿Cuál es su frecuencia relativa?`,
+      String(relative),
+      [
+        String(frequency),
+        String(total - frequency),
+        String(total / frequency),
+      ],
+      `Frecuencia relativa = ${frequency}/${total} = ${relative}.`,
+      ['tabla_frecuencias', 'frecuencia_relativa']
+    )
+  }
+
+  if (d === 4) {
+    const values = [2, 3, 4, 5]
+    const frequencies = [
+      ri(1, 4),
+      ri(1, 4),
+      ri(1, 4),
+      ri(1, 4),
+    ]
+
+    const maxFreq = Math.max(...frequencies)
+    const index = frequencies.indexOf(maxFreq)
+    const answer = String(values[index])
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una tabla tiene valores ${values.join(', ')} con frecuencias ${frequencies.join(', ')} respectivamente. ¿Qué valor tiene mayor frecuencia?`,
+      answer,
+      values
+        .map(String)
+        .filter((x) => x !== answer),
+      `La frecuencia mayor es ${maxFreq}, correspondiente al valor ${answer}.`,
+      ['tabla_frecuencias', 'interpretacion']
+    )
+  }
+
+  const f1 = ri(2, 6)
+  const f2 = ri(2, 6)
+  const f3 = ri(2, 6)
+  const knownTotal = f1 + f2 + f3
+  const missing = ri(2, 6)
+  const total = knownTotal + missing
 
   return mc(
     skill,
     d,
     seed,
-    `En los datos 1, 2, 2, 3, 2, 4, 3, 2, ¿cuál es la frecuencia del valor 2?`,
-    answer,
-    ['2', '3', '5'],
-    'El número 2 aparece 4 veces.',
-    ['tabla_frecuencias']
+    `Una tabla de frecuencias tiene valores con frecuencias ${f1}, ${f2}, ${f3} y una frecuencia desconocida. Si hay ${total} datos en total, ¿cuál es la frecuencia que falta?`,
+    String(missing),
+    [
+      String(total),
+      String(knownTotal),
+      String(missing + 1),
+    ],
+    `Frecuencia desconocida = ${total}-(${f1}+${f2}+${f3})=${missing}.`,
+    ['tabla_frecuencias', 'frecuencia_desconocida', 'dificultad_alta']
   )
 }
 
 // M14S04 · Gráficos estadísticos
 if (key === 'stat_charts') {
-  const variants = [
+  const easy = [
     {
-      situation: 'comparar el número de alumnos que eligen cada deporte',
+      situation:
+        'comparar el número de alumnos que eligen cada deporte',
       answer: 'Gráfico de barras',
-      distractors: ['Gráfico de líneas', 'Diagrama de sectores', 'Histograma temporal'],
-      solution: 'El gráfico de barras es adecuado para comparar categorías.',
+      distractors: [
+        'Gráfico de líneas',
+        'Diagrama de sectores',
+        'Plano cartesiano',
+      ],
+      solution:
+        'Las barras permiten comparar categorías.',
     },
     {
-      situation: 'mostrar cómo se reparte un total entre varias categorías',
+      situation:
+        'mostrar cómo se reparte un total entre varias categorías',
       answer: 'Diagrama de sectores',
-      distractors: ['Gráfico de líneas', 'Gráfico de barras', 'Plano cartesiano'],
-      solution: 'El diagrama de sectores representa partes de un total.',
+      distractors: [
+        'Gráfico de líneas',
+        'Gráfico de barras',
+        'Plano cartesiano',
+      ],
+      solution:
+        'Los sectores representan partes de un total.',
     },
     {
-      situation: 'mostrar cómo cambia una temperatura durante varias horas',
+      situation:
+        'mostrar cómo cambia una temperatura durante varias horas',
       answer: 'Gráfico de líneas',
-      distractors: ['Diagrama de sectores', 'Gráfico de barras', 'Pictograma'],
-      solution: 'El gráfico de líneas muestra bien la evolución de una magnitud en el tiempo.',
+      distractors: [
+        'Diagrama de sectores',
+        'Gráfico de barras',
+        'Pictograma',
+      ],
+      solution:
+        'Las líneas permiten observar cambios a lo largo del tiempo.',
     },
   ]
 
-  const v = variants[seed % variants.length]
+  const hard = [
+    {
+      situation:
+        'representar la distribución de alturas agrupadas en intervalos',
+      answer: 'Histograma',
+      distractors: [
+        'Diagrama de sectores',
+        'Pictograma',
+        'Plano cartesiano',
+      ],
+      solution:
+        'El histograma es apropiado para datos cuantitativos agrupados en intervalos.',
+    },
+    {
+      situation:
+        'estudiar la relación entre horas de estudio y nota obtenida',
+      answer: 'Diagrama de dispersión',
+      distractors: [
+        'Diagrama de sectores',
+        'Histograma',
+        'Pictograma',
+      ],
+      solution:
+        'El diagrama de dispersión permite analizar la relación entre dos variables numéricas.',
+    },
+  ]
+
+  const pool = d <= 3 ? easy : hard
+  const v = pool[ri(0, pool.length - 1)]
 
   return mc(
     skill,
@@ -8196,230 +8847,759 @@ if (key === 'stat_charts') {
     v.answer,
     v.distractors,
     v.solution,
-    ['graficos_estadisticos']
+    ['graficos_estadisticos', `dificultad_${d}`]
   )
 }
 
 // M14S05 · Media aritmética
 if (key === 'mean') {
-  const a = ri(2, 8)
-  const b = ri(2, 8)
-  const c = ri(2, 8)
-  const d4 = ri(2, 8)
-  const total = a + b + c + d4
-  const result = total / 4
+  if (d <= 2) {
+    const result = ri(3, 10)
+    const a = result - ri(0, 2)
+    const b = result + ri(0, 2)
+    const c = result - ri(0, 2)
+    const d4 = result * 4 - a - b - c
+
+    const values = [a, b, c, d4]
+    const total = values.reduce((sum, value) => sum + value, 0)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula la media de ${values.join(', ')}`,
+      String(result),
+      [
+        String(total),
+        String(Math.max(...values)),
+        String(Math.min(...values)),
+      ],
+      `Sumamos ${total} y dividimos entre 4: ${total}/4=${result}.`,
+      ['media_aritmetica']
+    )
+  }
+
+  if (d === 3) {
+    const result = ri(5, 15)
+    const values = [
+      result - 4,
+      result - 2,
+      result,
+      result + 2,
+      result + 4,
+    ]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la media de ${values.join(', ')}?`,
+      String(result),
+      [
+        String(result + 2),
+        String(values[0]),
+        String(values[4]),
+      ],
+      `Los valores están equilibrados alrededor de ${result}, que es su media.`,
+      ['media_aritmetica', 'cinco_datos']
+    )
+  }
+
+  if (d === 4) {
+    const mean = ri(6, 15)
+    const known = [mean - 2, mean, mean + 3]
+    const totalNeeded = mean * 4
+    const missing =
+      totalNeeded -
+      known.reduce((sum, value) => sum + value, 0)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `La media de cuatro números es ${mean}. Tres de ellos son ${known.join(', ')}. ¿Cuál es el cuarto número?`,
+      String(missing),
+      [
+        String(mean),
+        String(totalNeeded),
+        String(missing + 2),
+      ],
+      `La suma total debe ser ${mean}×4=${totalNeeded}. Restamos los tres conocidos y obtenemos ${missing}.`,
+      ['media_aritmetica', 'dato_desconocido']
+    )
+  }
+
+  const oldMean = ri(6, 12)
+  const count = ri(4, 6)
+  const oldTotal = oldMean * count
+  const newValue = ri(oldMean + 2, oldMean + 8)
+  const newMean = (oldTotal + newValue) / (count + 1)
 
   return mc(
     skill,
     d,
     seed,
-    `Calcula la media de ${a}, ${b}, ${c} y ${d4}`,
-    String(result),
+    `La media de ${count} valores es ${oldMean}. Se añade un nuevo valor ${newValue}. ¿Cuál es la nueva media?`,
+    String(newMean),
     [
-      String(total),
-      String(Math.max(a, b, c, d4)),
-      String(Math.min(a, b, c, d4)),
+      String(oldMean),
+      String(newValue),
+      String((oldMean + newValue) / 2),
     ],
-    `Sumamos: ${a}+${b}+${c}+${d4}=${total}. Dividimos entre 4: ${total}/4=${result}.`,
-    ['media_aritmetica']
+    `La suma inicial es ${oldMean}×${count}=${oldTotal}. Añadimos ${newValue} y dividimos entre ${count + 1}: ${newMean}.`,
+    ['media_aritmetica', 'actualizar_media', 'dificultad_alta']
   )
 }
 
 // M14S06 · Mediana
 if (key === 'median') {
+  if (d <= 2) {
+    const values = [
+      ri(1, 5),
+      ri(6, 10),
+      ri(11, 15),
+      ri(16, 20),
+      ri(21, 25),
+    ]
+
+    const answer = String(values[2])
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la mediana de ${values.join(', ')}?`,
+      answer,
+      [
+        String(values[0]),
+        String(values[4]),
+        String(values[1]),
+      ],
+      `Hay 5 datos ordenados, así que la mediana es el valor central: ${answer}.`,
+      ['mediana']
+    )
+  }
+
+  if (d === 3) {
+    const values = [
+      ri(1, 5),
+      ri(6, 10),
+      ri(11, 15),
+      ri(16, 20),
+      ri(21, 25),
+    ]
+
+    const shuffled = [
+      values[3],
+      values[0],
+      values[4],
+      values[1],
+      values[2],
+    ]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la mediana de ${shuffled.join(', ')}?`,
+      String(values[2]),
+      [
+        String(values[0]),
+        String(values[4]),
+        String(values[1]),
+      ],
+      `Primero ordenamos los datos. El valor central es ${values[2]}.`,
+      ['mediana', 'datos_desordenados']
+    )
+  }
+
+  if (d === 4) {
+    const values = [
+      ri(1, 4),
+      ri(5, 8),
+      ri(9, 12),
+      ri(13, 16),
+      ri(17, 20),
+      ri(21, 24),
+    ]
+
+    const result = (values[2] + values[3]) / 2
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la mediana de ${values.join(', ')}?`,
+      String(result),
+      [
+        String(values[2]),
+        String(values[3]),
+        String(values[2] + values[3]),
+      ],
+      `Hay 6 datos. La mediana es la media de los dos centrales: (${values[2]}+${values[3]})/2=${result}.`,
+      ['mediana', 'numero_par_datos']
+    )
+  }
+
   const values = [
     ri(1, 5),
     ri(6, 10),
     ri(11, 15),
     ri(16, 20),
     ri(21, 25),
-  ].sort((a, b) => a - b)
+    ri(26, 30),
+  ]
 
-  const answer = String(values[2])
+  const shuffled = [
+    values[4],
+    values[1],
+    values[5],
+    values[0],
+    values[3],
+    values[2],
+  ]
+
+  const result = (values[2] + values[3]) / 2
 
   return mc(
     skill,
     d,
     seed,
-    `¿Cuál es la mediana de ${values.join(', ')}?`,
-    answer,
+    `Los datos son ${shuffled.join(', ')}. ¿Cuál es la mediana?`,
+    String(result),
     [
+      String(values[2]),
+      String(values[3]),
       String(values[0]),
-      String(values[4]),
-      String(values[1]),
     ],
-    `Al haber 5 datos ordenados, la mediana es el valor central: ${answer}.`,
-    ['mediana']
+    `Ordenamos los seis datos y calculamos la media de los dos centrales: ${result}.`,
+    ['mediana', 'datos_desordenados', 'dificultad_alta']
   )
 }
 
 // M14S07 · Moda
 if (key === 'mode') {
-  const repeated = ri(2, 9)
-  const others = [
-    repeated + 1,
-    repeated + 2,
-    repeated + 3,
-  ]
+  if (d <= 2) {
+    const repeated = ri(2, 9)
+
+    const values = [
+      repeated,
+      repeated + 1,
+      repeated,
+      repeated + 2,
+      repeated,
+      repeated + 3,
+    ]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la moda de ${values.join(', ')}?`,
+      String(repeated),
+      [
+        String(repeated + 1),
+        String(repeated + 2),
+        String(repeated + 3),
+      ],
+      `La moda es el valor que más se repite. ${repeated} aparece 3 veces.`,
+      ['moda']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(2, 6)
+    const b = a + ri(2, 4)
+
+    const values = [
+      a,
+      b,
+      a,
+      b,
+      a,
+      b,
+      a + 1,
+    ]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la moda de ${values.join(', ')}?`,
+      'Hay dos modas',
+      [
+        String(a),
+        String(b),
+        'No hay moda',
+      ],
+      `${a} y ${b} aparecen el mismo número máximo de veces. La distribución es bimodal.`,
+      ['moda', 'bimodal']
+    )
+  }
+
+  if (d === 4) {
+    const start = ri(2, 7)
+
+    const values = [
+      start,
+      start + 1,
+      start + 2,
+      start + 3,
+      start + 4,
+    ]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la moda de ${values.join(', ')}?`,
+      'No hay moda',
+      [
+        String(start),
+        String(start + 2),
+        String(start + 4),
+      ],
+      'Todos los valores aparecen una sola vez, por lo que no existe moda.',
+      ['moda', 'sin_moda']
+    )
+  }
+
+  const a = ri(2, 6)
+  const b = a + 1
+  const c = a + 2
 
   const values = [
-    repeated,
-    others[0],
-    repeated,
-    others[1],
-    repeated,
-    others[2],
+    a,
+    b,
+    a,
+    c,
+    b,
+    a,
+    b,
+    b,
   ]
 
   return mc(
     skill,
     d,
     seed,
-    `¿Cuál es la moda de ${values.join(', ')}?`,
-    String(repeated),
-    others.map(String),
-    `La moda es el valor que más se repite. ${repeated} aparece 3 veces.`,
-    ['moda']
+    `En los datos ${values.join(', ')}, ¿qué valor es la moda y cuántas veces aparece?`,
+    `${b}, 4 veces`,
+    [
+      `${a}, 3 veces`,
+      `${c}, 1 vez`,
+      `${b}, 3 veces`,
+    ],
+    `${b} aparece 4 veces, más que cualquier otro valor.`,
+    ['moda', 'frecuencia', 'dificultad_alta']
   )
 }
-
-// ============================================================
+// =========================
 // M15 · PROBABILIDAD
-// ============================================================
+// =========================
 
 // M15S01 · Experimentos aleatorios
 if (key === 'random_experiments') {
-  const variants = [
-    {
-      prompt: '¿Cuál de estas situaciones es un experimento aleatorio?',
-      answer: 'Lanzar un dado',
-      distractors: [
-        'Calcular 7 + 5',
-        'Medir una mesa con una regla',
-        'Escribir el número 10',
-      ],
-      solution: 'En un experimento aleatorio no sabemos de antemano qué resultado concreto ocurrirá.',
-    },
-    {
-      prompt: '¿Cuál de estas situaciones tiene un resultado imprevisible antes de realizarla?',
-      answer: 'Sacar una carta de una baraja mezclada',
-      distractors: [
-        'Sumar 3 + 4',
-        'Contar 10 monedas',
-        'Medir 1 metro',
-      ],
-      solution: 'Sacar una carta de una baraja mezclada es un experimento aleatorio.',
-    },
-  ]
+  if (d <= 2) {
+    const variants = [
+      {
+        prompt: '¿Cuál de estas situaciones es un experimento aleatorio?',
+        answer: 'Lanzar un dado y observar el resultado',
+        distractors: [
+          'Calcular 7 + 5',
+          'Contar las patas de una silla',
+          'Escribir el número 10',
+        ],
+        solution:
+          'Antes de lanzar el dado no podemos saber con certeza qué resultado aparecerá.',
+      },
+      {
+        prompt: '¿Cuál de estas situaciones tiene un resultado imprevisible antes de realizarla?',
+        answer: 'Sacar una carta de una baraja mezclada',
+        distractors: [
+          'Sumar 3 + 4',
+          'Contar 10 monedas',
+          'Calcular el doble de 6',
+        ],
+        solution:
+          'No sabemos qué carta saldrá antes de realizar la extracción.',
+      },
+      {
+        prompt: '¿Cuál de estas acciones representa un experimento aleatorio?',
+        answer: 'Girar una ruleta y observar dónde se detiene',
+        distractors: [
+          'Medir un segmento ya dibujado',
+          'Resolver 20 ÷ 4',
+          'Contar cinco libros',
+        ],
+        solution:
+          'El resultado de la ruleta no se conoce con certeza de antemano.',
+      },
+    ]
 
-  const v = variants[seed % variants.length]
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['experimentos_aleatorios']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas situaciones NO es aleatoria?',
+      'Calcular el perímetro de un cuadrado de lado 5 cm',
+      [
+        'Lanzar dos monedas',
+        'Extraer una bola de una bolsa sin mirar',
+        'Elegir una carta de una baraja mezclada',
+      ],
+      'El perímetro se determina exactamente mediante un cálculo; no depende del azar.',
+      ['experimentos_aleatorios', 'clasificacion']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Se lanza un dado y después se multiplica por 2 el número obtenido. ¿Por qué sigue siendo un experimento aleatorio?',
+      'Porque el número inicial del dado no se conoce antes del lanzamiento',
+      [
+        'Porque multiplicar por 2 siempre es aleatorio',
+        'Porque todos los resultados finales son iguales',
+        'Porque no se puede calcular ningún resultado posible',
+      ],
+      'La transformación es conocida, pero el resultado del dado sigue siendo incierto.',
+      ['experimentos_aleatorios', 'razonamiento']
+    )
+  }
 
   return mc(
     skill,
     d,
     seed,
-    v.prompt,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['experimentos_aleatorios']
+    '¿Qué característica distingue esencialmente un experimento aleatorio de uno determinista?',
+    'Que conocemos los resultados posibles pero no podemos asegurar cuál ocurrirá antes de realizarlo',
+    [
+      'Que no conocemos ningún resultado posible',
+      'Que siempre produce resultados numéricos',
+      'Que necesariamente tiene dos resultados',
+    ],
+    'En un experimento aleatorio podemos describir los posibles resultados, pero no predecir con certeza cuál sucederá.',
+    ['experimentos_aleatorios', 'razonamiento', 'dificultad_alta']
   )
 }
 
 // M15S02 · Sucesos
 if (key === 'events') {
-  const variants = [
-    {
-      prompt: 'Al lanzar un dado, ¿cuál de estos es un suceso posible?',
-      answer: 'Obtener un número par',
-      distractors: [
-        'Obtener un 8',
-        'Obtener un 0',
-        'Obtener un número mayor que 10',
-      ],
-      solution: 'En un dado pueden salir 1, 2, 3, 4, 5 o 6. Obtener un número par es posible.',
-    },
-    {
-      prompt: 'Al lanzar una moneda, ¿cuál es un suceso seguro?',
-      answer: 'Obtener cara o cruz',
-      distractors: [
-        'Obtener dos caras a la vez',
-        'Obtener un 3',
-        'No obtener ningún resultado',
-      ],
-      solution: 'En una moneda, necesariamente sale cara o cruz.',
-    },
-  ]
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'Al lanzar un dado, ¿cuál de estos es un suceso posible?',
+        answer: 'Obtener un número par',
+        distractors: [
+          'Obtener un 8',
+          'Obtener un 0',
+          'Obtener un número mayor que 10',
+        ],
+        solution:
+          'En un dado pueden salir 1, 2, 3, 4, 5 o 6; algunos son pares.',
+      },
+      {
+        prompt: 'Al lanzar una moneda, ¿cuál es un suceso seguro?',
+        answer: 'Obtener cara o cruz',
+        distractors: [
+          'Obtener un 3',
+          'Obtener dos caras a la vez',
+          'No obtener ningún resultado',
+        ],
+        solution:
+          'En una moneda necesariamente se obtiene uno de sus dos resultados posibles.',
+      },
+    ]
 
-  const v = variants[seed % variants.length]
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['sucesos']
+    )
+  }
+
+  if (d === 2) {
+    const target = ri(7, 12)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Se lanza un dado normal. ¿Qué tipo de suceso es obtener ${target}?`,
+      'Imposible',
+      [
+        'Seguro',
+        'Posible pero no seguro',
+        'Equiprobable',
+      ],
+      'Un dado normal solo puede mostrar valores del 1 al 6.',
+      ['sucesos', 'imposible']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Al lanzar un dado, ¿qué tipo de suceso es obtener un número menor que 7?',
+      'Seguro',
+      [
+        'Imposible',
+        'Posible pero no seguro',
+        'Nunca ocurre',
+      ],
+      'Todos los resultados posibles del dado, del 1 al 6, son menores que 7.',
+      ['sucesos', 'seguro']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Se extrae una bola de una bolsa que contiene bolas rojas, azules y verdes. ¿Cuál de estos sucesos es compuesto?',
+      'Obtener una bola roja o azul',
+      [
+        'Obtener una bola roja',
+        'Obtener una bola verde',
+        'Obtener una única bola',
+      ],
+      'El suceso incluye más de un resultado favorable: rojo o azul.',
+      ['sucesos', 'suceso_compuesto']
+    )
+  }
 
   return mc(
     skill,
     d,
     seed,
-    v.prompt,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['sucesos']
+    'Al lanzar un dado, A = “obtener número par” y B = “obtener número mayor que 3”. ¿Qué resultados pertenecen a A y B a la vez?',
+    '4 y 6',
+    [
+      '2, 4 y 6',
+      '4, 5 y 6',
+      '2 y 3',
+    ],
+    'Los pares son 2, 4 y 6; los mayores que 3 son 4, 5 y 6. La intersección es 4 y 6.',
+    ['sucesos', 'interseccion', 'dificultad_alta']
   )
 }
 
 // M15S03 · Casos favorables y posibles
 if (key === 'favorable_possible') {
-  const favorable = ri(1, 4)
-  const possible = favorable + ri(2, 5)
+  if (d === 1) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Al lanzar un dado normal, ¿cuántos resultados posibles hay?',
+      '6',
+      ['1', '3', '12'],
+      'Los posibles resultados son 1, 2, 3, 4, 5 y 6.',
+      ['casos_favorables_posibles']
+    )
+  }
+
+  if (d === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Al lanzar un dado normal, ¿cuántos casos favorables tiene el suceso “obtener un número par”?',
+      '3',
+      ['2', '4', '6'],
+      'Los resultados favorables son 2, 4 y 6: hay 3.',
+      ['casos_favorables_posibles', 'dado']
+    )
+  }
+
+  if (d === 3) {
+    const red = ri(2, 6)
+    const blue = ri(2, 6)
+    const green = ri(1, 5)
+    const total = red + blue + green
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una bolsa contiene ${red} bolas rojas, ${blue} azules y ${green} verdes. Si queremos sacar una bola azul, ¿cuántos casos favorables y posibles hay?`,
+      `${blue} favorables y ${total} posibles`,
+      [
+        `${total} favorables y ${blue} posibles`,
+        `${red} favorables y ${total} posibles`,
+        `${blue} favorables y ${red + green} posibles`,
+      ],
+      `Hay ${blue} bolas azules de un total de ${total} bolas.`,
+      ['casos_favorables_posibles', 'bolsa']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Se lanzan dos monedas. ¿Cuántos resultados posibles hay si distinguimos el resultado de cada moneda?',
+      '4',
+      ['2', '3', '8'],
+      'Los resultados son cara-cara, cara-cruz, cruz-cara y cruz-cruz.',
+      ['casos_favorables_posibles', 'dos_etapas']
+    )
+  }
 
   return mc(
     skill,
     d,
     seed,
-    `En una experiencia hay ${possible} resultados posibles y ${favorable} son favorables. ¿Cuántos casos favorables hay?`,
-    String(favorable),
-    [
-      String(possible),
-      String(possible - favorable),
-      String(favorable + 1),
-    ],
-    `Los casos favorables son los que cumplen la condición: ${favorable}.`,
-    ['casos_favorables_posibles']
+    'Se lanzan dos dados. ¿Cuántos de los 36 resultados posibles tienen suma 7?',
+    '6',
+    ['5', '7', '12'],
+    'Las parejas son (1,6), (2,5), (3,4), (4,3), (5,2) y (6,1): 6 casos favorables.',
+    ['casos_favorables_posibles', 'dos_dados', 'dificultad_alta']
   )
 }
 
-// M15S04 · Probabilidad de Laplace básica
+// M15S04 · Probabilidad de Laplace
 if (key === 'laplace_basic') {
-  const favorable = ri(1, 4)
-  const possible = favorable + ri(2, 5)
+  if (d === 1) {
+    const favorable = ri(1, 4)
+    const possible = favorable + ri(2, 5)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una experiencia equiprobable hay ${possible} resultados posibles y ${favorable} favorables. ¿Cuál es la probabilidad?`,
+      `${favorable}/${possible}`,
+      [
+        `${possible}/${favorable}`,
+        `${possible - favorable}/${possible}`,
+        `${favorable}/${possible + 1}`,
+      ],
+      `Probabilidad = casos favorables / casos posibles = ${favorable}/${possible}.`,
+      ['probabilidad_laplace']
+    )
+  }
+
+  if (d === 2) {
+    const favorable = [1, 2, 3][ri(0, 2)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Se lanza un dado normal. ¿Cuál es la probabilidad de obtener uno de ${favorable} resultados favorables?`,
+      `${favorable}/6`,
+      [
+        `6/${favorable}`,
+        `${6 - favorable}/6`,
+        `${favorable}/5`,
+      ],
+      `Hay ${favorable} casos favorables entre 6 resultados equiprobables.`,
+      ['probabilidad_laplace', 'dado']
+    )
+  }
+
+  if (d === 3) {
+    const red = ri(2, 6)
+    const blue = ri(2, 6)
+    const total = red + blue
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una bolsa contiene ${red} bolas rojas y ${blue} azules. ¿Cuál es la probabilidad de sacar una roja?`,
+      `${red}/${total}`,
+      [
+        `${blue}/${total}`,
+        `${total}/${red}`,
+        `${red}/${blue}`,
+      ],
+      `Hay ${red} casos favorables de ${total} posibles.`,
+      ['probabilidad_laplace', 'bolsa']
+    )
+  }
+
+  if (d === 4) {
+    const red = ri(2, 5)
+    const blue = ri(2, 5)
+    const green = ri(1, 4)
+    const total = red + blue + green
+    const favorable = red + blue
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una bolsa contiene ${red} bolas rojas, ${blue} azules y ${green} verdes. ¿Cuál es la probabilidad de sacar una bola que NO sea verde?`,
+      `${favorable}/${total}`,
+      [
+        `${green}/${total}`,
+        `${total}/${favorable}`,
+        `${red}/${total}`,
+      ],
+      `No verde significa roja o azul: ${red}+${blue}=${favorable} casos favorables de ${total}.`,
+      ['probabilidad_laplace', 'suceso_compuesto']
+    )
+  }
 
   return mc(
     skill,
     d,
     seed,
-    `En una experiencia equiprobable hay ${possible} resultados posibles y ${favorable} favorables. ¿Cuál es la probabilidad?`,
-    `${favorable}/${possible}`,
+    'Se lanzan dos dados normales. ¿Cuál es la probabilidad de que la suma sea 7?',
+    '6/36',
     [
-      `${possible}/${favorable}`,
-      `${possible - favorable}/${possible}`,
-      `${favorable}/${possible + 1}`,
+      '7/36',
+      '6/12',
+      '1/36',
     ],
-    `Probabilidad = casos favorables / casos posibles = ${favorable}/${possible}.`,
-    ['probabilidad_laplace']
+    'Hay 36 parejas equiprobables y 6 suman 7, así que la probabilidad es 6/36.',
+    ['probabilidad_laplace', 'dos_dados', 'dificultad_alta']
   )
 }
+
 // Generador de reserva para habilidades aún no implementadas.
-  return mc(
-    skill,
-    d,
-    seed,
-    `¿Qué opción representa correctamente la habilidad "${skill.name}"?`,
-    'Opción correcta',
-    [
-      'Distractor A',
-      'Distractor B',
-      'Distractor C',
-    ],
-    'Esta habilidad necesita todavía una plantilla específica.',
-    
-['fallback_generator']
-  )
-}
+return mc(
+  skill,
+  d,
+  seed,
+  `¿Qué opción representa correctamente la habilidad "${skill.name}"?`,
+  'Opción correcta',
+  [
+    'Distractor A',
+    'Distractor B',
+    'Distractor C',
+  ],
+  'Esta habilidad necesita todavía una plantilla específica.',
+  ['fallback_generator']
+)
