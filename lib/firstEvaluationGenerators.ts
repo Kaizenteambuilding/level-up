@@ -10831,7 +10831,7 @@ if (key === 'quadrilaterals') {
 }
 
 if (key === 'regular_polygons') {
-  const family = ri(0, 4)
+  const family = (seed >>> 0) % 5
 
   if (d === 1) {
     if (family === 0) {
@@ -10840,7 +10840,6 @@ if (key === 'regular_polygons') {
         [4, 'Cuadrilátero'],
         [5, 'Pentágono'],
         [6, 'Hexágono'],
-        [7, 'Heptágono'],
         [8, 'Octógono'],
       ] as const
       const v = variants[ri(0, variants.length - 1)]
@@ -10848,7 +10847,7 @@ if (key === 'regular_polygons') {
         skill, d, seed,
         `Un polígono tiene ${v[0]} lados. ¿Cómo se llama?`,
         v[1],
-        ['Triángulo', 'Cuadrilátero', 'Pentágono', 'Hexágono', 'Heptágono', 'Octógono']
+        ['Triángulo', 'Cuadrilátero', 'Pentágono', 'Hexágono', 'Octógono']
           .filter((x) => x !== v[1]).slice(0, 3),
         `Un polígono de ${v[0]} lados se llama ${v[1].toLowerCase()}.`,
         ['poligonos_regulares', 'family:nombre_por_lados']
@@ -10857,14 +10856,14 @@ if (key === 'regular_polygons') {
 
     if (family === 1) {
       const variants = [
-        ['Pentágono', 5], ['Hexágono', 6], ['Heptágono', 7], ['Octógono', 8],
+        ['Pentágono', 5], ['Hexágono', 6], ['Octógono', 8], ['Triángulo', 3],
       ] as const
       const v = variants[ri(0, variants.length - 1)]
       return mc(
         skill, d, seed,
         `¿Cuántos lados tiene un ${v[0].toLowerCase()}?`,
         String(v[1]),
-        [String(v[1] - 1), String(v[1] + 1), String(v[1] + 2)],
+        [String(Math.max(2, v[1] - 1)), String(v[1] + 1), String(v[1] + 2)],
         `Un ${v[0].toLowerCase()} tiene ${v[1]} lados.`,
         ['poligonos_regulares', 'family:lados_por_nombre']
       )
@@ -10899,21 +10898,17 @@ if (key === 'regular_polygons') {
     return mc(
       skill, d, seed,
       'Un triángulo tiene sus tres lados iguales. ¿Qué podemos afirmar?',
-      'Es un triángulo equilátero y es regular',
-      [
-        'Es escaleno',
-        'Es rectángulo necesariamente',
-        'No puede ser regular',
-      ],
-      'Un triángulo equilátero tiene tres lados y tres ángulos iguales, por lo que es regular.',
+      'Es equilátero y regular',
+      ['Es escaleno', 'Es rectángulo necesariamente', 'No puede ser regular'],
+      'Un triángulo equilátero tiene tres lados y tres ángulos iguales.',
       ['poligonos_regulares', 'family:triangulo_regular']
     )
   }
 
   if (d === 2) {
     if (family === 0) {
-      const sides = ri(3, 9)
-      const side = ri(3, 12)
+      const sides = [3, 4, 5, 6, 8][ri(0, 4)]
+      const side = ri(2, 8)
       const perimeter = sides * side
       return mc(
         skill, d, seed,
@@ -10926,8 +10921,8 @@ if (key === 'regular_polygons') {
     }
 
     if (family === 1) {
-      const sides = ri(3, 9)
-      const side = ri(3, 12)
+      const sides = [3, 4, 5, 6, 8][ri(0, 4)]
+      const side = ri(2, 8)
       const perimeter = sides * side
       return mc(
         skill, d, seed,
@@ -10940,50 +10935,119 @@ if (key === 'regular_polygons') {
     }
 
     if (family === 2) {
-      const sides = ri(4, 8)
-      const sideA = ri(3, 8)
-      const sideB = sideA + ri(1, 4)
-      const pA = sides * sideA
-      const pB = sides * sideB
+      const sides = [4, 5, 6, 8][ri(0, 3)]
+      const sideA = ri(2, 6)
+      const sideB = sideA + ri(1, 3)
       return mc(
         skill, d, seed,
         `Dos polígonos regulares tienen ${sides} lados. Uno tiene lado ${sideA} cm y el otro ${sideB} cm. ¿Cuál tiene mayor perímetro?`,
         `El de lado ${sideB} cm`,
         [`El de lado ${sideA} cm`, 'Tienen el mismo perímetro', 'No se puede saber'],
-        `Sus perímetros son ${pA} cm y ${pB} cm; el segundo es mayor.`,
+        'Con el mismo número de lados, el que tiene lados más largos tiene mayor perímetro.',
         ['poligonos_regulares', 'family:comparar_perimetros']
       )
     }
 
     if (family === 3) {
-      const sides = ri(4, 8)
-      const side = ri(3, 9)
-      const increase = ri(1, 4)
-      const oldP = sides * side
-      const newP = sides * (side + increase)
+      const sides = [4, 5, 6, 8][ri(0, 3)]
+      const increase = ri(1, 3)
       return mc(
         skill, d, seed,
-        `Cada lado de un polígono regular de ${sides} lados aumenta ${increase} cm. Si antes medía ${side} cm por lado, ¿cuánto aumenta el perímetro?`,
-        `${newP - oldP} cm`,
-        [`${increase} cm`, `${sides + increase} cm`, `${oldP + increase} cm`],
-        `El perímetro aumenta ${sides}×${increase}=${newP - oldP} cm.`,
+        `Cada lado de un polígono regular de ${sides} lados aumenta ${increase} cm. ¿Cuánto aumenta su perímetro?`,
+        `${sides * increase} cm`,
+        [`${increase} cm`, `${sides + increase} cm`, `${sides * increase + increase} cm`],
+        `El aumento total es ${sides}×${increase}=${sides * increase} cm.`,
         ['poligonos_regulares', 'family:cambio_perimetro']
       )
     }
 
     return mc(
       skill, d, seed,
-      'Un cuadrilátero tiene sus cuatro lados iguales, pero sus ángulos no son todos iguales. ¿Es un polígono regular?',
+      'Un cuadrilátero tiene sus cuatro lados iguales, pero sus ángulos no son todos iguales. ¿Es regular?',
       'No',
       ['Sí', 'Solo si tiene una diagonal', 'Solo si su perímetro es entero'],
-      'Para ser regular deben ser iguales tanto todos los lados como todos los ángulos.',
+      'Para ser regular deben ser iguales tanto los lados como los ángulos.',
       ['poligonos_regulares', 'family:regularidad_dos_condiciones']
     )
   }
 
   if (d === 3) {
     if (family === 0) {
-      const sides = ri(3, 10)
+      const choices = [
+        [3, 60], [4, 90], [6, 120],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `¿Cuánto mide cada ángulo interior de un ${v[0] === 3 ? 'triángulo equilátero' : v[0] === 4 ? 'cuadrado' : 'hexágono regular'}?`,
+        `${v[1]}°`,
+        [`${180 - v[1]}°`, `${v[1] - 20}°`, `${Math.min(170, v[1] + 20)}°`],
+        `En esa figura regular, cada ángulo interior mide ${v[1]}°.`,
+        ['poligonos_regulares', 'family:angulo_interior_familiar']
+      )
+    }
+
+    if (family === 1) {
+      const choices = [
+        [4, 90], [6, 60], [8, 45],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `¿Cuánto mide cada ángulo exterior de un polígono regular de ${v[0]} lados?`,
+        `${v[1]}°`,
+        [`${180 - v[1]}°`, `${v[1] + 15}°`, `${Math.max(10, v[1] - 15)}°`],
+        `Los ángulos exteriores suman 360°: 360÷${v[0]}=${v[1]}°.`,
+        ['poligonos_regulares', 'family:exterior_basico']
+      )
+    }
+
+    if (family === 2) {
+      const choices = [
+        [4, 90], [6, 60], [8, 45],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `Un polígono regular de ${v[0]} lados se divide desde el centro en ${v[0]} partes iguales. ¿Cuánto mide cada ángulo central?`,
+        `${v[1]}°`,
+        [`${180 - v[1]}°`, `${v[1] * 2}°`, `${v[1] / 2}°`],
+        `Una vuelta son 360°: 360÷${v[0]}=${v[1]}°.`,
+        ['poligonos_regulares', 'family:central_basico']
+      )
+    }
+
+    if (family === 3) {
+      const sides = [4, 5, 6, 8][ri(0, 3)]
+      const side = ri(3, 8)
+      const perimeter = sides * side
+      return mc(
+        skill, d, seed,
+        `Un polígono regular de ${sides} lados tiene perímetro ${perimeter} cm. Si todos sus lados son iguales, ¿cuánto mide uno?`,
+        `${side} cm`,
+        [`${perimeter - sides} cm`, `${side + 1} cm`, `${sides} cm`],
+        `Dividimos el perímetro entre los ${sides} lados: ${perimeter}÷${sides}=${side} cm.`,
+        ['poligonos_regulares', 'family:perimetro_inverso_medio']
+      )
+    }
+
+    return mc(
+      skill, d, seed,
+      '¿Cuál de estas afirmaciones es correcta?',
+      'En un polígono regular, todos los ángulos exteriores tienen la misma medida',
+      [
+        'Todos los polígonos regulares tienen cuatro lados',
+        'Todos los ángulos interiores de cualquier polígono regular miden 90°',
+        'Un polígono regular puede tener lados de distinta longitud',
+      ],
+      'La regularidad implica igualdad de lados y de ángulos correspondientes.',
+      ['poligonos_regulares', 'family:propiedad_media']
+    )
+  }
+
+  if (d === 4) {
+    if (family === 0) {
+      const sides = ri(5, 10)
       const sum = (sides - 2) * 180
       return mc(
         skill, d, seed,
@@ -10997,78 +11061,7 @@ if (key === 'regular_polygons') {
 
     if (family === 1) {
       const choices = [
-        [3, 60], [4, 90], [5, 108], [6, 120], [8, 135], [9, 140], [10, 144], [12, 150],
-      ] as const
-      const v = choices[ri(0, choices.length - 1)]
-      return mc(
-        skill, d, seed,
-        `¿Cuánto mide cada ángulo interior de un polígono regular de ${v[0]} lados?`,
-        `${v[1]}°`,
-        [`${180 - v[1]}°`, `${v[1] - 10}°`, `${Math.min(179, v[1] + 10)}°`],
-        `Cada ángulo mide ((${v[0]}-2)×180)÷${v[0]}=${v[1]}°.`,
-        ['poligonos_regulares', 'family:angulo_interior']
-      )
-    }
-
-    if (family === 2) {
-      const choices = [
-        [3, 120], [4, 90], [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
-      ] as const
-      const v = choices[ri(0, choices.length - 1)]
-      return mc(
-        skill, d, seed,
-        `¿Cuánto mide cada ángulo exterior de un polígono regular de ${v[0]} lados?`,
-        `${v[1]}°`,
-        [`${180 - v[1]}°`, `${360 - v[1]}°`, `${v[1] + 10}°`],
-        `Los ángulos exteriores suman 360°: 360÷${v[0]}=${v[1]}°.`,
-        ['poligonos_regulares', 'family:angulo_exterior']
-      )
-    }
-
-    if (family === 3) {
-      const choices = [
-        [3, 120], [4, 90], [5, 72], [6, 60], [8, 45], [10, 36], [12, 30],
-      ] as const
-      const v = choices[ri(0, choices.length - 1)]
-      return mc(
-        skill, d, seed,
-        `Uniendo el centro con todos los vértices de un polígono regular de ${v[0]} lados se forman ${v[0]} triángulos iguales. ¿Cuánto mide cada ángulo central?`,
-        `${v[1]}°`,
-        [`${180 - v[1]}°`, `${v[1] / 2}°`, `${v[1] + 20}°`],
-        `La vuelta completa mide 360°: 360÷${v[0]}=${v[1]}°.`,
-        ['poligonos_regulares', 'family:angulo_central']
-      )
-    }
-
-    const sides = ri(5, 10)
-    const diagonalsFromVertex = sides - 3
-    return mc(
-      skill, d, seed,
-      `Desde un vértice de un polígono de ${sides} lados, ¿cuántas diagonales se pueden trazar?`,
-      String(diagonalsFromVertex),
-      [String(sides - 2), String(sides - 1), String(sides)],
-      `No se une consigo mismo ni con los dos vértices vecinos: ${sides}-3=${diagonalsFromVertex}.`,
-      ['poligonos_regulares', 'family:diagonales_desde_vertice']
-    )
-  }
-
-  if (d === 4) {
-    if (family === 0) {
-      const sides = ri(5, 10)
-      const diagonals = (sides * (sides - 3)) / 2
-      return mc(
-        skill, d, seed,
-        `¿Cuántas diagonales tiene en total un polígono de ${sides} lados?`,
-        String(diagonals),
-        [String(sides - 3), String(sides * (sides - 3)), String(diagonals + sides)],
-        `Diagonales = n(n-3)/2 = ${sides}×${sides - 3}÷2=${diagonals}.`,
-        ['poligonos_regulares', 'family:diagonales_totales']
-      )
-    }
-
-    if (family === 1) {
-      const choices = [
-        [3, 120], [4, 90], [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
+        [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
       ] as const
       const v = choices[ri(0, choices.length - 1)]
       return mc(
@@ -11083,7 +11076,7 @@ if (key === 'regular_polygons') {
 
     if (family === 2) {
       const choices = [
-        [3, 60], [4, 90], [5, 108], [6, 120], [8, 135], [9, 140], [10, 144], [12, 150],
+        [5, 108], [6, 120], [8, 135], [10, 144], [12, 150],
       ] as const
       const v = choices[ri(0, choices.length - 1)]
       return mc(
@@ -11097,15 +11090,15 @@ if (key === 'regular_polygons') {
     }
 
     if (family === 3) {
-      const sides = ri(4, 9)
-      const sum = (sides - 2) * 180
+      const sides = ri(5, 10)
+      const diagonalsFromVertex = sides - 3
       return mc(
         skill, d, seed,
-        `La suma de los ángulos interiores de un polígono es ${sum}°. ¿Cuántos lados tiene?`,
-        String(sides),
-        [String(sides - 1), String(sides + 1), String(sides + 2)],
-        `(${sides}-2)×180=${sum}; por tanto tiene ${sides} lados.`,
-        ['poligonos_regulares', 'family:lados_desde_suma']
+        `Desde un vértice de un polígono de ${sides} lados, ¿cuántas diagonales se pueden trazar?`,
+        String(diagonalsFromVertex),
+        [String(sides - 2), String(sides - 1), String(sides)],
+        `No se une consigo mismo ni con los dos vértices vecinos: ${sides}-3=${diagonalsFromVertex}.`,
+        ['poligonos_regulares', 'family:diagonales_desde_vertice']
       )
     }
 
@@ -11119,23 +11112,21 @@ if (key === 'regular_polygons') {
       `Un polígono regular de ${sides} lados tiene perímetro ${perimeter} cm. Si cada lado aumenta 2 cm, ¿cuál será el nuevo perímetro?`,
       `${newPerimeter} cm`,
       [`${perimeter + 2} cm`, `${perimeter + sides} cm`, `${newSide * 2} cm`],
-      `El lado inicial mide ${perimeter}÷${sides}=${side} cm; ahora mide ${newSide} cm. Nuevo perímetro: ${sides}×${newSide}=${newPerimeter} cm.`,
+      `El lado inicial mide ${side} cm y pasa a ${newSide} cm. Nuevo perímetro: ${sides}×${newSide}=${newPerimeter} cm.`,
       ['poligonos_regulares', 'family:perimetro_dos_pasos']
     )
   }
 
   if (family === 0) {
-    const n1 = ri(5, 8)
-    const n2 = n1 + ri(1, 3)
-    const d1 = (n1 * (n1 - 3)) / 2
-    const d2 = (n2 * (n2 - 3)) / 2
+    const sides = ri(5, 10)
+    const diagonals = (sides * (sides - 3)) / 2
     return mc(
       skill, d, seed,
-      `¿Cuántas diagonales más tiene un polígono de ${n2} lados que uno de ${n1} lados?`,
-      String(d2 - d1),
-      [String(n2 - n1), String(d2), String(d1)],
-      `Tienen ${d2} y ${d1} diagonales respectivamente; la diferencia es ${d2 - d1}.`,
-      ['poligonos_regulares', 'family:comparar_diagonales', 'dificultad_alta']
+      `¿Cuántas diagonales tiene en total un polígono de ${sides} lados?`,
+      String(diagonals),
+      [String(sides - 3), String(sides * (sides - 3)), String(diagonals + sides)],
+      `Diagonales = n(n-3)/2 = ${sides}×${sides - 3}÷2=${diagonals}.`,
+      ['poligonos_regulares', 'family:diagonales_totales', 'dificultad_alta']
     )
   }
 
@@ -11149,12 +11140,27 @@ if (key === 'regular_polygons') {
       `Un polígono tiene ${v[1]} diagonales. ¿Cuántos lados tiene?`,
       String(v[0]),
       [String(v[0] - 1), String(v[0] + 1), String(v[0] + 2)],
-      `Con n=${v[0]}, n(n-3)/2=${v[0]}×${v[0] - 3}/2=${v[1]}.`,
+      `Con n=${v[0]}, n(n-3)/2=${v[1]}.`,
       ['poligonos_regulares', 'family:lados_desde_diagonales', 'dificultad_alta']
     )
   }
 
   if (family === 2) {
+    const n1 = ri(5, 8)
+    const n2 = n1 + ri(1, 3)
+    const d1 = (n1 * (n1 - 3)) / 2
+    const d2 = (n2 * (n2 - 3)) / 2
+    return mc(
+      skill, d, seed,
+      `¿Cuántas diagonales más tiene un polígono de ${n2} lados que uno de ${n1} lados?`,
+      String(d2 - d1),
+      [String(n2 - n1), String(d2), String(d1)],
+      `Tienen ${d2} y ${d1} diagonales; la diferencia es ${d2 - d1}.`,
+      ['poligonos_regulares', 'family:comparar_diagonales', 'dificultad_alta']
+    )
+  }
+
+  if (family === 3) {
     const choices = [
       [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
     ] as const
@@ -11171,35 +11177,22 @@ if (key === 'regular_polygons') {
     )
   }
 
-  if (family === 3) {
-    return mc(
-      skill, d, seed,
-      '¿Cuál de estas afirmaciones sobre polígonos regulares es siempre cierta?',
-      'La suma de sus ángulos exteriores, tomando uno por vértice, es 360°',
-      [
-        'Todos sus ángulos interiores miden 90°',
-        'Todos tienen el mismo número de diagonales que de lados',
-        'Su perímetro siempre es 360 unidades',
-      ],
-      'Al recorrer un polígono completo, los giros exteriores suman una vuelta: 360°.',
-      ['poligonos_regulares', 'family:razonamiento_exteriores', 'dificultad_alta']
-    )
-  }
-
-  const choices = [
-    [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
-  ] as const
-  const v = choices[ri(0, choices.length - 1)]
   return mc(
     skill, d, seed,
-    `Un robot recorre el contorno de un polígono regular de ${v[0]} lados. En cada vértice gira siempre el mismo ángulo para seguir el borde. ¿Cuánto debe girar en cada vértice?`,
-    `${v[1]}°`,
-    [`${180 - v[1]}°`, `${360 - v[1]}°`, `${v[1] * 2}°`],
-    `Ese giro es el ángulo exterior: 360÷${v[0]}=${v[1]}°.`,
-    ['poligonos_regulares', 'family:giro_robot', 'dificultad_alta']
+    '¿Cuál de estas afirmaciones sobre polígonos regulares es siempre cierta?',
+    'La suma de sus ángulos exteriores, tomando uno por vértice, es 360°',
+    [
+      'Todos sus ángulos interiores miden 90°',
+      'Todos tienen el mismo número de diagonales que de lados',
+      'Su perímetro siempre es 360 unidades',
+    ],
+    'Al recorrer un polígono completo, los giros exteriores suman una vuelta: 360°.',
+    ['poligonos_regulares', 'family:razonamiento_exteriores', 'dificultad_alta']
   )
 }
 if (key === 'geometry_classification') {
+  const family = (seed >>> 0) % 5
+
   if (d === 1) {
     const variants = [
       {
@@ -11207,76 +11200,304 @@ if (key === 'geometry_classification') {
         answer: 'Cuadrado',
         distractors: ['Rectángulo', 'Rombo', 'Trapecio'],
         solution: 'Cuatro lados iguales y cuatro ángulos rectos definen un cuadrado.',
+        tag: 'cuadrado_basico',
       },
       {
-        prompt: 'Un triángulo tiene exactamente dos lados iguales. ¿Cuál es la clasificación más precisa?',
+        prompt: 'Una figura tiene 4 ángulos rectos y lados opuestos iguales. ¿Cuál es?',
+        answer: 'Rectángulo',
+        distractors: ['Rombo', 'Trapecio', 'Triángulo'],
+        solution: 'Cuatro ángulos rectos identifican un rectángulo; no es necesario que todos los lados sean iguales.',
+        tag: 'rectangulo_basico',
+      },
+      {
+        prompt: 'Un triángulo tiene exactamente dos lados iguales. ¿Cuál es?',
         answer: 'Isósceles',
         distractors: ['Equilátero', 'Escaleno', 'Rectángulo'],
         solution: 'Un triángulo con exactamente dos lados iguales es isósceles.',
+        tag: 'isosceles_basico',
       },
       {
         prompt: 'Una figura tiene un solo par de lados paralelos. ¿Cuál es la clasificación más precisa?',
         answer: 'Trapecio',
         distractors: ['Cuadrado', 'Rombo', 'Triángulo'],
         solution: 'Un cuadrilátero con un único par de lados paralelos es un trapecio.',
+        tag: 'trapecio_basico',
+      },
+      {
+        prompt: 'Un triángulo tiene sus tres lados diferentes. ¿Cómo se clasifica según sus lados?',
+        answer: 'Escaleno',
+        distractors: ['Equilátero', 'Isósceles', 'Rectángulo'],
+        solution: 'Si los tres lados son distintos, el triángulo es escaleno.',
+        tag: 'escaleno_basico',
       },
     ]
-    const v = variants[ri(0, variants.length - 1)]
-    return mc(skill, d, seed, v.prompt, v.answer, v.distractors, v.solution, ['clasificacion_geometrica_razonada'])
+    const v = variants[family]
+    return mc(
+      skill, d, seed,
+      v.prompt,
+      v.answer,
+      v.distractors,
+      v.solution,
+      ['clasificacion_geometrica_razonada', `family:${v.tag}`]
+    )
   }
 
   if (d === 2) {
-    const variants = [
-      ['Un triángulo tiene un ángulo de 90°. ¿Qué clasificación según sus ángulos es correcta?', 'Rectángulo'],
-      ['Un triángulo tiene un ángulo de 120°. ¿Qué clasificación según sus ángulos es correcta?', 'Obtusángulo'],
-      ['Un triángulo tiene tres ángulos menores de 90°. ¿Qué clasificación según sus ángulos es correcta?', 'Acutángulo'],
-    ] as const
-    const v = variants[ri(0, variants.length - 1)]
+    if (family === 0) {
+      return mc(
+        skill, d, seed,
+        'Un triángulo tiene un ángulo de 90°. ¿Cómo se clasifica según sus ángulos?',
+        'Rectángulo',
+        ['Acutángulo', 'Obtusángulo', 'Equilátero'],
+        'Un triángulo con un ángulo recto es rectángulo.',
+        ['clasificacion_geometrica_razonada', 'family:triangulo_rectangulo']
+      )
+    }
+
+    if (family === 1) {
+      return mc(
+        skill, d, seed,
+        'Un triángulo tiene un ángulo de 120°. ¿Cómo se clasifica según sus ángulos?',
+        'Obtusángulo',
+        ['Acutángulo', 'Rectángulo', 'Equilátero'],
+        'Al tener un ángulo mayor de 90°, es obtusángulo.',
+        ['clasificacion_geometrica_razonada', 'family:triangulo_obtuso']
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill, d, seed,
+        'Un triángulo tiene tres ángulos menores de 90°. ¿Cómo se clasifica según sus ángulos?',
+        'Acutángulo',
+        ['Rectángulo', 'Obtusángulo', 'Escaleno'],
+        'Si los tres ángulos son agudos, el triángulo es acutángulo.',
+        ['clasificacion_geometrica_razonada', 'family:triangulo_agudo']
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        'Una figura tiene cuatro lados iguales, pero no todos sus ángulos son rectos. ¿Cuál puede ser?',
+        'Rombo',
+        ['Rectángulo', 'Trapecio', 'Triángulo'],
+        'Un rombo tiene cuatro lados iguales y no necesita tener cuatro ángulos rectos.',
+        ['clasificacion_geometrica_razonada', 'family:rombo_basico']
+      )
+    }
+
     return mc(
-      skill, d, seed, v[0], v[1],
-      ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'Equilátero'].filter((x) => x !== v[1]),
-      `La propiedad indicada corresponde a un triángulo ${v[1].toLowerCase()}.`,
-      ['clasificacion_geometrica_razonada', 'triangulos']
+      skill, d, seed,
+      'Una figura tiene dos pares de lados opuestos paralelos y cuatro ángulos rectos. ¿Cuál puede ser?',
+      'Rectángulo',
+      ['Trapecio', 'Triángulo', 'Pentágono'],
+      'Un rectángulo tiene dos pares de lados paralelos y cuatro ángulos rectos.',
+      ['clasificacion_geometrica_razonada', 'family:rectangulo_propiedades']
     )
   }
 
   if (d === 3) {
+    if (family === 0) {
+      return mc(
+        skill, d, seed,
+        '¿Cuál de estas afirmaciones es correcta?',
+        'Todo cuadrado es también un rectángulo',
+        [
+          'Todo rectángulo es un cuadrado',
+          'Todo rombo tiene cuatro ángulos rectos',
+          'Todo trapecio tiene cuatro lados iguales',
+        ],
+        'Un cuadrado cumple todas las propiedades de un rectángulo y además tiene cuatro lados iguales.',
+        ['clasificacion_geometrica_razonada', 'family:inclusion_cuadrado_rectangulo']
+      )
+    }
+
+    if (family === 1) {
+      return mc(
+        skill, d, seed,
+        '¿Cuál de estas afirmaciones es correcta?',
+        'Todo cuadrado es también un rombo',
+        [
+          'Todo rombo es un cuadrado',
+          'Todo rectángulo es un rombo',
+          'Todo trapecio es un cuadrado',
+        ],
+        'El cuadrado tiene los cuatro lados iguales, por lo que cumple la definición de rombo.',
+        ['clasificacion_geometrica_razonada', 'family:inclusion_cuadrado_rombo']
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill, d, seed,
+        'Un cuadrilátero tiene cuatro lados iguales y cuatro ángulos rectos. ¿Qué nombre es el más específico?',
+        'Cuadrado',
+        ['Rombo', 'Rectángulo', 'Paralelogramo'],
+        'Aunque también es rombo y rectángulo, el nombre más específico es cuadrado.',
+        ['clasificacion_geometrica_razonada', 'family:nombre_mas_especifico']
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        'Un triángulo tiene lados 5 cm, 5 cm y 8 cm. ¿Cuál es su clasificación por lados?',
+        'Isósceles',
+        ['Equilátero', 'Escaleno', 'Rectángulo'],
+        'Tiene exactamente dos lados iguales, por lo que es isósceles.',
+        ['clasificacion_geometrica_razonada', 'family:clasificar_lados_numericos']
+      )
+    }
+
     return mc(
       skill, d, seed,
-      '¿Cuál de estas afirmaciones es correcta?',
-      'Todo cuadrado es también un rectángulo',
-      [
-        'Todo rectángulo es un cuadrado',
-        'Todo rombo tiene cuatro ángulos rectos',
-        'Todo trapecio tiene cuatro lados iguales',
-      ],
-      'Un cuadrado cumple las propiedades de un rectángulo y además tiene cuatro lados iguales.',
-      ['clasificacion_geometrica_razonada', 'inclusion']
+      'Un triángulo tiene ángulos 50°, 60° y 70°. ¿Cómo se clasifica según sus ángulos?',
+      'Acutángulo',
+      ['Rectángulo', 'Obtusángulo', 'Equilátero'],
+      'Los tres ángulos son menores de 90°, así que es acutángulo.',
+      ['clasificacion_geometrica_razonada', 'family:clasificar_angulos_numericos']
     )
   }
 
   if (d === 4) {
+    if (family === 0) {
+      return mc(
+        skill, d, seed,
+        'Una figura tiene cuatro lados iguales, lados opuestos paralelos y ningún ángulo recto. ¿Cuál es la clasificación más precisa?',
+        'Rombo',
+        ['Cuadrado', 'Rectángulo', 'Trapecio'],
+        'Los cuatro lados iguales identifican un rombo; al no tener ángulos rectos, no es un cuadrado.',
+        ['clasificacion_geometrica_razonada', 'family:rombo_preciso']
+      )
+    }
+
+    if (family === 1) {
+      return mc(
+        skill, d, seed,
+        '¿Qué información adicional permite asegurar que un rectángulo es también un cuadrado?',
+        'Que sus cuatro lados sean iguales',
+        [
+          'Que tenga cuatro ángulos rectos',
+          'Que sus lados opuestos sean paralelos',
+          'Que tenga dos diagonales',
+        ],
+        'Todo rectángulo ya tiene ángulos rectos y lados opuestos paralelos; para ser cuadrado necesita cuatro lados iguales.',
+        ['clasificacion_geometrica_razonada', 'family:rectangulo_a_cuadrado']
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill, d, seed,
+        '¿Cuál de estas descripciones es imposible para un triángulo?',
+        'Tener dos ángulos de 100°',
+        [
+          'Tener un ángulo de 90°',
+          'Tener tres ángulos de 60°',
+          'Tener un ángulo de 120°',
+        ],
+        'Dos ángulos de 100° ya sumarían 200°, más de los 180° de un triángulo.',
+        ['clasificacion_geometrica_razonada', 'family:descripcion_imposible']
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        'Un cuadrilátero tiene exactamente un par de lados paralelos. ¿Qué clasificación es la más adecuada?',
+        'Trapecio',
+        ['Rectángulo', 'Rombo', 'Cuadrado'],
+        'Con exactamente un par de lados paralelos se clasifica como trapecio.',
+        ['clasificacion_geometrica_razonada', 'family:trapecio_preciso']
+      )
+    }
+
     return mc(
       skill, d, seed,
-      'Una figura tiene cuatro lados iguales, lados opuestos paralelos y ningún ángulo recto. ¿Cuál es la clasificación más precisa?',
-      'Rombo',
-      ['Cuadrado', 'Rectángulo', 'Trapecio'],
-      'Los cuatro lados iguales identifican un rombo; al no tener ángulos rectos, no es un cuadrado.',
-      ['clasificacion_geometrica_razonada', 'propiedades']
+      'Un triángulo tiene dos lados iguales y un ángulo de 100°. ¿Qué podemos afirmar?',
+      'Es isósceles y obtusángulo',
+      [
+        'Es equilátero y acutángulo',
+        'Es escaleno y rectángulo',
+        'Es isósceles y rectángulo',
+      ],
+      'Dos lados iguales lo hacen isósceles y un ángulo mayor de 90° lo hace obtusángulo.',
+      ['clasificacion_geometrica_razonada', 'family:doble_clasificacion']
+    )
+  }
+
+  if (family === 0) {
+    return mc(
+      skill, d, seed,
+      '¿Qué información adicional permite distinguir con seguridad un cuadrado de un rectángulo no cuadrado?',
+      'Que los cuatro lados tengan la misma longitud',
+      [
+        'Que tenga cuatro ángulos rectos',
+        'Que tenga dos pares de lados paralelos',
+        'Que tenga cuatro vértices',
+      ],
+      'Ambos tienen cuatro ángulos rectos y lados opuestos paralelos; el cuadrado además tiene los cuatro lados iguales.',
+      ['clasificacion_geometrica_razonada', 'family:distinguir_cuadrado_rectangulo', 'dificultad_alta']
+    )
+  }
+
+  if (family === 1) {
+    return mc(
+      skill, d, seed,
+      'Sabemos que un cuadrilátero tiene cuatro lados iguales. ¿Qué NO podemos asegurar?',
+      'Que tenga cuatro ángulos rectos',
+      [
+        'Que es un rombo',
+        'Que sus cuatro lados tienen la misma longitud',
+        'Que tiene cuatro vértices',
+      ],
+      'Un rombo puede no tener ángulos rectos; hacen falta más datos para asegurar que sea cuadrado.',
+      ['clasificacion_geometrica_razonada', 'family:informacion_insuficiente', 'dificultad_alta']
+    )
+  }
+
+  if (family === 2) {
+    return mc(
+      skill, d, seed,
+      '¿Qué ejemplo demuestra que la afirmación “todo rectángulo es un cuadrado” es falsa?',
+      'Un rectángulo de 6 cm por 4 cm',
+      [
+        'Un cuadrado de lado 5 cm',
+        'Un rombo de lado 4 cm',
+        'Un triángulo equilátero',
+      ],
+      'Un rectángulo de 6 por 4 tiene cuatro ángulos rectos, pero no cuatro lados iguales.',
+      ['clasificacion_geometrica_razonada', 'family:contraejemplo_rectangulo', 'dificultad_alta']
+    )
+  }
+
+  if (family === 3) {
+    return mc(
+      skill, d, seed,
+      'Un triángulo tiene dos ángulos de 45°. ¿Cuál es su clasificación completa?',
+      'Isósceles rectángulo',
+      [
+        'Equilátero acutángulo',
+        'Escaleno rectángulo',
+        'Isósceles obtusángulo',
+      ],
+      'El tercer ángulo mide 90°. Dos ángulos iguales implican dos lados iguales: es isósceles rectángulo.',
+      ['clasificacion_geometrica_razonada', 'family:clasificacion_completa_triangulo', 'dificultad_alta']
     )
   }
 
   return mc(
     skill, d, seed,
-    '¿Qué información adicional permite distinguir con seguridad un cuadrado de un rectángulo no cuadrado?',
-    'Que los cuatro lados tengan la misma longitud',
+    'Un cuadrilátero tiene lados opuestos paralelos y todos sus ángulos iguales. ¿Cuál es la conclusión más precisa que puede asegurarse sin conocer la longitud de los lados?',
+    'Es un rectángulo, pero no podemos asegurar que sea cuadrado',
     [
-      'Que tenga cuatro ángulos rectos',
-      'Que tenga dos pares de lados paralelos',
-      'Que tenga cuatro vértices',
+      'Es necesariamente un cuadrado',
+      'Es necesariamente un rombo',
+      'Es necesariamente un trapecio con un solo par de lados paralelos',
     ],
-    'Ambos tienen cuatro ángulos rectos y lados opuestos paralelos; el cuadrado además tiene los cuatro lados iguales.',
-    ['clasificacion_geometrica_razonada', 'razonamiento', 'dificultad_alta']
+    'Cuatro ángulos iguales en un cuadrilátero son de 90°. Sin saber si los cuatro lados son iguales, no podemos asegurar que sea cuadrado.',
+    ['clasificacion_geometrica_razonada', 'family:conclusion_precisa', 'dificultad_alta']
   )
 }
 
