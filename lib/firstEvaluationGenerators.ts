@@ -3480,33 +3480,34 @@ if (key === 'sexagesimal_time') {
   )
 }
 
-  // =========================
-  // M07 · FRACCIONES
-  // =========================
+ // =========================
+// M07 · FRACCIONES
+// =========================
 
-  if (key === 'fraction_meaning') {
-  const den = ri(3, 12)
+if (key === 'fraction_meaning') {
+  const den = ri(3, d <= 2 ? 8 : 15)
   const num = ri(1, den - 1)
-  const variant = Math.floor(r() * 4)
 
-  if (variant === 0) {
-    return mc(
-      skill,
-      d,
-      seed,
-      `En la fracción ${num}/${den}, ¿qué indica el denominador?`,
-      'El total de partes iguales',
-      [
-        'Las partes que tomamos',
-        'El resultado de dividir',
-        'El número mayor',
-      ],
-      `El denominador ${den} indica en cuántas partes iguales se divide la unidad.`,
-      ['significado_fraccion', 'denominador']
-    )
-  }
+  if (d === 1) {
+    const variant = ri(0, 1)
 
-  if (variant === 1) {
+    if (variant === 0) {
+      return mc(
+        skill,
+        d,
+        seed,
+        `En la fracción ${num}/${den}, ¿qué indica el denominador?`,
+        'El total de partes iguales',
+        [
+          'Las partes que tomamos',
+          'El resultado de dividir',
+          'El número mayor',
+        ],
+        `El denominador ${den} indica en cuántas partes iguales se divide la unidad.`,
+        ['significado_fraccion', 'denominador']
+      )
+    }
+
     return mc(
       skill,
       d,
@@ -3523,7 +3524,7 @@ if (key === 'sexagesimal_time') {
     )
   }
 
-  if (variant === 2) {
+  if (d === 2) {
     return mc(
       skill,
       d,
@@ -3535,31 +3536,72 @@ if (key === 'sexagesimal_time') {
         `${num}/${den + 1}`,
         `${Math.min(num + 1, den - 1)}/${den}`,
       ],
-      `Tomamos ${num} de ${den} partes iguales, por eso la fracción es ${num}/${den}.`,
+      `Tomamos ${num} de ${den} partes iguales, por tanto la fracción es ${num}/${den}.`,
       ['significado_fraccion', 'representacion']
     )
   }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál de estas situaciones representa ${num}/${den}?`,
+      `Tomar ${num} de ${den} partes iguales`,
+      [
+        `Tomar ${den} de ${num} partes iguales`,
+        `Tomar ${num + 1} de ${den} partes`,
+        `Dividir ${num} partes entre ${den}`,
+      ],
+      `${num}/${den} significa tomar ${num} partes de una unidad dividida en ${den} partes iguales.`,
+      ['significado_fraccion', 'interpretacion']
+    )
+  }
+
+  if (d === 4) {
+    const improperNum = den + ri(1, den)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `La fracción ${improperNum}/${den} es...`,
+      'Mayor que 1',
+      [
+        'Menor que 1',
+        'Igual a 1',
+        'Siempre igual a 0',
+      ],
+      `Como ${improperNum} > ${den}, la fracción es mayor que 1.`,
+      ['significado_fraccion', 'fraccion_impropia']
+    )
+  }
+
+  const whole = ri(1, 3)
+  const extra = ri(1, den - 1)
+  const improper = whole * den + extra
 
   return mc(
     skill,
     d,
     seed,
-    `¿Cuál de estas situaciones representa la fracción ${num}/${den}?`,
-    `Tomar ${num} de ${den} partes iguales`,
+    `¿Qué significa ${improper}/${den}?`,
+    `${whole} unidades completas y ${extra}/${den}`,
     [
-      `Tomar ${den} de ${num} partes iguales`,
-      `Dividir ${num} partes en ${den + 1}`,
-      `Tomar ${Math.min(num + 1, den)} de ${den} partes iguales`,
+      `${whole + 1} unidades completas`,
+      `${extra} unidades y ${whole}/${den}`,
+      `Solo ${extra}/${den} de una unidad`,
     ],
-    `${num}/${den} significa tomar ${num} partes de una unidad dividida en ${den} partes iguales.`,
-    ['significado_fraccion', 'interpretacion']
+    `${improper}/${den} = ${whole} + ${extra}/${den}.`,
+    ['significado_fraccion', 'fraccion_impropia', 'dificultad_alta']
   )
 }
 
-  if (key === 'fraction_equivalent') {
+if (key === 'fraction_equivalent') {
+  if (d === 1) {
     const den = ri(3, 8)
     const num = ri(1, den - 1)
-    const k = ri(2, 5)
+    const k = ri(2, 4)
     const answer = `${num * k}/${den * k}`
 
     return mc(
@@ -3578,6 +3620,96 @@ if (key === 'sexagesimal_time') {
     )
   }
 
+  if (d === 2) {
+    const den = ri(3, 9)
+    const num = ri(1, den - 1)
+    const k = ri(2, 5)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${num}/${den} = ?/${den * k}. ¿Qué número falta?`,
+      String(num * k),
+      [
+        String(num + k),
+        String(den * k),
+        String(num * k + 1),
+      ],
+      `El denominador se multiplica por ${k}, así que el numerador también: ${num}×${k}=${num * k}.`,
+      ['fracciones_equivalentes', 'termino_desconocido']
+    )
+  }
+
+  if (d === 3) {
+    const den = ri(4, 10)
+    const num = ri(1, den - 1)
+    const k = ri(2, 6)
+    const eqNum = num * k
+    const eqDen = den * k
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Son equivalentes ${num}/${den} y ${eqNum}/${eqDen}?`,
+      'Sí',
+      [
+        'No',
+        'Solo si los denominadores son iguales',
+        'No se puede saber',
+      ],
+      `Al multiplicar ${num}/${den} por ${k}/${k} obtenemos ${eqNum}/${eqDen}.`,
+      ['fracciones_equivalentes', 'comprobar']
+    )
+  }
+
+  if (d === 4) {
+    const den = ri(5, 12)
+    const num = ri(2, den - 1)
+    const k = ri(2, 5)
+    const eqNum = num * k
+    const eqDen = den * k
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${eqNum}/${eqDen} = ${num}/?. ¿Qué denominador falta?`,
+      String(den),
+      [
+        String(eqDen),
+        String(den * k),
+        String(Math.max(1, den - 1)),
+      ],
+      `${eqNum}/${eqDen} se obtiene multiplicando ${num}/${den} por ${k}/${k}. El denominador buscado es ${den}.`,
+      ['fracciones_equivalentes', 'termino_desconocido']
+    )
+  }
+
+  const den = ri(6, 15)
+  const num = ri(1, den - 1)
+  const k1 = ri(2, 4)
+  const k2 = ri(5, 7)
+
+  const correct = `${num * k1}/${den * k1}`
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál de estas fracciones pertenece a la misma clase de equivalencia que ${num}/${den}?`,
+    correct,
+    [
+      `${num * k2}/${den * k2 + 1}`,
+      `${num + k1}/${den + k1}`,
+      `${num * k1 + 1}/${den * k1}`,
+    ],
+    `${correct} se obtiene multiplicando numerador y denominador por el mismo número.`,
+    ['fracciones_equivalentes', 'razonamiento', 'dificultad_alta']
+  )
+}
+
 if (key === 'fraction_simplify') {
   const gcd = (a: number, b: number): number => {
     a = Math.abs(a)
@@ -3592,37 +3724,41 @@ if (key === 'fraction_simplify') {
     return a
   }
 
-  let baseNum = ri(1, 5)
-  let baseDen = ri(baseNum + 1, 9)
+  const maxBaseDen = [8, 10, 12, 15, 20][d - 1]
+
+  let baseNum = ri(1, maxBaseDen - 1)
+  let baseDen = ri(baseNum + 1, maxBaseDen)
 
   while (gcd(baseNum, baseDen) !== 1) {
-    baseNum = ri(1, 5)
-    baseDen = ri(baseNum + 1, 9)
+    baseNum = ri(1, maxBaseDen - 1)
+    baseDen = ri(baseNum + 1, maxBaseDen)
   }
 
-  const k = ri(2, 5)
+  const multiplierMax = [3, 4, 6, 8, 12][d - 1]
+  const k = ri(2, multiplierMax)
 
   const num = baseNum * k
   const den = baseDen * k
-
   const answer = `${baseNum}/${baseDen}`
 
   return mc(
     skill,
     d,
     seed,
-    `Simplifica ${num}/${den}`,
+    `Simplifica completamente ${num}/${den}`,
     answer,
     [
-      `${num - k}/${den - k}`,
-      `${baseNum}/${den}`,
       `${num}/${baseDen}`,
-    ],
-    `Dividimos numerador y denominador entre ${k}: ${answer}.`,
-    ['simplificacion_fracciones']
+      `${baseNum}/${den}`,
+      `${Math.max(1, baseNum * 2)}/${baseDen * 2}`,
+    ].filter((x) => x !== answer),
+    `El máximo factor común permite reducir ${num}/${den} hasta ${answer}.`,
+    ['simplificacion_fracciones', `dificultad_${d}`]
   )
 }
-  if (key === 'fraction_compare') {
+
+if (key === 'fraction_compare') {
+  if (d === 1) {
     const den = ri(4, 10)
     const a = ri(1, den - 2)
     const b = ri(a + 1, den - 1)
@@ -3634,19 +3770,142 @@ if (key === 'fraction_simplify') {
       `Completa: ${a}/${den} __ ${b}/${den}`,
       '<',
       ['>', '=', '≠'],
-      `Con el mismo denominador, comparamos numeradores: ${a} < ${b}.`,
+      `Con el mismo denominador comparamos numeradores: ${a} < ${b}.`,
       ['comparacion_fracciones']
     )
   }
 
- if (key === 'fraction_add_sub') {
-  const den = ri(4, 10)
+  if (d === 2) {
+    const num = ri(1, 5)
+    const den1 = ri(num + 1, 8)
+    const den2 = ri(den1 + 1, 12)
 
-  if (seed % 2 === 0) {
+    return mc(
+      skill,
+      d,
+      seed,
+      `Completa: ${num}/${den1} __ ${num}/${den2}`,
+      '>',
+      ['<', '=', '≠'],
+      `Con el mismo numerador, la fracción con menor denominador es mayor.`,
+      ['comparacion_fracciones', 'mismo_numerador']
+    )
+  }
+
+  if (d === 3) {
+    const den1 = ri(3, 8)
+    const den2 = ri(3, 8)
+    const num1 = ri(1, den1 - 1)
+    const num2 = ri(1, den2 - 1)
+
+    const left = num1 * den2
+    const right = num2 * den1
+    const answer = left > right ? '>' : left < right ? '<' : '='
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Completa: ${num1}/${den1} __ ${num2}/${den2}`,
+      answer,
+      ['<', '>', '=', '≠'].filter((x) => x !== answer),
+      `Comparamos productos cruzados: ${num1}×${den2}=${left} y ${num2}×${den1}=${right}.`,
+      ['comparacion_fracciones', 'productos_cruzados']
+    )
+  }
+
+  if (d === 4) {
+    const den1 = ri(5, 12)
+    const den2 = ri(5, 12)
+    const num1 = ri(1, den1 - 1)
+    const num2 = ri(1, den2 - 1)
+
+    const fractions = [
+      { text: `${num1}/${den1}`, value: num1 / den1 },
+      { text: `${num2}/${den2}`, value: num2 / den2 },
+      { text: '1/2', value: 0.5 },
+    ]
+
+    const largest = [...fractions].sort((a, b) => b.value - a.value)[0]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Cuál es la mayor: ${fractions.map((x) => x.text).join(', ')}?`,
+      largest.text,
+      fractions
+        .map((x) => x.text)
+        .filter((x) => x !== largest.text)
+        .concat(['Son iguales']),
+      `Comparamos sus valores. La mayor es ${largest.text}.`,
+      ['comparacion_fracciones', 'varias_fracciones']
+    )
+  }
+
+  const den1 = ri(7, 15)
+  const den2 = ri(7, 15)
+  const den3 = ri(7, 15)
+
+  const fractions = [
+    { n: ri(1, den1 - 1), d: den1 },
+    { n: ri(1, den2 - 1), d: den2 },
+    { n: ri(1, den3 - 1), d: den3 },
+  ]
+
+  const sorted = [...fractions].sort(
+    (x, y) => x.n / x.d - y.n / y.d
+  )
+
+  const answer = sorted
+    .map((x) => `${x.n}/${x.d}`)
+    .join(' < ')
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Ordena de menor a mayor: ${fractions
+      .map((x) => `${x.n}/${x.d}`)
+      .join(', ')}`,
+    answer,
+    [
+      [...sorted]
+        .reverse()
+        .map((x) => `${x.n}/${x.d}`)
+        .join(' < '),
+      `${sorted[1].n}/${sorted[1].d} < ${sorted[0].n}/${sorted[0].d} < ${sorted[2].n}/${sorted[2].d}`,
+      `${sorted[0].n}/${sorted[0].d} < ${sorted[2].n}/${sorted[2].d} < ${sorted[1].n}/${sorted[1].d}`,
+    ],
+    `Comparamos las tres fracciones y obtenemos ${answer}.`,
+    ['comparacion_fracciones', 'orden', 'dificultad_alta']
+  )
+}
+
+if (key === 'fraction_add_sub') {
+  const gcd = (a: number, b: number): number => {
+    a = Math.abs(a)
+    b = Math.abs(b)
+
+    while (b !== 0) {
+      const temp = b
+      b = a % b
+      a = temp
+    }
+
+    return a
+  }
+
+  const simplify = (num: number, den: number) => {
+    const g = gcd(num, den)
+    return `${num / g}/${den / g}`
+  }
+
+  if (d === 1) {
+    const den = ri(4, 10)
     const a = ri(1, den - 2)
     const b = ri(1, den - a)
-    const resultNum = a + b
-    const answer = `${resultNum}/${den}`
+    const answer = `${a + b}/${den}`
 
     return mc(
       skill,
@@ -3655,86 +3914,246 @@ if (key === 'fraction_simplify') {
       `Calcula ${a}/${den} + ${b}/${den}`,
       answer,
       [
-        `${resultNum}/${den * 2}`,
+        `${a + b}/${den * 2}`,
         `${a * b}/${den}`,
-        `${resultNum}/${den + 1}`,
+        `${Math.abs(a - b)}/${den}`,
       ],
-      `Como tienen el mismo denominador, sumamos los numeradores: ${a} + ${b} = ${resultNum}. Resultado: ${answer}.`,
+      `Como tienen el mismo denominador, sumamos numeradores: ${answer}.`,
       ['suma_fracciones']
     )
   }
 
-  const a = ri(2, den - 1)
-  const b = ri(1, a - 1)
-  const resultNum = a - b
-  const answer = `${resultNum}/${den}`
+  if (d === 2) {
+    const den = ri(4, 10)
+    const a = ri(2, den - 1)
+    const b = ri(1, a - 1)
+    const answer = `${a - b}/${den}`
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a}/${den} - ${b}/${den}`,
+      answer,
+      [
+        `${a + b}/${den}`,
+        `${a - b}/${den * 2}`,
+        `${a * b}/${den}`,
+      ],
+      `Con el mismo denominador restamos numeradores: ${answer}.`,
+      ['resta_fracciones']
+    )
+  }
+
+  if (d === 3) {
+    const den1 = ri(2, 6)
+    const factor = ri(2, 4)
+    const den2 = den1 * factor
+    const a = ri(1, den1 - 1)
+    const b = ri(1, den2 - 1)
+
+    const num = a * factor + b
+    const answer = simplify(num, den2)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a}/${den1} + ${b}/${den2}`,
+      answer,
+      [
+        `${a + b}/${den1 + den2}`,
+        `${num}/${den1}`,
+        `${Math.abs(a * factor - b)}/${den2}`,
+      ],
+      `Convertimos ${a}/${den1} a denominador ${den2}, sumamos y simplificamos. Resultado: ${answer}.`,
+      ['suma_fracciones', 'distinto_denominador']
+    )
+  }
+
+  if (d === 4) {
+    const den1 = ri(3, 8)
+    const den2 = ri(3, 9)
+    const a = ri(1, den1 - 1)
+    const b = ri(1, den2 - 1)
+
+    const commonDen = den1 * den2
+    const num = a * den2 + b * den1
+    const answer = simplify(num, commonDen)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula ${a}/${den1} + ${b}/${den2}`,
+      answer,
+      [
+        `${a + b}/${den1 + den2}`,
+        `${num}/${commonDen + 1}`,
+        `${Math.abs(a * den2 - b * den1)}/${commonDen}`,
+      ],
+      `Buscamos un denominador común, sumamos y simplificamos. Resultado: ${answer}.`,
+      ['suma_fracciones', 'distinto_denominador']
+    )
+  }
+
+  const den1 = ri(4, 10)
+  const den2 = ri(4, 10)
+  const den3 = ri(4, 10)
+
+  const a = ri(1, den1 - 1)
+  const b = ri(1, den2 - 1)
+  const c = ri(1, den3 - 1)
+
+  const commonDen = den1 * den2 * den3
+  const num =
+    a * den2 * den3 +
+    b * den1 * den3 -
+    c * den1 * den2
+
+  const answer = simplify(num, commonDen)
 
   return mc(
     skill,
     d,
     seed,
-    `Calcula ${a}/${den} - ${b}/${den}`,
+    `Calcula ${a}/${den1} + ${b}/${den2} - ${c}/${den3}`,
     answer,
     [
-      `${a + b}/${den}`,
-      `${resultNum}/${den * 2}`,
-      `${a * b}/${den}`,
+      `${a + b - c}/${den1 + den2 + den3}`,
+      `${Math.abs(num)}/${commonDen + 1}`,
+      `${a + b + c}/${commonDen}`,
     ],
-    `Como tienen el mismo denominador, restamos los numeradores: ${a} - ${b} = ${resultNum}. Resultado: ${answer}.`,
-    ['resta_fracciones']
+    `Usamos denominador común, operamos numeradores y simplificamos. Resultado: ${answer}.`,
+    ['suma_resta_fracciones', 'tres_fracciones', 'dificultad_alta']
   )
 }
 
-  if (key === 'fraction_multiply') {
-    const a = ri(1, 5)
-    const b = ri(2, 7)
-    const c = ri(1, 5)
-    const e = ri(2, 7)
-    const answer = `${a * c}/${b * e}`
+if (key === 'fraction_multiply') {
+  const gcd = (a: number, b: number): number => {
+    while (b !== 0) {
+      const temp = b
+      b = a % b
+      a = temp
+    }
+    return Math.abs(a)
+  }
+
+  const simplify = (num: number, den: number) => {
+    const g = gcd(num, den)
+    return `${num / g}/${den / g}`
+  }
+
+  if (d === 1) {
+    const num = ri(1, 5)
+    const den = ri(num + 1, 8)
+    const k = ri(2, 5)
+    const answer = simplify(num * k, den)
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula ${a}/${b} × ${c}/${e}`,
+      `Calcula ${num}/${den} × ${k}`,
       answer,
       [
-        `${a + c}/${b + e}`,
-        `${a * e}/${b * c}`,
-        `${a + c}/${b * e}`,
+        `${num + k}/${den}`,
+        `${num}/${den * k}`,
+        `${num * k}/${den * k}`,
       ],
-      `Multiplicamos numeradores y denominadores: ${answer}.`,
+      `Multiplicamos el numerador por ${k} y simplificamos: ${answer}.`,
       ['multiplicacion_fracciones']
     )
   }
 
-  if (key === 'fraction_divide') {
-    const a = ri(1, 5)
-    const b = ri(2, 7)
-    const c = ri(1, 5)
-    const e = ri(2, 7)
-    const answer = `${a * e}/${b * c}`
+  const maxDen = [8, 8, 10, 12, 15][d - 1]
+  const a = ri(1, 6)
+  const b = ri(2, maxDen)
+  const c = ri(1, 6)
+  const e = ri(2, maxDen)
+
+  const answer = simplify(a * c, b * e)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${a}/${b} × ${c}/${e}`,
+    answer,
+    [
+      `${a + c}/${b + e}`,
+      `${a * e}/${b * c}`,
+      `${a + c}/${b * e}`,
+    ],
+    `Multiplicamos numeradores y denominadores y simplificamos: ${answer}.`,
+    ['multiplicacion_fracciones', `dificultad_${d}`]
+  )
+}
+
+if (key === 'fraction_divide') {
+  const gcd = (a: number, b: number): number => {
+    while (b !== 0) {
+      const temp = b
+      b = a % b
+      a = temp
+    }
+    return Math.abs(a)
+  }
+
+  const simplify = (num: number, den: number) => {
+    const g = gcd(num, den)
+    return `${num / g}/${den / g}`
+  }
+
+  if (d === 1) {
+    const divisor = ri(2, 5)
+    const num = ri(1, 5)
+    const den = ri(num + 1, 8)
+    const answer = simplify(num, den * divisor)
 
     return mc(
       skill,
       d,
       seed,
-      `Calcula ${a}/${b} ÷ ${c}/${e}`,
+      `Calcula ${num}/${den} ÷ ${divisor}`,
       answer,
       [
-        `${a * c}/${b * e}`,
-        `${a + c}/${b + e}`,
-        `${b * c}/${a * e}`,
+        simplify(num * divisor, den),
+        `${num + divisor}/${den}`,
+        `${num}/${den}`,
       ],
-      `Multiplicamos por la inversa: ${a}/${b} × ${e}/${c} = ${answer}.`,
+      `Dividir entre ${divisor} equivale a multiplicar por 1/${divisor}. Resultado: ${answer}.`,
       ['division_fracciones']
     )
   }
 
-  if (key === 'fraction_word_problem') {
+  const maxDen = [8, 8, 10, 12, 15][d - 1]
+  const a = ri(1, 6)
+  const b = ri(2, maxDen)
+  const c = ri(1, 6)
+  const e = ri(2, maxDen)
+
+  const answer = simplify(a * e, b * c)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Calcula ${a}/${b} ÷ ${c}/${e}`,
+    answer,
+    [
+      simplify(a * c, b * e),
+      `${a + c}/${b + e}`,
+      `${b * c}/${a * e}`,
+    ],
+    `Multiplicamos por la inversa: ${a}/${b} × ${e}/${c}. Resultado: ${answer}.`,
+    ['division_fracciones', `dificultad_${d}`]
+  )
+}
+
+if (key === 'fraction_word_problem') {
   const variant = ri(0, 5)
 
-  // 1. Multiplicar una fracción por un número de repeticiones
   if (variant === 0) {
     const den = ri(3, 10)
     const num = ri(1, den - 1)
@@ -3757,7 +4176,6 @@ if (key === 'fraction_simplify') {
     )
   }
 
-  // 2. Calcular una fracción de una cantidad
   if (variant === 1) {
     const den = ri(2, 8)
     const num = ri(1, den - 1)
@@ -3776,12 +4194,11 @@ if (key === 'fraction_simplify') {
         String(groups),
         String(num * den),
       ],
-      `Primero calculamos ${total} ÷ ${den} = ${groups}; después ${groups} × ${num} = ${answer}.`,
+      `${total} ÷ ${den} = ${groups}; después ${groups} × ${num} = ${answer}.`,
       ['problema_fracciones', 'fraccion_de_cantidad']
     )
   }
 
-  // 3. Averiguar el total conociendo una fracción
   if (variant === 2) {
     const den = ri(3, 8)
     const num = ri(1, den - 1)
@@ -3800,12 +4217,11 @@ if (key === 'fraction_simplify') {
         String(total - known),
         String(known + den),
       ],
-      `Si ${num} partes son ${known}, cada parte vale ${factor}. Por tanto, ${den} partes son ${total}.`,
+      `Si ${num} partes son ${known}, cada parte vale ${factor}. Las ${den} partes son ${total}.`,
       ['problema_fracciones', 'hallar_total']
     )
   }
 
-  // 4. Fracción que queda
   if (variant === 3) {
     const den = ri(4, 10)
     const used = ri(1, den - 1)
@@ -3815,7 +4231,7 @@ if (key === 'fraction_simplify') {
       skill,
       d,
       seed,
-      `De una tarta se han comido ${used}/${den}. ¿Qué fracción de la tarta queda?`,
+      `De una tarta se han comido ${used}/${den}. ¿Qué fracción queda?`,
       `${remaining}/${den}`,
       [
         `${used}/${den}`,
@@ -3827,7 +4243,6 @@ if (key === 'fraction_simplify') {
     )
   }
 
-  // 5. Sumar fracciones con el mismo denominador
   if (variant === 4) {
     const den = ri(5, 12)
     const a = ri(1, den - 2)
@@ -3838,19 +4253,18 @@ if (key === 'fraction_simplify') {
       skill,
       d,
       seed,
-      `Por la mañana Marta recorrió ${a}/${den} km y por la tarde ${b}/${den} km. ¿Qué fracción de kilómetro recorrió en total?`,
+      `Por la mañana se recorren ${a}/${den} km y por la tarde ${b}/${den} km. ¿Qué fracción de kilómetro se recorre en total?`,
       `${answer}/${den}`,
       [
         `${a + b}/${den * 2}`,
         `${Math.abs(a - b)}/${den}`,
         `${a * b}/${den}`,
       ],
-      `Como los denominadores son iguales, sumamos los numeradores: ${a} + ${b} = ${answer}. Resultado: ${answer}/${den}.`,
+      `Sumamos los numeradores: ${a}+${b}=${answer}. Resultado: ${answer}/${den}.`,
       ['problema_fracciones', 'suma']
     )
   }
 
-  // 6. Restar fracciones con el mismo denominador
   const den = ri(5, 12)
   const start = ri(2, den - 1)
   const used = ri(1, start - 1)
@@ -3860,196 +4274,611 @@ if (key === 'fraction_simplify') {
     skill,
     d,
     seed,
-    `Una botella contenía ${start}/${den} de litro. Se consumieron ${used}/${den} de litro. ¿Cuánto queda?`,
+    `Una botella contenía ${start}/${den} de litro. Se consumieron ${used}/${den}. ¿Cuánto queda?`,
     `${answer}/${den}`,
     [
       `${start + used}/${den}`,
       `${start}/${den}`,
       `${used}/${den}`,
     ],
-    `Restamos los numeradores porque el denominador es el mismo: ${start} - ${used} = ${answer}. Quedan ${answer}/${den} de litro.`,
+    `Restamos numeradores: ${start}-${used}=${answer}. Quedan ${answer}/${den}.`,
     ['problema_fracciones', 'resta']
   )
 }
 
-  // =========================
-  // M08 · PROPORCIONALIDAD Y PORCENTAJES
-  // =========================
+ // =========================
+// M08 · PROPORCIONALIDAD Y PORCENTAJES
+// =========================
 
- if (key === 'ratio') {
-  const a = ri(2, 9)
-  const b = ri(2, 9)
+if (key === 'ratio') {
+  const gcd = (x: number, y: number): number => {
+    x = Math.abs(x)
+    y = Math.abs(y)
 
-  const variants = [
-    {
-      prompt: `En una clase hay ${a} chicos por cada ${b} chicas. ¿Cuál es la razón chicos:chicas?`,
-      answer: `${a}:${b}`,
-      solution: `La razón chicos:chicas es ${a}:${b}.`,
-    },
-    {
-      prompt: `Una caja tiene ${a} lápices rojos por cada ${b} lápices azules. ¿Cuál es la razón rojos:azules?`,
-      answer: `${a}:${b}`,
-      solution: `La razón rojos:azules es ${a}:${b}.`,
-    },
-    {
-      prompt: `En una mezcla se usan ${a} vasos de agua por cada ${b} vasos de zumo. ¿Cuál es la razón agua:zumo?`,
-      answer: `${a}:${b}`,
-      solution: `La razón agua:zumo es ${a}:${b}.`,
-    },
-    {
-      prompt: `Un equipo consigue ${a} victorias por cada ${b} derrotas. ¿Cuál es la razón victorias:derrotas?`,
-      answer: `${a}:${b}`,
-      solution: `La razón victorias:derrotas es ${a}:${b}.`,
-    },
-    {
-      prompt: `En una bolsa hay ${a} fichas verdes por cada ${b} fichas amarillas. ¿Cuál es la razón verdes:amarillas?`,
-      answer: `${a}:${b}`,
-      solution: `La razón verdes:amarillas es ${a}:${b}.`,
-    },
-  ]
+    while (y !== 0) {
+      const temp = y
+      y = x % y
+      x = temp
+    }
 
-  const variant = variants[ri(0, variants.length - 1)]
+    return x
+  }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    variant.prompt,
-    variant.answer,
-    [
-      `${b}:${a}`,
-      `${a + b}:1`,
-      `${a * b}:1`,
-    ],
-    variant.solution,
-    ['razon']
-  )
-}
+  if (d === 1) {
+    const a = ri(2, 8)
+    const b = ri(2, 8)
 
- if (key === 'direct_proportion_recognize') {
-  const variants = [
-    {
-      prompt: 'Si compras el doble de cuadernos al mismo precio unitario, ¿pagas el doble?',
-      answer: 'Sí',
-      solution: 'Es una relación de proporcionalidad directa: al duplicar la cantidad, se duplica el precio total.',
-    },
-    {
-      prompt: 'Si 3 botellas iguales cuestan una cantidad, ¿6 botellas al mismo precio unitario cuestan el doble?',
-      answer: 'Sí',
-      solution: 'Al duplicar el número de botellas manteniendo el mismo precio por unidad, el coste total se duplica.',
-    },
-    {
-      prompt: 'Si recorres el doble de distancia manteniendo siempre la misma velocidad, ¿tardas el doble de tiempo?',
-      answer: 'Sí',
-      solution: 'A velocidad constante, al duplicar la distancia también se duplica el tiempo.',
-    },
-    {
-      prompt: 'Si necesitas 2 huevos para una receta y haces el triple de cantidad, ¿necesitas el triple de huevos?',
-      answer: 'Sí',
-      solution: 'Al multiplicar por tres la cantidad de receta, los ingredientes también se multiplican por tres.',
-    },
-    {
-      prompt: 'Si 4 entradas cuestan 20 € y todas tienen el mismo precio, ¿8 entradas cuestan 40 €?',
-      answer: 'Sí',
-      solution: 'Al duplicar el número de entradas, el precio total también se duplica: es proporcionalidad directa.',
-    },
-    {
-      prompt: 'Si duplicas el número de personas que comparten una pizza, ¿cada persona recibe el doble de pizza?',
-      answer: 'No',
-      solution: 'No es proporcionalidad directa. Si la pizza es la misma y hay más personas, la cantidad por persona disminuye.',
-    },
-  ]
+    const contexts = [
+      {
+        prompt: `En una caja hay ${a} lápices rojos por cada ${b} azules. ¿Cuál es la razón rojos:azules?`,
+        solution: `La razón rojos:azules es ${a}:${b}.`,
+      },
+      {
+        prompt: `Hay ${a} chicos por cada ${b} chicas. ¿Cuál es la razón chicos:chicas?`,
+        solution: `La razón chicos:chicas es ${a}:${b}.`,
+      },
+      {
+        prompt: `Una mezcla lleva ${a} vasos de agua por cada ${b} de zumo. ¿Cuál es la razón agua:zumo?`,
+        solution: `La razón agua:zumo es ${a}:${b}.`,
+      },
+    ]
 
-  const variant = variants[ri(0, variants.length - 1)]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    variant.prompt,
-    variant.answer,
-    variant.answer === 'Sí'
-      ? ['No', 'Solo a veces', 'No se puede saber']
-      : ['Sí', 'Siempre', 'El doble'],
-    variant.solution,
-    ['proporcionalidad_directa']
-  )
-}
-
-  if (key === 'direct_proportion_table') {
-    const x = ri(2, 8)
-    const factor = ri(2, 6)
-    const answer = String(x * factor)
+    const v = contexts[ri(0, contexts.length - 1)]
 
     return mc(
       skill,
       d,
       seed,
-      `Si 1 unidad cuesta ${factor} €, ¿cuánto cuestan ${x} unidades?`,
-      answer,
+      v.prompt,
+      `${a}:${b}`,
       [
-        String(x + factor),
-        String(x * factor + factor),
-        String(factor),
+        `${b}:${a}`,
+        `${a + b}:1`,
+        `${a * b}:1`,
       ],
-      `${x} × ${factor} = ${answer} €.`,
+      v.solution,
+      ['razon']
+    )
+  }
+
+  if (d === 2) {
+    const baseA = ri(1, 5)
+    const baseB = ri(2, 6)
+    const k = ri(2, 5)
+
+    const a = baseA * k
+    const b = baseB * k
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica la razón ${a}:${b}`,
+      `${baseA}:${baseB}`,
+      [
+        `${a}:${baseB}`,
+        `${baseA}:${b}`,
+        `${baseA + baseB}:1`,
+      ],
+      `Dividimos los dos términos entre ${k}: ${a}:${b} = ${baseA}:${baseB}.`,
+      ['razon', 'simplificacion']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(2, 7)
+    const b = ri(2, 7)
+    const k = ri(2, 5)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Si la razón es ${a}:${b} y la primera cantidad vale ${a * k}, ¿cuánto vale la segunda?`,
+      String(b * k),
+      [
+        String(a * k),
+        String(a + b + k),
+        String(b + k),
+      ],
+      `La primera cantidad se ha multiplicado por ${k}, así que la segunda también: ${b}×${k}=${b * k}.`,
+      ['razon', 'razones_equivalentes']
+    )
+  }
+
+  if (d === 4) {
+    let a = ri(4, 15)
+    let b = ri(4, 15)
+
+    while (gcd(a, b) === 1) {
+      a = ri(4, 15)
+      b = ri(4, 15)
+    }
+
+    const g = gcd(a, b)
+    const simpleA = a / g
+    const simpleB = b / g
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En un grupo hay ${a} alumnos de un equipo y ${b} de otro. Expresa la razón en su forma más simple.`,
+      `${simpleA}:${simpleB}`,
+      [
+        `${a}:${b}`,
+        `${simpleB}:${simpleA}`,
+        `${a + b}:${g}`,
+      ],
+      `MCD(${a}, ${b})=${g}. Dividimos ambos términos entre ${g}: ${simpleA}:${simpleB}.`,
+      ['razon', 'simplificacion', 'mcd']
+    )
+  }
+
+  const a = ri(2, 6)
+  const b = ri(2, 7)
+  const totalParts = a + b
+  const multiplier = ri(3, 8)
+  const total = totalParts * multiplier
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Dos cantidades están en razón ${a}:${b} y juntas suman ${total}. ¿Cuánto vale la primera cantidad?`,
+    String(a * multiplier),
+    [
+      String(b * multiplier),
+      String(total / 2),
+      String(a + multiplier),
+    ],
+    `La razón tiene ${totalParts} partes. Cada parte vale ${total}÷${totalParts}=${multiplier}. La primera cantidad es ${a}×${multiplier}=${a * multiplier}.`,
+    ['razon', 'reparto_proporcional', 'dificultad_alta']
+  )
+}
+
+if (key === 'direct_proportion_recognize') {
+  const easyVariants = [
+    {
+      prompt:
+        'Si compras el doble de cuadernos al mismo precio unitario, ¿pagas el doble?',
+      answer: 'Sí',
+      solution:
+        'Al duplicar la cantidad manteniendo el precio unitario, se duplica el coste.',
+    },
+    {
+      prompt:
+        'Si una receta usa 3 huevos y haces el doble de cantidad, ¿necesitas el doble de huevos?',
+      answer: 'Sí',
+      solution:
+        'Al duplicar la receta, se duplican proporcionalmente los ingredientes.',
+    },
+    {
+      prompt:
+        'Si duplicas el número de personas que comparten una pizza fija, ¿cada persona recibe el doble?',
+      answer: 'No',
+      solution:
+        'La cantidad total de pizza no aumenta. Al haber más personas, toca menos a cada una.',
+    },
+  ]
+
+  const mediumVariants = [
+    {
+      prompt:
+        'A velocidad constante, si un coche recorre el triple de distancia, ¿emplea el triple de tiempo?',
+      answer: 'Sí',
+      solution:
+        'Manteniendo constante la velocidad, distancia y tiempo son directamente proporcionales.',
+    },
+    {
+      prompt:
+        'Si el lado de un cuadrado se duplica, ¿su área también se duplica?',
+      answer: 'No',
+      solution:
+        'El área depende del cuadrado del lado. Si el lado se duplica, el área se multiplica por 4.',
+    },
+    {
+      prompt:
+        'Si 5 entradas cuestan 40 € al mismo precio cada una, ¿10 entradas cuestan 80 €?',
+      answer: 'Sí',
+      solution:
+        'Al duplicar el número de entradas, se duplica el coste total.',
+    },
+    {
+      prompt:
+        'Si tardas 4 horas en un viaje y duplicas la velocidad para la misma distancia, ¿tardarás 8 horas?',
+      answer: 'No',
+      solution:
+        'Para una distancia fija, aumentar la velocidad reduce el tiempo; no es proporcionalidad directa.',
+    },
+  ]
+
+  const hardVariants = [
+    {
+      prompt:
+        'Una magnitud pasa de 4 a 12 mientras otra pasa de 7 a 21. ¿Podrían ser directamente proporcionales?',
+      answer: 'Sí',
+      solution:
+        'Las dos se han multiplicado por 3, así que mantienen el mismo factor.',
+    },
+    {
+      prompt:
+        'Una magnitud pasa de 5 a 15 mientras otra pasa de 8 a 20. ¿Son directamente proporcionales?',
+      answer: 'No',
+      solution:
+        'La primera se multiplica por 3, pero la segunda por 2,5. Los factores no coinciden.',
+    },
+    {
+      prompt:
+        'Si y = 4x, ¿x e y son magnitudes directamente proporcionales?',
+      answer: 'Sí',
+      solution:
+        'La razón y/x es constante e igual a 4.',
+    },
+  ]
+
+  const pool =
+    d <= 2
+      ? easyVariants
+      : d <= 4
+        ? mediumVariants
+        : hardVariants
+
+  const v = pool[ri(0, pool.length - 1)]
+
+  return mc(
+    skill,
+    d,
+    seed,
+    v.prompt,
+    v.answer,
+    v.answer === 'Sí'
+      ? ['No', 'Solo algunas veces', 'No se puede saber']
+      : ['Sí', 'Siempre', 'Exactamente el doble'],
+    v.solution,
+    ['proporcionalidad_directa', `dificultad_${d}`]
+  )
+}
+
+if (key === 'direct_proportion_table') {
+  if (d === 1) {
+    const price = ri(2, 6)
+    const quantity = ri(2, 8)
+    const answer = quantity * price
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Si 1 unidad cuesta ${price} €, ¿cuánto cuestan ${quantity} unidades?`,
+      String(answer),
+      [
+        String(quantity + price),
+        String(answer + price),
+        String(price),
+      ],
+      `${quantity} × ${price} = ${answer} €.`,
       ['tabla_proporcional']
     )
   }
 
-  if (key === 'rule_of_three') {
-    const units = ri(2, 6)
-    const price = ri(2, 8)
-    const target = ri(2, 6)
-    const total = units * price
-    const answer = String(target * price)
+  if (d === 2) {
+    const x1 = ri(2, 5)
+    const factor = ri(2, 6)
+    const y1 = x1 * factor
+    const x2 = x1 * 2
+    const answer = y1 * 2
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una tabla proporcional: ${x1} → ${y1}. ¿Qué valor corresponde a ${x2}?`,
+      String(answer),
+      [
+        String(y1 + x2),
+        String(y1),
+        String(answer + factor),
+      ],
+      `${x2} es el doble de ${x1}, por tanto el valor correspondiente es el doble de ${y1}: ${answer}.`,
+      ['tabla_proporcional', 'escalado']
+    )
+  }
+
+  if (d === 3) {
+    const factor = ri(3, 8)
+    const x1 = ri(2, 6)
+    const y1 = x1 * factor
+    const x2 = ri(7, 15)
+    const answer = x2 * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una tabla cumple y = ${factor}x. Si para x=${x1}, y=${y1}, ¿cuánto vale y cuando x=${x2}?`,
+      String(answer),
+      [
+        String(x2 + factor),
+        String(y1 + x2),
+        String(answer - factor),
+      ],
+      `La constante de proporcionalidad es ${factor}. Entonces ${factor}×${x2}=${answer}.`,
+      ['tabla_proporcional', 'constante_proporcionalidad']
+    )
+  }
+
+  if (d === 4) {
+    const factor = ri(2, 7)
+    const x = ri(4, 12)
+    const y = x * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una relación directamente proporcional, x=${x} corresponde a y=${y}. ¿Cuál es la constante de proporcionalidad y/x?`,
+      String(factor),
+      [
+        String(x),
+        String(y),
+        String(x + factor),
+      ],
+      `${y}÷${x}=${factor}.`,
+      ['tabla_proporcional', 'constante_proporcionalidad']
+    )
+  }
+
+  const factor = ri(3, 9)
+  const x1 = ri(2, 5)
+  const x2 = ri(6, 12)
+  const y1 = factor * x1
+  const y2 = factor * x2
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Cuál de estas parejas completa correctamente una tabla de proporcionalidad que contiene (${x1}, ${y1})?`,
+    `(${x2}, ${y2})`,
+    [
+      `(${x2}, ${y2 + 1})`,
+      `(${x2}, ${y1 + x2})`,
+      `(${x2}, ${factor + x2})`,
+    ],
+    `La constante es ${y1}/${x1}=${factor}. Por tanto, para x=${x2}, y=${factor}×${x2}=${y2}.`,
+    ['tabla_proporcional', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+if (key === 'rule_of_three') {
+  if (d === 1) {
+    const units = ri(2, 5)
+    const unitPrice = ri(2, 6)
+    const target = ri(2, 8)
+
+    const total = units * unitPrice
+    const answer = target * unitPrice
 
     return mc(
       skill,
       d,
       seed,
       `Si ${units} unidades cuestan ${total} €, ¿cuánto cuestan ${target} unidades?`,
-      answer,
+      String(answer),
       [
         String(total + target),
         String(total * target),
-        String(price),
+        String(unitPrice),
       ],
-      `Cada unidad cuesta ${price} €. Entonces ${target} cuestan ${answer} €.`,
+      `Cada unidad cuesta ${total}÷${units}=${unitPrice} €. Entonces ${target}×${unitPrice}=${answer} €.`,
       ['regla_de_tres']
     )
   }
 
-  if (key === 'percentage_of') {
-    const p = [10, 20, 25, 50][ri(0, 3)]
-    const amount = ri(2, 10) * 20
-    const answer = String(
-      (p * amount) / 100
+  if (d === 2) {
+    const kg = ri(2, 6)
+    const pricePerKg = ri(3, 8)
+    const total = kg * pricePerKg
+    const targetKg = ri(7, 12)
+    const answer = targetKg * pricePerKg
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${kg} kg de fruta cuestan ${total} €. ¿Cuánto cuestan ${targetKg} kg?`,
+      String(answer),
+      [
+        String(total + targetKg),
+        String(targetKg * kg),
+        String(answer + pricePerKg),
+      ],
+      `Precio por kg: ${total}÷${kg}=${pricePerKg} €. Para ${targetKg} kg: ${targetKg}×${pricePerKg}=${answer} €.`,
+      ['regla_de_tres', 'precio']
     )
+  }
+
+  if (d === 3) {
+    const people = ri(2, 5)
+    const amountPerPerson = ri(2, 6)
+    const total = people * amountPerPerson
+    const targetPeople = ri(6, 12)
+    const answer = targetPeople * amountPerPerson
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Para ${people} personas hacen falta ${total} porciones. ¿Cuántas hacen falta para ${targetPeople} personas?`,
+      String(answer),
+      [
+        String(total + targetPeople),
+        String(targetPeople * people),
+        String(answer - amountPerPerson),
+      ],
+      `${total}÷${people}=${amountPerPerson} porciones por persona. ${targetPeople}×${amountPerPerson}=${answer}.`,
+      ['regla_de_tres', 'problema']
+    )
+  }
+
+  if (d === 4) {
+    const distance = ri(2, 6) * 50
+    const litres = ri(2, 6)
+    const targetDistance = distance * ri(2, 4)
+    const factor = targetDistance / distance
+    const answer = litres * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un vehículo consume ${litres} L para recorrer ${distance} km. Manteniendo el mismo consumo, ¿cuántos litros necesita para ${targetDistance} km?`,
+      String(answer),
+      [
+        String(litres + factor),
+        String(targetDistance / litres),
+        String(answer + litres),
+      ],
+      `${targetDistance}/${distance}=${factor}. Multiplicamos ${litres}×${factor}=${answer} L.`,
+      ['regla_de_tres', 'varios_pasos']
+    )
+  }
+
+  const machines = ri(2, 5)
+  const productionPerMachine = ri(20, 50)
+  const hours = ri(2, 5)
+  const total = machines * productionPerMachine * hours
+  const targetMachines = ri(6, 9)
+  const answer = targetMachines * productionPerMachine * hours
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `${machines} máquinas producen ${total} piezas en ${hours} horas. Si todas trabajan al mismo ritmo, ¿cuántas producirán ${targetMachines} máquinas en el mismo tiempo?`,
+    String(answer),
+    [
+      String(total + targetMachines),
+      String(total * targetMachines),
+      String(productionPerMachine * targetMachines),
+    ],
+    `Cada máquina produce ${productionPerMachine} piezas por hora. En ${hours} h, ${targetMachines} máquinas producen ${answer}.`,
+    ['regla_de_tres', 'varios_pasos', 'dificultad_alta']
+  )
+}
+
+if (key === 'percentage_of') {
+  if (d === 1) {
+    const p = [10, 25, 50][ri(0, 2)]
+    const amount = ri(2, 10) * 20
+    const answer = (p * amount) / 100
 
     return mc(
       skill,
       d,
       seed,
       `¿Cuánto es el ${p}% de ${amount}?`,
-      answer,
+      String(answer),
       [
         String(amount - p),
         String(amount + p),
-        String(
-          ((100 - p) * amount) / 100
-        ),
+        String(((100 - p) * amount) / 100),
       ],
       `${p}/100 × ${amount} = ${answer}.`,
       ['porcentaje']
     )
   }
 
-  if (key === 'percentage_change') {
+  if (d === 2) {
+    const p = [5, 10, 20, 25, 50][ri(0, 4)]
+    const amount = ri(2, 20) * 20
+    const answer = (p * amount) / 100
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Calcula el ${p}% de ${amount}`,
+      String(answer),
+      [
+        String(amount - p),
+        String(p),
+        String(answer + p),
+      ],
+      `${amount}×${p}/100=${answer}.`,
+      ['porcentaje']
+    )
+  }
+
+  if (d === 3) {
+    const p = [15, 30, 35, 40, 60, 75][ri(0, 5)]
+    const amount = ri(2, 10) * 100
+    const answer = (p * amount) / 100
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En un grupo de ${amount} personas, el ${p}% cumple una condición. ¿Cuántas personas son?`,
+      String(answer),
+      [
+        String(amount - answer),
+        String(p),
+        String(answer + 10),
+      ],
+      `${p}% de ${amount} = ${answer}.`,
+      ['porcentaje', 'contexto']
+    )
+  }
+
+  if (d === 4) {
+    const percentage = [20, 25, 40, 50][ri(0, 3)]
+    const multiplier = ri(2, 8)
+    const part = percentage * multiplier
+    const total = 100 * multiplier
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${part} es el ${percentage}% de un número. ¿Cuál es ese número?`,
+      String(total),
+      [
+        String(part * percentage),
+        String(part + percentage),
+        String(total - part),
+      ],
+      `Si ${percentage}% son ${part}, el 100% es ${part}×100/${percentage}=${total}.`,
+      ['porcentaje', 'hallar_total']
+    )
+  }
+
+  const total = ri(4, 12) * 50
+  const percentage = [15, 30, 45, 60, 75][ri(0, 4)]
+  const part = (total * percentage) / 100
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `De un total de ${total}, una parte vale ${part}. ¿Qué porcentaje representa?`,
+    `${percentage}%`,
+    [
+      `${100 - percentage}%`,
+      `${Math.max(1, percentage - 5)}%`,
+      `${Math.min(100, percentage + 10)}%`,
+    ],
+    `${part}/${total}×100=${percentage}%.`,
+    ['porcentaje', 'hallar_porcentaje', 'dificultad_alta']
+  )
+}
+
+if (key === 'percentage_change') {
+  if (d === 1) {
     const price = ri(4, 12) * 20
     const discount = [10, 20, 25][ri(0, 2)]
-    const saving =
-      (price * discount) / 100
+    const saving = (price * discount) / 100
     const finalPrice = price - saving
 
     return mc(
@@ -4063,125 +4892,781 @@ if (key === 'fraction_simplify') {
         String(price + saving),
         String(price - discount),
       ],
-      `Descuento: ${saving} €. Precio final: ${finalPrice} €.`,
+      `Descuento: ${saving} €. Precio final: ${price}-${saving}=${finalPrice} €.`,
       ['descuento_porcentual']
     )
   }
 
-  if (key === 'proportion_word_problem') {
-    const people = ri(2, 5)
-    const portions = people * 2
-    const target = ri(
-      people + 1,
-      people + 4
+  if (d === 2) {
+    const price = ri(4, 12) * 25
+    const increase = [10, 20, 25][ri(0, 2)]
+    const rise = (price * increase) / 100
+    const finalPrice = price + rise
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un precio de ${price} € aumenta un ${increase}%. ¿Cuál es el nuevo precio?`,
+      String(finalPrice),
+      [
+        String(price - rise),
+        String(rise),
+        String(price + increase),
+      ],
+      `Aumento: ${price}×${increase}/100=${rise} €. Nuevo precio: ${finalPrice} €.`,
+      ['aumento_porcentual']
     )
-    const answer = String(target * 2)
+  }
+
+  if (d === 3) {
+    const original = ri(4, 12) * 50
+    const discount = [15, 20, 30][ri(0, 2)]
+    const saving = (original * discount) / 100
+    const finalPrice = original - saving
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Tras un descuento del ${discount}%, un producto que costaba ${original} € queda en...`,
+      String(finalPrice),
+      [
+        String(saving),
+        String(original + saving),
+        String(original - discount),
+      ],
+      `El descuento es ${saving} €. ${original}-${saving}=${finalPrice} €.`,
+      ['descuento_porcentual']
+    )
+  }
+
+  if (d === 4) {
+    const original = ri(4, 10) * 100
+    const risePercent = [10, 20, 25][ri(0, 2)]
+    const rise = (original * risePercent) / 100
+    const afterRise = original + rise
+    const discountPercent = [10, 20][ri(0, 1)]
+    const discount = (afterRise * discountPercent) / 100
+    const final = afterRise - discount
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un artículo cuesta ${original} €. Primero sube un ${risePercent}% y después se rebaja un ${discountPercent}% sobre el nuevo precio. ¿Cuál es el precio final?`,
+      String(final),
+      [
+        String(original),
+        String(afterRise),
+        String(original - discount),
+      ],
+      `Tras la subida cuesta ${afterRise} €. El ${discountPercent}% de ${afterRise} es ${discount} €. Precio final: ${final} €.`,
+      ['variacion_porcentual', 'dos_cambios']
+    )
+  }
+
+  const original = ri(4, 10) * 100
+  const increase = [20, 25, 50][ri(0, 2)]
+  const newValue = original * (1 + increase / 100)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Una cantidad pasa de ${original} a ${newValue}. ¿Qué porcentaje ha aumentado?`,
+    `${increase}%`,
+    [
+      `${100 - increase}%`,
+      `${Math.max(5, increase - 10)}%`,
+      `${Math.min(100, increase + 10)}%`,
+    ],
+    `El aumento es ${newValue - original}. Dividimos entre ${original} y multiplicamos por 100: ${increase}%.`,
+    ['variacion_porcentual', 'hallar_variacion', 'dificultad_alta']
+  )
+}
+
+if (key === 'proportion_word_problem') {
+  const variant = ri(0, d === 1 ? 1 : d === 2 ? 2 : 5)
+
+  if (variant === 0) {
+    const people = ri(2, 6)
+    const perPerson = ri(2, 5)
+    const portions = people * perPerson
+    const target = ri(people + 1, people + 6)
+    const answer = target * perPerson
 
     return mc(
       skill,
       d,
       seed,
       `Para ${people} personas hacen falta ${portions} porciones. ¿Cuántas hacen falta para ${target} personas?`,
-      answer,
+      String(answer),
       [
         String(portions + target),
         String(portions * target),
         String(target),
       ],
-      `Son 2 porciones por persona. ${target}×2=${answer}.`,
-      ['problema_proporcionalidad']
+      `Son ${perPerson} porciones por persona. ${target}×${perPerson}=${answer}.`,
+      ['problema_proporcionalidad', 'receta']
     )
   }
 
-  // =========================
-  // M09 · ÁLGEBRA Y ECUACIONES
-  // =========================
-
-  if (key === 'algebra_translate') {
-    const k = ri(2, 9)
+  if (variant === 1) {
+    const notebooks = ri(2, 6)
+    const unitPrice = ri(2, 8)
+    const cost = notebooks * unitPrice
+    const target = ri(7, 12)
+    const answer = target * unitPrice
 
     return mc(
       skill,
       d,
       seed,
-      `¿Cómo se escribe "el doble de un número más ${k}"?`,
-      `2x + ${k}`,
+      `${notebooks} cuadernos cuestan ${cost} €. ¿Cuánto cuestan ${target} cuadernos al mismo precio unitario?`,
+      String(answer),
       [
-        `2(x + ${k})`,
-        `x + ${k * 2}`,
-        `x² + ${k}`,
+        String(cost + target),
+        String(target * notebooks),
+        String(unitPrice),
       ],
-      `El doble de x es 2x; después sumamos ${k}.`,
+      `Cada cuaderno cuesta ${unitPrice} €. ${target}×${unitPrice}=${answer} €.`,
+      ['problema_proporcionalidad', 'precio']
+    )
+  }
+
+  if (variant === 2) {
+    const distance = ri(2, 5) * 40
+    const fuel = ri(2, 6)
+    const factor = ri(2, 4)
+    const targetDistance = distance * factor
+    const answer = fuel * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un coche consume ${fuel} L en ${distance} km. ¿Cuántos litros consumirá en ${targetDistance} km al mismo ritmo?`,
+      String(answer),
+      [
+        String(fuel + factor),
+        String(distance / fuel),
+        String(answer + fuel),
+      ],
+      `La distancia se multiplica por ${factor}, así que el consumo también: ${fuel}×${factor}=${answer} L.`,
+      ['problema_proporcionalidad', 'consumo']
+    )
+  }
+
+  if (variant === 3) {
+    const metres = ri(2, 6)
+    const costPerMetre = ri(3, 9)
+    const cost = metres * costPerMetre
+    const budgetMetres = ri(7, 14)
+    const answer = budgetMetres * costPerMetre
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${metres} m de tela cuestan ${cost} €. ¿Cuánto costarán ${budgetMetres} m?`,
+      String(answer),
+      [
+        String(cost + budgetMetres),
+        String(budgetMetres * metres),
+        String(answer - costPerMetre),
+      ],
+      `Cada metro cuesta ${costPerMetre} €. ${budgetMetres}×${costPerMetre}=${answer} €.`,
+      ['problema_proporcionalidad', 'medida']
+    )
+  }
+
+  if (variant === 4) {
+    const servings = ri(2, 5)
+    const flourPerServing = ri(50, 100)
+    const flour = servings * flourPerServing
+    const target = ri(6, 12)
+    const answer = target * flourPerServing
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Para ${servings} raciones se necesitan ${flour} g de harina. ¿Cuántos gramos se necesitan para ${target} raciones?`,
+      String(answer),
+      [
+        String(flour + target),
+        String(flour * target),
+        String(answer - flourPerServing),
+      ],
+      `Son ${flourPerServing} g por ración. ${target}×${flourPerServing}=${answer} g.`,
+      ['problema_proporcionalidad', 'receta']
+    )
+  }
+
+  const workers = ri(2, 5)
+  const itemsPerWorker = ri(10, 30)
+  const hours = ri(2, 5)
+  const total = workers * itemsPerWorker * hours
+  const targetWorkers = ri(6, 9)
+  const answer = targetWorkers * itemsPerWorker * hours
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `${workers} trabajadores producen ${total} piezas en ${hours} horas trabajando al mismo ritmo. ¿Cuántas producirán ${targetWorkers} trabajadores en el mismo tiempo?`,
+    String(answer),
+    [
+      String(total + targetWorkers),
+      String(itemsPerWorker * targetWorkers),
+      String(total * targetWorkers),
+    ],
+    `Cada trabajador produce ${itemsPerWorker} piezas por hora. En ${hours} horas, ${targetWorkers} trabajadores producen ${answer}.`,
+    ['problema_proporcionalidad', 'varios_pasos', 'dificultad_alta']
+  )
+}
+
+ // =========================
+// M09 · ÁLGEBRA Y ECUACIONES
+// =========================
+
+if (key === 'algebra_expression') {
+  if (d === 1) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Qué expresión representa "un número más 5"?',
+      'x + 5',
+      ['5x', 'x - 5', '5 - x'],
+      'Si llamamos x al número, sumarle 5 se escribe x + 5.',
       ['lenguaje_algebraico']
     )
   }
 
-  if (key === 'algebra_evaluate') {
-    const x = ri(2, 8)
+  if (d === 2) {
+    const n = ri(2, 9)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué expresión representa "el triple de un número menos ${n}"?`,
+      `3x - ${n}`,
+      [
+        `3(x - ${n})`,
+        `x - ${3 * n}`,
+        `${n}x - 3`,
+      ],
+      `El triple de un número es 3x y después restamos ${n}: 3x - ${n}.`,
+      ['lenguaje_algebraico']
+    )
+  }
+
+  if (d === 3) {
     const a = ri(2, 6)
-    const b = ri(1, 9)
-    const answer = String(a * x + b)
+    const b = ri(2, 10)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué expresión representa "${a} veces un número aumentado en ${b}"?`,
+      `${a}x + ${b}`,
+      [
+        `${a}(x + ${b})`,
+        `${a + b}x`,
+        `x + ${a * b}`,
+      ],
+      `${a} veces el número es ${a}x; después aumentamos ${b}: ${a}x + ${b}.`,
+      ['lenguaje_algebraico', 'interpretacion']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(2, 5)
+    const b = ri(2, 8)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `¿Qué expresión representa "${a} veces la suma de un número y ${b}"?`,
+      `${a}(x + ${b})`,
+      [
+        `${a}x + ${b}`,
+        `${a + b}x`,
+        `x + ${a * b}`,
+      ],
+      `La suma es x + ${b}; al multiplicarla completa por ${a} obtenemos ${a}(x + ${b}).`,
+      ['lenguaje_algebraico', 'parentesis']
+    )
+  }
+
+  const a = ri(2, 6)
+  const b = ri(2, 8)
+  const c = ri(2, 7)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `¿Qué expresión representa "${a} veces la diferencia entre un número y ${b}, más ${c}"?`,
+    `${a}(x - ${b}) + ${c}`,
+    [
+      `${a}x - ${b} + ${c}`,
+      `${a}(x + ${b}) - ${c}`,
+      `${a}x - ${b + c}`,
+    ],
+    `Primero expresamos la diferencia x - ${b}, la multiplicamos por ${a} y después sumamos ${c}.`,
+    ['lenguaje_algebraico', 'parentesis', 'dificultad_alta']
+  )
+}
+
+if (key === 'algebra_evaluate') {
+  if (d === 1) {
+    const x = ri(1, 10)
+    const b = ri(1, 10)
+    const answer = x + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Si x = ${x}, ¿cuánto vale x + ${b}?`,
+      String(answer),
+      [
+        String(x * b),
+        String(x - b),
+        String(answer + 1),
+      ],
+      `Sustituimos x por ${x}: ${x} + ${b} = ${answer}.`,
+      ['valor_numerico']
+    )
+  }
+
+  if (d === 2) {
+    const x = ri(1, 10)
+    const a = ri(2, 6)
+    const b = ri(1, 10)
+    const answer = a * x + b
 
     return mc(
       skill,
       d,
       seed,
       `Si x = ${x}, calcula ${a}x + ${b}`,
-      answer,
+      String(answer),
       [
         String(a + x + b),
         String(a * (x + b)),
-        String(x + b),
+        String(answer - b),
       ],
-      `${a}×${x}+${b}=${answer}.`,
+      `Sustituimos x=${x}: ${a}×${x}+${b}=${answer}.`,
       ['valor_numerico']
     )
   }
 
-  if (key === 'like_terms') {
-    const a = ri(2, 7)
-    const b = ri(2, 7)
+  if (d === 3) {
+    const x = ri(-6, 8)
+    const a = ri(2, 6)
+    const b = ri(-8, 8)
+    const answer = a * x + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Si x = ${x}, calcula ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
+      String(answer),
+      [
+        String(a + x + b),
+        String(a * (x + b)),
+        String(-answer),
+      ],
+      `Sustituimos x por ${x}: ${a}×(${x}) ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${answer}.`,
+      ['valor_numerico', 'enteros']
+    )
+  }
+
+  if (d === 4) {
+    const x = ri(-5, 7)
+    const a = ri(2, 5)
+    const b = ri(1, 6)
+    const c = ri(-8, 8)
+    const answer = a * (x + b) + c
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Si x = ${x}, calcula ${a}(x + ${b}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`,
+      String(answer),
+      [
+        String(a * x + b + c),
+        String(a * (x - b) + c),
+        String(-answer),
+      ],
+      `Primero sustituimos: ${a}(${x}+${b}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${answer}.`,
+      ['valor_numerico', 'parentesis']
+    )
+  }
+
+  const x = ri(-5, 6)
+  const y = ri(-5, 6)
+  const a = ri(2, 5)
+  const b = ri(2, 5)
+  const c = ri(-8, 8)
+  const answer = a * x - b * y + c
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Si x = ${x} e y = ${y}, calcula ${a}x - ${b}y ${c >= 0 ? '+' : '-'} ${Math.abs(c)}`,
+    String(answer),
+    [
+      String(a * x + b * y + c),
+      String(a + x - b + y + c),
+      String(-answer),
+    ],
+    `Sustituimos ambas variables y operamos: ${a}×(${x}) - ${b}×(${y}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${answer}.`,
+    ['valor_numerico', 'dos_variables', 'dificultad_alta']
+  )
+}
+
+if (key === 'algebra_like_terms') {
+  if (d === 1) {
+    const a = ri(2, 8)
+    const b = ri(2, 8)
+    const answer = a + b
 
     return mc(
       skill,
       d,
       seed,
       `Simplifica ${a}x + ${b}x`,
-      `${a + b}x`,
+      `${answer}x`,
       [
         `${a * b}x`,
-        `${a + b}x²`,
-        `${a}x + ${b}`,
+        `${answer}x²`,
+        `${Math.abs(a - b)}x`,
       ],
-      `Son términos semejantes: (${a}+${b})x = ${a + b}x.`,
+      `Son términos semejantes: (${a}+${b})x=${answer}x.`,
       ['terminos_semejantes']
     )
   }
 
-  if (key === 'equation_one_step') {
-    const x = ri(2, 12)
-    const k = ri(2, 10)
-    const total = x + k
+  if (d === 2) {
+    const a = ri(5, 12)
+    const b = ri(2, a - 1)
+    const answer = a - b
 
     return mc(
       skill,
       d,
       seed,
-      `Resuelve x + ${k} = ${total}`,
+      `Simplifica ${a}x - ${b}x`,
+      `${answer}x`,
+      [
+        `${a + b}x`,
+        `${answer}x²`,
+        `${a * b}x`,
+      ],
+      `Restamos los coeficientes: (${a}-${b})x=${answer}x.`,
+      ['terminos_semejantes']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(2, 8)
+    const b = ri(2, 8)
+    const c = ri(1, 10)
+    const answer = a + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica ${a}x + ${c} + ${b}x`,
+      `${answer}x + ${c}`,
+      [
+        `${answer + c}x`,
+        `${a * b}x + ${c}`,
+        `${answer}x`,
+      ],
+      `Agrupamos términos semejantes: ${a}x+${b}x=${answer}x. El término independiente ${c} permanece.`,
+      ['terminos_semejantes', 'termino_independiente']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(3, 9)
+    const b = ri(2, 8)
+    const c = ri(1, a - 1)
+    const e = ri(1, 7)
+    const coef = a - c
+    const constant = b + e
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica ${a}x + ${b} - ${c}x + ${e}`,
+      `${coef}x + ${constant}`,
+      [
+        `${a + c}x + ${constant}`,
+        `${coef}x + ${b - e}`,
+        `${coef + constant}x`,
+      ],
+      `Agrupamos las x: ${a}-${c}=${coef}. Agrupamos constantes: ${b}+${e}=${constant}.`,
+      ['terminos_semejantes', 'varios_terminos']
+    )
+  }
+
+  const a = ri(3, 10)
+  const b = ri(2, 8)
+  const c = ri(2, 8)
+  const e = ri(1, a - 1)
+  const f = ri(1, b - 1)
+
+  const coefX = a - e
+  const coefY = b - f
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Simplifica ${a}x + ${b}y - ${e}x - ${f}y + ${c}`,
+    `${coefX}x + ${coefY}y + ${c}`,
+    [
+      `${a + e}x + ${b + f}y + ${c}`,
+      `${coefX + coefY}xy + ${c}`,
+      `${coefX}x + ${coefY + c}y`,
+    ],
+    `Agrupamos por separado los términos con x, con y y el término independiente.`,
+    ['terminos_semejantes', 'dos_variables', 'dificultad_alta']
+  )
+}
+
+if (key === 'algebra_distributive') {
+  if (d === 1) {
+    const a = ri(2, 6)
+    const b = ri(1, 8)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Desarrolla ${a}(x + ${b})`,
+      `${a}x + ${a * b}`,
+      [
+        `${a}x + ${b}`,
+        `${a + b}x`,
+        `${a}x + ${a + b}`,
+      ],
+      `Aplicamos la distributiva: ${a}·x + ${a}·${b} = ${a}x + ${a * b}.`,
+      ['propiedad_distributiva']
+    )
+  }
+
+  if (d === 2) {
+    const a = ri(2, 7)
+    const b = ri(1, 8)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Desarrolla ${a}(x - ${b})`,
+      `${a}x - ${a * b}`,
+      [
+        `${a}x - ${b}`,
+        `${a - b}x`,
+        `${a}x + ${a * b}`,
+      ],
+      `Distribuimos ${a}: ${a}x - ${a}×${b} = ${a}x - ${a * b}.`,
+      ['propiedad_distributiva']
+    )
+  }
+
+  if (d === 3) {
+    const a = ri(2, 6)
+    const b = ri(2, 5)
+    const c = ri(1, 7)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Desarrolla ${a}(${b}x + ${c})`,
+      `${a * b}x + ${a * c}`,
+      [
+        `${a + b}x + ${c}`,
+        `${a * b}x + ${c}`,
+        `${a + b}x + ${a * c}`,
+      ],
+      `Multiplicamos ${a} por cada término: ${a * b}x + ${a * c}.`,
+      ['propiedad_distributiva', 'coeficiente']
+    )
+  }
+
+  if (d === 4) {
+    const a = ri(2, 6)
+    const b = ri(2, 5)
+    const c = ri(1, 7)
+    const e = ri(1, 8)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Simplifica ${a}(${b}x - ${c}) + ${e}`,
+      `${a * b}x - ${a * c - e}`,
+      [
+        `${a * b}x - ${a * c + e}`,
+        `${a + b}x - ${c + e}`,
+        `${a * b}x - ${c} + ${e}`,
+      ],
+      `Distribuimos: ${a * b}x-${a * c}+${e}. Al agrupar constantes queda ${a * b}x-${a * c - e}.`,
+      ['propiedad_distributiva', 'simplificacion']
+    )
+  }
+
+  const a = ri(2, 5)
+  const b = ri(1, 7)
+  const c = ri(2, 5)
+  const e = ri(1, 7)
+
+  const coef = a + c
+  const constant = a * b - c * e
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Simplifica ${a}(x + ${b}) + ${c}(x - ${e})`,
+    `${coef}x ${constant >= 0 ? '+' : '-'} ${Math.abs(constant)}`,
+    [
+      `${a * c}x ${constant >= 0 ? '+' : '-'} ${Math.abs(constant)}`,
+      `${coef}x + ${a * b + c * e}`,
+      `${a + c + b + e}x`,
+    ],
+    `Desarrollamos ambos paréntesis y agrupamos términos semejantes. Resultado: ${coef}x ${constant >= 0 ? '+' : '-'} ${Math.abs(constant)}.`,
+    ['propiedad_distributiva', 'dos_parentesis', 'dificultad_alta']
+  )
+}
+
+if (key === 'equation_one_step') {
+  if (d === 1) {
+    const x = ri(1, 15)
+    const b = ri(2, 10)
+    const total = x + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve x + ${b} = ${total}`,
       String(x),
       [
-        String(total + k),
-        String(k),
-        String(total - k - 1),
+        String(total + b),
+        String(b),
+        String(Math.abs(total - x)),
       ],
-      `x = ${total} - ${k} = ${x}.`,
+      `Restamos ${b} en ambos lados: x=${total}-${b}=${x}.`,
       ['ecuacion_un_paso']
     )
   }
 
-  if (key === 'equation_multi_step') {
-    const x = ri(2, 8)
-    const a = ri(2, 5)
+  if (d === 2) {
+    const x = ri(2, 15)
+    const b = ri(2, 10)
+    const total = x - b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve x - ${b} = ${total}`,
+      String(x),
+      [
+        String(total - b),
+        String(b - total),
+        String(total),
+      ],
+      `Sumamos ${b} en ambos lados: x=${total}+${b}=${x}.`,
+      ['ecuacion_un_paso']
+    )
+  }
+
+  if (d === 3) {
+    const x = ri(2, 12)
+    const a = ri(2, 9)
+    const total = a * x
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}x = ${total}`,
+      String(x),
+      [
+        String(total - a),
+        String(total + a),
+        String(a),
+      ],
+      `Dividimos ambos lados entre ${a}: x=${total}÷${a}=${x}.`,
+      ['ecuacion_un_paso', 'multiplicacion']
+    )
+  }
+
+  if (d === 4) {
+    const divisor = ri(2, 8)
+    const x = ri(2, 12) * divisor
+    const result = x / divisor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve x/${divisor} = ${result}`,
+      String(x),
+      [
+        String(result / divisor),
+        String(result + divisor),
+        String(result),
+      ],
+      `Multiplicamos ambos lados por ${divisor}: x=${result}×${divisor}=${x}.`,
+      ['ecuacion_un_paso', 'division']
+    )
+  }
+
+  const x = ri(-15, 15)
+  const b = ri(-10, 10)
+  const total = x + b
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Resuelve x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${total}`,
+    String(x),
+    [
+      String(total + b),
+      String(-x),
+      String(total),
+    ],
+    `Aislamos x realizando la operación inversa. x=${x}.`,
+    ['ecuacion_un_paso', 'enteros', 'dificultad_alta']
+  )
+}
+
+if (key === 'equation_two_step') {
+  if (d === 1) {
+    const x = ri(1, 10)
+    const a = ri(2, 6)
     const b = ri(1, 8)
     const total = a * x + b
 
@@ -4194,54 +5679,352 @@ if (key === 'fraction_simplify') {
       [
         String(total - b),
         String(total / a),
-        String(x + 1),
+        String(x + b),
       ],
-      `${a}x=${total - b}; x=${total - b}/${a}=${x}.`,
-      ['ecuacion_varios_pasos']
+      `Restamos ${b}: ${a}x=${total - b}. Dividimos entre ${a}: x=${x}.`,
+      ['ecuacion_dos_pasos']
     )
   }
 
-  if (key === 'equation_check') {
-    const x = ri(2, 9)
-    const k = ri(2, 8)
-    const total = x + k
+  if (d === 2) {
+    const x = ri(1, 12)
+    const a = ri(2, 7)
+    const b = ri(1, 10)
+    const total = a * x - b
 
     return mc(
       skill,
       d,
       seed,
-      `¿Es x = ${x} solución de x + ${k} = ${total}?`,
-      'Sí',
-      [
-        'No',
-        'Solo si x=0',
-        'No se puede comprobar',
-      ],
-      `${x}+${k}=${total}, por tanto sí.`,
-      ['comprobar_ecuacion']
-    )
-  }
-
-  if (key === 'equation_word_problem') {
-    const x = ri(2, 12)
-    const k = ri(2, 10)
-    const total = x + k
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Pienso un número. Le sumo ${k} y obtengo ${total}. ¿Qué número pensé?`,
+      `Resuelve ${a}x - ${b} = ${total}`,
       String(x),
       [
-        String(total + k),
-        String(k),
-        String(total - 1),
+        String(total + b),
+        String(total / a),
+        String(x - b),
       ],
-      `Planteamos x + ${k} = ${total}. Entonces x=${x}.`,
-      ['problema_ecuacion']
+      `Sumamos ${b}: ${a}x=${total + b}. Después dividimos entre ${a}: x=${x}.`,
+      ['ecuacion_dos_pasos']
     )
   }
+
+  if (d === 3) {
+    const x = ri(-8, 12)
+    const a = ri(2, 7)
+    const b = ri(-10, 10)
+    const total = a * x + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${total}`,
+      String(x),
+      [
+        String(total - b),
+        String(-x),
+        String(total / a),
+      ],
+      `Deshacemos primero el término independiente y después dividimos entre ${a}. x=${x}.`,
+      ['ecuacion_dos_pasos', 'enteros']
+    )
+  }
+
+  if (d === 4) {
+    const x = ri(1, 10)
+    const a = ri(2, 5)
+    const b = ri(1, 6)
+    const total = a * (x + b)
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}(x + ${b}) = ${total}`,
+      String(x),
+      [
+        String(total / a),
+        String(x + b),
+        String(total - b),
+      ],
+      `Dividimos entre ${a}: x+${b}=${total / a}. Restamos ${b}: x=${x}.`,
+      ['ecuacion_dos_pasos', 'parentesis']
+    )
+  }
+
+  const x = ri(-8, 10)
+  const a = ri(2, 6)
+  const b = ri(-8, 8)
+  const c = ri(-10, 10)
+  const total = a * (x + b) + c
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Resuelve ${a}(x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}) ${c >= 0 ? '+' : '-'} ${Math.abs(c)} = ${total}`,
+    String(x),
+    [
+      String(total - c),
+      String(-x),
+      String(total / a),
+    ],
+    `Aislamos el paréntesis, dividimos entre ${a} y finalmente despejamos x. Resultado: x=${x}.`,
+    ['ecuacion_dos_pasos', 'parentesis', 'dificultad_alta']
+  )
+}
+
+if (key === 'equation_both_sides') {
+  if (d === 1) {
+    const x = ri(1, 10)
+    const a = ri(2, 6)
+    const c = ri(1, a - 1)
+    const b = ri(1, 8)
+    const right = a * x + b - c * x
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}x + ${b} = ${c}x + ${right}`,
+      String(x),
+      [
+        String(right - b),
+        String(a - c),
+        String(x + 1),
+      ],
+      `Pasamos las x a un lado y los números al otro. El resultado es x=${x}.`,
+      ['ecuacion_ambos_lados']
+    )
+  }
+
+  if (d === 2) {
+    const x = ri(-8, 10)
+    const a = ri(3, 7)
+    const c = ri(1, a - 1)
+    const b = ri(-8, 8)
+    const right = a * x + b - c * x
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}x ${right >= 0 ? '+' : '-'} ${Math.abs(right)}`,
+      String(x),
+      [
+        String(-x),
+        String(a - c),
+        String(right - b),
+      ],
+      `Agrupamos términos con x y términos independientes. x=${x}.`,
+      ['ecuacion_ambos_lados', 'enteros']
+    )
+  }
+
+  if (d === 3) {
+    const x = ri(1, 10)
+    const a = ri(2, 5)
+    const b = ri(1, 6)
+    const c = ri(1, a - 1)
+    const leftConstant = a * b
+    const rightConstant = a * x + leftConstant - c * x
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}(x + ${b}) = ${c}x + ${rightConstant}`,
+      String(x),
+      [
+        String(rightConstant),
+        String(x + b),
+        String(-x),
+      ],
+      `Desarrollamos el paréntesis y agrupamos las x en un lado. Resultado: x=${x}.`,
+      ['ecuacion_ambos_lados', 'distributiva']
+    )
+  }
+
+  if (d === 4) {
+    const x = ri(-6, 8)
+    const a = ri(3, 6)
+    const c = ri(1, a - 1)
+    const b = ri(-5, 5)
+    const e = ri(-6, 6)
+    const rightConstant = a * (x + b) - c * x - e
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Resuelve ${a}(x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}) = ${c}x ${e >= 0 ? '+' : '-'} ${Math.abs(e)} ${rightConstant >= 0 ? '+' : '-'} ${Math.abs(rightConstant)}`,
+      String(x),
+      [
+        String(-x),
+        String(a - c),
+        String(rightConstant),
+      ],
+      `Desarrollamos, agrupamos los términos semejantes y despejamos x. Resultado: ${x}.`,
+      ['ecuacion_ambos_lados', 'distributiva']
+    )
+  }
+
+  const x = ri(-8, 8)
+  const a = ri(3, 6)
+  const c = ri(1, a - 1)
+  const b = ri(-5, 5)
+  const e = ri(-5, 5)
+
+  const left = a * (x + b)
+  const rightBase = c * (x + e)
+  const extra = left - rightBase
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Resuelve ${a}(x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}) = ${c}(x ${e >= 0 ? '+' : '-'} ${Math.abs(e)}) ${extra >= 0 ? '+' : '-'} ${Math.abs(extra)}`,
+    String(x),
+    [
+      String(-x),
+      String(a + c),
+      String(extra),
+    ],
+    `Desarrollamos ambos lados, agrupamos las x y despejamos. La solución es x=${x}.`,
+    ['ecuacion_ambos_lados', 'dos_parentesis', 'dificultad_alta']
+  )
+}
+
+if (key === 'equation_word_problem') {
+  const variant = ri(0, d <= 2 ? 2 : 5)
+
+  if (variant === 0) {
+    const x = ri(5, 20)
+    const extra = ri(2, 10)
+    const total = x + extra
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Pienso un número. Si le sumo ${extra}, obtengo ${total}. ¿Qué número es?`,
+      String(x),
+      [
+        String(total + extra),
+        String(extra),
+        String(total),
+      ],
+      `Planteamos x + ${extra} = ${total}. Por tanto x=${x}.`,
+      ['problema_ecuaciones']
+    )
+  }
+
+  if (variant === 1) {
+    const x = ri(3, 15)
+    const multiplier = ri(2, 6)
+    const total = x * multiplier
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `El ${multiplier === 2 ? 'doble' : multiplier === 3 ? 'triple' : `${multiplier} veces`} de un número es ${total}. ¿Cuál es el número?`,
+      String(x),
+      [
+        String(total - multiplier),
+        String(total + multiplier),
+        String(multiplier),
+      ],
+      `Planteamos ${multiplier}x=${total}. Dividimos entre ${multiplier}: x=${x}.`,
+      ['problema_ecuaciones', 'multiplicacion']
+    )
+  }
+
+  if (variant === 2) {
+    const x = ri(5, 20)
+    const price = ri(2, 8)
+    const fixed = ri(2, 10)
+    const total = price * x + fixed
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una actividad cuesta ${fixed} € de inscripción más ${price} € por sesión. Si se pagan ${total} €, ¿cuántas sesiones se han realizado?`,
+      String(x),
+      [
+        String(total / price),
+        String(x + fixed),
+        String(total - fixed),
+      ],
+      `Planteamos ${price}x + ${fixed} = ${total}. Restamos ${fixed} y dividimos entre ${price}: x=${x}.`,
+      ['problema_ecuaciones', 'dos_pasos']
+    )
+  }
+
+  if (variant === 3) {
+    const age = ri(8, 20)
+    const years = ri(2, 8)
+    const future = age + years
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Dentro de ${years} años una persona tendrá ${future} años. ¿Qué edad tiene ahora?`,
+      String(age),
+      [
+        String(future + years),
+        String(years),
+        String(future),
+      ],
+      `Si x es la edad actual: x + ${years} = ${future}. Entonces x=${age}.`,
+      ['problema_ecuaciones', 'edad']
+    )
+  }
+
+  if (variant === 4) {
+    const x = ri(4, 15)
+    const multiplier = ri(2, 5)
+    const extra = ri(2, 10)
+    const total = multiplier * x + extra
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `El ${multiplier === 2 ? 'doble' : multiplier === 3 ? 'triple' : `${multiplier} veces`} de un número más ${extra} es ${total}. ¿Cuál es el número?`,
+      String(x),
+      [
+        String(total - extra),
+        String(total / multiplier),
+        String(x + extra),
+      ],
+      `Planteamos ${multiplier}x + ${extra} = ${total}. Restamos ${extra} y dividimos entre ${multiplier}: x=${x}.`,
+      ['problema_ecuaciones', 'dos_pasos']
+    )
+  }
+
+  const x = ri(5, 15)
+  const a = ri(2, 5)
+  const b = ri(2, 8)
+  const total = a * (x + b)
+
+  return mc(
+    skill,
+    d,
+    seed,
+    `Se compran ${a} paquetes iguales. Cada paquete contiene el mismo número de unidades más ${b} unidades extra. En total hay ${total} unidades. ¿Cuántas unidades base contiene cada paquete?`,
+    String(x),
+    [
+      String(total / a),
+      String(total - b),
+      String(x + b),
+    ],
+    `Planteamos ${a}(x + ${b}) = ${total}. Dividimos entre ${a} y restamos ${b}: x=${x}.`,
+    ['problema_ecuaciones', 'parentesis', 'dificultad_alta']
+  )
+}
 
   // =========================
   // M10 · RECTAS Y ÁNGULOS
