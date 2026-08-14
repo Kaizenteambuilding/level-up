@@ -9603,3 +9603,4 @@ return mc(
   'Esta habilidad necesita todavía una plantilla específica.',
   ['fallback_generator']
 )
+}
