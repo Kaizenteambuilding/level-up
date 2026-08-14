@@ -9980,16 +9980,18 @@ if (key === 'triangle_angles') {
     type === 'Acutángulo' ? makeAcute() : type === 'Rectángulo' ? makeRight() : makeObtuse()
 
   const allTypes = ['Acutángulo', 'Rectángulo', 'Obtusángulo'] as const
+  const formatAngles = (a: [number, number, number]) => `${a[0]}°, ${a[1]}° y ${a[2]}°`
 
+  // 25 familias pedagógicas reales: 5 por nivel de dificultad.
   if (d === 1) {
-    const family = ri(0, 2)
+    const family = ri(0, 4)
 
     if (family === 0) {
       const answer = allTypes[ri(0, 2)]
       const angles = triangleFor(answer)
       return mc(
         skill, d, seed,
-        `Un triángulo tiene ángulos de ${angles[0]}°, ${angles[1]}° y ${angles[2]}°. ¿Cómo se clasifica según sus ángulos?`,
+        `Un triángulo tiene ángulos de ${formatAngles(angles)}. ¿Cómo se clasifica según sus ángulos?`,
         answer,
         ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter((x) => x !== answer),
         answer === 'Rectángulo'
@@ -10018,23 +10020,57 @@ if (key === 'triangle_angles') {
       )
     }
 
+    if (family === 2) {
+      const target = allTypes[ri(0, 2)]
+      const correct = triangleFor(target)
+      const other1 = triangleFor(allTypes[(allTypes.indexOf(target) + 1) % 3])
+      const other2 = triangleFor(allTypes[(allTypes.indexOf(target) + 2) % 3])
+      return mc(
+        skill, d, seed,
+        `¿Cuál de estos conjuntos de ángulos corresponde a un triángulo ${target.toLowerCase()}?`,
+        formatAngles(correct),
+        [formatAngles(other1), formatAngles(other2), '90°, 90° y 20°'],
+        `Un triángulo ${target.toLowerCase()} cumple la propiedad correspondiente a sus ángulos.`,
+        ['clasificacion_triangulos_angulos', 'family:choose_example']
+      )
+    }
+
+    if (family === 3) {
+      const target = allTypes[ri(0, 2)]
+      const angles = triangleFor(target)
+      const largest = Math.max(...angles)
+      return mc(
+        skill, d, seed,
+        `El ángulo mayor de un triángulo mide ${largest}°. ¿Cómo se clasifica el triángulo?`,
+        target,
+        ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter((x) => x !== target),
+        `El ángulo mayor mide ${largest}°, así que el triángulo es ${target.toLowerCase()}.`,
+        ['clasificacion_triangulos_angulos', 'family:classify_from_maximum']
+      )
+    }
+
     const target = allTypes[ri(0, 2)]
-    const correct = triangleFor(target)
-    const other1 = triangleFor(allTypes[(allTypes.indexOf(target) + 1) % 3])
-    const other2 = triangleFor(allTypes[(allTypes.indexOf(target) + 2) % 3])
-    const fmt = (a: [number, number, number]) => `${a[0]}°, ${a[1]}° y ${a[2]}°`
+    const definition = target === 'Acutángulo'
+      ? 'Sus tres ángulos son menores de 90°'
+      : target === 'Rectángulo'
+        ? 'Tiene exactamente un ángulo de 90°'
+        : 'Tiene exactamente un ángulo mayor de 90°'
     return mc(
       skill, d, seed,
-      `¿Cuál de estos conjuntos de ángulos corresponde a un triángulo ${target.toLowerCase()}?`,
-      fmt(correct),
-      [fmt(other1), fmt(other2), '90°, 90° y 20°'],
-      `Un triángulo ${target.toLowerCase()} cumple la propiedad correspondiente a sus ángulos.`,
-      ['clasificacion_triangulos_angulos', 'family:choose_example']
+      `¿Qué descripción corresponde a un triángulo ${target.toLowerCase()}?`,
+      definition,
+      [
+        'Tiene necesariamente dos ángulos de 90°',
+        'Sus tres ángulos son siempre iguales',
+        'Su clasificación depende únicamente de la longitud de sus lados',
+      ],
+      `La descripción correcta de un triángulo ${target.toLowerCase()} se basa en la medida de sus ángulos.`,
+      ['clasificacion_triangulos_angulos', 'family:match_definition']
     )
   }
 
   if (d === 2) {
-    const family = ri(0, 3)
+    const family = ri(0, 4)
 
     if (family === 0) {
       const answer = allTypes[ri(0, 2)]
@@ -10042,7 +10078,7 @@ if (key === 'triangle_angles') {
       const shuffled = [angles[1], angles[2], angles[0]] as [number, number, number]
       return mc(
         skill, d, seed,
-        `Observa los ángulos ${shuffled[0]}°, ${shuffled[1]}° y ${shuffled[2]}°. ¿Qué tipo de triángulo forman?`,
+        `Observa los ángulos ${formatAngles(shuffled)}. ¿Qué tipo de triángulo forman?`,
         answer,
         ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No forman un triángulo'].filter((x) => x !== answer),
         `El mayor ángulo permite clasificarlo como ${answer.toLowerCase()}.`,
@@ -10072,24 +10108,42 @@ if (key === 'triangle_angles') {
         `El ángulo mayor de un triángulo mide ${Math.max(...angles)}°. ¿Qué clasificación es compatible con esos ángulos?`,
         answer,
         ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter((x) => x !== answer),
-        `El ángulo mayor determina si el triángulo es acutángulo, rectángulo u obtusángulo.`,
+        'El ángulo mayor determina si el triángulo es acutángulo, rectángulo u obtusángulo.',
         ['clasificacion_triangulos_angulos', 'family:largest_angle']
       )
     }
 
-    const bad = [100, 50, 40]
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        'Un alumno afirma que 100°, 50° y 40° son los ángulos de un triángulo obtusángulo. ¿Qué falla en su afirmación?',
+        'Los tres ángulos suman más de 180°',
+        ['Ningún ángulo es obtuso', 'Todo triángulo obtusángulo debe tener 90°', 'Los ángulos deberían ser todos iguales'],
+        'En cualquier triángulo los ángulos interiores suman exactamente 180°.',
+        ['clasificacion_triangulos_angulos', 'family:error_detection']
+      )
+    }
+
+    const answer = allTypes[ri(0, 2)]
+    const angles = triangleFor(answer)
+    const statements = [
+      `El triángulo de ${formatAngles(angles)} es ${answer.toLowerCase()}.`,
+      `El triángulo de ${formatAngles(angles)} es siempre equilátero.`,
+      `El triángulo de ${formatAngles(angles)} no puede existir.`,
+      `La clasificación angular no puede deducirse conociendo los tres ángulos.`,
+    ]
     return mc(
       skill, d, seed,
-      `Un alumno dice que ${bad[0]}°, ${bad[1]}° y ${bad[2]}° son los ángulos de un triángulo obtusángulo. ¿Qué falla en su afirmación?`,
-      'Los tres ángulos suman más de 180°',
-      ['Ningún ángulo es obtuso', 'Todo triángulo obtusángulo debe tener 90°', 'Los ángulos deberían ser todos iguales'],
-      `En cualquier triángulo los ángulos interiores suman exactamente 180°.`,
-      ['clasificacion_triangulos_angulos', 'family:error_detection']
+      `¿Cuál de estas afirmaciones sobre el triángulo de ${formatAngles(angles)} es correcta?`,
+      statements[0],
+      statements.slice(1),
+      `La medida de sus tres ángulos permite clasificarlo como ${answer.toLowerCase()}.`,
+      ['clasificacion_triangulos_angulos', 'family:select_true_statement']
     )
   }
 
   if (d === 3) {
-    const family = ri(0, 3)
+    const family = ri(0, 4)
 
     if (family === 0) {
       const a = ri(30, 70)
@@ -10112,7 +10166,7 @@ if (key === 'triangle_angles') {
       const wrongType = allTypes[(allTypes.indexOf(target) + 1) % 3]
       return mc(
         skill, d, seed,
-        `¿Qué afirmación clasifica correctamente el triángulo de ángulos ${correct[0]}°, ${correct[1]}° y ${correct[2]}°?`,
+        `¿Qué afirmación clasifica correctamente el triángulo de ángulos ${formatAngles(correct)}?`,
         `Es ${target.toLowerCase()}`,
         [`Es ${wrongType.toLowerCase()}`, 'Es equilátero por sus ángulos', 'No puede existir'],
         `Los ángulos suman 180° y la clasificación correcta es ${target.toLowerCase()}.`,
@@ -10133,18 +10187,32 @@ if (key === 'triangle_angles') {
       )
     }
 
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        '¿Cuál de estas condiciones basta por sí sola para asegurar que un triángulo es rectángulo?',
+        'Uno de sus ángulos mide 90°',
+        ['Dos lados son iguales', 'Un ángulo mide 60°', 'Sus tres ángulos son distintos'],
+        'Por definición, un triángulo rectángulo tiene un ángulo de 90°.',
+        ['clasificacion_triangulos_angulos', 'family:sufficient_condition']
+      )
+    }
+
+    const vertex = ri(92, 118)
+    const base = (180 - vertex) / 2
+    const answer = 'Obtusángulo'
     return mc(
       skill, d, seed,
-      '¿Cuál de estas condiciones basta por sí sola para asegurar que un triángulo es rectángulo?',
-      'Uno de sus ángulos mide 90°',
-      ['Dos lados son iguales', 'Un ángulo mide 60°', 'Sus tres ángulos son distintos'],
-      'Por definición, un triángulo rectángulo tiene un ángulo de 90°.',
-      ['clasificacion_triangulos_angulos', 'family:sufficient_condition']
+      `Un triángulo isósceles tiene un ángulo desigual de ${vertex}°. Los otros dos ángulos son iguales. ¿Cómo se clasifica según sus ángulos?`,
+      answer,
+      ['Acutángulo', 'Rectángulo', 'No se puede determinar'],
+      `El ángulo desigual mide ${vertex}°, que es mayor de 90°. Los otros dos miden ${base}° cada uno, así que es obtusángulo.`,
+      ['clasificacion_triangulos_angulos', 'family:isosceles_vertex_angle']
     )
   }
 
   if (d === 4) {
-    const family = ri(0, 3)
+    const family = ri(0, 4)
 
     if (family === 0) {
       const exterior = ri(100, 150)
@@ -10177,7 +10245,7 @@ if (key === 'triangle_angles') {
       const angles = makeObtuse()
       return mc(
         skill, d, seed,
-        `Un estudiante clasifica como acutángulo un triángulo de ${angles[0]}°, ${angles[1]}° y ${angles[2]}°. ¿Cómo corregirías su respuesta?`,
+        `Un estudiante clasifica como acutángulo un triángulo de ${formatAngles(angles)}. ¿Cómo corregirías su respuesta?`,
         'Es obtusángulo porque tiene un ángulo mayor de 90°',
         ['Es rectángulo porque los ángulos suman 180°', 'Es acutángulo porque dos ángulos son agudos', 'No se puede clasificar'],
         `El ángulo de ${Math.max(...angles)}° es obtuso, así que el triángulo es obtusángulo.`,
@@ -10185,17 +10253,31 @@ if (key === 'triangle_angles') {
       )
     }
 
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        '¿Cuál de estas afirmaciones es falsa?',
+        'Todo triángulo con dos ángulos agudos es acutángulo',
+        ['Un triángulo rectángulo tiene dos ángulos agudos', 'Un triángulo obtusángulo tiene dos ángulos agudos', 'Un triángulo no puede tener dos ángulos obtusos'],
+        'Los triángulos rectángulos y obtusángulos también tienen dos ángulos agudos.',
+        ['clasificacion_triangulos_angulos', 'family:logic_statement']
+      )
+    }
+
+    const equal = ri(25, 44)
+    const third = 180 - 2 * equal
+    const answer = classify([equal, equal, third])
     return mc(
       skill, d, seed,
-      '¿Cuál de estas afirmaciones es falsa?',
-      'Todo triángulo con dos ángulos agudos es acutángulo',
-      ['Un triángulo rectángulo tiene dos ángulos agudos', 'Un triángulo obtusángulo tiene dos ángulos agudos', 'Un triángulo no puede tener dos ángulos obtusos'],
-      'Los triángulos rectángulos y obtusángulos también tienen dos ángulos agudos.',
-      ['clasificacion_triangulos_angulos', 'family:logic_statement']
+      `Dos ángulos de un triángulo miden lo mismo: ${equal}° cada uno. ¿Cómo se clasifica el triángulo según sus ángulos?`,
+      answer,
+      ['Acutángulo', 'Rectángulo', 'Obtusángulo', 'No se puede determinar'].filter((x) => x !== answer),
+      `El tercer ángulo mide 180° - 2×${equal}° = ${third}°. Por tanto es ${answer.toLowerCase()}.`,
+      ['clasificacion_triangulos_angulos', 'family:equal_angles_deduction']
     )
   }
 
-  const family = ri(0, 3)
+  const family = ri(0, 4)
 
   if (family === 0) {
     return mc(
@@ -10232,13 +10314,25 @@ if (key === 'triangle_angles') {
     )
   }
 
+  if (family === 3) {
+    return mc(
+      skill, d, seed,
+      'Un triángulo no es acutángulo y tampoco es obtusángulo. ¿Qué clasificación angular tiene necesariamente?',
+      'Rectángulo',
+      ['Acutángulo', 'Obtusángulo', 'No se puede determinar'],
+      'Las tres categorías son excluyentes: si no es acutángulo ni obtusángulo, debe ser rectángulo.',
+      ['clasificacion_triangulos_angulos', 'family:elimination_reasoning']
+    )
+  }
+
+  const original = [100, 40, 40] as [number, number, number]
   return mc(
     skill, d, seed,
-    'Un triángulo no es acutángulo y tampoco es obtusángulo. ¿Qué clasificación angular tiene necesariamente?',
-    'Rectángulo',
-    ['Acutángulo', 'Obtusángulo', 'No se puede determinar'],
-    'Las tres categorías son excluyentes: si no es acutángulo ni obtusángulo, debe ser rectángulo.',
-    ['clasificacion_triangulos_angulos', 'family:elimination_reasoning']
+    `El triángulo A tiene ángulos ${formatAngles(original)}. ¿Qué cambio produciría un triángulo rectángulo manteniendo la suma total de 180°?`,
+    'Cambiar los ángulos a 90°, 45° y 45°',
+    ['Cambiar los ángulos a 95°, 45° y 40°', 'Cambiar los ángulos a 80°, 60° y 40°', 'Cambiar los ángulos a 100°, 50° y 30°'],
+    'Un triángulo rectángulo necesita exactamente un ángulo de 90° y los otros dos deben sumar 90°.',
+    ['clasificacion_triangulos_angulos', 'family:transform_classification']
   )
 }
 
