@@ -4152,140 +4152,310 @@ if (key === 'fraction_divide') {
 }
 
 if (key === 'fraction_word_problem') {
-  const variant = ri(0, 5)
+  const family = ri(0, 5)
 
-  if (variant === 0) {
+  // =========================================================
+  // 1. MULTIPLICAR UNA FRACCIÓN POR UN NÚMERO
+  // =========================================================
+  if (family === 0) {
     const den = ri(3, 10)
     const num = ri(1, den - 1)
     const reps = ri(2, 6)
     const answer = `${num * reps}/${den}`
 
+    const contexts = [
+      {
+        prompt: `Una etapa de entrenamiento mide ${num}/${den} km. Si se completa ${reps} veces, ¿qué distancia se recorre en total?`,
+        solution: `${num}/${den} × ${reps} = ${answer} km.`,
+      },
+      {
+        prompt: `Cada cinta mide ${num}/${den} m. Se utilizan ${reps} cintas iguales. ¿Cuántos metros se utilizan en total?`,
+        solution: `${num}/${den} × ${reps} = ${answer} m.`,
+      },
+      {
+        prompt: `Un robot avanza ${num}/${den} m en cada movimiento. Después de ${reps} movimientos, ¿cuánto ha avanzado?`,
+        solution: `${num}/${den} × ${reps} = ${answer} m.`,
+      },
+      {
+        prompt: `Cada botella contiene ${num}/${den} L. Hay ${reps} botellas iguales. ¿Cuántos litros contienen entre todas?`,
+        solution: `${num}/${den} × ${reps} = ${answer} L.`,
+      },
+      {
+        prompt: `Marta lee ${num}/${den} de capítulo cada día. Si mantiene ese ritmo durante ${reps} días, ¿cuántos capítulos habrá leído en total?`,
+        solution: `${num}/${den} × ${reps} = ${answer} capítulos.`,
+      },
+    ]
+
+    const context = contexts[ri(0, contexts.length - 1)]
+
     return mc(
       skill,
       d,
       seed,
-      `Una ruta mide ${num}/${den} km. Si recorres esa distancia ${reps} veces, ¿cuántos kilómetros recorres en total?`,
+      context.prompt,
       answer,
       [
         `${num}/${den * reps}`,
         `${num + reps}/${den}`,
         `${num}/${den}`,
       ],
-      `${num}/${den} × ${reps} = ${answer} km.`,
+      context.solution,
       ['problema_fracciones', 'multiplicacion']
     )
   }
 
-  if (variant === 1) {
+  // =========================================================
+  // 2. CALCULAR UNA FRACCIÓN DE UNA CANTIDAD
+  // =========================================================
+  if (family === 1) {
     const den = ri(2, 8)
     const num = ri(1, den - 1)
     const groups = ri(2, 8)
     const total = den * groups
     const answer = num * groups
 
+    const contexts = [
+      {
+        prompt: `En una colección hay ${total} cromos. ${num}/${den} son especiales. ¿Cuántos cromos especiales hay?`,
+        solution: `${num}/${den} de ${total} = ${answer}.`,
+      },
+      {
+        prompt: `Un libro tiene ${total} páginas. Lucía ha leído ${num}/${den} del libro. ¿Cuántas páginas ha leído?`,
+        solution: `${num}/${den} de ${total} = ${answer} páginas.`,
+      },
+      {
+        prompt: `En un depósito hay ${total} litros de agua. Se utiliza ${num}/${den} del contenido. ¿Cuántos litros se utilizan?`,
+        solution: `${num}/${den} de ${total} = ${answer} litros.`,
+      },
+      {
+        prompt: `Un equipo dispone de ${total} €. Gasta ${num}/${den} del dinero. ¿Cuántos euros gasta?`,
+        solution: `${num}/${den} de ${total} = ${answer} €.`,
+      },
+      {
+        prompt: `Hay ${total} alumnos en una actividad y ${num}/${den} participan en un juego. ¿Cuántos alumnos participan?`,
+        solution: `${num}/${den} de ${total} = ${answer} alumnos.`,
+      },
+    ]
+
+    const context = contexts[ri(0, contexts.length - 1)]
+
     return mc(
       skill,
       d,
       seed,
-      `En una caja hay ${total} cromos. ${num}/${den} de ellos son especiales. ¿Cuántos cromos especiales hay?`,
+      context.prompt,
       String(answer),
       [
         String(total - answer),
         String(groups),
         String(num * den),
       ],
-      `${total} ÷ ${den} = ${groups}; después ${groups} × ${num} = ${answer}.`,
+      context.solution,
       ['problema_fracciones', 'fraccion_de_cantidad']
     )
   }
 
-  if (variant === 2) {
+  // =========================================================
+  // 3. HALLAR EL TOTAL CONOCIENDO UNA FRACCIÓN
+  // =========================================================
+  if (family === 2) {
     const den = ri(3, 8)
     const num = ri(1, den - 1)
-    const factor = ri(2, 6)
+    const factor = ri(2, 7)
     const known = num * factor
     const total = den * factor
+
+    const contexts = [
+      {
+        prompt: `${known} alumnos representan ${num}/${den} de una clase. ¿Cuántos alumnos hay en total?`,
+        solution: `Si ${num} partes son ${known}, una parte vale ${factor}. El total es ${den} × ${factor} = ${total}.`,
+      },
+      {
+        prompt: `${known} cromos son ${num}/${den} de una colección. ¿Cuántos cromos tiene la colección completa?`,
+        solution: `Si ${num}/${den} son ${known}, el total es ${total} cromos.`,
+      },
+      {
+        prompt: `Se han recorrido ${known} km, que representan ${num}/${den} de una ruta. ¿Cuántos kilómetros tiene la ruta completa?`,
+        solution: `${known} km representan ${num}/${den}; la ruta completa mide ${total} km.`,
+      },
+      {
+        prompt: `Laura ha leído ${known} páginas, que son ${num}/${den} de un libro. ¿Cuántas páginas tiene el libro?`,
+        solution: `Si ${known} páginas son ${num}/${den}, el libro completo tiene ${total} páginas.`,
+      },
+      {
+        prompt: `${known} € representan ${num}/${den} del dinero ahorrado. ¿Cuánto dinero hay ahorrado en total?`,
+        solution: `El total correspondiente a ${den}/${den} es ${total} €.`,
+      },
+    ]
+
+    const context = contexts[ri(0, contexts.length - 1)]
 
     return mc(
       skill,
       d,
       seed,
-      `${known} alumnos representan ${num}/${den} de una clase. ¿Cuántos alumnos hay en total?`,
+      context.prompt,
       String(total),
       [
         String(known * den),
         String(total - known),
         String(known + den),
       ],
-      `Si ${num} partes son ${known}, cada parte vale ${factor}. Las ${den} partes son ${total}.`,
+      context.solution,
       ['problema_fracciones', 'hallar_total']
     )
   }
 
-  if (variant === 3) {
-    const den = ri(4, 10)
+  // =========================================================
+  // 4. FRACCIÓN QUE QUEDA
+  // =========================================================
+  if (family === 3) {
+    const den = ri(4, 12)
     const used = ri(1, den - 1)
     const remaining = den - used
+    const answer = `${remaining}/${den}`
+
+    const contexts = [
+      {
+        prompt: `De una tarta se han comido ${used}/${den}. ¿Qué fracción queda?`,
+        solution: `${den}/${den} - ${used}/${den} = ${answer}.`,
+      },
+      {
+        prompt: `Un depósito estaba lleno y se utiliza ${used}/${den} de su contenido. ¿Qué fracción queda?`,
+        solution: `Del total ${den}/${den} restamos ${used}/${den}. Queda ${answer}.`,
+      },
+      {
+        prompt: `De una tableta de chocolate se han consumido ${used}/${den}. ¿Qué fracción queda sin consumir?`,
+        solution: `${den}/${den} - ${used}/${den} = ${answer}.`,
+      },
+      {
+        prompt: `De una jornada de trabajo se ha completado ${used}/${den}. ¿Qué fracción queda por completar?`,
+        solution: `La jornada completa es ${den}/${den}; quedan ${answer}.`,
+      },
+      {
+        prompt: `Un videojuego está completado en ${used}/${den}. ¿Qué fracción queda todavía por completar?`,
+        solution: `${den}/${den} - ${used}/${den} = ${answer}.`,
+      },
+    ]
+
+    const context = contexts[ri(0, contexts.length - 1)]
 
     return mc(
       skill,
       d,
       seed,
-      `De una tarta se han comido ${used}/${den}. ¿Qué fracción queda?`,
-      `${remaining}/${den}`,
+      context.prompt,
+      answer,
       [
         `${used}/${den}`,
         `${den}/${remaining}`,
         `${remaining}/${used}`,
       ],
-      `La tarta completa es ${den}/${den}. Restamos ${used}/${den}: quedan ${remaining}/${den}.`,
+      context.solution,
       ['problema_fracciones', 'fraccion_restante']
     )
   }
 
-  if (variant === 4) {
+  // =========================================================
+  // 5. SUMAR FRACCIONES CON EL MISMO DENOMINADOR
+  // =========================================================
+  if (family === 4) {
     const den = ri(5, 12)
     const a = ri(1, den - 2)
     const b = ri(1, den - a - 1)
-    const answer = a + b
+    const sum = a + b
+    const answer = `${sum}/${den}`
+
+    const contexts = [
+      {
+        prompt: `Por la mañana se recorren ${a}/${den} km y por la tarde ${b}/${den} km. ¿Qué distancia se recorre en total?`,
+        solution: `${a}/${den} + ${b}/${den} = ${answer} km.`,
+      },
+      {
+        prompt: `Marta lee ${a}/${den} de un libro el lunes y ${b}/${den} el martes. ¿Qué fracción del libro ha leído entre los dos días?`,
+        solution: `${a}/${den} + ${b}/${den} = ${answer}.`,
+      },
+      {
+        prompt: `Se llenan ${a}/${den} de un depósito por la mañana y ${b}/${den} por la tarde. ¿Qué fracción se ha llenado en total?`,
+        solution: `${a}/${den} + ${b}/${den} = ${answer}.`,
+      },
+      {
+        prompt: `Un jugador completa ${a}/${den} de una misión en una partida y ${b}/${den} en otra. ¿Qué fracción completa en total?`,
+        solution: `${a}/${den} + ${b}/${den} = ${answer}.`,
+      },
+      {
+        prompt: `En una receta se utilizan ${a}/${den} kg de un ingrediente y después otros ${b}/${den} kg. ¿Cuánto se utiliza en total?`,
+        solution: `${a}/${den} + ${b}/${den} = ${answer} kg.`,
+      },
+    ]
+
+    const context = contexts[ri(0, contexts.length - 1)]
 
     return mc(
       skill,
       d,
       seed,
-      `Por la mañana se recorren ${a}/${den} km y por la tarde ${b}/${den} km. ¿Qué fracción de kilómetro se recorre en total?`,
-      `${answer}/${den}`,
+      context.prompt,
+      answer,
       [
-        `${a + b}/${den * 2}`,
+        `${sum}/${den * 2}`,
         `${Math.abs(a - b)}/${den}`,
         `${a * b}/${den}`,
       ],
-      `Sumamos los numeradores: ${a}+${b}=${answer}. Resultado: ${answer}/${den}.`,
+      context.solution,
       ['problema_fracciones', 'suma']
     )
   }
 
+  // =========================================================
+  // 6. RESTAR FRACCIONES CON EL MISMO DENOMINADOR
+  // =========================================================
   const den = ri(5, 12)
   const start = ri(2, den - 1)
   const used = ri(1, start - 1)
-  const answer = start - used
+  const remaining = start - used
+  const answer = `${remaining}/${den}`
+
+  const contexts = [
+    {
+      prompt: `Una botella contiene ${start}/${den} L y se consumen ${used}/${den} L. ¿Cuánto queda?`,
+      solution: `${start}/${den} - ${used}/${den} = ${answer} L.`,
+    },
+    {
+      prompt: `Marta había recorrido ${start}/${den} km y retrocede ${used}/${den} km. ¿Qué distancia neta queda recorrida?`,
+      solution: `${start}/${den} - ${used}/${den} = ${answer} km.`,
+    },
+    {
+      prompt: `Quedaban ${start}/${den} de una tableta de chocolate y se comen ${used}/${den}. ¿Qué fracción queda?`,
+      solution: `${start}/${den} - ${used}/${den} = ${answer}.`,
+    },
+    {
+      prompt: `Un depósito contiene ${start}/${den} de su capacidad y se vacían ${used}/${den}. ¿Qué fracción de su capacidad queda?`,
+      solution: `${start}/${den} - ${used}/${den} = ${answer}.`,
+    },
+    {
+      prompt: `Un jugador tiene completados ${start}/${den} de un reto, pero pierde un progreso equivalente a ${used}/${den}. ¿Qué fracción conserva?`,
+      solution: `${start}/${den} - ${used}/${den} = ${answer}.`,
+    },
+  ]
+
+  const context = contexts[ri(0, contexts.length - 1)]
 
   return mc(
     skill,
     d,
     seed,
-    `Una botella contenía ${start}/${den} de litro. Se consumieron ${used}/${den}. ¿Cuánto queda?`,
-    `${answer}/${den}`,
+    context.prompt,
+    answer,
     [
       `${start + used}/${den}`,
       `${start}/${den}`,
       `${used}/${den}`,
     ],
-    `Restamos numeradores: ${start}-${used}=${answer}. Quedan ${answer}/${den}.`,
+    context.solution,
     ['problema_fracciones', 'resta']
   )
 }
-
  // =========================
 // M08 · PROPORCIONALIDAD Y PORCENTAJES
 // =========================
