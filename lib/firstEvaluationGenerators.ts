@@ -22,6 +22,16 @@ function rng(seed: number) {
     ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296)
 }
 
+function pickFamily(seed: number, count: number) {
+  let x = seed >>> 0
+  x ^= x >>> 16
+  x = Math.imul(x, 0x7feb352d) >>> 0
+  x ^= x >>> 15
+  x = Math.imul(x, 0x846ca68b) >>> 0
+  x ^= x >>> 16
+  return (x >>> 0) % count
+}
+
 function shuffle<T>(r: () => number, items: T[]) {
   const out = [...items]
 
@@ -8003,540 +8013,750 @@ if (key === 'solid_figures') {
 
 // M12S01 · Perímetro de polígonos
 if (key === 'perimeter') {
-  if (d === 1) {
-    const side = ri(3, 12)
-    const result = side * 4
+  const family = pickFamily(seed, 5)
 
-    return mc(
-      skill, d, seed,
-      `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su perímetro?`,
+  if (d === 1) {
+    if (family === 0) {
+      const side = ri(3, 12)
+      const result = side * 4
+      return mc(skill, d, seed,
+        `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${side * side} cm`, `${side * 2} cm`, `${result + side} cm`],
+        `Sumamos sus cuatro lados: 4 × ${side} = ${result} cm.`,
+        ['perimetro', 'cuadrado', 'family:m12s01_d1_cuadrado'])
+    }
+    if (family === 1) {
+      const a = ri(3, 9)
+      const b = ri(3, 9)
+      const c = ri(3, 9)
+      const result = a + b + c
+      return mc(skill, d, seed,
+        `Un triángulo tiene lados de ${a} cm, ${b} cm y ${c} cm. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${a * b} cm`, `${result + 2} cm`, `${a + b} cm`],
+        `Perímetro = ${a}+${b}+${c}=${result} cm.`,
+        ['perimetro', 'triangulo', 'family:m12s01_d1_triangulo'])
+    }
+    if (family === 2) {
+      const width = ri(3, 10)
+      const height = ri(2, 8)
+      const result = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Un rectángulo mide ${width} cm de largo y ${height} cm de ancho. ¿Cuánto mide todo su borde?`,
+        `${result} cm`,
+        [`${width * height} cm`, `${width + height} cm`, `${result - 2} cm`],
+        `El borde completo es el perímetro: 2×(${width}+${height})=${result} cm.`,
+        ['perimetro', 'rectangulo', 'family:m12s01_d1_rectangulo'])
+    }
+    if (family === 3) {
+      const side = ri(3, 10)
+      const result = side * 5
+      return mc(skill, d, seed,
+        `Un pentágono regular tiene lados de ${side} cm. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${side * 4} cm`, `${side + 5} cm`, `${side * side} cm`],
+        `Tiene cinco lados iguales: 5×${side}=${result} cm.`,
+        ['perimetro', 'poligono_regular', 'family:m12s01_d1_pentagono'])
+    }
+    const side = ri(2, 8)
+    const result = side * 6
+    return mc(skill, d, seed,
+      `Una pieza tiene forma de hexágono regular de lado ${side} cm. ¿Cuánto mide su contorno?`,
       `${result} cm`,
-      [
-        `${side * side} cm`,
-        `${side * 2} cm`,
-        `${result + side} cm`,
-      ],
-      `Perímetro = 4 × ${side} = ${result} cm.`,
-      ['perimetro', 'cuadrado']
-    )
+      [`${side * 5} cm`, `${side * side} cm`, `${side + 6} cm`],
+      `Un hexágono regular tiene 6 lados iguales: 6×${side}=${result} cm.`,
+      ['perimetro', 'poligono_regular', 'family:m12s01_d1_hexagono'])
   }
 
   if (d === 2) {
-    const width = ri(3, 12)
-    const height = ri(2, 10)
-    const result = 2 * (width + height)
-
-    return mc(
-      skill, d, seed,
-      `Un rectángulo mide ${width} cm de largo y ${height} cm de ancho. ¿Cuál es su perímetro?`,
-      `${result} cm`,
-      [
-        `${width * height} cm`,
-        `${width + height} cm`,
-        `${result + 2} cm`,
-      ],
-      `Perímetro = 2 × (${width} + ${height}) = ${result} cm.`,
-      ['perimetro', 'rectangulo']
-    )
+    if (family === 0) {
+      const width = ri(4, 14)
+      const height = ri(3, 10)
+      const result = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Calcula el perímetro de un rectángulo de ${width} cm por ${height} cm.`,
+        `${result} cm`,
+        [`${width * height} cm`, `${width + height} cm`, `${2 * width + height} cm`],
+        `P=2(${width}+${height})=${result} cm.`,
+        ['perimetro', 'rectangulo', 'family:m12s01_d2_formula_rectangulo'])
+    }
+    if (family === 1) {
+      const side = ri(3, 11)
+      const n = [5, 6, 8][ri(0, 2)]
+      const result = side * n
+      return mc(skill, d, seed,
+        `Un polígono regular tiene ${n} lados de ${side} cm cada uno. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${side + n} cm`, `${side * (n - 1)} cm`, `${side * side} cm`],
+        `Perímetro = número de lados × longitud del lado = ${n}×${side}=${result} cm.`,
+        ['perimetro', 'poligono_regular', 'family:m12s01_d2_regular'])
+    }
+    if (family === 2) {
+      const a = ri(4, 10)
+      const b = ri(4, 10)
+      const c = ri(4, 10)
+      const d4 = ri(4, 10)
+      const result = a + b + c + d4
+      return mc(skill, d, seed,
+        `Un cuadrilátero tiene lados de ${a}, ${b}, ${c} y ${d4} cm. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${a + b + c} cm`, `${a * b} cm`, `${result + 4} cm`],
+        `Sumamos los cuatro lados: ${a}+${b}+${c}+${d4}=${result} cm.`,
+        ['perimetro', 'cuadrilatero', 'family:m12s01_d2_irregular'])
+    }
+    if (family === 3) {
+      const width = ri(5, 15)
+      const height = ri(3, 10)
+      const result = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Una pista rectangular mide ${width} m de largo y ${height} m de ancho. ¿Cuántos metros se recorren al dar una vuelta completa por el borde?`,
+        `${result} m`,
+        [`${width * height} m`, `${width + height} m`, `${2 * width} m`],
+        `Una vuelta completa es el perímetro: ${result} m.`,
+        ['perimetro', 'contexto', 'family:m12s01_d2_pista'])
+    }
+    const side = ri(4, 12)
+    const perimeter = side * 4
+    return mc(skill, d, seed,
+      `Una cuerda de ${perimeter} cm rodea exactamente un marco cuadrado. ¿Cuánto mide cada lado?`,
+      `${side} cm`,
+      [`${perimeter / 2} cm`, `${side * 2} cm`, `${side + 4} cm`],
+      `Cada lado es la cuarta parte del perímetro: ${perimeter}÷4=${side} cm.`,
+      ['perimetro', 'inverso', 'family:m12s01_d2_cuadrado_inverso'])
   }
 
   if (d === 3) {
-    const a = ri(3, 9)
-    const b = ri(3, 9)
-    const c = ri(3, 9)
-    const result = a + b + c
-
-    return mc(
-      skill, d, seed,
-      `Un terreno triangular tiene lados de ${a} m, ${b} m y ${c} m. ¿Cuántos metros de valla hacen falta para rodearlo?`,
-      `${result} m`,
-      [
-        `${a * b} m`,
-        `${result + c} m`,
-        `${a + b} m`,
-      ],
-      `Hay que calcular el perímetro: ${a}+${b}+${c}=${result} m.`,
-      ['perimetro', 'problema']
-    )
+    if (family === 0) {
+      const a = ri(4, 10)
+      const b = ri(4, 10)
+      const c = ri(4, 10)
+      const result = a + b + c
+      return mc(skill, d, seed,
+        `Un terreno triangular tiene lados de ${a} m, ${b} m y ${c} m. ¿Cuántos metros de valla hacen falta para rodearlo?`,
+        `${result} m`,
+        [`${a * b} m`, `${result + c} m`, `${a + b} m`],
+        `Hay que sumar los tres lados: ${result} m.`,
+        ['perimetro', 'problema', 'family:m12s01_d3_valla'])
+    }
+    if (family === 1) {
+      const side = ri(4, 10)
+      const n = [6, 8, 10][ri(0, 2)]
+      const perimeter = side * n
+      return mc(skill, d, seed,
+        `Un polígono regular tiene perímetro ${perimeter} cm y ${n} lados. ¿Cuánto mide cada lado?`,
+        `${side} cm`,
+        [`${perimeter - n} cm`, `${side * 2} cm`, `${perimeter / (n - 1)} cm`],
+        `Lado = perímetro ÷ número de lados = ${perimeter}÷${n}=${side} cm.`,
+        ['perimetro', 'inverso', 'family:m12s01_d3_regular_inverso'])
+    }
+    if (family === 2) {
+      const width = ri(6, 16)
+      const height = ri(4, 12)
+      const laps = ri(2, 5)
+      const p = 2 * (width + height)
+      const result = p * laps
+      return mc(skill, d, seed,
+        `Una pista rectangular mide ${width} m por ${height} m. Si das ${laps} vueltas completas, ¿qué distancia recorres?`,
+        `${result} m`,
+        [`${p} m`, `${width * height * laps} m`, `${result - p} m`],
+        `Una vuelta mide ${p} m. ${laps} vueltas: ${p}×${laps}=${result} m.`,
+        ['perimetro', 'varios_pasos', 'family:m12s01_d3_vueltas'])
+    }
+    if (family === 3) {
+      const width = ri(6, 14)
+      const height = ri(4, 10)
+      const gap = ri(1, 3)
+      const p = 2 * (width + height)
+      const result = p - gap
+      return mc(skill, d, seed,
+        `Un jardín rectangular de ${width} m por ${height} m se valla dejando una puerta de ${gap} m sin vallar. ¿Cuántos metros de valla se necesitan?`,
+        `${result} m`,
+        [`${p} m`, `${width * height - gap} m`, `${result + gap * 2} m`],
+        `Perímetro ${p} m; restamos la puerta de ${gap} m: ${result} m.`,
+        ['perimetro', 'contexto', 'family:m12s01_d3_puerta'])
+    }
+    const side = ri(5, 12)
+    const triangleP = side * 3
+    const squareSide = ri(4, 10)
+    const squareP = squareSide * 4
+    const answer = triangleP > squareP ? 'El triángulo' : triangleP < squareP ? 'El cuadrado' : 'Tienen el mismo perímetro'
+    return mc(skill, d, seed,
+      `Compara un triángulo equilátero de lado ${side} cm con un cuadrado de lado ${squareSide} cm. ¿Cuál tiene mayor perímetro?`,
+      answer,
+      ['El triángulo', 'El cuadrado', 'Tienen el mismo perímetro'].filter(x => x !== answer),
+      `Triángulo: ${triangleP} cm. Cuadrado: ${squareP} cm.`,
+      ['perimetro', 'comparacion', 'family:m12s01_d3_comparar'])
   }
 
   if (d === 4) {
-    const width = ri(4, 12)
-    const height = ri(3, 10)
-    const perimeter = 2 * (width + height)
-
-    return mc(
-      skill, d, seed,
-      `Un rectángulo tiene ${width} cm de largo y un perímetro de ${perimeter} cm. ¿Cuánto mide su ancho?`,
-      `${height} cm`,
-      [
-        `${perimeter - width} cm`,
-        `${width + height} cm`,
-        `${height * 2} cm`,
-      ],
-      `La mitad del perímetro es ${perimeter / 2}. Entonces el ancho es ${perimeter / 2}-${width}=${height} cm.`,
-      ['perimetro', 'medida_desconocida']
-    )
+    if (family === 0) {
+      const width = ri(5, 14)
+      const height = ri(3, 10)
+      const perimeter = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Un rectángulo tiene ${width} cm de largo y un perímetro de ${perimeter} cm. ¿Cuánto mide su ancho?`,
+        `${height} cm`,
+        [`${perimeter - width} cm`, `${perimeter / 2} cm`, `${height * 2} cm`],
+        `La semiperímetro es ${perimeter / 2}; ancho = ${perimeter / 2}-${width}=${height} cm.`,
+        ['perimetro', 'medida_desconocida', 'family:m12s01_d4_rectangulo_inverso'])
+    }
+    if (family === 1) {
+      const side = ri(5, 12)
+      const n = [5, 6, 8][ri(0, 2)]
+      const p = side * n
+      const extra = ri(2, 5)
+      return mc(skill, d, seed,
+        `El perímetro de un polígono regular de ${n} lados es ${p} cm. Si cada lado aumenta ${extra} cm, ¿cuál será el nuevo perímetro?`,
+        `${(side + extra) * n} cm`,
+        [`${p + extra} cm`, `${p + extra * 2} cm`, `${p * extra} cm`],
+        `Cada uno de los ${n} lados aumenta ${extra} cm: nuevo perímetro ${(side + extra) * n} cm.`,
+        ['perimetro', 'cambio', 'family:m12s01_d4_cambio_lado'])
+    }
+    if (family === 2) {
+      const width = ri(8, 16)
+      const height = ri(5, 12)
+      const p = 2 * (width + height)
+      const price = ri(2, 6)
+      return mc(skill, d, seed,
+        `Vallar un terreno rectangular de ${width} m por ${height} m cuesta ${price} € por metro. ¿Cuál es el coste total?`,
+        `${p * price} €`,
+        [`${width * height * price} €`, `${p} €`, `${(width + height) * price} €`],
+        `Perímetro ${p} m; coste ${p}×${price}=${p * price} €.`,
+        ['perimetro', 'coste', 'family:m12s01_d4_coste'])
+    }
+    if (family === 3) {
+      const side = ri(4, 10)
+      const p = side * 6
+      const missing = ri(1, side - 1)
+      const result = p - missing
+      return mc(skill, d, seed,
+        `Un hexágono regular de lado ${side} m se rodea con una valla, excepto un acceso de ${missing} m. ¿Cuánta valla se coloca?`,
+        `${result} m`,
+        [`${p} m`, `${p - side} m`, `${result + missing * 2} m`],
+        `Perímetro ${p} m menos acceso ${missing} m = ${result} m.`,
+        ['perimetro', 'regular', 'family:m12s01_d4_acceso'])
+    }
+    const a = ri(6, 14)
+    const b = ri(4, 10)
+    const perimeter = 2 * (a + b)
+    const newA = a + ri(2, 5)
+    const newP = 2 * (newA + b)
+    return mc(skill, d, seed,
+      `Un rectángulo de ${a}×${b} cm tiene perímetro ${perimeter} cm. Si solo el largo pasa a ${newA} cm, ¿cuánto aumenta el perímetro?`,
+      `${newP - perimeter} cm`,
+      [`${newA - a} cm`, `${2 * b} cm`, `${newP} cm`],
+      `Perímetro nuevo ${newP}; aumento ${newP}-${perimeter}=${newP - perimeter} cm.`,
+      ['perimetro', 'razonamiento', 'family:m12s01_d4_variacion'])
   }
 
-  const side = ri(4, 15)
-  const perimeter = side * 4
-
-  return mc(
-    skill, d, seed,
-    `Una parcela cuadrada necesita ${perimeter} m de valla para cerrar todo su contorno. ¿Cuánto mide cada lado?`,
-    `${side} m`,
-    [
-      `${perimeter / 2} m`,
-      `${side * 2} m`,
-      `${perimeter - 4} m`,
-    ],
-    `En un cuadrado los cuatro lados son iguales: ${perimeter}÷4=${side} m.`,
-    ['perimetro', 'problema_inverso', 'dificultad_alta']
-  )
+  if (family === 0) {
+    const side = ri(5, 14)
+    const perimeter = side * 4
+    return mc(skill, d, seed,
+      `Una parcela cuadrada necesita ${perimeter} m de valla para cerrar todo su contorno. ¿Cuánto mide cada lado?`,
+      `${side} m`,
+      [`${perimeter / 2} m`, `${side * 2} m`, `${perimeter - 4} m`],
+      `Lado = ${perimeter}÷4=${side} m.`,
+      ['perimetro', 'problema_inverso', 'family:m12s01_d5_cuadrado_inverso'])
+  }
+  if (family === 1) {
+    const side = ri(4, 10)
+    const n = [6, 8, 10][ri(0, 2)]
+    const laps = ri(2, 4)
+    const distance = side * n * laps
+    return mc(skill, d, seed,
+      `Una pista tiene forma de polígono regular de ${n} lados de ${side} m. ¿Cuántas vueltas completas se han dado si se recorren ${distance} m?`,
+      String(laps),
+      [String(laps + 1), String(laps - 1), String(n)],
+      `Una vuelta mide ${side * n} m. ${distance}÷${side * n}=${laps} vueltas.`,
+      ['perimetro', 'varios_pasos', 'family:m12s01_d5_vueltas_inverso'])
+  }
+  if (family === 2) {
+    const width = ri(8, 16)
+    const height = ri(5, 12)
+    const p = 2 * (width + height)
+    const postsEvery = 2
+    const posts = p / postsEvery
+    return mc(skill, d, seed,
+      `Un terreno rectangular de ${width} m por ${height} m se rodea con postes separados cada ${postsEvery} m. Si el perímetro es múltiplo de ${postsEvery}, ¿cuántos intervalos de ${postsEvery} m hay alrededor?`,
+      String(posts),
+      [String(p), String(posts + 2), String(width + height)],
+      `Perímetro = ${p} m. ${p}÷${postsEvery}=${posts} intervalos.`,
+      ['perimetro', 'varios_pasos', 'family:m12s01_d5_postes'])
+  }
+  if (family === 3) {
+    const x = ri(4, 10)
+    const long = x + 4
+    const p = 2 * (x + long)
+    return mc(skill, d, seed,
+      `El largo de un rectángulo mide 4 cm más que el ancho. Si su perímetro es ${p} cm, ¿cuánto mide el ancho?`,
+      `${x} cm`,
+      [`${long} cm`, `${p / 2} cm`, `${x + 2} cm`],
+      `2(x+x+4)=${p}. Entonces 4x+8=${p} y x=${x}.`,
+      ['perimetro', 'ecuacion', 'family:m12s01_d5_ecuacion'])
+  }
+  const sideA = ri(4, 10)
+  const sideB = ri(4, 10)
+  const pA = 6 * sideA
+  const pB = 4 * sideB
+  return mc(skill, d, seed,
+    `Un hexágono regular tiene lado ${sideA} cm y un cuadrado lado ${sideB} cm. ¿Cuál es la diferencia entre sus perímetros?`,
+    `${Math.abs(pA - pB)} cm`,
+    [`${pA + pB} cm`, `${Math.abs(sideA - sideB)} cm`, `${Math.abs(pA - pB) + 2} cm`],
+    `Perímetros: ${pA} cm y ${pB} cm. Diferencia = ${Math.abs(pA - pB)} cm.`,
+    ['perimetro', 'comparacion', 'family:m12s01_d5_diferencia'])
 }
 
 // M12S02 · Área de rectángulo y cuadrado
 if (key === 'rectangle_square_area') {
+  const family = pickFamily(seed, 5)
+
   if (d === 1) {
     const side = ri(3, 12)
-    const result = side * side
-
-    return mc(
-      skill, d, seed,
-      `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su área?`,
-      `${result} cm²`,
-      [
-        `${side * 4} cm²`,
-        `${side * 2} cm²`,
-        `${result + side} cm²`,
-      ],
-      `Área = lado × lado = ${side} × ${side} = ${result} cm².`,
-      ['area_cuadrado']
-    )
+    const base = ri(4, 12)
+    const height = ri(3, 10)
+    if (family === 0) {
+      const result = side * side
+      return mc(skill, d, seed, `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su área?`, `${result} cm²`, [`${side * 4} cm²`, `${side * 2} cm²`, `${result + side} cm²`], `Área = ${side}×${side}=${result} cm².`, ['area_cuadrado', 'family:m12s02_d1_cuadrado'])
+    }
+    if (family === 1) {
+      const result = base * height
+      return mc(skill, d, seed, `Un rectángulo mide ${base} cm por ${height} cm. ¿Cuál es su área?`, `${result} cm²`, [`${2 * (base + height)} cm²`, `${base + height} cm²`, `${result + base} cm²`], `Área = ${base}×${height}=${result} cm².`, ['area_rectangulo', 'family:m12s02_d1_rectangulo'])
+    }
+    if (family === 2) {
+      const result = base * height
+      return mc(skill, d, seed, `Una cuadrícula rectangular tiene ${base} columnas y ${height} filas de cuadrados de 1 cm². ¿Qué área ocupa?`, `${result} cm²`, [`${base + height} cm²`, `${2 * base} cm²`, `${result - height} cm²`], `Hay ${base}×${height}=${result} cuadrados de 1 cm².`, ['area_rectangulo', 'modelo_cuadricula', 'family:m12s02_d1_cuadricula'])
+    }
+    if (family === 3) {
+      const result = side * side
+      return mc(skill, d, seed, `Una baldosa cuadrada mide ${side} cm de lado. ¿Qué superficie cubre una baldosa?`, `${result} cm²`, [`${side * 4} cm²`, `${side + side} cm²`, `${result + 1} cm²`], `Superficie = lado² = ${result} cm².`, ['area_cuadrado', 'contexto', 'family:m12s02_d1_baldosa'])
+    }
+    const result = base * height
+    return mc(skill, d, seed, `¿Qué operación permite hallar el área de un rectángulo de base ${base} cm y altura ${height} cm?`, `${base} × ${height}`, [`2 × (${base} + ${height})`, `${base} + ${height}`, `${base} × 2`], `El área de un rectángulo se calcula base × altura.`, ['area_rectangulo', 'concepto', 'family:m12s02_d1_operacion'])
   }
 
   if (d === 2) {
-    const base = ri(4, 14)
-    const height = ri(3, 10)
-    const result = base * height
-
-    return mc(
-      skill, d, seed,
-      `Un rectángulo mide ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
-      `${result} cm²`,
-      [
-        `${2 * (base + height)} cm²`,
-        `${base + height} cm²`,
-        `${result + base} cm²`,
-      ],
-      `Área = ${base} × ${height} = ${result} cm².`,
-      ['area_rectangulo']
-    )
+    if (family === 0) {
+      const base = ri(5, 15), height = ri(3, 10), result = base * height
+      return mc(skill,d,seed,`Una pared rectangular mide ${base} m de largo y ${height} m de alto. ¿Qué superficie tiene?`,`${result} m²`,[`${2*(base+height)} m²`,`${base+height} m²`,`${result+height} m²`],`Área = ${base}×${height}=${result} m².`,['area_rectangulo','contexto','family:m12s02_d2_pared'])
+    }
+    if (family === 1) {
+      const side = ri(4, 12), tiles = ri(2,5), area = side*side, result = area*tiles
+      return mc(skill,d,seed,`${tiles} paneles cuadrados iguales tienen lado ${side} cm. ¿Qué área suman entre todos?`,`${result} cm²`,[`${area} cm²`,`${side*4*tiles} cm²`,`${result+side} cm²`],`Cada panel ocupa ${area} cm²; ${tiles} paneles ocupan ${result} cm².`,['area_cuadrado','varios_objetos','family:m12s02_d2_paneles'])
+    }
+    if (family === 2) {
+      const base = ri(5,14), height=ri(3,10), area=base*height
+      return mc(skill,d,seed,`Un jardín rectangular de ${base} m por ${height} m se divide en cuadrados de 1 m². ¿Cuántos cuadrados caben exactamente?`,String(area),[String(base+height),String(2*(base+height)),String(area-height)],`El número de cuadrados de 1 m² coincide con el área: ${area}.`,['area_rectangulo','cuadricula','family:m12s02_d2_jardin'])
+    }
+    if (family === 3) {
+      const side=ri(4,12), area=side*side
+      return mc(skill,d,seed,`Un cuadrado y un rectángulo de ${side} cm por ${side} cm tienen la misma forma y medidas. ¿Cuál es su área?`,`${area} cm²`,[`${side*4} cm²`,`${side*2} cm²`,`${area+side} cm²`],`Ambas descripciones representan un cuadrado de lado ${side}: área ${area} cm².`,['area_cuadrado','equivalencia','family:m12s02_d2_equivalencia'])
+    }
+    const base=ri(5,15), height=ri(3,10), area=base*height
+    return mc(skill,d,seed,`¿Cuál de estas magnitudes corresponde al área de un rectángulo de ${base} cm por ${height} cm?`,`${area} cm²`,[`${2*(base+height)} cm`,`${base+height} cm²`,`${area} cm`],`El área se expresa en unidades cuadradas: ${area} cm².`,['area_rectangulo','unidades','family:m12s02_d2_unidades'])
   }
 
   if (d === 3) {
-    const base = ri(4, 15)
-    const height = ri(3, 10)
-    const result = base * height
-
-    const contexts = [
-      `Una pared rectangular mide ${base} m de largo y ${height} m de alto. ¿Qué superficie tiene?`,
-      `Un jardín rectangular mide ${base} m por ${height} m. ¿Cuál es su área?`,
-      `Una pista rectangular mide ${base} m de largo y ${height} m de ancho. ¿Qué superficie ocupa?`,
-    ]
-
-    return mc(
-      skill, d, seed,
-      contexts[ri(0, contexts.length - 1)],
-      `${result} m²`,
-      [
-        `${2 * (base + height)} m²`,
-        `${base + height} m²`,
-        `${result + height} m²`,
-      ],
-      `Área = ${base} × ${height} = ${result} m².`,
-      ['area_rectangulo', 'problema']
-    )
+    if (family === 0) {
+      const base=ri(5,15),height=ri(3,10),area=base*height
+      return mc(skill,d,seed,`Un rectángulo tiene área ${area} cm² y altura ${height} cm. ¿Cuánto mide la base?`,`${base} cm`,[`${area-height} cm`,`${base+height} cm`,`${height*2} cm`],`Base = área÷altura = ${area}÷${height}=${base} cm.`,['area_rectangulo','inverso','family:m12s02_d3_base_inversa'])
+    }
+    if (family === 1) {
+      const side=ri(4,12),area=side*side,perimeter=side*4
+      return mc(skill,d,seed,`Un cuadrado tiene área ${area} cm². ¿Cuál es su perímetro?`,`${perimeter} cm`,[`${area*4} cm`,`${side*2} cm`,`${area/2} cm`],`El lado mide ${side} cm; perímetro = 4×${side}=${perimeter} cm.`,['area_cuadrado','varios_pasos','family:m12s02_d3_area_a_perimetro'])
+    }
+    if (family === 2) {
+      const base=ri(6,14),height=ri(4,10),area=base*height,price=ri(2,5)
+      return mc(skill,d,seed,`Cubrir un suelo rectangular de ${base} m por ${height} m cuesta ${price} € por m². ¿Cuál es el coste total?`,`${area*price} €`,[`${area} €`,`${2*(base+height)*price} €`,`${area+price} €`],`Área ${area} m²; coste ${area}×${price}=${area*price} €.`,['area_rectangulo','coste','family:m12s02_d3_coste'])
+    }
+    if (family === 3) {
+      const side=ri(4,10),extra=ri(1,4),oldArea=side*side,newArea=(side+extra)*(side+extra)
+      return mc(skill,d,seed,`El lado de un cuadrado pasa de ${side} cm a ${side+extra} cm. ¿Cuánto aumenta su área?`,`${newArea-oldArea} cm²`,[`${extra*extra} cm²`,`${extra*4} cm²`,`${newArea} cm²`],`Área antigua ${oldArea}; nueva ${newArea}; aumento ${newArea-oldArea} cm².`,['area_cuadrado','cambio','family:m12s02_d3_aumento'])
+    }
+    const base=ri(6,14),height=ri(4,10),area=base*height,half=area/2
+    return mc(skill,d,seed,`Un rectángulo de área ${area} cm² se divide en dos partes iguales por una línea paralela a uno de sus lados. ¿Qué área tiene cada parte?`,`${half} cm²`,[`${area} cm²`,`${base+height} cm²`,`${half+2} cm²`],`Dos partes iguales reparten el área por la mitad: ${area}÷2=${half} cm².`,['area_rectangulo','particion','family:m12s02_d3_mitad'])
   }
 
   if (d === 4) {
-    const height = ri(3, 10)
-    const base = ri(4, 14)
-    const area = base * height
-
-    return mc(
-      skill, d, seed,
-      `Un rectángulo tiene un área de ${area} cm² y una altura de ${height} cm. ¿Cuánto mide su base?`,
-      `${base} cm`,
-      [
-        `${area - height} cm`,
-        `${base + height} cm`,
-        `${height * 2} cm`,
-      ],
-      `Base = área ÷ altura = ${area}÷${height}=${base} cm.`,
-      ['area_rectangulo', 'medida_desconocida']
-    )
+    if (family === 0) {
+      const base=ri(6,15),height=ri(4,10),area=base*height
+      return mc(skill,d,seed,`Un rectángulo tiene área ${area} cm² y base ${base} cm. ¿Cuál es su altura?`,`${height} cm`,[`${area-base} cm`,`${base+height} cm`,`${height*2} cm`],`Altura = ${area}÷${base}=${height} cm.`,['area_rectangulo','inverso','family:m12s02_d4_altura'])
+    }
+    if (family === 1) {
+      const side=ri(4,12),area=side*side,scale=2,newArea=(side*scale)**2
+      return mc(skill,d,seed,`Un cuadrado de lado ${side} cm duplica la longitud de su lado. ¿Por cuánto se multiplica su área?`,'Por 4',['Por 2','Por 8','No cambia'],`Al duplicar el lado, el área pasa de ${area} a ${newArea}: se multiplica por 4.`,['area_cuadrado','escala','family:m12s02_d4_escala'])
+    }
+    if (family === 2) {
+      const base=ri(8,16),height=ri(5,12),area=base*height,cut=ri(1,3),newArea=(base-cut)*height
+      return mc(skill,d,seed,`Un rectángulo mide ${base}×${height} cm. Se reduce su base en ${cut} cm manteniendo la altura. ¿Cuánto disminuye el área?`,`${area-newArea} cm²`,[`${cut} cm²`,`${cut*base} cm²`,`${newArea} cm²`],`Disminución = ${cut}×${height}=${area-newArea} cm².`,['area_rectangulo','variacion','family:m12s02_d4_reduccion'])
+    }
+    if (family === 3) {
+      const area=ri(4,12)**2
+      const side=Math.sqrt(area)
+      return mc(skill,d,seed,`Un cuadrado tiene área ${area} cm². ¿Cuánto mide su lado?`,`${side} cm`,[`${area/4} cm`,`${side*2} cm`,`${area/2} cm`],`El lado es la raíz cuadrada del área: √${area}=${side} cm.`,['area_cuadrado','inverso','family:m12s02_d4_raiz'])
+    }
+    const base=ri(6,14),height=ri(4,10),area=base*height
+    return mc(skill,d,seed,`¿Qué rectángulo tiene la misma área que uno de ${base}×${height} cm?`,`${base*2} cm × ${height/2} cm`,[`${base+2} cm × ${height} cm`,`${base} cm × ${height+2} cm`,`${base*2} cm × ${height} cm`],`Mantener el producto base×altura conserva el área: ${base*2}×${height/2}=${area}.`,['area_rectangulo','equivalencia','family:m12s02_d4_misma_area'])
   }
 
-  const side = ri(4, 12)
-  const area = side * side
-  const perimeter = side * 4
-
-  return mc(
-    skill, d, seed,
-    `Un cuadrado tiene un área de ${area} cm². ¿Cuál es su perímetro?`,
-    `${perimeter} cm`,
-    [
-      `${area * 4} cm`,
-      `${side * 2} cm`,
-      `${area / 2} cm`,
-    ],
-    `Si el área es ${area} cm², el lado mide ${side} cm. Perímetro = 4×${side}=${perimeter} cm.`,
-    ['area_cuadrado', 'perimetro', 'varios_pasos', 'dificultad_alta']
-  )
+  if (family === 0) {
+    const x=ri(4,10),base=x+3,height=x,area=base*height
+    return mc(skill,d,seed,`El largo de un rectángulo mide 3 cm más que el ancho. Si el ancho es ${x} cm, ¿cuál es el área?`,`${area} cm²`,[`${2*(base+height)} cm²`,`${x*x} cm²`,`${area+3} cm²`],`Base ${base}, altura ${x}; área ${area} cm².`,['area_rectangulo','algebra','family:m12s02_d5_relacion_lados'])
+  }
+  if (family === 1) {
+    const side=ri(4,10),area=side*side,tiles=ri(2,5),total=area*tiles
+    return mc(skill,d,seed,`${tiles} cuadrados iguales cubren en total ${total} cm². ¿Cuál es el área de cada cuadrado?`,`${area} cm²`,[`${total} cm²`,`${area*2} cm²`,`${side} cm²`],`Área de cada uno = ${total}÷${tiles}=${area} cm².`,['area_cuadrado','inverso','family:m12s02_d5_reparto'])
+  }
+  if (family === 2) {
+    const base=ri(8,16),height=ri(5,12),area=base*height,p=2*(base+height)
+    return mc(skill,d,seed,`Un rectángulo mide ${base}×${height} cm. ¿Qué fracción representa la razón área/perímetro?`,`${area}/${p}`,[`${p}/${area}`,String(area),String(p)],`Área ${area}; perímetro ${p}; por tanto la razón área/perímetro es ${area}/${p}.`,['area_rectangulo','razonamiento','family:m12s02_d5_razon'])
+  }
+  if (family === 3) {
+    const side=ri(5,10),outer=(side+2)**2,inner=side**2,border=outer-inner
+    return mc(skill,d,seed,`Un cuadrado de lado ${side} cm se rodea por un marco que aumenta 1 cm por cada lado exterior. El lado exterior pasa a ${side+2} cm. ¿Qué área ocupa solo el marco?`,`${border} cm²`,[`${outer} cm²`,`${inner} cm²`,`${2*(side+2)} cm²`],`Área del marco = ${outer}-${inner}=${border} cm².`,['area_cuadrado','diferencia_areas','family:m12s02_d5_marco'])
+  }
+  const base=ri(8,16),height=ri(5,12),area=base*height,scale=2,newArea=(base*scale)*(height*scale)
+  return mc(skill,d,seed,`Si se duplican a la vez la base y la altura de un rectángulo de ${base}×${height} cm, ¿por cuánto se multiplica el área?`,'Por 4',['Por 2','Por 8','No cambia'],`El área pasa de ${area} a ${newArea}, cuatro veces mayor.`,['area_rectangulo','escala','family:m12s02_d5_doble_escala'])
 }
 
 // M12S03 · Área de triángulo
 if (key === 'triangle_area') {
-  if (d <= 2) {
-    const base = ri(3, 12) * 2
-    const height = ri(2, 10)
-    const result = (base * height) / 2
+  const family = pickFamily(seed, 5)
 
-    return mc(
-      skill, d, seed,
-      `Un triángulo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
-      `${result} cm²`,
-      [
-        `${base * height} cm²`,
-        `${base + height} cm²`,
-        `${result + height} cm²`,
-      ],
-      `Área = (${base} × ${height}) ÷ 2 = ${result} cm².`,
-      ['area_triangulo']
-    )
+  if (d === 1) {
+    const base = ri(3, 10) * 2
+    const height = ri(2, 8)
+    const area = (base * height) / 2
+    if (family === 0) return mc(skill,d,seed,`Un triángulo tiene base ${base} cm y altura ${height} cm. ¿Cuál es su área?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area+height} cm²`],`Área = (${base}×${height})÷2=${area} cm².`,['area_triangulo','family:m12s03_d1_formula'])
+    if (family === 1) return mc(skill,d,seed,`¿Qué operación calcula el área de un triángulo de base ${base} cm y altura ${height} cm?`,`(${base} × ${height}) ÷ 2`,[`${base} × ${height}`,`${base}+${height}`,`2×(${base}+${height})`],`Se multiplica base por altura y se divide entre 2.`,['area_triangulo','concepto','family:m12s03_d1_operacion'])
+    if (family === 2) return mc(skill,d,seed,`Una bandera triangular mide ${base} cm de base y ${height} cm de altura. ¿Qué superficie ocupa?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area*2+1} cm²`],`Área triangular = ${area} cm².`,['area_triangulo','contexto','family:m12s03_d1_bandera'])
+    if (family === 3) return mc(skill,d,seed,`Un triángulo ocupa la mitad de un rectángulo de ${base} cm por ${height} cm. ¿Qué área tiene?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area/2} cm²`],`La mitad de ${base*height} cm² es ${area} cm².`,['area_triangulo','mitad_rectangulo','family:m12s03_d1_mitad'])
+    return mc(skill,d,seed,`¿Cuál es la unidad correcta para expresar el área de un triángulo de base ${base} cm y altura ${height} cm?`,'cm²',['cm','cm³','grados'],`El área se expresa en unidades cuadradas.`,['area_triangulo','unidades','family:m12s03_d1_unidades'])
+  }
+
+  if (d === 2) {
+    const base=ri(4,12)*2,height=ri(3,9),area=(base*height)/2
+    if (family===0) return mc(skill,d,seed,`Calcula el área de un triángulo de base ${base} cm y altura ${height} cm.`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area+base} cm²`],`A=bh/2=${area} cm².`,['area_triangulo','family:m12s03_d2_directa'])
+    if (family===1) return mc(skill,d,seed,`Una parcela triangular tiene base ${base} m y altura ${height} m. ¿Qué superficie ocupa?`,`${area} m²`,[`${base*height} m²`,`${base+height} m²`,`${area*2+height} m²`],`A=(${base}×${height})/2=${area} m².`,['area_triangulo','contexto','family:m12s03_d2_parcela'])
+    if (family===2) return mc(skill,d,seed,`Dos triángulos iguales, cada uno de base ${base} cm y altura ${height} cm, se unen sin solaparse. ¿Qué área total ocupan?`,`${area*2} cm²`,[`${area} cm²`,`${base*height*2} cm²`,`${area+height} cm²`],`Cada uno ocupa ${area}; juntos ${area*2} cm².`,['area_triangulo','dos_figuras','family:m12s03_d2_dos'])
+    if (family===3) return mc(skill,d,seed,`Un rectángulo de ${base}×${height} cm se corta por una diagonal. ¿Qué área tiene cada triángulo resultante?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area+2} cm²`],`La diagonal divide el rectángulo en dos triángulos de igual área.`,['area_triangulo','diagonal','family:m12s03_d2_diagonal'])
+    return mc(skill,d,seed,`Si se mantiene la misma altura ${height} cm y la base de un triángulo se duplica de ${base} a ${base*2} cm, ¿qué ocurre con el área?`,'Se duplica',['Se reduce a la mitad','Se cuadruplica','No cambia'],`El área es proporcional a la base si la altura no cambia.`,['area_triangulo','proporcionalidad','family:m12s03_d2_duplicar_base'])
   }
 
   if (d === 3) {
-    const base = ri(4, 14) * 2
-    const height = ri(3, 10)
-    const result = (base * height) / 2
-
-    return mc(
-      skill, d, seed,
-      `Una parcela triangular tiene ${base} m de base y ${height} m de altura. ¿Qué superficie ocupa?`,
-      `${result} m²`,
-      [
-        `${base * height} m²`,
-        `${base + height} m²`,
-        `${result * 2 + height} m²`,
-      ],
-      `Área del triángulo = (${base}×${height})÷2=${result} m².`,
-      ['area_triangulo', 'problema']
-    )
+    const base=ri(4,12)*2,height=ri(3,10),area=(base*height)/2
+    if (family===0) return mc(skill,d,seed,`Un triángulo tiene área ${area} cm² y altura ${height} cm. ¿Cuánto mide su base?`,`${base} cm`,[`${area/height} cm`,`${area-height} cm`,`${base/2} cm`],`Base=(2×${area})÷${height}=${base} cm.`,['area_triangulo','inverso','family:m12s03_d3_base'])
+    if (family===1) return mc(skill,d,seed,`Un triángulo tiene área ${area} cm² y base ${base} cm. ¿Cuál es su altura?`,`${height} cm`,[`${area/base} cm`,`${area-base} cm`,`${height*2} cm`],`Altura=(2×${area})÷${base}=${height} cm.`,['area_triangulo','inverso','family:m12s03_d3_altura'])
+    if (family===2) {
+      const price=ri(2,5)
+      return mc(skill,d,seed,`Cubrir una parcela triangular de base ${base} m y altura ${height} m cuesta ${price} € por m². ¿Cuál es el coste?`,`${area*price} €`,[`${area} €`,`${base*height*price} €`,`${area+price} €`],`Área ${area} m²; coste ${area}×${price}=${area*price} €.`,['area_triangulo','coste','family:m12s03_d3_coste'])
+    }
+    if (family===3) return mc(skill,d,seed,`Dos triángulos tienen la misma altura ${height} cm. Uno tiene base ${base} cm y otro ${base/2} cm. ¿Qué relación hay entre sus áreas?`,'El primero tiene el doble de área',['Tienen la misma área','El segundo tiene el doble','El primero tiene cuatro veces más'],`Con igual altura, el área es proporcional a la base.`,['area_triangulo','comparacion','family:m12s03_d3_comparar'])
+    return mc(skill,d,seed,`Un triángulo y un rectángulo tienen la misma base ${base} cm y altura ${height} cm. Si el rectángulo ocupa ${base*height} cm², ¿qué área ocupa el triángulo?`,`${area} cm²`,[`${base*height} cm²`,`${area*2+1} cm²`,`${base+height} cm²`],`El triángulo ocupa la mitad del rectángulo: ${area} cm².`,['area_triangulo','comparacion','family:m12s03_d3_rectangulo'])
   }
 
   if (d === 4) {
-    const height = ri(3, 10)
-    const base = ri(3, 12) * 2
-    const area = (base * height) / 2
-
-    return mc(
-      skill, d, seed,
-      `Un triángulo tiene un área de ${area} cm² y una altura de ${height} cm. ¿Cuánto mide su base?`,
-      `${base} cm`,
-      [
-        `${area / height} cm`,
-        `${area - height} cm`,
-        `${base / 2} cm`,
-      ],
-      `Base = (2×área)÷altura = (2×${area})÷${height}=${base} cm.`,
-      ['area_triangulo', 'medida_desconocida']
-    )
+    const base=ri(4,12)*2,height=ri(3,10),area=(base*height)/2
+    if (family===0) {
+      const extra=ri(2,6),newArea=((base+extra)*height)/2
+      return mc(skill,d,seed,`La base de un triángulo pasa de ${base} a ${base+extra} cm, manteniendo altura ${height} cm. ¿Cuánto aumenta el área?`,`${newArea-area} cm²`,[`${extra} cm²`,`${extra*height} cm²`,`${newArea} cm²`],`Aumento = (${extra}×${height})/2=${newArea-area} cm².`,['area_triangulo','variacion','family:m12s03_d4_aumento_base'])
+    }
+    if (family===1) return mc(skill,d,seed,`Si se duplican simultáneamente la base y la altura de un triángulo, ¿por cuánto se multiplica su área?`,'Por 4',['Por 2','Por 8','No cambia'],`A=(bh)/2; duplicar b y h multiplica bh por 4.`,['area_triangulo','escala','family:m12s03_d4_doble'])
+    if (family===2) {
+      const totalBase=base*2
+      return mc(skill,d,seed,`Un triángulo de base ${totalBase} cm y altura ${height} cm se divide desde el vértice hasta el punto medio de la base. ¿Qué área tiene cada triángulo pequeño?`,`${area} cm²`,[`${area*2} cm²`,`${totalBase*height} cm²`,`${area/2} cm²`],`Cada pequeño tiene base ${base} cm y la misma altura: área ${area} cm².`,['area_triangulo','particion','family:m12s03_d4_mediana'])
+    }
+    if (family===3) return mc(skill,d,seed,`Un triángulo tiene área ${area} cm². Otro tiene la misma base y triple altura. ¿Cuál será el área del segundo?`,`${area*3} cm²`,[`${area*2} cm²`,`${area+3} cm²`,`${area*9} cm²`],`Con la misma base, triplicar la altura triplica el área.`,['area_triangulo','proporcionalidad','family:m12s03_d4_triple_altura'])
+    return mc(skill,d,seed,`¿Qué dato NO basta por sí solo, junto con la base, para calcular el área de un triángulo?`,'La longitud de otro lado cualquiera',['La altura correspondiente a la base','La distancia perpendicular del vértice a la base','La altura exterior correspondiente'],`El área necesita base y altura perpendicular; otro lado no determina necesariamente la altura.`,['area_triangulo','razonamiento','family:m12s03_d4_dato'])
   }
 
-  const base = ri(4, 12) * 2
-  const height = ri(3, 10)
-  const rectangleArea = base * height
-  const triangleArea = rectangleArea / 2
-
-  return mc(
-    skill, d, seed,
-    `Un rectángulo de ${base} cm por ${height} cm se corta por una diagonal formando dos triángulos iguales. ¿Cuál es el área de cada triángulo?`,
-    `${triangleArea} cm²`,
-    [
-      `${rectangleArea} cm²`,
-      `${base + height} cm²`,
-      `${triangleArea * 2 + height} cm²`,
-    ],
-    `El rectángulo ocupa ${rectangleArea} cm². La diagonal lo divide en dos partes iguales: ${rectangleArea}÷2=${triangleArea} cm².`,
-    ['area_triangulo', 'razonamiento', 'dificultad_alta']
-  )
+  const base=ri(6,14)*2,height=ri(4,10),area=(base*height)/2
+  if (family===0) {
+    const x=height
+    return mc(skill,d,seed,`Un triángulo tiene base ${base} cm y área ${area} cm². Si su altura es x, ¿cuánto vale x?`,String(x),[String(x+2),String(x*2),String(area/base)],`(${base}·x)/2=${area}; x=${x}.`,['area_triangulo','ecuacion','family:m12s03_d5_ecuacion'])
+  }
+  if (family===1) {
+    const scale=3
+    return mc(skill,d,seed,`Un triángulo se amplía multiplicando todas sus longitudes por ${scale}. ¿Por cuánto se multiplica su área?`,'Por 9',['Por 3','Por 6','Por 27'],`El área escala con el cuadrado del factor: ${scale}²=9.`,['area_triangulo','semejanza','family:m12s03_d5_escala'])
+  }
+  if (family===2) {
+    const rectArea=base*height
+    return mc(skill,d,seed,`Un rectángulo de ${base}×${height} cm contiene un triángulo cuya base y altura coinciden con las del rectángulo. ¿Qué fracción del área del rectángulo ocupa el triángulo?`,'1/2',['1/3','1/4','2/3'],`Área triángulo ${area}; rectángulo ${rectArea}. La razón es 1/2.`,['area_triangulo','razon','family:m12s03_d5_fraccion'])
+  }
+  if (family===3) {
+    const area2=area+ri(5,15)
+    return mc(skill,d,seed,`Dos triángulos tienen la misma base. El primero tiene área ${area} cm² y el segundo ${area2} cm². ¿Cuál tiene mayor altura?`,'El segundo',['El primero','Tienen la misma altura','No se puede saber'],`Con la misma base, mayor área implica mayor altura.`,['area_triangulo','razonamiento','family:m12s03_d5_misma_base'])
+  }
+  const halfBase=base/2,doubleHeight=height*2
+  return mc(skill,d,seed,`Un triángulo cambia de base ${base} cm y altura ${height} cm a base ${halfBase} cm y altura ${doubleHeight} cm. ¿Qué ocurre con su área?`,'Permanece igual',['Se duplica','Se reduce a la mitad','Se cuadruplica'],`El producto base×altura sigue siendo ${base*height}; por tanto el área no cambia.`,['area_triangulo','invariancia','family:m12s03_d5_compensacion'])
 }
 
 // M12S04 · Área de paralelogramo y trapecio
 if (key === 'quadrilateral_area') {
-  if (d <= 2) {
-    const base = ri(4, 14)
-    const height = ri(3, 10)
-    const result = base * height
+  const family = pickFamily(seed, 5)
 
-    return mc(
-      skill, d, seed,
-      `Un paralelogramo tiene ${base} cm de base y ${height} cm de altura. ¿Cuál es su área?`,
-      `${result} cm²`,
-      [
-        `${2 * (base + height)} cm²`,
-        `${base + height} cm²`,
-        `${result + height} cm²`,
-      ],
-      `Área = base × altura = ${base}×${height}=${result} cm².`,
-      ['area_paralelogramo']
-    )
+  if (d === 1) {
+    const base=ri(4,12),height=ri(3,9),area=base*height
+    if (family===0) return mc(skill,d,seed,`Un paralelogramo tiene base ${base} cm y altura ${height} cm. ¿Cuál es su área?`,`${area} cm²`,[`${2*(base+height)} cm²`,`${base+height} cm²`,`${area+height} cm²`],`A=base×altura=${area} cm².`,['area_paralelogramo','family:m12s04_d1_paralelogramo'])
+    if (family===1) return mc(skill,d,seed,`¿Qué operación calcula el área de un paralelogramo de base ${base} y altura ${height}?`,`${base} × ${height}`,[`(${base}+${height})×2`,`${base}+${height}`,`(${base}×${height})÷2`],`El área es base×altura.`,['area_paralelogramo','concepto','family:m12s04_d1_operacion'])
+    if (family===2) {
+      const B=ri(6,12),b=ri(2,B-2),h=ri(2,6)*2,A=((B+b)*h)/2
+      return mc(skill,d,seed,`Un trapecio tiene bases ${B} cm y ${b} cm y altura ${h} cm. ¿Cuál es su área?`,`${A} cm²`,[`${(B+b)*h} cm²`,`${B*b} cm²`,`${B+b+h} cm²`],`A=((B+b)×h)/2=${A} cm².`,['area_trapecio','family:m12s04_d1_trapecio'])
+    }
+    if (family===3) return mc(skill,d,seed,`Un romboide de base ${base} cm y altura perpendicular ${height} cm tiene la misma fórmula de área que un paralelogramo. ¿Cuál es?`,`${area} cm²`,[`${base+height} cm²`,`${2*(base+height)} cm²`,`${area/2} cm²`],`Área = base×altura = ${area} cm².`,['area_paralelogramo','contexto','family:m12s04_d1_romboide'])
+    return mc(skill,d,seed,`En la fórmula del área de un trapecio, ¿qué dos longitudes se suman antes de multiplicar por la altura?`,'Las dos bases',['Los dos lados oblicuos','La base mayor y un lado','La altura y una base'],`A=((B+b)×h)/2.`,['area_trapecio','concepto','family:m12s04_d1_bases'])
+  }
+
+  if (d === 2) {
+    if (family===0) {
+      const base=ri(5,14),height=ri(3,10),area=base*height
+      return mc(skill,d,seed,`Una parcela con forma de paralelogramo tiene base ${base} m y altura ${height} m. ¿Qué superficie ocupa?`,`${area} m²`,[`${2*(base+height)} m²`,`${base+height} m²`,`${area+base} m²`],`Área=${area} m².`,['area_paralelogramo','contexto','family:m12s04_d2_parcela'])
+    }
+    if (family===1) {
+      const B=ri(7,14),b=ri(3,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+      return mc(skill,d,seed,`Calcula el área de un trapecio con bases ${B} cm y ${b} cm y altura ${h} cm.`,`${A} cm²`,[`${(B+b)*h} cm²`,`${B*b} cm²`,`${B+b+h} cm²`],`A=((B+b)h)/2=${A} cm².`,['area_trapecio','family:m12s04_d2_directa'])
+    }
+    if (family===2) {
+      const base=ri(5,12),height=ri(3,8),area=base*height
+      return mc(skill,d,seed,`Dos paralelogramos tienen la misma base ${base} cm y la misma altura ${height} cm, aunque uno esté más inclinado. ¿Cómo son sus áreas?`,'Iguales',['La del más inclinado es mayor','La del menos inclinado es mayor','No se puede saber'],`El área depende de base y altura perpendicular, no de la inclinación.`,['area_paralelogramo','razonamiento','family:m12s04_d2_inclinacion'])
+    }
+    if (family===3) {
+      const B=ri(8,16),b=ri(3,B-2),h=ri(2,6)*2,A=((B+b)*h)/2
+      return mc(skill,d,seed,`Un terreno trapezoidal tiene bases ${B} m y ${b} m y altura ${h} m. ¿Qué superficie ocupa?`,`${A} m²`,[`${(B+b)*h} m²`,`${B*b} m²`,`${B+b+h} m²`],`Área del trapecio = ${A} m².`,['area_trapecio','contexto','family:m12s04_d2_terreno'])
+    }
+    const base=ri(5,12),height=ri(3,8),area=base*height
+    return mc(skill,d,seed,`Un paralelogramo y un rectángulo tienen la misma base ${base} cm y altura ${height} cm. ¿Qué relación hay entre sus áreas?`,'Son iguales',['La del rectángulo es el doble','La del paralelogramo es el doble','Depende del lado oblicuo'],`Ambos tienen área base×altura=${area} cm².`,['area_paralelogramo','comparacion','family:m12s04_d2_rectangulo'])
   }
 
   if (d === 3) {
-    const base1 = ri(6, 14)
-    const base2 = ri(2, base1 - 2)
-    const height = ri(2, 8) * 2
-    const result = ((base1 + base2) * height) / 2
-
-    return mc(
-      skill, d, seed,
-      `Un trapecio tiene bases de ${base1} cm y ${base2} cm y altura de ${height} cm. ¿Cuál es su área?`,
-      `${result} cm²`,
-      [
-        `${(base1 + base2) * height} cm²`,
-        `${base1 * base2} cm²`,
-        `${base1 + base2 + height} cm²`,
-      ],
-      `Área = ((${base1}+${base2})×${height})÷2=${result} cm².`,
-      ['area_trapecio']
-    )
+    if (family===0) {
+      const base=ri(5,14),height=ri(3,10),area=base*height
+      return mc(skill,d,seed,`Un paralelogramo tiene área ${area} cm² y base ${base} cm. ¿Cuál es su altura?`,`${height} cm`,[`${area-base} cm`,`${base+height} cm`,`${height*2} cm`],`Altura=${area}÷${base}=${height} cm.`,['area_paralelogramo','inverso','family:m12s04_d3_altura'])
+    }
+    if (family===1) {
+      const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+      return mc(skill,d,seed,`Un trapecio tiene área ${A} cm², bases ${B} cm y ${b} cm. ¿Cuál es su altura?`,`${h} cm`,[`${A/(B+b)} cm`,`${B-b} cm`,`${h*2} cm`],`h=2A/(B+b)=2×${A}/${B+b}=${h} cm.`,['area_trapecio','inverso','family:m12s04_d3_altura_trapecio'])
+    }
+    if (family===2) {
+      const base=ri(6,14),height=ri(4,10),area=base*height,price=ri(2,5)
+      return mc(skill,d,seed,`Cubrir un paralelogramo de base ${base} m y altura ${height} m cuesta ${price} € por m². ¿Cuál es el coste?`,`${area*price} €`,[`${area} €`,`${2*(base+height)*price} €`,`${area+price} €`],`Área ${area}; coste ${area*price} €.`,['area_paralelogramo','coste','family:m12s04_d3_coste'])
+    }
+    if (family===3) {
+      const B=ri(8,14),b=ri(3,B-2),h=ri(2,6)*2,A=((B+b)*h)/2
+      return mc(skill,d,seed,`Si un trapecio de bases ${B} y ${b} cm y altura ${h} cm duplica su altura, ¿qué ocurre con el área?`,'Se duplica',['Se cuadruplica','No cambia','Se reduce a la mitad'],`El área es proporcional a la altura.`,['area_trapecio','proporcionalidad','family:m12s04_d3_doble_altura'])
+    }
+    const base=ri(6,14),height=ri(4,10),area=base*height
+    return mc(skill,d,seed,`Un paralelogramo de área ${area} cm² se corta y recoloca sin perder piezas hasta formar un rectángulo con la misma base y altura. ¿Qué área tendrá el rectángulo?`,`${area} cm²`,[`${area/2} cm²`,`${area*2} cm²`,`${base+height} cm²`],`Recolocar sin perder piezas conserva el área.`,['area_paralelogramo','conservacion','family:m12s04_d3_recolocar'])
   }
 
   if (d === 4) {
-    const base = ri(5, 14)
-    const height = ri(3, 10)
-    const area = base * height
-
-    return mc(
-      skill, d, seed,
-      `Un paralelogramo tiene un área de ${area} cm² y una base de ${base} cm. ¿Cuál es su altura?`,
-      `${height} cm`,
-      [
-        `${area - base} cm`,
-        `${base + height} cm`,
-        `${height * 2} cm`,
-      ],
-      `Altura = área ÷ base = ${area}÷${base}=${height} cm.`,
-      ['area_paralelogramo', 'medida_desconocida']
-    )
+    if (family===0) {
+      const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2,price=ri(2,5)
+      return mc(skill,d,seed,`Una parcela trapezoidal de bases ${B} m y ${b} m y altura ${h} m cuesta cubrirla a ${price} € por m². ¿Cuál es el coste?`,`${A*price} €`,[`${A} €`,`${(B+b)*h*price} €`,`${A+price} €`],`Área ${A} m²; coste ${A*price} €.`,['area_trapecio','varios_pasos','family:m12s04_d4_coste'])
+    }
+    if (family===1) {
+      const base=ri(6,14),height=ri(4,10),area=base*height,extra=ri(2,5),newArea=base*(height+extra)
+      return mc(skill,d,seed,`La altura de un paralelogramo de base ${base} cm pasa de ${height} a ${height+extra} cm. ¿Cuánto aumenta el área?`,`${newArea-area} cm²`,[`${extra} cm²`,`${base+extra} cm²`,`${newArea} cm²`],`Aumento = base×aumento de altura = ${base}×${extra}=${newArea-area} cm².`,['area_paralelogramo','variacion','family:m12s04_d4_aumento'])
+    }
+    if (family===2) {
+      const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+      return mc(skill,d,seed,`Un trapecio tiene área ${A} cm² y altura ${h} cm. La suma de sus bases es...`,`${B+b} cm`,[`${A/h} cm`,`${B-b} cm`,`${(B+b)*2} cm`],`B+b=2A/h=2×${A}/${h}=${B+b} cm.`,['area_trapecio','inverso','family:m12s04_d4_suma_bases'])
+    }
+    if (family===3) {
+      const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+      const mid=(B+b)/2
+      return mc(skill,d,seed,`La base media de un trapecio es la media de sus bases. Si las bases son ${B} y ${b} cm, ¿qué relación permite calcular el área?`,`${mid} × ${h} = ${A}`, [`${B*b} = ${B*b}`,`${B+b+h} = ${B+b+h}`,`${mid} + ${h} = ${mid+h}`],`Área = base media × altura = ${mid}×${h}=${A}.`,['area_trapecio','base_media','family:m12s04_d4_media'])
+    }
+    const base=ri(6,14),height=ri(4,10),area=base*height
+    return mc(skill,d,seed,`¿Qué información adicional necesitas, además de la base ${base} cm, para hallar el área de un paralelogramo?`,'La altura perpendicular',['La longitud del lado oblicuo','Un ángulo cualquiera sin más datos','El perímetro'],`El área es base×altura perpendicular.`,['area_paralelogramo','razonamiento','family:m12s04_d4_dato'])
   }
 
-  const base1 = ri(8, 16)
-  const base2 = ri(3, base1 - 2)
-  const height = ri(2, 7) * 2
-  const area = ((base1 + base2) * height) / 2
-
-  return mc(
-    skill, d, seed,
-    `Una parcela con forma de trapecio tiene bases de ${base1} m y ${base2} m y altura de ${height} m. Si cada metro cuadrado cuesta 2 €, ¿cuánto cuesta cubrir toda la parcela?`,
-    `${area * 2} €`,
-    [
-      `${area} €`,
-      `${(base1 + base2) * height * 2} €`,
-      `${area + 2} €`,
-    ],
-    `Primero calculamos el área: ${area} m². Después: ${area}×2=${area * 2} €.`,
-    ['area_trapecio', 'problema', 'varios_pasos', 'dificultad_alta']
-  )
+  if (family===0) {
+    const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+    return mc(skill,d,seed,`Un trapecio tiene bases ${B} y ${b} cm. Si su área es ${A} cm², verifica cuál es su altura.`,`${h} cm`,[`${h/2} cm`,`${B-b} cm`,`${A/(B+b)} cm`],`h=2A/(B+b)=${h}.`,['area_trapecio','inverso','family:m12s04_d5_verificar'])
+  }
+  if (family===1) {
+    const base=ri(6,14),height=ri(4,10),area=base*height,scale=2
+    return mc(skill,d,seed,`Un paralelogramo se amplía multiplicando base y altura por ${scale}. ¿Por cuánto se multiplica su área?`,'Por 4',['Por 2','Por 8','No cambia'],`El área escala con el cuadrado del factor: 2²=4.`,['area_paralelogramo','escala','family:m12s04_d5_escala'])
+  }
+  if (family===2) {
+    const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+    const newB=B+2,newb=b-2,newA=((newB+newb)*h)/2
+    return mc(skill,d,seed,`En un trapecio de bases ${B} y ${b} cm, la base mayor aumenta 2 cm y la menor disminuye 2 cm, manteniendo la altura ${h} cm. ¿Qué ocurre con el área?`,'Permanece igual',['Aumenta','Disminuye','Se duplica'],`La suma de bases no cambia: ${B+b} cm, así que el área sigue siendo ${newA} cm².`,['area_trapecio','invariancia','family:m12s04_d5_compensacion'])
+  }
+  if (family===3) {
+    const base=ri(6,14),height=ri(4,10),area=base*height
+    return mc(skill,d,seed,`Dos paralelogramos tienen igual área ${area} cm². Si uno tiene base ${base} cm, su altura es ${height} cm. ¿Qué debe ocurrir si el otro tiene una base mayor?`,'Debe tener una altura menor',['Debe tener una altura mayor','Debe tener la misma altura','No puede tener la misma área'],`Para conservar el producto base×altura, si la base aumenta la altura debe disminuir.`,['area_paralelogramo','razonamiento','family:m12s04_d5_base_altura'])
+  }
+  const B=ri(8,16),b=ri(4,B-2),h=ri(2,7)*2,A=((B+b)*h)/2
+  return mc(skill,d,seed,`Un trapecio de área ${A} cm² se divide por una línea paralela a las bases en dos regiones. ¿Podemos afirmar que cada región tiene área ${A/2} cm² solo porque la línea está a mitad de altura?`,'No, no necesariamente',['Sí, siempre','Sí, porque las alturas son iguales','Sí, porque las bases son paralelas'],`En un trapecio las anchuras cambian con la altura; dividir la altura por la mitad no garantiza dividir el área por la mitad.`,['area_trapecio','razonamiento','family:m12s04_d5_mitad_altura'])
 }
 
 // M12S05 · Circunferencia y círculo
 if (key === 'circle_measure') {
-  if (d === 1) {
-    const radius = ri(2, 10)
-    const diameter = radius * 2
+  const family = pickFamily(seed, 5)
+  const pi = 3.14
 
-    return mc(
-      skill, d, seed,
-      `Un círculo tiene radio de ${radius} cm. ¿Cuál es su diámetro?`,
-      `${diameter} cm`,
-      [
-        `${radius} cm`,
-        `${radius * 3} cm`,
-        `${diameter + 1} cm`,
-      ],
-      `Diámetro = 2×radio = 2×${radius}=${diameter} cm.`,
-      ['diametro_circulo']
-    )
+  if (d === 1) {
+    const radius=ri(2,10),diameter=radius*2
+    if (family===0) return mc(skill,d,seed,`Un círculo tiene radio ${radius} cm. ¿Cuál es su diámetro?`,`${diameter} cm`,[`${radius} cm`,`${radius*3} cm`,`${diameter+1} cm`],`Diámetro=2×radio=${diameter} cm.`,['circulo','radio_diametro','family:m12s05_d1_diametro'])
+    if (family===1) return mc(skill,d,seed,`Una circunferencia tiene diámetro ${diameter} cm. ¿Cuál es su radio?`,`${radius} cm`,[`${diameter} cm`,`${diameter*2} cm`,`${radius+2} cm`],`Radio=diámetro÷2=${radius} cm.`,['circulo','radio_diametro','family:m12s05_d1_radio'])
+    if (family===2) return mc(skill,d,seed,`¿Qué segmento mide el doble que el radio en un círculo?`,'El diámetro',['La cuerda cualquiera','El arco','La tangente'],`El diámetro mide dos radios.`,['circulo','concepto','family:m12s05_d1_concepto'])
+    if (family===3) return mc(skill,d,seed,`Si el radio de una rueda es ${radius} cm, ¿qué distancia hay de un extremo al opuesto pasando por el centro?`,`${diameter} cm`,[`${radius} cm`,`${radius+2} cm`,`${radius*4} cm`],`Esa distancia es el diámetro: ${diameter} cm.`,['circulo','contexto','family:m12s05_d1_rueda'])
+    return mc(skill,d,seed,`¿Cuál es la unidad correcta para expresar la longitud de una circunferencia?`,'cm',['cm²','cm³','grados'],`La longitud es una magnitud lineal.`,['circulo','unidades','family:m12s05_d1_unidad'])
   }
 
   if (d === 2) {
-    const diameter = ri(2, 10) * 2
-    const radius = diameter / 2
-
-    return mc(
-      skill, d, seed,
-      `Una circunferencia tiene ${diameter} cm de diámetro. ¿Cuál es su radio?`,
-      `${radius} cm`,
-      [
-        `${diameter} cm`,
-        `${diameter * 2} cm`,
-        `${radius + 2} cm`,
-      ],
-      `Radio = diámetro÷2 = ${diameter}÷2=${radius} cm.`,
-      ['radio_circulo']
-    )
+    const radius=ri(2,10),diameter=radius*2,circ=pi*diameter
+    if (family===0) return mc(skill,d,seed,`Una circunferencia tiene diámetro ${diameter} cm. Usando π≈3,14, ¿cuánto mide su longitud?`,`${circ.toFixed(2)} cm`,[`${(pi*radius).toFixed(2)} cm`,`${diameter*2} cm`,`${(diameter+pi).toFixed(2)} cm`],`L≈πd=3,14×${diameter}=${circ.toFixed(2)} cm.`,['circulo','longitud','family:m12s05_d2_longitud_d'])
+    if (family===1) return mc(skill,d,seed,`Una rueda tiene radio ${radius} cm. Usando π≈3,14, ¿cuánto mide aproximadamente su borde?`,`${(2*pi*radius).toFixed(2)} cm`,[`${(pi*radius).toFixed(2)} cm`,`${(pi*radius*radius).toFixed(2)} cm`,`${diameter} cm`],`Longitud≈2πr=${(2*pi*radius).toFixed(2)} cm.`,['circulo','longitud','family:m12s05_d2_longitud_r'])
+    if (family===2) return mc(skill,d,seed,`¿Qué fórmula permite calcular la longitud de una circunferencia si conocemos su diámetro d?`,'π · d',['π · d²','2 · d','d ÷ π'],`La longitud de la circunferencia es π por el diámetro.`,['circulo','formula','family:m12s05_d2_formula'])
+    if (family===3) return mc(skill,d,seed,`Una rueda de diámetro ${diameter} cm da una vuelta completa. ¿Qué distancia avanza sin deslizar, aproximadamente?`,`${circ.toFixed(2)} cm`,[`${diameter} cm`,`${(pi*radius).toFixed(2)} cm`,`${(diameter*pi*2).toFixed(2)} cm`],`Avanza una longitud de circunferencia: ${circ.toFixed(2)} cm.`,['circulo','contexto','family:m12s05_d2_vuelta'])
+    return mc(skill,d,seed,`Si dos circunferencias tienen radios ${radius} cm y ${radius*2} cm, ¿qué relación hay entre sus longitudes?`,'La segunda mide el doble',['La segunda mide cuatro veces más','Son iguales','La primera mide el doble'],`La longitud es directamente proporcional al radio.`,['circulo','proporcionalidad','family:m12s05_d2_doble_radio'])
   }
 
   if (d === 3) {
-    const diameter = ri(2, 10) * 2
-    const result = 3.14 * diameter
-
-    return mc(
-      skill, d, seed,
-      `Una circunferencia tiene diámetro de ${diameter} cm. Usando π ≈ 3,14, ¿cuánto mide aproximadamente su longitud?`,
-      `${result.toFixed(2)} cm`,
-      [
-        `${(3.14 * (diameter / 2)).toFixed(2)} cm`,
-        `${(diameter * 2).toFixed(2)} cm`,
-        `${(diameter + 3.14).toFixed(2)} cm`,
-      ],
-      `Longitud ≈ π×diámetro = 3,14×${diameter}=${result.toFixed(2)} cm.`,
-      ['longitud_circunferencia']
-    )
+    const radius=ri(2,10),diameter=radius*2,area=pi*radius*radius,circ=2*pi*radius
+    if (family===0) return mc(skill,d,seed,`Un círculo tiene radio ${radius} cm. Usando π≈3,14, ¿cuál es su área?`,`${area.toFixed(2)} cm²`,[`${circ.toFixed(2)} cm²`,`${(pi*radius).toFixed(2)} cm²`,`${(radius*radius).toFixed(2)} cm²`],`A≈πr²=${area.toFixed(2)} cm².`,['circulo','area','family:m12s05_d3_area'])
+    if (family===1) return mc(skill,d,seed,`Un círculo tiene diámetro ${diameter} cm. ¿Qué radio debes usar para calcular su área?`,`${radius} cm`,[`${diameter} cm`,`${diameter*2} cm`,`${radius+1} cm`],`El radio es la mitad del diámetro: ${radius} cm.`,['circulo','varios_pasos','family:m12s05_d3_d_a_r'])
+    if (family===2) return mc(skill,d,seed,`¿Qué fórmula corresponde al área de un círculo de radio r?`,'πr²',['2πr','πd','2r²'],`El área es π por el cuadrado del radio.`,['circulo','formula','family:m12s05_d3_formula_area'])
+    if (family===3) return mc(skill,d,seed,`Una mesa circular tiene radio ${radius} m. ¿Qué superficie ocupa aproximadamente usando π≈3,14?`,`${area.toFixed(2)} m²`,[`${circ.toFixed(2)} m²`,`${(pi*radius).toFixed(2)} m²`,`${(radius*radius).toFixed(2)} m²`],`Área≈${area.toFixed(2)} m².`,['circulo','contexto','family:m12s05_d3_mesa'])
+    return mc(skill,d,seed,`Si el radio de un círculo se duplica, ¿por cuánto se multiplica su área?`,'Por 4',['Por 2','Por 8','No cambia'],`El área depende de r²: duplicar r multiplica el área por 4.`,['circulo','escala','family:m12s05_d3_doble_area'])
   }
 
   if (d === 4) {
-    const radius = ri(2, 10)
-    const area = 3.14 * radius * radius
-
-    return mc(
-      skill, d, seed,
-      `Un círculo tiene radio de ${radius} cm. Usando π ≈ 3,14, ¿cuál es aproximadamente su área?`,
-      `${area.toFixed(2)} cm²`,
-      [
-        `${(3.14 * radius * 2).toFixed(2)} cm²`,
-        `${(3.14 * radius).toFixed(2)} cm²`,
-        `${(radius * radius).toFixed(2)} cm²`,
-      ],
-      `Área ≈ π×r² = 3,14×${radius}²=${area.toFixed(2)} cm².`,
-      ['area_circulo']
-    )
+    const radius=ri(2,8),diameter=radius*2,area=pi*radius*radius,circ=2*pi*radius
+    if (family===0) return mc(skill,d,seed,`Una pista circular tiene radio ${radius} m. Usando π≈3,14, ¿qué pareja da su longitud exterior y su área?`,`${circ.toFixed(2)} m y ${area.toFixed(2)} m²`,[`${area.toFixed(2)} m y ${circ.toFixed(2)} m²`,`${(pi*radius).toFixed(2)} m y ${area.toFixed(2)} m²`,`${circ.toFixed(2)} m y ${(radius*radius).toFixed(2)} m²`],`Longitud≈${circ.toFixed(2)} m; área≈${area.toFixed(2)} m².`,['circulo','longitud_area','family:m12s05_d4_pareja'])
+    if (family===1) {
+      const laps=ri(2,5),distance=circ*laps
+      return mc(skill,d,seed,`Una rueda de radio ${radius} m da ${laps} vueltas completas sin deslizar. ¿Qué distancia recorre aproximadamente?`,`${distance.toFixed(2)} m`,[`${circ.toFixed(2)} m`,`${(area*laps).toFixed(2)} m`,`${(diameter*laps).toFixed(2)} m`],`Cada vuelta recorre ${circ.toFixed(2)} m; total ${distance.toFixed(2)} m.`,['circulo','varios_pasos','family:m12s05_d4_vueltas'])
+    }
+    if (family===2) {
+      const price=ri(2,5),cost=area*price
+      return mc(skill,d,seed,`Cubrir un círculo de radio ${radius} m cuesta ${price} € por m². Usando π≈3,14, ¿cuál es el coste aproximado?`,`${cost.toFixed(2)} €`,[`${area.toFixed(2)} €`,`${(circ*price).toFixed(2)} €`,`${(radius*price).toFixed(2)} €`],`Área≈${area.toFixed(2)}; coste≈${cost.toFixed(2)} €.`,['circulo','coste','family:m12s05_d4_coste'])
+    }
+    if (family===3) {
+      const newR=radius+2,newArea=pi*newR*newR
+      return mc(skill,d,seed,`El radio de un círculo aumenta de ${radius} cm a ${newR} cm. ¿Cuánto aumenta aproximadamente el área usando π≈3,14?`,`${(newArea-area).toFixed(2)} cm²`,[`${(2*pi*2).toFixed(2)} cm²`,`${newArea.toFixed(2)} cm²`,`${(circ+2).toFixed(2)} cm²`],`Aumento≈${newArea.toFixed(2)}-${area.toFixed(2)}=${(newArea-area).toFixed(2)} cm².`,['circulo','variacion','family:m12s05_d4_aumento'])
+    }
+    return mc(skill,d,seed,`Un círculo y una circunferencia tienen radio ${radius} cm. ¿Cuál de estas afirmaciones es correcta?`,'El círculo tiene área y la circunferencia tiene longitud',['Ambos tienen solo longitud','Ambos tienen solo área','La circunferencia tiene área y el círculo longitud'],`El círculo es la región interior; la circunferencia es su borde.`,['circulo','concepto','family:m12s05_d4_diferencia'])
   }
 
-  const radius = ri(2, 8)
-  const circumference = 2 * 3.14 * radius
-  const area = 3.14 * radius * radius
-
-  return mc(
-    skill, d, seed,
-    `Una pista circular tiene radio de ${radius} m. Usando π ≈ 3,14, ¿qué pareja indica correctamente su longitud exterior y su área?`,
-    `${circumference.toFixed(2)} m y ${area.toFixed(2)} m²`,
-    [
-      `${area.toFixed(2)} m y ${circumference.toFixed(2)} m²`,
-      `${(3.14 * radius).toFixed(2)} m y ${area.toFixed(2)} m²`,
-      `${circumference.toFixed(2)} m y ${(radius * radius).toFixed(2)} m²`,
-    ],
-    `Longitud = 2πr ≈ ${circumference.toFixed(2)} m. Área = πr² ≈ ${area.toFixed(2)} m².`,
-    ['circulo', 'longitud', 'area', 'dificultad_alta']
-  )
+  const radius=ri(3,8),area=pi*radius*radius,circ=2*pi*radius
+  if (family===0) {
+    const scale=3
+    return mc(skill,d,seed,`Si el radio de un círculo se multiplica por ${scale}, ¿por cuánto se multiplica su área?`,'Por 9',['Por 3','Por 6','Por 27'],`El área escala con el cuadrado: 3²=9.`,['circulo','escala','family:m12s05_d5_escala_area'])
+  }
+  if (family===1) return mc(skill,d,seed,`Si el radio de una circunferencia se duplica, ¿por cuánto se multiplica su longitud?`,'Por 2',['Por 4','Por 8','No cambia'],`L=2πr, por tanto es proporcional a r.`,['circulo','escala','family:m12s05_d5_escala_longitud'])
+  if (family===2) {
+    const inner=radius,outer=radius+2,ring=pi*(outer*outer-inner*inner)
+    return mc(skill,d,seed,`Una corona circular tiene radio interior ${inner} cm y exterior ${outer} cm. ¿Cuál es aproximadamente su área usando π≈3,14?`,`${ring.toFixed(2)} cm²`,[`${(pi*outer*outer).toFixed(2)} cm²`,`${(pi*inner*inner).toFixed(2)} cm²`,`${(2*pi*(outer-inner)).toFixed(2)} cm²`],`Área corona=π(R²-r²)≈${ring.toFixed(2)} cm².`,['circulo','diferencia_areas','family:m12s05_d5_corona'])
+  }
+  if (family===3) {
+    const ratio=area/circ
+    return mc(skill,d,seed,`Para un círculo de radio ${radius} cm, ¿cuál es aproximadamente la razón área/longitud usando π≈3,14?`,String(ratio),[String(circ/area),String(area),String(circ)],`A/L=(πr²)/(2πr)=r/2=${radius/2}.`,['circulo','razonamiento','family:m12s05_d5_razon'])
+  }
+  const diameter=radius*2
+  return mc(skill,d,seed,`Una circunferencia tiene longitud aproximada ${circ.toFixed(2)} cm usando π≈3,14. ¿Cuál es su diámetro?`,`${diameter} cm`,[`${radius} cm`,`${(circ/pi/2).toFixed(2)} cm`,`${diameter+2} cm`],`d=L/π≈${circ.toFixed(2)}/3,14=${diameter} cm.`,['circulo','inverso','family:m12s05_d5_diametro_inverso'])
 }
 
 // M12S06 · Figuras compuestas
 if (key === 'composite_area') {
-  if (d <= 2) {
-    const width1 = ri(3, 8)
-    const height1 = ri(2, 6)
-    const width2 = ri(2, 6)
-    const height2 = ri(2, 5)
-    const area1 = width1 * height1
-    const area2 = width2 * height2
-    const result = area1 + area2
+  const family = pickFamily(seed, 5)
 
-    return mc(
-      skill, d, seed,
-      `Una figura está formada por dos rectángulos sin solaparse. Uno mide ${width1} cm × ${height1} cm y el otro ${width2} cm × ${height2} cm. ¿Cuál es el área total?`,
-      `${result} cm²`,
-      [
-        `${area1} cm²`,
-        `${area2} cm²`,
-        `${result + width2} cm²`,
-      ],
-      `Área total = ${area1}+${area2}=${result} cm².`,
-      ['figuras_compuestas']
-    )
+  if (d === 1) {
+    const w1=ri(3,8),h1=ri(2,6),w2=ri(2,6),h2=ri(2,5),a1=w1*h1,a2=w2*h2,total=a1+a2
+    if (family===0) return mc(skill,d,seed,`Una figura está formada por dos rectángulos sin solaparse: ${w1}×${h1} cm y ${w2}×${h2} cm. ¿Cuál es el área total?`,`${total} cm²`,[`${a1} cm²`,`${a2} cm²`,`${total+w2} cm²`],`Área total=${a1}+${a2}=${total} cm².`,['figuras_compuestas','suma','family:m12s06_d1_dos_rectangulos'])
+    if (family===1) return mc(skill,d,seed,`Una figura se compone de dos cuadrados de lados ${w1} cm y ${w2} cm, sin solaparse. ¿Cuál es el área total?`,`${w1*w1+w2*w2} cm²`,[`${w1*w1} cm²`,`${w2*w2} cm²`,`${(w1+w2)**2} cm²`],`Sumamos las áreas de ambos cuadrados.`,['figuras_compuestas','suma','family:m12s06_d1_dos_cuadrados'])
+    if (family===2) return mc(skill,d,seed,`Para hallar el área de una figura formada por dos rectángulos que no se solapan, ¿qué debemos hacer?`,'Sumar las áreas de los dos rectángulos',['Sumar solo sus perímetros','Multiplicar sus perímetros','Restar siempre las áreas'],`Si las piezas no se solapan, el área total es la suma.`,['figuras_compuestas','concepto','family:m12s06_d1_metodo'])
+    if (family===3) return mc(skill,d,seed,`Una figura en L se divide en dos rectángulos de áreas ${a1} cm² y ${a2} cm². ¿Cuál es el área total?`,`${total} cm²`,[`${Math.abs(a1-a2)} cm²`,`${a1} cm²`,`${a2} cm²`],`Sumamos las dos regiones: ${total} cm².`,['figuras_compuestas','suma','family:m12s06_d1_l'])
+    return mc(skill,d,seed,`Una figura está formada por un rectángulo de área ${a1} cm² y un cuadrado de área ${w2*w2} cm², sin solaparse. ¿Qué área ocupa?`,`${a1+w2*w2} cm²`,[`${a1} cm²`,`${w2*w2} cm²`,`${a1*w2} cm²`],`Área total = suma de las dos áreas.`,['figuras_compuestas','suma','family:m12s06_d1_rect_cuad'])
+  }
+
+  if (d === 2) {
+    if (family===0) {
+      const bigW=ri(7,12),bigH=ri(6,10),cutW=ri(2,4),cutH=ri(2,4),result=bigW*bigH-cutW*cutH
+      return mc(skill,d,seed,`De un rectángulo de ${bigW}×${bigH} cm se recorta una esquina de ${cutW}×${cutH} cm. ¿Qué área queda?`,`${result} cm²`,[`${bigW*bigH} cm²`,`${cutW*cutH} cm²`,`${result+cutW*cutH} cm²`],`Área restante=${bigW*bigH}-${cutW*cutH}=${result} cm².`,['figuras_compuestas','resta','family:m12s06_d2_recorte'])
+    }
+    if (family===1) {
+      const rectW=ri(5,10),rectH=ri(3,7),triBase=ri(3,8)*2,triH=ri(2,6),rectA=rectW*rectH,triA=triBase*triH/2,total=rectA+triA
+      return mc(skill,d,seed,`Una figura une un rectángulo de ${rectW}×${rectH} cm y un triángulo de base ${triBase} cm y altura ${triH} cm. ¿Cuál es el área total?`,`${total} cm²`,[`${rectA} cm²`,`${rectA+triBase*triH} cm²`,`${triA} cm²`],`Rectángulo ${rectA}; triángulo ${triA}; total ${total}.`,['figuras_compuestas','suma','family:m12s06_d2_rect_triang'])
+    }
+    if (family===2) {
+      const side=ri(6,12),cut=ri(2,4),result=side*side-cut*cut
+      return mc(skill,d,seed,`A un cuadrado de lado ${side} cm se le quita un cuadrado de lado ${cut} cm. ¿Qué área queda?`,`${result} cm²`,[`${side*side} cm²`,`${cut*cut} cm²`,`${result+cut} cm²`],`Área restante=${side*side}-${cut*cut}=${result} cm².`,['figuras_compuestas','resta','family:m12s06_d2_cuadrado_recorte'])
+    }
+    if (family===3) {
+      const a=ri(3,8),b=ri(2,6),c=ri(2,6),area=a*b+c*b
+      return mc(skill,d,seed,`Una figura en L puede dividirse en dos rectángulos de ${a}×${b} cm y ${c}×${b} cm. ¿Cuál es su área?`,`${area} cm²`,[`${a*b} cm²`,`${c*b} cm²`,`${(a+c)+b} cm²`],`Sumamos ${a*b}+${c*b}=${area} cm².`,['figuras_compuestas','descomponer','family:m12s06_d2_l'])
+    }
+    const bigW=ri(8,14),bigH=ri(6,10),holeW=ri(2,4),holeH=ri(2,4),result=bigW*bigH-holeW*holeH
+    return mc(skill,d,seed,`Una placa rectangular de ${bigW}×${bigH} cm tiene un hueco rectangular de ${holeW}×${holeH} cm. ¿Qué superficie de material queda?`,`${result} cm²`,[`${bigW*bigH} cm²`,`${holeW*holeH} cm²`,`${result+holeW} cm²`],`Material restante = área exterior menos hueco = ${result} cm².`,['figuras_compuestas','hueco','family:m12s06_d2_hueco'])
   }
 
   if (d === 3) {
-    const bigW = ri(7, 12)
-    const bigH = ri(6, 10)
-    const cutW = ri(2, 4)
-    const cutH = ri(2, 4)
-    const result = bigW * bigH - cutW * cutH
-
-    return mc(
-      skill, d, seed,
-      `Una figura se obtiene de un rectángulo de ${bigW} cm × ${bigH} cm quitando una esquina rectangular de ${cutW} cm × ${cutH} cm. ¿Qué área queda?`,
-      `${result} cm²`,
-      [
-        `${bigW * bigH} cm²`,
-        `${cutW * cutH} cm²`,
-        `${result + cutW * cutH} cm²`,
-      ],
-      `Área = ${bigW}×${bigH} - ${cutW}×${cutH} = ${result} cm².`,
-      ['figuras_compuestas', 'resta_areas']
-    )
+    if (family===0) {
+      const bigW=ri(8,14),bigH=ri(7,12),cutW=ri(2,5),cutH=ri(2,5),remaining=bigW*bigH-cutW*cutH,price=ri(2,5)
+      return mc(skill,d,seed,`Un suelo de ${bigW}×${bigH} m tiene una zona de ${cutW}×${cutH} m que no se cubre. Si cubrir cada m² cuesta ${price} €, ¿cuál es el coste?`,`${remaining*price} €`,[`${bigW*bigH*price} €`,`${remaining} €`,`${cutW*cutH*price} €`],`Área útil ${remaining} m²; coste ${remaining*price} €.`,['figuras_compuestas','coste','family:m12s06_d3_coste'])
+    }
+    if (family===1) {
+      const rectW=ri(6,12),rectH=ri(4,8),triBase=rectW,triH=ri(2,6),total=rectW*rectH+triBase*triH/2
+      return mc(skill,d,seed,`Una fachada es un rectángulo de ${rectW}×${rectH} m coronado por un triángulo de base ${triBase} m y altura ${triH} m. ¿Qué área total tiene?`,`${total} m²`,[`${rectW*rectH} m²`,`${rectW*rectH+triBase*triH} m²`,`${triBase*triH/2} m²`],`Sumamos rectángulo y triángulo: ${total} m².`,['figuras_compuestas','contexto','family:m12s06_d3_fachada'])
+    }
+    if (family===2) {
+      const outer=ri(8,14),inner=outer-2,result=outer*outer-inner*inner
+      return mc(skill,d,seed,`Un marco cuadrado tiene lado exterior ${outer} cm e interior ${inner} cm. ¿Qué área ocupa solo el marco?`,`${result} cm²`,[`${outer*outer} cm²`,`${inner*inner} cm²`,`${(outer-inner)*4} cm²`],`Área marco=${outer*outer}-${inner*inner}=${result} cm².`,['figuras_compuestas','marco','family:m12s06_d3_marco'])
+    }
+    if (family===3) {
+      const w=ri(8,14),h=ri(6,10),half=w/2,total=w*h,halfArea=total/2
+      return mc(skill,d,seed,`Un rectángulo de ${w}×${h} cm se divide verticalmente en dos partes iguales. ¿Qué área tiene cada mitad?`,`${halfArea} cm²`,[`${total} cm²`,`${half*h+2} cm²`,`${w+h} cm²`],`Área total ${total}; cada mitad ${halfArea} cm².`,['figuras_compuestas','particion','family:m12s06_d3_mitad'])
+    }
+    const square=ri(8,14),cutW=ri(2,4),cutH=ri(2,4),remain=square*square-cutW*cutH
+    return mc(skill,d,seed,`De una lámina cuadrada de lado ${square} cm se corta un rectángulo de ${cutW}×${cutH} cm. ¿Qué porcentaje aproximado del área original queda?`,`${((remain/(square*square))*100).toFixed(1)}%`,[`${((cutW*cutH/(square*square))*100).toFixed(1)}%`,'50%',`${remain}%`],`Queda ${remain} de ${square*square} cm²: ${(remain/(square*square)*100).toFixed(1)}%.`,['figuras_compuestas','porcentaje','family:m12s06_d3_porcentaje'])
   }
 
   if (d === 4) {
-    const rectW = ri(5, 10)
-    const rectH = ri(3, 7)
-    const triBase = ri(3, 8) * 2
-    const triHeight = ri(2, 6)
-    const rectArea = rectW * rectH
-    const triArea = (triBase * triHeight) / 2
-    const result = rectArea + triArea
-
-    return mc(
-      skill, d, seed,
-      `Una figura está formada por un rectángulo de ${rectW} cm × ${rectH} cm y un triángulo de base ${triBase} cm y altura ${triHeight} cm, sin solaparse. ¿Cuál es el área total?`,
-      `${result} cm²`,
-      [
-        `${rectArea} cm²`,
-        `${rectArea + triBase * triHeight} cm²`,
-        `${triArea} cm²`,
-      ],
-      `Rectángulo: ${rectArea} cm². Triángulo: ${triArea} cm². Total: ${result} cm².`,
-      ['figuras_compuestas', 'rectangulo_triangulo']
-    )
+    if (family===0) {
+      const outerW=ri(10,16),outerH=ri(8,14),innerW=outerW-2,innerH=outerH-2,border=outerW*outerH-innerW*innerH
+      return mc(skill,d,seed,`Un marco rectangular mide exteriormente ${outerW}×${outerH} cm e interiormente ${innerW}×${innerH} cm. ¿Qué área tiene el marco?`,`${border} cm²`,[`${outerW*outerH} cm²`,`${innerW*innerH} cm²`,`${2*(outerW+outerH)} cm²`],`Área marco = exterior - interior = ${border} cm².`,['figuras_compuestas','diferencia_areas','family:m12s06_d4_marco_rect'])
+    }
+    if (family===1) {
+      const rectW=ri(6,12),rectH=ri(4,8),circleR=ri(2,Math.min(3,Math.floor(rectH/2))),rectA=rectW*rectH,circleA=3.14*circleR*circleR,remain=rectA-circleA
+      return mc(skill,d,seed,`Una placa rectangular de ${rectW}×${rectH} cm tiene un agujero circular de radio ${circleR} cm. Usando π≈3,14, ¿qué área de material queda?`,`${remain.toFixed(2)} cm²`,[`${rectA} cm²`,`${circleA.toFixed(2)} cm²`,`${(rectA+circleA).toFixed(2)} cm²`],`Área restante=${rectA}-${circleA.toFixed(2)}=${remain.toFixed(2)} cm².`,['figuras_compuestas','circulo_hueco','family:m12s06_d4_agujero'])
+    }
+    if (family===2) {
+      const w=ri(8,14),h=ri(6,10),triBase=w,triH=ri(3,6),total=w*h+w*triH/2,price=ri(2,5)
+      return mc(skill,d,seed,`Una figura formada por un rectángulo ${w}×${h} m y un triángulo de base ${w} m y altura ${triH} m se pinta a ${price} €/m². ¿Cuál es el coste?`,`${total*price} €`,[`${total} €`,`${w*h*price} €`,`${(w*h+w*triH)*price} €`],`Área total ${total} m²; coste ${total*price} €.`,['figuras_compuestas','coste','family:m12s06_d4_coste_compuesto'])
+    }
+    if (family===3) {
+      const outer=ri(10,16),inner=outer-4,border=outer*outer-inner*inner
+      return mc(skill,d,seed,`Un marco cuadrado tiene lado exterior ${outer} cm y un hueco cuadrado centrado de lado ${inner} cm. Si el material se reparte en cuatro bandas iguales por simetría, ¿qué área corresponde en total al marco?`,`${border} cm²`,[`${border/4} cm²`,`${outer*outer} cm²`,`${inner*inner} cm²`],`El área total del marco es exterior menos hueco: ${border} cm².`,['figuras_compuestas','simetria','family:m12s06_d4_marco_cuad'])
+    }
+    const bigW=ri(10,16),bigH=ri(8,14),cutW=ri(2,5),cutH=ri(2,5),remain=bigW*bigH-cutW*cutH
+    return mc(skill,d,seed,`Una figura en L se obtiene quitando a un rectángulo de ${bigW}×${bigH} cm una esquina de ${cutW}×${cutH} cm. ¿Qué método es correcto?`,`Calcular ${bigW*bigH} - ${cutW*cutH} = ${remain} cm²`,[`Sumar ${bigW*bigH} + ${cutW*cutH}`,`Calcular solo ${cutW*cutH}`,`Sumar todos los lados`],`En una figura con recorte, restamos el área eliminada.`,['figuras_compuestas','metodo','family:m12s06_d4_metodo'])
   }
 
-  const bigW = ri(8, 14)
-  const bigH = ri(7, 12)
-  const cutW = ri(2, 5)
-  const cutH = ri(2, 5)
-  const remainingArea = bigW * bigH - cutW * cutH
-  const price = ri(2, 5)
-  const cost = remainingArea * price
+  if (family===0) {
+    const outer=ri(10,16),inner=outer-4,border=outer*outer-inner*inner,price=ri(2,5)
+    return mc(skill,d,seed,`Un marco cuadrado tiene lado exterior ${outer} cm e interior ${inner} cm. Si cada cm² de material cuesta ${price} céntimos, ¿cuál es el coste?`,`${border*price} céntimos`,[`${border} céntimos`,`${outer*outer*price} céntimos`,`${inner*inner*price} céntimos`],`Área material ${border} cm²; coste ${border*price} céntimos.`,['figuras_compuestas','varios_pasos','family:m12s06_d5_marco_coste'])
+  }
+  if (family===1) {
+    const w=ri(10,16),h=ri(8,14),cutW=ri(2,5),cutH=ri(2,5),remain=w*h-cutW*cutH,total=w*h
+    return mc(skill,d,seed,`De un rectángulo de ${w}×${h} cm se recorta una pieza de ${cutW}×${cutH} cm. ¿Qué fracción del área original queda?`,`${remain}/${total}`,[`${cutW*cutH}/${total}`,`${remain}/${cutW*cutH}`,`${total}/${remain}`],`Queda ${remain} de ${total} cm².`,['figuras_compuestas','fraccion','family:m12s06_d5_fraccion'])
+  }
+  if (family===2) {
+    const rectW=ri(8,14),rectH=ri(6,10),r=ri(2,3),rectA=rectW*rectH,circleA=3.14*r*r,remain=rectA-circleA
+    return mc(skill,d,seed,`Una placa de ${rectW}×${rectH} cm tiene un agujero circular de radio ${r} cm. ¿Qué porcentaje aproximado del material original queda?`,`${((remain/rectA)*100).toFixed(1)}%`,[`${((circleA/rectA)*100).toFixed(1)}%`,'50%',`${remain.toFixed(1)}%`],`Queda ${remain.toFixed(2)} de ${rectA} cm²: ${(remain/rectA*100).toFixed(1)}%.`,['figuras_compuestas','porcentaje','family:m12s06_d5_porcentaje'])
+  }
+  if (family===3) {
+    const w=ri(8,14),h=ri(6,10),triH=ri(3,6),rectA=w*h,triA=w*triH/2,total=rectA+triA
+    return mc(skill,d,seed,`Una figura compuesta tiene área total ${total} cm². Si su parte rectangular ocupa ${rectA} cm², ¿qué área ocupa la parte triangular?`,`${triA} cm²`,[`${total} cm²`,`${rectA} cm²`,`${total+rectA} cm²`],`Área triangular=${total}-${rectA}=${triA} cm².`,['figuras_compuestas','inverso','family:m12s06_d5_parte_desconocida'])
+  }
+  const outer=ri(12,18),borderWidth=2,inner=outer-2*borderWidth,border=outer*outer-inner*inner
+  return mc(skill,d,seed,`Un marco cuadrado tiene lado exterior ${outer} cm y anchura uniforme ${borderWidth} cm. ¿Qué área ocupa el marco?`,`${border} cm²`,[`${outer*outer} cm²`,`${inner*inner} cm²`,`${4*outer*borderWidth} cm²`],`Lado interior=${inner} cm; área marco=${outer*outer}-${inner*inner}=${border} cm².`,['figuras_compuestas','razonamiento','family:m12s06_d5_anchura_marco'])
+}
 
-  return mc(
-    skill, d, seed,
-    `Un suelo rectangular de ${bigW} m × ${bigH} m tiene una zona de ${cutW} m × ${cutH} m que no se va a cubrir. Si cubrir cada m² cuesta ${price} €, ¿cuál es el coste total?`,
-    `${cost} €`,
-    [
-      `${bigW * bigH * price} €`,
-      `${remainingArea} €`,
-      `${cutW * cutH * price} €`,
-    ],
-    `Área útil = ${bigW * bigH}-${cutW * cutH}=${remainingArea} m². Coste = ${remainingArea}×${price}=${cost} €.`,
-    ['figuras_compuestas', 'problema', 'varios_pasos', 'dificultad_alta']
-  )
-} 
-// =========================
 // M13 · TABLAS Y GRÁFICAS
 // =========================
 
