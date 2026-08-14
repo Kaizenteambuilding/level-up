@@ -10831,81 +10831,374 @@ if (key === 'quadrilaterals') {
 }
 
 if (key === 'regular_polygons') {
+  const family = ri(0, 4)
+
   if (d === 1) {
-    const variants = [
-      [3, 'Triángulo'], [4, 'Cuadrilátero'], [5, 'Pentágono'],
-      [6, 'Hexágono'], [7, 'Heptágono'], [8, 'Octógono'],
-    ] as const
-    const v = variants[ri(0, variants.length - 1)]
+    if (family === 0) {
+      const variants = [
+        [3, 'Triángulo'],
+        [4, 'Cuadrilátero'],
+        [5, 'Pentágono'],
+        [6, 'Hexágono'],
+        [7, 'Heptágono'],
+        [8, 'Octógono'],
+      ] as const
+      const v = variants[ri(0, variants.length - 1)]
+      return mc(
+        skill, d, seed,
+        `Un polígono tiene ${v[0]} lados. ¿Cómo se llama?`,
+        v[1],
+        ['Triángulo', 'Cuadrilátero', 'Pentágono', 'Hexágono', 'Heptágono', 'Octógono']
+          .filter((x) => x !== v[1]).slice(0, 3),
+        `Un polígono de ${v[0]} lados se llama ${v[1].toLowerCase()}.`,
+        ['poligonos_regulares', 'family:nombre_por_lados']
+      )
+    }
+
+    if (family === 1) {
+      const variants = [
+        ['Pentágono', 5], ['Hexágono', 6], ['Heptágono', 7], ['Octógono', 8],
+      ] as const
+      const v = variants[ri(0, variants.length - 1)]
+      return mc(
+        skill, d, seed,
+        `¿Cuántos lados tiene un ${v[0].toLowerCase()}?`,
+        String(v[1]),
+        [String(v[1] - 1), String(v[1] + 1), String(v[1] + 2)],
+        `Un ${v[0].toLowerCase()} tiene ${v[1]} lados.`,
+        ['poligonos_regulares', 'family:lados_por_nombre']
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill, d, seed,
+        '¿Qué significa que un polígono sea regular?',
+        'Que todos sus lados y todos sus ángulos son iguales',
+        [
+          'Que solo sus lados son iguales',
+          'Que todos sus ángulos son rectos',
+          'Que tiene exactamente cuatro lados',
+        ],
+        'En un polígono regular son iguales todos los lados y todos los ángulos interiores.',
+        ['poligonos_regulares', 'family:definicion_regular']
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill, d, seed,
+        '¿Cuál de estas figuras es necesariamente un polígono regular?',
+        'Un cuadrado',
+        ['Un rectángulo no cuadrado', 'Un triángulo escaleno', 'Un trapecio'],
+        'El cuadrado tiene todos sus lados iguales y todos sus ángulos iguales.',
+        ['poligonos_regulares', 'family:identificar_regular']
+      )
+    }
+
     return mc(
       skill, d, seed,
-      `Un polígono regular tiene ${v[0]} lados. ¿Cómo se llama?`,
-      v[1],
-      ['Triángulo', 'Pentágono', 'Hexágono', 'Octógono', 'Heptágono'].filter((x) => x !== v[1]).slice(0, 3),
-      `Un polígono de ${v[0]} lados se llama ${v[1].toLowerCase()}.`,
-      ['poligonos_regulares']
+      'Un triángulo tiene sus tres lados iguales. ¿Qué podemos afirmar?',
+      'Es un triángulo equilátero y es regular',
+      [
+        'Es escaleno',
+        'Es rectángulo necesariamente',
+        'No puede ser regular',
+      ],
+      'Un triángulo equilátero tiene tres lados y tres ángulos iguales, por lo que es regular.',
+      ['poligonos_regulares', 'family:triangulo_regular']
     )
   }
 
   if (d === 2) {
+    if (family === 0) {
+      const sides = ri(3, 9)
+      const side = ri(3, 12)
+      const perimeter = sides * side
+      return mc(
+        skill, d, seed,
+        `Un polígono regular de ${sides} lados tiene cada lado de ${side} cm. ¿Cuál es su perímetro?`,
+        `${perimeter} cm`,
+        [`${sides + side} cm`, `${side * 2} cm`, `${perimeter + side} cm`],
+        `Perímetro = ${sides}×${side}=${perimeter} cm.`,
+        ['poligonos_regulares', 'family:perimetro_directo']
+      )
+    }
+
+    if (family === 1) {
+      const sides = ri(3, 9)
+      const side = ri(3, 12)
+      const perimeter = sides * side
+      return mc(
+        skill, d, seed,
+        `Un polígono regular de ${sides} lados tiene perímetro ${perimeter} cm. ¿Cuánto mide cada lado?`,
+        `${side} cm`,
+        [`${perimeter - sides} cm`, `${sides} cm`, `${side * 2} cm`],
+        `Cada lado mide ${perimeter}÷${sides}=${side} cm.`,
+        ['poligonos_regulares', 'family:lado_desde_perimetro']
+      )
+    }
+
+    if (family === 2) {
+      const sides = ri(4, 8)
+      const sideA = ri(3, 8)
+      const sideB = sideA + ri(1, 4)
+      const pA = sides * sideA
+      const pB = sides * sideB
+      return mc(
+        skill, d, seed,
+        `Dos polígonos regulares tienen ${sides} lados. Uno tiene lado ${sideA} cm y el otro ${sideB} cm. ¿Cuál tiene mayor perímetro?`,
+        `El de lado ${sideB} cm`,
+        [`El de lado ${sideA} cm`, 'Tienen el mismo perímetro', 'No se puede saber'],
+        `Sus perímetros son ${pA} cm y ${pB} cm; el segundo es mayor.`,
+        ['poligonos_regulares', 'family:comparar_perimetros']
+      )
+    }
+
+    if (family === 3) {
+      const sides = ri(4, 8)
+      const side = ri(3, 9)
+      const increase = ri(1, 4)
+      const oldP = sides * side
+      const newP = sides * (side + increase)
+      return mc(
+        skill, d, seed,
+        `Cada lado de un polígono regular de ${sides} lados aumenta ${increase} cm. Si antes medía ${side} cm por lado, ¿cuánto aumenta el perímetro?`,
+        `${newP - oldP} cm`,
+        [`${increase} cm`, `${sides + increase} cm`, `${oldP + increase} cm`],
+        `El perímetro aumenta ${sides}×${increase}=${newP - oldP} cm.`,
+        ['poligonos_regulares', 'family:cambio_perimetro']
+      )
+    }
+
     return mc(
       skill, d, seed,
-      '¿Qué significa que un polígono sea regular?',
-      'Que todos sus lados y todos sus ángulos son iguales',
-      [
-        'Que solo sus lados son iguales',
-        'Que tiene exactamente cuatro lados',
-        'Que todos sus ángulos son rectos',
-      ],
-      'En un polígono regular son iguales tanto los lados como los ángulos interiores.',
-      ['poligonos_regulares', 'propiedades']
+      'Un cuadrilátero tiene sus cuatro lados iguales, pero sus ángulos no son todos iguales. ¿Es un polígono regular?',
+      'No',
+      ['Sí', 'Solo si tiene una diagonal', 'Solo si su perímetro es entero'],
+      'Para ser regular deben ser iguales tanto todos los lados como todos los ángulos.',
+      ['poligonos_regulares', 'family:regularidad_dos_condiciones']
     )
   }
 
   if (d === 3) {
-    const sides = ri(3, 8)
-    const side = ri(3, 12)
-    const perimeter = sides * side
+    if (family === 0) {
+      const sides = ri(3, 10)
+      const sum = (sides - 2) * 180
+      return mc(
+        skill, d, seed,
+        `¿Cuánto suman los ángulos interiores de un polígono de ${sides} lados?`,
+        `${sum}°`,
+        [`${sides * 180}°`, `${(sides - 1) * 180}°`, `${sum + 180}°`],
+        `La suma es (${sides}-2)×180=${sum}°.`,
+        ['poligonos_regulares', 'family:suma_angulos']
+      )
+    }
+
+    if (family === 1) {
+      const choices = [
+        [3, 60], [4, 90], [5, 108], [6, 120], [8, 135], [9, 140], [10, 144], [12, 150],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `¿Cuánto mide cada ángulo interior de un polígono regular de ${v[0]} lados?`,
+        `${v[1]}°`,
+        [`${180 - v[1]}°`, `${v[1] - 10}°`, `${Math.min(179, v[1] + 10)}°`],
+        `Cada ángulo mide ((${v[0]}-2)×180)÷${v[0]}=${v[1]}°.`,
+        ['poligonos_regulares', 'family:angulo_interior']
+      )
+    }
+
+    if (family === 2) {
+      const choices = [
+        [3, 120], [4, 90], [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `¿Cuánto mide cada ángulo exterior de un polígono regular de ${v[0]} lados?`,
+        `${v[1]}°`,
+        [`${180 - v[1]}°`, `${360 - v[1]}°`, `${v[1] + 10}°`],
+        `Los ángulos exteriores suman 360°: 360÷${v[0]}=${v[1]}°.`,
+        ['poligonos_regulares', 'family:angulo_exterior']
+      )
+    }
+
+    if (family === 3) {
+      const choices = [
+        [3, 120], [4, 90], [5, 72], [6, 60], [8, 45], [10, 36], [12, 30],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `Uniendo el centro con todos los vértices de un polígono regular de ${v[0]} lados se forman ${v[0]} triángulos iguales. ¿Cuánto mide cada ángulo central?`,
+        `${v[1]}°`,
+        [`${180 - v[1]}°`, `${v[1] / 2}°`, `${v[1] + 20}°`],
+        `La vuelta completa mide 360°: 360÷${v[0]}=${v[1]}°.`,
+        ['poligonos_regulares', 'family:angulo_central']
+      )
+    }
+
+    const sides = ri(5, 10)
+    const diagonalsFromVertex = sides - 3
     return mc(
       skill, d, seed,
-      `Un polígono regular de ${sides} lados tiene cada lado de ${side} cm. ¿Cuál es su perímetro?`,
-      `${perimeter} cm`,
-      [`${sides + side} cm`, `${side * 2} cm`, `${perimeter + side} cm`],
-      `Perímetro = número de lados × longitud del lado = ${sides}×${side}=${perimeter} cm.`,
-      ['poligonos_regulares', 'perimetro']
+      `Desde un vértice de un polígono de ${sides} lados, ¿cuántas diagonales se pueden trazar?`,
+      String(diagonalsFromVertex),
+      [String(sides - 2), String(sides - 1), String(sides)],
+      `No se une consigo mismo ni con los dos vértices vecinos: ${sides}-3=${diagonalsFromVertex}.`,
+      ['poligonos_regulares', 'family:diagonales_desde_vertice']
     )
   }
 
   if (d === 4) {
-    const sides = ri(3, 8)
-    const side = ri(3, 12)
+    if (family === 0) {
+      const sides = ri(5, 10)
+      const diagonals = (sides * (sides - 3)) / 2
+      return mc(
+        skill, d, seed,
+        `¿Cuántas diagonales tiene en total un polígono de ${sides} lados?`,
+        String(diagonals),
+        [String(sides - 3), String(sides * (sides - 3)), String(diagonals + sides)],
+        `Diagonales = n(n-3)/2 = ${sides}×${sides - 3}÷2=${diagonals}.`,
+        ['poligonos_regulares', 'family:diagonales_totales']
+      )
+    }
+
+    if (family === 1) {
+      const choices = [
+        [3, 120], [4, 90], [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `Cada ángulo exterior de un polígono regular mide ${v[1]}°. ¿Cuántos lados tiene?`,
+        String(v[0]),
+        [String(v[0] - 1), String(v[0] + 1), String(v[0] + 2)],
+        `Número de lados = 360÷${v[1]}=${v[0]}.`,
+        ['poligonos_regulares', 'family:lados_desde_exterior']
+      )
+    }
+
+    if (family === 2) {
+      const choices = [
+        [3, 60], [4, 90], [5, 108], [6, 120], [8, 135], [9, 140], [10, 144], [12, 150],
+      ] as const
+      const v = choices[ri(0, choices.length - 1)]
+      return mc(
+        skill, d, seed,
+        `Cada ángulo interior de un polígono regular mide ${v[1]}°. ¿Cuántos lados tiene?`,
+        String(v[0]),
+        [String(v[0] - 1), String(v[0] + 1), String(v[0] + 3)],
+        `El exterior mide 180-${v[1]}=${180 - v[1]}°. Entonces n=360÷${180 - v[1]}=${v[0]}.`,
+        ['poligonos_regulares', 'family:lados_desde_interior']
+      )
+    }
+
+    if (family === 3) {
+      const sides = ri(4, 9)
+      const sum = (sides - 2) * 180
+      return mc(
+        skill, d, seed,
+        `La suma de los ángulos interiores de un polígono es ${sum}°. ¿Cuántos lados tiene?`,
+        String(sides),
+        [String(sides - 1), String(sides + 1), String(sides + 2)],
+        `(${sides}-2)×180=${sum}; por tanto tiene ${sides} lados.`,
+        ['poligonos_regulares', 'family:lados_desde_suma']
+      )
+    }
+
+    const sides = ri(5, 9)
+    const side = ri(4, 10)
     const perimeter = sides * side
+    const newSide = side + 2
+    const newPerimeter = sides * newSide
     return mc(
       skill, d, seed,
-      `Un polígono regular de ${sides} lados tiene perímetro ${perimeter} cm. ¿Cuánto mide cada lado?`,
-      `${side} cm`,
-      [`${perimeter - sides} cm`, `${sides} cm`, `${side * 2} cm`],
-      `Cada lado mide ${perimeter}÷${sides}=${side} cm.`,
-      ['poligonos_regulares', 'medida_lado']
+      `Un polígono regular de ${sides} lados tiene perímetro ${perimeter} cm. Si cada lado aumenta 2 cm, ¿cuál será el nuevo perímetro?`,
+      `${newPerimeter} cm`,
+      [`${perimeter + 2} cm`, `${perimeter + sides} cm`, `${newSide * 2} cm`],
+      `El lado inicial mide ${perimeter}÷${sides}=${side} cm; ahora mide ${newSide} cm. Nuevo perímetro: ${sides}×${newSide}=${newPerimeter} cm.`,
+      ['poligonos_regulares', 'family:perimetro_dos_pasos']
     )
   }
 
-  const variants = [
-    ['triángulo equilátero', '60°'],
-    ['cuadrado', '90°'],
-    ['hexágono regular', '120°'],
+  if (family === 0) {
+    const n1 = ri(5, 8)
+    const n2 = n1 + ri(1, 3)
+    const d1 = (n1 * (n1 - 3)) / 2
+    const d2 = (n2 * (n2 - 3)) / 2
+    return mc(
+      skill, d, seed,
+      `¿Cuántas diagonales más tiene un polígono de ${n2} lados que uno de ${n1} lados?`,
+      String(d2 - d1),
+      [String(n2 - n1), String(d2), String(d1)],
+      `Tienen ${d2} y ${d1} diagonales respectivamente; la diferencia es ${d2 - d1}.`,
+      ['poligonos_regulares', 'family:comparar_diagonales', 'dificultad_alta']
+    )
+  }
+
+  if (family === 1) {
+    const choices = [
+      [5, 5], [6, 9], [7, 14], [8, 20], [9, 27], [10, 35],
+    ] as const
+    const v = choices[ri(0, choices.length - 1)]
+    return mc(
+      skill, d, seed,
+      `Un polígono tiene ${v[1]} diagonales. ¿Cuántos lados tiene?`,
+      String(v[0]),
+      [String(v[0] - 1), String(v[0] + 1), String(v[0] + 2)],
+      `Con n=${v[0]}, n(n-3)/2=${v[0]}×${v[0] - 3}/2=${v[1]}.`,
+      ['poligonos_regulares', 'family:lados_desde_diagonales', 'dificultad_alta']
+    )
+  }
+
+  if (family === 2) {
+    const choices = [
+      [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
+    ] as const
+    const v = choices[ri(0, choices.length - 1)]
+    const side = ri(4, 9)
+    const perimeter = v[0] * side
+    return mc(
+      skill, d, seed,
+      `Un polígono regular tiene ángulo central de ${v[1]}° y cada lado mide ${side} cm. ¿Cuál es su perímetro?`,
+      `${perimeter} cm`,
+      [`${side * 2} cm`, `${perimeter + side} cm`, `${v[0] + side} cm`],
+      `Tiene 360÷${v[1]}=${v[0]} lados. Perímetro=${v[0]}×${side}=${perimeter} cm.`,
+      ['poligonos_regulares', 'family:central_y_perimetro', 'dificultad_alta']
+    )
+  }
+
+  if (family === 3) {
+    return mc(
+      skill, d, seed,
+      '¿Cuál de estas afirmaciones sobre polígonos regulares es siempre cierta?',
+      'La suma de sus ángulos exteriores, tomando uno por vértice, es 360°',
+      [
+        'Todos sus ángulos interiores miden 90°',
+        'Todos tienen el mismo número de diagonales que de lados',
+        'Su perímetro siempre es 360 unidades',
+      ],
+      'Al recorrer un polígono completo, los giros exteriores suman una vuelta: 360°.',
+      ['poligonos_regulares', 'family:razonamiento_exteriores', 'dificultad_alta']
+    )
+  }
+
+  const choices = [
+    [5, 72], [6, 60], [8, 45], [9, 40], [10, 36], [12, 30],
   ] as const
-  const v = variants[ri(0, variants.length - 1)]
+  const v = choices[ri(0, choices.length - 1)]
   return mc(
     skill, d, seed,
-    `¿Cuánto mide cada ángulo interior de un ${v[0]}?`,
-    v[1],
-    ['45°', '60°', '90°', '120°', '180°'].filter((x) => x !== v[1]).slice(0, 3),
-    `En un ${v[0]}, cada ángulo interior mide ${v[1]}.`,
-    ['poligonos_regulares', 'angulos', 'dificultad_alta']
+    `Un robot recorre el contorno de un polígono regular de ${v[0]} lados. En cada vértice gira siempre el mismo ángulo para seguir el borde. ¿Cuánto debe girar en cada vértice?`,
+    `${v[1]}°`,
+    [`${180 - v[1]}°`, `${360 - v[1]}°`, `${v[1] * 2}°`],
+    `Ese giro es el ángulo exterior: 360÷${v[0]}=${v[1]}°.`,
+    ['poligonos_regulares', 'family:giro_robot', 'dificultad_alta']
   )
 }
-
 if (key === 'geometry_classification') {
   if (d === 1) {
     const variants = [
