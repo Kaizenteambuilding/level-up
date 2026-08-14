@@ -7258,108 +7258,281 @@ if (key === 'quadrilateral_types') {
 }
 
 if (key === 'circle_elements') {
+  // En modo prueba la semilla avanza con un LCG. Sus 3 bits bajos recorren
+  // los 8 valores antes de repetirse, así que esta selección evita quedarse
+  // atrapado en una sola familia al pulsar "Generar otra".
+  const family = (seed >>> 0) & 7
+
   if (d === 1) {
-    const variants = [
-      {
-        prompt: 'El segmento que une el centro de una circunferencia con uno de sus puntos se llama...',
-        answer: 'Radio',
-      },
-      {
-        prompt: 'El segmento que une dos puntos de una circunferencia pasando por el centro se llama...',
-        answer: 'Diámetro',
-      },
-      {
-        prompt: 'Un segmento que une dos puntos de una circunferencia se llama...',
-        answer: 'Cuerda',
-      },
-    ]
+    if (family === 0) return mc(skill, d, seed,
+      'El segmento que une el centro de una circunferencia con uno de sus puntos se llama...',
+      'Radio', ['Diámetro', 'Cuerda', 'Arco'],
+      'El radio une el centro con un punto de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d1_radius'])
 
-    const v = variants[ri(0, variants.length - 1)]
+    if (family === 1) return mc(skill, d, seed,
+      '¿Cómo se llama el segmento que une dos puntos de una circunferencia y pasa por el centro?',
+      'Diámetro', ['Radio', 'Arco', 'Tangente'],
+      'Un diámetro es una cuerda que pasa por el centro.',
+      ['circunferencia', 'elementos', 'family:circle_d1_diameter'])
 
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      ['Radio', 'Diámetro', 'Cuerda', 'Arco'].filter((x) => x !== v.answer),
-      `Ese elemento se denomina ${v.answer.toLowerCase()}.`,
-      ['circunferencia', 'elementos']
-    )
+    if (family === 2) return mc(skill, d, seed,
+      'Un segmento une dos puntos de una circunferencia, pero no tiene por qué pasar por el centro. ¿Qué es?',
+      'Cuerda', ['Radio', 'Diámetro', 'Arco'],
+      'Cualquier segmento con extremos en la circunferencia es una cuerda.',
+      ['circunferencia', 'elementos', 'family:circle_d1_chord'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Una parte curva de la circunferencia comprendida entre dos puntos se llama...',
+      'Arco', ['Radio', 'Cuerda', 'Centro'],
+      'Un arco es una porción de la propia circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d1_arc'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Qué punto está a la misma distancia de todos los puntos de una circunferencia?',
+      'El centro', ['Un extremo de un diámetro', 'Un punto cualquiera del círculo', 'El punto medio de cualquier arco'],
+      'El centro es el punto equidistante de todos los puntos de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d1_center'])
+
+    if (family === 5) {
+      const radius = ri(2, 10)
+      return mc(skill, d, seed,
+        `Un círculo tiene radio de ${radius} cm. ¿Cuánto mide su diámetro?`,
+        `${radius * 2} cm`, [`${radius} cm`, `${radius + 2} cm`, `${radius * 3} cm`],
+        `El diámetro mide el doble que el radio: ${radius}×2=${radius * 2} cm.`,
+        ['circunferencia', 'radio_diametro', 'family:circle_d1_double'])
+    }
+
+    if (family === 6) return mc(skill, d, seed,
+      '¿Cuál de estos elementos tiene uno de sus extremos en el centro y el otro en la circunferencia?',
+      'Un radio', ['Una cuerda', 'Un arco', 'Una secante'],
+      'Esa es exactamente la definición de radio.',
+      ['circunferencia', 'elementos', 'family:circle_d1_endpoint'])
+
+    return mc(skill, d, seed,
+      '¿Cuál de estas afirmaciones es correcta?',
+      'Un diámetro está formado por dos radios alineados',
+      ['Un radio mide el doble que un diámetro', 'Toda cuerda pasa por el centro', 'Un arco es un segmento recto'],
+      'El centro divide cualquier diámetro en dos radios iguales.',
+      ['circunferencia', 'elementos', 'family:circle_d1_two_radii'])
   }
 
   if (d === 2) {
-    const radius = ri(2, 12)
+    if (family === 0) {
+      const radius = ri(3, 15)
+      return mc(skill, d, seed,
+        `El radio de una circunferencia mide ${radius} cm. ¿Cuánto mide su diámetro?`,
+        `${radius * 2} cm`, [`${radius} cm`, `${radius + 2} cm`, `${radius * 4} cm`],
+        `Diámetro = 2×radio = ${radius * 2} cm.`,
+        ['circunferencia', 'radio_diametro', 'family:circle_d2_radius_to_diameter'])
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una circunferencia tiene radio de ${radius} cm. ¿Cuánto mide su diámetro?`,
-      `${radius * 2} cm`,
-      [
-        `${radius} cm`,
-        `${radius + 2} cm`,
-        `${radius * 4} cm`,
-      ],
-      `El diámetro es el doble del radio: ${radius}×2=${radius * 2} cm.`,
-      ['circunferencia', 'radio_diametro']
-    )
+    if (family === 1) {
+      const radius = ri(3, 15)
+      const diameter = radius * 2
+      return mc(skill, d, seed,
+        `Una circunferencia tiene ${diameter} cm de diámetro. ¿Cuál es su radio?`,
+        `${radius} cm`, [`${diameter} cm`, `${diameter * 2} cm`, `${radius + 2} cm`],
+        `El radio es la mitad del diámetro: ${diameter}÷2=${radius} cm.`,
+        ['circunferencia', 'radio_diametro', 'family:circle_d2_diameter_to_radius'])
+    }
+
+    if (family === 2) return mc(skill, d, seed,
+      '¿Cuál de estos elementos es siempre también una cuerda?',
+      'El diámetro', ['El radio', 'El arco', 'El centro'],
+      'Todo diámetro une dos puntos de la circunferencia, así que es una cuerda especial.',
+      ['circunferencia', 'propiedades', 'family:circle_d2_diameter_chord'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Una cuerda pasa por el centro de la circunferencia. ¿Cómo se llama entonces?',
+      'Diámetro', ['Radio', 'Arco', 'Tangente'],
+      'La cuerda que pasa por el centro es el diámetro.',
+      ['circunferencia', 'propiedades', 'family:circle_d2_center_chord'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Qué diferencia hay entre un círculo y una circunferencia?',
+      'La circunferencia es el borde y el círculo incluye también el interior',
+      ['Son exactamente lo mismo', 'El círculo es solo el borde', 'La circunferencia incluye el interior y el círculo no'],
+      'La circunferencia es una línea curva cerrada; el círculo es la región interior junto con su borde.',
+      ['circunferencia', 'conceptos', 'family:circle_d2_circle_vs_circumference'])
+
+    if (family === 5) return mc(skill, d, seed,
+      'Si A y B son los extremos de un diámetro y O es el centro, ¿qué relación hay entre OA y OB?',
+      'Tienen la misma longitud', ['OA mide el doble que OB', 'OB mide el doble que OA', 'No se puede comparar'],
+      'OA y OB son radios de la misma circunferencia.',
+      ['circunferencia', 'radio_diametro', 'family:circle_d2_equal_radii'])
+
+    if (family === 6) return mc(skill, d, seed,
+      '¿Cuál de estos segmentos puede ser una cuerda sin ser un diámetro?',
+      'Uno que une dos puntos de la circunferencia sin pasar por el centro',
+      ['Uno que une el centro con la circunferencia', 'Uno que toca la circunferencia en un único punto desde fuera', 'Un arco de la circunferencia'],
+      'Una cuerda no necesita pasar por el centro; si pasa, sería diámetro.',
+      ['circunferencia', 'cuerda', 'family:circle_d2_non_diameter_chord'])
+
+    return mc(skill, d, seed,
+      'Un diámetro divide una circunferencia en dos arcos iguales. ¿Cómo se llama cada uno de esos arcos?',
+      'Semicircunferencia', ['Radio', 'Sector', 'Cuerda'],
+      'Cada mitad de una circunferencia determinada por un diámetro es una semicircunferencia.',
+      ['circunferencia', 'arcos', 'family:circle_d2_semicircle'])
   }
 
   if (d === 3) {
-    const radius = ri(2, 12)
-    const diameter = radius * 2
+    if (family === 0) {
+      const r = ri(4, 12)
+      const d2 = r * 2
+      return mc(skill, d, seed,
+        `El segmento AB es un diámetro de ${d2} cm y O es el centro. ¿Cuánto mide AO?`,
+        `${r} cm`, [`${d2} cm`, `${r * 2 + 2} cm`, `${Math.max(1, r - 2)} cm`],
+        `AO es un radio, así que mide la mitad del diámetro: ${r} cm.`,
+        ['circunferencia', 'razonamiento', 'family:circle_d3_half_diameter'])
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `El diámetro de una circunferencia mide ${diameter} cm. ¿Cuánto mide el radio?`,
-      `${radius} cm`,
-      [
-        `${diameter} cm`,
-        `${diameter * 2} cm`,
-        `${Math.max(1, radius - 1)} cm`,
-      ],
-      `El radio es la mitad del diámetro: ${diameter}÷2=${radius} cm.`,
-      ['circunferencia', 'radio_diametro']
-    )
+    if (family === 1) return mc(skill, d, seed,
+      '¿Cuál de estas afirmaciones es siempre cierta?',
+      'Todos los radios de una misma circunferencia miden lo mismo',
+      ['Todas las cuerdas miden lo mismo', 'Todo radio es un diámetro', 'Todo arco es una semicircunferencia'],
+      'La igualdad de los radios es una propiedad básica de la circunferencia.',
+      ['circunferencia', 'propiedades', 'family:circle_d3_equal_radii'])
+
+    if (family === 2) return mc(skill, d, seed,
+      'Una recta toca una circunferencia en un único punto. ¿Cómo se llama esa recta?',
+      'Tangente', ['Secante', 'Diámetro', 'Cuerda'],
+      'Una tangente tiene exactamente un punto común con la circunferencia.',
+      ['circunferencia', 'rectas', 'family:circle_d3_tangent'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Una recta corta una circunferencia en dos puntos distintos. ¿Cómo se llama?',
+      'Secante', ['Tangente', 'Radio', 'Arco'],
+      'Una secante atraviesa la circunferencia y tiene dos puntos de corte.',
+      ['circunferencia', 'rectas', 'family:circle_d3_secant'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Qué afirmación distingue correctamente una tangente de una secante?',
+      'La tangente tiene un punto común con la circunferencia y la secante tiene dos',
+      ['La tangente tiene dos puntos comunes y la secante uno', 'Ambas tienen siempre dos puntos comunes', 'Ninguna toca la circunferencia'],
+      'La cantidad de puntos de intersección permite distinguirlas.',
+      ['circunferencia', 'rectas', 'family:circle_d3_tangent_vs_secant'])
+
+    if (family === 5) return mc(skill, d, seed,
+      'Si una cuerda no pasa por el centro, ¿podemos afirmar que es un diámetro?',
+      'No', ['Sí, siempre', 'Solo si es corta', 'Solo si sus extremos están dentro del círculo'],
+      'Para ser diámetro, una cuerda debe pasar necesariamente por el centro.',
+      ['circunferencia', 'razonamiento', 'family:circle_d3_not_diameter'])
+
+    if (family === 6) return mc(skill, d, seed,
+      'Un punto P está en la circunferencia y O es el centro. ¿Qué tipo de segmento es OP?',
+      'Radio', ['Diámetro', 'Cuerda que no pasa por el centro', 'Tangente'],
+      'OP une el centro con un punto de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d3_point_radius'])
+
+    return mc(skill, d, seed,
+      '¿Cuál de estos elementos pertenece a la circunferencia como línea curva y no es un segmento recto?',
+      'Un arco', ['Un radio', 'Un diámetro', 'Una cuerda'],
+      'El arco es una porción curva de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d3_arc_not_segment'])
   }
 
   if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
+    if (family === 0) return mc(skill, d, seed,
       '¿Cuál de estas afirmaciones es siempre cierta?',
-      'Todo diámetro es también una cuerda',
-      [
-        'Toda cuerda es un diámetro',
-        'Todo radio es una cuerda',
-        'Todo arco pasa por el centro',
-      ],
-      'Un diámetro une dos puntos de la circunferencia, así que cumple la definición de cuerda; además pasa por el centro.',
-      ['circunferencia', 'razonamiento']
-    )
+      'Todo diámetro es una cuerda, pero no toda cuerda es un diámetro',
+      ['Toda cuerda es un diámetro', 'Todo radio es una cuerda', 'Todo diámetro es un arco'],
+      'El diámetro es una cuerda especial que pasa por el centro.',
+      ['circunferencia', 'razonamiento', 'family:circle_d4_inclusion'])
+
+    if (family === 1) return mc(skill, d, seed,
+      'Una tangente toca la circunferencia en P y OP es un radio. ¿Qué relación forman la tangente y OP en P?',
+      'Son perpendiculares', ['Son paralelos', 'Forman siempre 45°', 'Coinciden en la misma recta'],
+      'El radio al punto de tangencia es perpendicular a la tangente.',
+      ['circunferencia', 'tangente', 'family:circle_d4_tangent_perpendicular'])
+
+    if (family === 2) return mc(skill, d, seed,
+      'Desde el centro O se traza un segmento perpendicular a una cuerda AB. ¿Qué ocurre con AB?',
+      'Queda dividida en dos partes iguales', ['Se convierte en un diámetro necesariamente', 'Deja de ser una cuerda', 'Su longitud se duplica'],
+      'La perpendicular trazada desde el centro a una cuerda la biseca.',
+      ['circunferencia', 'cuerdas', 'family:circle_d4_perpendicular_bisects'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Dos cuerdas de una misma circunferencia tienen la misma longitud. ¿Qué puede decirse de su distancia al centro?',
+      'Es la misma', ['La cuerda más alta está siempre más cerca', 'Una debe pasar por el centro', 'No existe ninguna relación'],
+      'Cuerdas iguales de una misma circunferencia están a igual distancia del centro.',
+      ['circunferencia', 'cuerdas', 'family:circle_d4_equal_chords'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Cuál es la cuerda de mayor longitud que puede trazarse en una circunferencia?',
+      'El diámetro', ['Cualquier radio', 'Una tangente', 'El arco mayor'],
+      'La cuerda máxima es la que pasa por el centro: el diámetro.',
+      ['circunferencia', 'cuerdas', 'family:circle_d4_longest_chord'])
+
+    if (family === 5) return mc(skill, d, seed,
+      'Una recta tiene exactamente dos puntos comunes con una circunferencia. ¿Cuál de estas opciones la describe correctamente?',
+      'Es secante', ['Es tangente', 'Es un radio', 'Es necesariamente un diámetro'],
+      'Una recta secante corta la circunferencia en dos puntos.',
+      ['circunferencia', 'rectas', 'family:circle_d4_two_intersections'])
+
+    if (family === 6) return mc(skill, d, seed,
+      'Una recta es tangente a una circunferencia. ¿Cuántos puntos tienen en común?',
+      '1', ['0', '2', 'Infinitos'],
+      'Por definición, una tangente toca la circunferencia en un único punto.',
+      ['circunferencia', 'rectas', 'family:circle_d4_one_intersection'])
+
+    return mc(skill, d, seed,
+      '¿Qué condición basta para asegurar que una cuerda es un diámetro?',
+      'Que pase por el centro de la circunferencia', ['Que sea horizontal', 'Que mida lo mismo que un radio', 'Que sus extremos estén muy próximos'],
+      'Toda cuerda que pasa por el centro es un diámetro.',
+      ['circunferencia', 'razonamiento', 'family:circle_d4_condition_diameter'])
   }
 
-  return mc(
-    skill,
-    d,
-    seed,
+  if (family === 0) return mc(skill, d, seed,
     'Una cuerda pasa exactamente por el centro de una circunferencia. ¿Qué podemos afirmar?',
-    'Esa cuerda es un diámetro',
-    [
-      'Esa cuerda es un radio',
-      'La cuerda deja de pertenecer a la circunferencia',
-      'Su longitud es la mitad del radio',
-    ],
+    'Esa cuerda es un diámetro', ['Esa cuerda es un radio', 'La cuerda deja de pertenecer a la circunferencia', 'Su longitud es la mitad del radio'],
     'Una cuerda que pasa por el centro es precisamente un diámetro.',
-    ['circunferencia', 'razonamiento', 'dificultad_alta']
-  )
-}
+    ['circunferencia', 'razonamiento', 'family:circle_d5_center_chord'])
 
+  if (family === 1) return mc(skill, d, seed,
+    'Una cuerda AB no pasa por el centro O. Se traza desde O una perpendicular a AB que la corta en M. ¿Qué afirmación es correcta?',
+    'AM y MB tienen la misma longitud', ['AM es siempre el doble de MB', 'M debe coincidir con O', 'AB deja de ser una cuerda'],
+    'La perpendicular desde el centro a una cuerda la divide en dos partes iguales.',
+    ['circunferencia', 'cuerdas', 'family:circle_d5_bisector'])
+
+  if (family === 2) return mc(skill, d, seed,
+    'Una recta t es tangente a una circunferencia en P. Si O es el centro, ¿cuánto mide el ángulo entre OP y t?',
+    '90°', ['45°', '60°', '180°'],
+    'El radio al punto de tangencia es perpendicular a la tangente.',
+    ['circunferencia', 'tangente', 'family:circle_d5_tangent_angle'])
+
+  if (family === 3) return mc(skill, d, seed,
+    'Dos cuerdas de una misma circunferencia están a distinta distancia del centro. ¿Cuál será más larga?',
+    'La que esté más cerca del centro', ['La que esté más lejos del centro', 'Siempre miden lo mismo', 'La que tenga un extremo más alto'],
+    'En una misma circunferencia, las cuerdas más próximas al centro son más largas.',
+    ['circunferencia', 'cuerdas', 'family:circle_d5_chord_distance'])
+
+  if (family === 4) return mc(skill, d, seed,
+    '¿Cuál de estas cadenas de inclusión es correcta?',
+    'Todo diámetro es una cuerda, pero no toda cuerda es un diámetro',
+    ['Todo radio es un diámetro', 'Toda tangente es una secante', 'Todo arco es una cuerda'],
+    'El diámetro pertenece a la familia de las cuerdas, con la condición adicional de pasar por el centro.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_inclusion'])
+
+  if (family === 5) return mc(skill, d, seed,
+    'Una recta corta a una circunferencia en A y B. Si además pasa por el centro O, ¿qué segmento es AB?',
+    'Un diámetro', ['Un radio', 'Una tangente', 'Un arco'],
+    'AB es una cuerda que pasa por el centro, por lo que es un diámetro.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_secant_center'])
+
+  if (family === 6) return mc(skill, d, seed,
+    'Si una cuerda es la más larga de todas las cuerdas posibles de una circunferencia, ¿qué debe cumplir?',
+    'Pasar por el centro', ['Ser tangente', 'Tener la misma longitud que un radio', 'Formar siempre 45° con un radio'],
+    'La cuerda de máxima longitud es el diámetro y, por tanto, pasa por el centro.',
+    ['circunferencia', 'cuerdas', 'family:circle_d5_max_chord'])
+
+  return mc(skill, d, seed,
+    'Se afirma: «Toda recta que toca una circunferencia es tangente». ¿Qué corrección hace precisa la afirmación?',
+    'Debe tocarla en exactamente un punto',
+    ['Debe pasar por el centro', 'Debe cortarla en dos puntos', 'Debe medir lo mismo que el diámetro'],
+    'Una tangente se caracteriza por tener un único punto común con la circunferencia.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_definition_precision'])
+}
 if (key === 'symmetry') {
   if (d === 1) {
     const variants = [
