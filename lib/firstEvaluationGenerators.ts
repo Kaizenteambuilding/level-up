@@ -1627,53 +1627,143 @@ if (key === 'fraction_simplify') {
   }
 
   if (key === 'fraction_word_problem') {
-  const den = ri(3, 9)
-  const num = ri(1, den - 1)
-  const reps = ri(2, 5)
-  const answer = `${num * reps}/${den}`
+  const variant = ri(0, 5)
 
-  const variants = [
-    {
-      prompt: `Cada vuelta mide ${num}/${den} km. Si haces ${reps} vueltas, ¿qué distancia recorres?`,
-      solution: `${num}/${den} × ${reps} = ${answer} km.`,
-    },
-    {
-      prompt: `Marta bebe ${num}/${den} de litro de agua cada vez. Si bebe esa cantidad ${reps} veces, ¿cuántos litros bebe en total?`,
-      solution: `${num}/${den} × ${reps} = ${answer} litros.`,
-    },
-    {
-      prompt: `Para una manualidad se usan ${num}/${den} metros de cinta. Si haces ${reps} manualidades iguales, ¿cuántos metros de cinta necesitas?`,
-      solution: `${num}/${den} × ${reps} = ${answer} metros.`,
-    },
-    {
-      prompt: `Un robot avanza ${num}/${den} metros en cada movimiento. Si realiza ${reps} movimientos iguales, ¿qué distancia avanza?`,
-      solution: `${num}/${den} × ${reps} = ${answer} metros.`,
-    },
-    {
-      prompt: `Cada botella contiene ${num}/${den} de litro de zumo. Si tienes ${reps} botellas, ¿cuántos litros hay en total?`,
-      solution: `${num}/${den} × ${reps} = ${answer} litros.`,
-    },
-    {
-      prompt: `Cada tramo de un recorrido mide ${num}/${den} km. Si completas ${reps} tramos iguales, ¿qué distancia recorres?`,
-      solution: `${num}/${den} × ${reps} = ${answer} km.`,
-    },
-  ]
+  // 1. Multiplicar una fracción por un número de repeticiones
+  if (variant === 0) {
+    const den = ri(3, 10)
+    const num = ri(1, den - 1)
+    const reps = ri(2, 6)
+    const answer = `${num * reps}/${den}`
 
-  const variant = variants[ri(0, variants.length - 1)]
+    return mc(
+      skill,
+      d,
+      seed,
+      `Una ruta mide ${num}/${den} km. Si recorres esa distancia ${reps} veces, ¿cuántos kilómetros recorres en total?`,
+      answer,
+      [
+        `${num}/${den * reps}`,
+        `${num + reps}/${den}`,
+        `${num}/${den}`,
+      ],
+      `${num}/${den} × ${reps} = ${answer} km.`,
+      ['problema_fracciones', 'multiplicacion']
+    )
+  }
+
+  // 2. Calcular una fracción de una cantidad
+  if (variant === 1) {
+    const den = ri(2, 8)
+    const num = ri(1, den - 1)
+    const groups = ri(2, 8)
+    const total = den * groups
+    const answer = num * groups
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `En una caja hay ${total} cromos. ${num}/${den} de ellos son especiales. ¿Cuántos cromos especiales hay?`,
+      String(answer),
+      [
+        String(total - answer),
+        String(groups),
+        String(num * den),
+      ],
+      `Primero calculamos ${total} ÷ ${den} = ${groups}; después ${groups} × ${num} = ${answer}.`,
+      ['problema_fracciones', 'fraccion_de_cantidad']
+    )
+  }
+
+  // 3. Averiguar el total conociendo una fracción
+  if (variant === 2) {
+    const den = ri(3, 8)
+    const num = ri(1, den - 1)
+    const factor = ri(2, 6)
+    const known = num * factor
+    const total = den * factor
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `${known} alumnos representan ${num}/${den} de una clase. ¿Cuántos alumnos hay en total?`,
+      String(total),
+      [
+        String(known * den),
+        String(total - known),
+        String(known + den),
+      ],
+      `Si ${num} partes son ${known}, cada parte vale ${factor}. Por tanto, ${den} partes son ${total}.`,
+      ['problema_fracciones', 'hallar_total']
+    )
+  }
+
+  // 4. Fracción que queda
+  if (variant === 3) {
+    const den = ri(4, 10)
+    const used = ri(1, den - 1)
+    const remaining = den - used
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `De una tarta se han comido ${used}/${den}. ¿Qué fracción de la tarta queda?`,
+      `${remaining}/${den}`,
+      [
+        `${used}/${den}`,
+        `${den}/${remaining}`,
+        `${remaining}/${used}`,
+      ],
+      `La tarta completa es ${den}/${den}. Restamos ${used}/${den}: quedan ${remaining}/${den}.`,
+      ['problema_fracciones', 'fraccion_restante']
+    )
+  }
+
+  // 5. Sumar fracciones con el mismo denominador
+  if (variant === 4) {
+    const den = ri(5, 12)
+    const a = ri(1, den - 2)
+    const b = ri(1, den - a - 1)
+    const answer = a + b
+
+    return mc(
+      skill,
+      d,
+      seed,
+      `Por la mañana Marta recorrió ${a}/${den} km y por la tarde ${b}/${den} km. ¿Qué fracción de kilómetro recorrió en total?`,
+      `${answer}/${den}`,
+      [
+        `${a + b}/${den * 2}`,
+        `${Math.abs(a - b)}/${den}`,
+        `${a * b}/${den}`,
+      ],
+      `Como los denominadores son iguales, sumamos los numeradores: ${a} + ${b} = ${answer}. Resultado: ${answer}/${den}.`,
+      ['problema_fracciones', 'suma']
+    )
+  }
+
+  // 6. Restar fracciones con el mismo denominador
+  const den = ri(5, 12)
+  const start = ri(2, den - 1)
+  const used = ri(1, start - 1)
+  const answer = start - used
 
   return mc(
     skill,
     d,
     seed,
-    variant.prompt,
-    answer,
+    `Una botella contenía ${start}/${den} de litro. Se consumieron ${used}/${den} de litro. ¿Cuánto queda?`,
+    `${answer}/${den}`,
     [
-      `${num}/${den * reps}`,
-      `${num + reps}/${den}`,
-      `${num}/${den}`,
+      `${start + used}/${den}`,
+      `${start}/${den}`,
+      `${used}/${den}`,
     ],
-    variant.solution,
-    ['problema_fracciones']
+    `Restamos los numeradores porque el denominador es el mismo: ${start} - ${used} = ${answer}. Quedan ${answer}/${den} de litro.`,
+    ['problema_fracciones', 'resta']
   )
 }
 
