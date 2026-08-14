@@ -7534,43 +7534,62 @@ if (key === 'circle_elements') {
     ['circunferencia', 'razonamiento', 'family:circle_d5_definition_precision'])
 }
 if (key === 'symmetry') {
+  const family = ri(0, 4)
+  const familyTag = `family:symmetry_d${d}_f${family}`
+
   if (d === 1) {
-    const variants = [
-      {
-        prompt: '¿Cuántos ejes de simetría tiene un cuadrado?',
-        answer: '4',
-        distractors: ['1', '2', '3'],
-        solution: 'El cuadrado tiene cuatro ejes de simetría.',
-      },
-      {
-        prompt: '¿Cuántos ejes de simetría tiene un rectángulo que no es cuadrado?',
-        answer: '2',
-        distractors: ['1', '3', '4'],
-        solution: 'Un rectángulo no cuadrado tiene dos ejes de simetría.',
-      },
-      {
-        prompt: '¿Cuántos ejes de simetría tiene un triángulo equilátero?',
-        answer: '3',
-        distractors: ['1', '2', '4'],
-        solution: 'Cada vértice del triángulo equilátero determina un eje de simetría.',
-      },
-    ]
+    if (family === 0) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Una línea divide una figura en dos mitades que coinciden exactamente al doblarla. ¿Cómo se llama esa línea?',
+        'Eje de simetría',
+        ['Diagonal', 'Radio', 'Secante'],
+        'Un eje de simetría divide una figura en dos partes que se superponen exactamente.',
+        ['simetria', familyTag]
+      )
+    }
 
-    const v = variants[ri(0, variants.length - 1)]
+    if (family === 1) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuántos ejes de simetría tiene un cuadrado?',
+        '4',
+        ['1', '2', '3'],
+        'El cuadrado tiene dos ejes que pasan por los puntos medios de lados opuestos y dos diagonales: 4 en total.',
+        ['simetria', 'cuadrado', familyTag]
+      )
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['simetria']
-    )
-  }
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuántos ejes de simetría tiene un rectángulo que no es cuadrado?',
+        '2',
+        ['1', '3', '4'],
+        'Un rectángulo no cuadrado tiene dos ejes de simetría: uno horizontal y otro vertical por su centro.',
+        ['simetria', 'rectangulo', familyTag]
+      )
+    }
 
-  if (d === 2) {
+    if (family === 3) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuántos ejes de simetría tiene un triángulo equilátero?',
+        '3',
+        ['0', '1', '2'],
+        'Cada vértice y el punto medio del lado opuesto determinan un eje de simetría: hay 3.',
+        ['simetria', 'triangulo_equilatero', familyTag]
+      )
+    }
+
     return mc(
       skill,
       d,
@@ -7578,34 +7597,297 @@ if (key === 'symmetry') {
       '¿Cuál de estas figuras tiene infinitos ejes de simetría?',
       'Círculo',
       ['Cuadrado', 'Rectángulo', 'Triángulo equilátero'],
-      'Cualquier diámetro de un círculo puede actuar como eje de simetría.',
-      ['simetria', 'figuras']
+      'Cualquier recta que pase por el centro de un círculo puede actuar como eje de simetría.',
+      ['simetria', 'circulo', familyTag]
+    )
+  }
+
+  if (d === 2) {
+    if (family === 0) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Un triángulo tiene exactamente un eje de simetría. ¿Qué tipo puede ser?',
+        'Isósceles no equilátero',
+        ['Escaleno', 'Equilátero', 'Ningún triángulo'],
+        'Un triángulo isósceles no equilátero tiene un único eje de simetría.',
+        ['simetria', 'triangulos', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuál de estos triángulos no tiene ningún eje de simetría?',
+        'Escaleno',
+        ['Equilátero', 'Isósceles', 'Ninguno'],
+        'Un triángulo escaleno tiene sus tres lados distintos y no posee ejes de simetría.',
+        ['simetria', 'triangulos', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Una figura tiene 4 ejes de simetría y cuatro lados iguales. ¿Qué figura encaja con esa descripción?',
+        'Cuadrado',
+        ['Rectángulo no cuadrado', 'Rombo no cuadrado', 'Trapecio'],
+        'El cuadrado tiene cuatro lados iguales y cuatro ejes de simetría.',
+        ['simetria', 'clasificacion', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      const sides = [5, 6, 8][ri(0, 2)]
+      const names: Record<number, string> = {
+        5: 'pentágono regular',
+        6: 'hexágono regular',
+        8: 'octógono regular',
+      }
+      return mc(
+        skill,
+        d,
+        seed,
+        `¿Cuántos ejes de simetría tiene un ${names[sides]}?`,
+        String(sides),
+        [String(sides - 1), String(sides + 1), String(Math.floor(sides / 2))],
+        `Un polígono regular de ${sides} lados tiene ${sides} ejes de simetría.`,
+        ['simetria', 'poligono_regular', familyTag]
+      )
+    }
+
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Qué afirmación es correcta?',
+      'Un triángulo equilátero tiene más ejes de simetría que un isósceles no equilátero',
+      [
+        'Un triángulo escaleno tiene un eje de simetría',
+        'Un rectángulo no cuadrado tiene cuatro ejes de simetría',
+        'Un círculo tiene exactamente ocho ejes de simetría',
+      ],
+      'El equilátero tiene 3 ejes; un isósceles no equilátero tiene 1.',
+      ['simetria', 'comparacion', familyTag]
     )
   }
 
   if (d === 3) {
+    if (family === 0) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto P = (${x}, ${y}) se refleja respecto del eje Y. ¿Dónde queda P'?`,
+        `(${-x}, ${y})`,
+        [`(${x}, ${-y})`, `(${-x}, ${-y})`, `(${y}, ${x})`],
+        `Reflejar respecto del eje Y cambia el signo de x y mantiene y: (${-x}, ${y}).`,
+        ['simetria', 'coordenadas', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto A = (${-x}, ${y}) se refleja respecto del eje X. ¿Cuáles son las coordenadas de su imagen?`,
+        `(${-x}, ${-y})`,
+        [`(${x}, ${y})`, `(${x}, ${-y})`, `(${-y}, ${-x})`],
+        `Al reflejar respecto del eje X, x se mantiene y cambia el signo de y: (${-x}, ${-y}).`,
+        ['simetria', 'coordenadas', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuál de estas figuras tiene exactamente dos ejes de simetría?',
+        'Rectángulo no cuadrado',
+        ['Triángulo equilátero', 'Cuadrado', 'Triángulo escaleno'],
+        'Un rectángulo no cuadrado tiene exactamente dos ejes de simetría.',
+        ['simetria', 'clasificacion', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuál de estas figuras tiene exactamente un eje de simetría?',
+        'Triángulo isósceles no equilátero',
+        ['Cuadrado', 'Círculo', 'Triángulo escaleno'],
+        'Un triángulo isósceles no equilátero tiene un único eje: el que pasa por el vértice principal y el punto medio de la base.',
+        ['simetria', 'clasificacion', familyTag]
+      )
+    }
+
+    const n = [5, 6, 7, 8][ri(0, 3)]
     return mc(
       skill,
       d,
       seed,
-      'Un triángulo tiene exactamente un eje de simetría. ¿Qué tipo de triángulo puede ser?',
-      'Isósceles no equilátero',
-      ['Escaleno', 'Equilátero', 'Ningún triángulo'],
-      'Un triángulo isósceles no equilátero tiene un único eje de simetría.',
-      ['simetria', 'triangulos']
+      `Un polígono regular tiene ${n} ejes de simetría. ¿Cuántos lados tiene?`,
+      String(n),
+      [String(n - 1), String(n + 1), String(n * 2)],
+      `En un polígono regular, el número de ejes de simetría coincide con el número de lados: ${n}.`,
+      ['simetria', 'poligono_regular', 'razonamiento', familyTag]
     )
   }
 
   if (d === 4) {
+    if (family === 0) {
+      const x = ri(-7, 7)
+      const y = ri(-7, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto P = (${x}, ${y}) se refleja primero respecto del eje X y después respecto del eje Y. ¿Dónde termina?`,
+        `(${-x}, ${-y})`,
+        [`(${x}, ${-y})`, `(${-x}, ${y})`, `(${y}, ${x})`],
+        `La primera reflexión cambia y; la segunda cambia x. El resultado es (${-x}, ${-y}).`,
+        ['simetria', 'coordenadas', 'doble_reflexion', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      const x = ri(-7, 7)
+      const y = ri(-7, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto Q = (${x}, ${y}) se refleja dos veces seguidas respecto del eje Y. ¿Cuál es el resultado final?`,
+        `(${x}, ${y})`,
+        [`(${-x}, ${y})`, `(${x}, ${-y})`, `(${-x}, ${-y})`],
+        'Dos reflexiones sucesivas respecto del mismo eje devuelven cada punto a su posición inicial.',
+        ['simetria', 'doble_reflexion', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Una figura tiene exactamente 3 ejes de simetría. ¿Cuál de estas opciones puede ser?',
+        'Triángulo equilátero',
+        ['Cuadrado', 'Rectángulo no cuadrado', 'Triángulo isósceles no equilátero'],
+        'El triángulo equilátero tiene exactamente tres ejes de simetría.',
+        ['simetria', 'deduccion', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Qué información permite asegurar que un rectángulo es además un cuadrado usando simetrías?',
+        'Que tiene 4 ejes de simetría',
+        ['Que tiene 2 ejes de simetría', 'Que tiene centro', 'Que tiene diagonales'],
+        'Un rectángulo no cuadrado tiene 2 ejes; si tiene 4, debe ser un cuadrado.',
+        ['simetria', 'razonamiento', familyTag]
+      )
+    }
+
     return mc(
       skill,
       d,
       seed,
-      'Una figura se dobla por una línea y las dos mitades coinciden exactamente. ¿Qué representa esa línea?',
-      'Un eje de simetría',
-      ['Una diagonal cualquiera', 'Un radio', 'Una secante'],
-      'Un eje de simetría divide una figura en dos partes que coinciden al superponerse.',
-      ['simetria', 'concepto']
+      'Un polígono regular tiene un número impar de lados. ¿Qué afirmación es cierta sobre sus ejes de simetría?',
+      'Cada eje pasa por un vértice y por el punto medio del lado opuesto',
+      [
+        'Cada eje pasa por dos vértices opuestos',
+        'No tiene ejes de simetría',
+        'Solo tiene un eje de simetría',
+      ],
+      'En un polígono regular con número impar de lados, cada eje une un vértice con el punto medio del lado opuesto.',
+      ['simetria', 'poligono_regular', 'razonamiento', familyTag]
+    )
+  }
+
+  if (family === 0) {
+    const x = ri(-8, 8)
+    const y = ri(-8, 8)
+    return mc(
+      skill,
+      d,
+      seed,
+      `P = (${x}, ${y}) se refleja respecto del eje Y y luego respecto del eje X. ¿Qué transformación única produce el mismo resultado?`,
+      'Una rotación de 180° alrededor del origen',
+      [
+        'Una traslación horizontal',
+        'Una rotación de 90° alrededor del origen',
+        'Una sola reflexión respecto del eje X',
+      ],
+      `Las dos reflexiones llevan P a (${-x}, ${-y}), igual que una rotación de 180° alrededor del origen.`,
+      ['simetria', 'transformaciones', 'dificultad_alta', familyTag]
+    )
+  }
+
+  if (family === 1) {
+    const n = [5, 7, 9][ri(0, 2)]
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un polígono regular tiene ${n} lados. ¿Cuántos ejes de simetría tiene y qué característica comparten?`,
+      `${n}; cada eje pasa por un vértice y el punto medio del lado opuesto`,
+      [
+        `${n - 1}; cada eje pasa por dos vértices`,
+        `${n}; cada eje pasa por dos lados completos`,
+        `1; pasa por el centro`,
+      ],
+      `Al ser regular y tener un número impar de lados, tiene ${n} ejes, cada uno desde un vértice al punto medio del lado opuesto.`,
+      ['simetria', 'poligono_regular', 'dificultad_alta', familyTag]
+    )
+  }
+
+  if (family === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas afirmaciones es necesariamente verdadera?',
+      'Si una figura tiene un eje de simetría, reflejarla respecto de ese eje no cambia su apariencia',
+      [
+        'Toda figura con centro tiene un eje de simetría',
+        'Toda figura con cuatro lados tiene al menos dos ejes de simetría',
+        'Una figura solo puede tener un número finito de ejes de simetría',
+      ],
+      'La definición de eje de simetría exige que la figura coincida consigo misma después de reflejarse respecto de él.',
+      ['simetria', 'razonamiento', 'dificultad_alta', familyTag]
+    )
+  }
+
+  if (family === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Un cuadrado se deforma manteniendo solo los lados opuestos paralelos y deja de tener lados iguales. ¿Qué figura puede resultar y cuántos ejes de simetría conserva si sus ángulos siguen siendo rectos?',
+      'Un rectángulo no cuadrado, con 2 ejes',
+      [
+        'Un rombo, con 4 ejes',
+        'Un trapecio, con 3 ejes',
+        'Un triángulo, con 1 eje',
+      ],
+      'Si conserva cuatro ángulos rectos pero ya no tiene todos los lados iguales, es un rectángulo no cuadrado, que tiene 2 ejes de simetría.',
+      ['simetria', 'clasificacion', 'dificultad_alta', familyTag]
     )
   }
 
@@ -7613,15 +7895,15 @@ if (key === 'symmetry') {
     skill,
     d,
     seed,
-    '¿Cuál de estas afirmaciones es correcta?',
-    'Un cuadrado tiene más ejes de simetría que un rectángulo no cuadrado',
+    '¿Qué dato basta para descartar que una figura sea un cuadrado?',
+    'Que tenga exactamente 2 ejes de simetría',
     [
-      'Todo triángulo tiene al menos un eje de simetría',
-      'Un círculo tiene exactamente cuatro ejes de simetría',
-      'Un triángulo escaleno tiene tres ejes de simetría',
+      'Que tenga 4 ejes de simetría',
+      'Que tenga diagonales',
+      'Que tenga cuatro vértices',
     ],
-    'El cuadrado tiene 4 ejes y un rectángulo no cuadrado tiene 2.',
-    ['simetria', 'razonamiento', 'dificultad_alta']
+    'Todo cuadrado tiene 4 ejes de simetría. Si una figura tiene exactamente 2, no puede ser un cuadrado.',
+    ['simetria', 'contraejemplo', 'dificultad_alta', familyTag]
   )
 }
 
