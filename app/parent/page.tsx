@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 
 type Player = {
@@ -93,6 +94,7 @@ function activitySummary(sessions: ActivitySession[]) {
 }
 
 export default function Parent() {
+  const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [skills, setSkills] = useState<SkillState[]>([])
   const [todayMinutes, setTodayMinutes] = useState(0)
@@ -111,34 +113,71 @@ export default function Parent() {
         return
       }
 
-      const playerId = localStorage.getItem('levelup_player_id')
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      if (!playerId) {
-        setMessage('No hay ningún jugador seleccionado.')
-        setLoading(false)
+      if (!user) {
+        localStorage.removeItem('levelup_player_id')
+        router.replace('/login')
         return
       }
 
-      const { data: playerData, error: playerError } =
-        await supabase
+      let selectedPlayer: Player | null = null
+      const savedPlayerId = localStorage.getItem('levelup_player_id')
+
+      if (savedPlayerId) {
+        const { data: savedPlayer, error: savedPlayerError } = await supabase
           .from('players')
           .select('id,alias,level,xp,daily_target_minutes')
-          .eq('id', playerId)
+          .eq('id', savedPlayerId)
           .maybeSingle()
 
-      if (playerError) {
-        setMessage(playerError.message)
-        setLoading(false)
-        return
+        if (savedPlayerError) {
+          setMessage(savedPlayerError.message)
+          setLoading(false)
+          return
+        }
+
+        if (savedPlayer) {
+          selectedPlayer = savedPlayer as Player
+        } else {
+          localStorage.removeItem('levelup_player_id')
+        }
       }
 
-      if (!playerData) {
-        setMessage('No se ha encontrado el jugador.')
-        setLoading(false)
-        return
+      if (!selectedPlayer) {
+        const { data: availablePlayers, error: playersError } = await supabase
+          .from('players')
+          .select('id,alias,level,xp,daily_target_minutes')
+          .order('alias', { ascending: true })
+
+        if (playersError) {
+          setMessage(playersError.message)
+          setLoading(false)
+          return
+        }
+
+        const players = (availablePlayers ?? []) as Player[]
+
+        if (players.length === 0) {
+          setMessage('Todavía no hay ningún jugador creado.')
+          setLoading(false)
+          return
+        }
+
+        if (players.length > 1) {
+          router.replace('/parent/setup')
+          return
+        }
+
+        selectedPlayer = players[0]
+        localStorage.setItem('levelup_player_id', selectedPlayer.id)
       }
 
-      setPlayer(playerData as Player)
+      const playerId = selectedPlayer.id
+      setPlayer(selectedPlayer)
+      setMessage('')
 
       const { data: activityData, error: activityError } = await supabase
         .from('study_sessions')
@@ -149,33 +188,28 @@ export default function Parent() {
         .order('started_at', { ascending: false })
         .limit(1000)
 
-      if (activityError) {
-        setMessage(activityError.message)
-      } else {
+      if (!activityError) {
         const summary = activitySummary((activityData ?? []) as ActivitySession[])
         setTodayMinutes(summary.todayMinutes)
         setTrainingDays(summary.totalTrainingDays)
         setStreak(summary.streak)
       }
 
-      const { data: skillData, error: skillError } =
-        await supabase
-          .from('player_skill_state')
-          .select(`
-            skill_id,
-            mastery,
-            confidence,
-            difficulty,
-            skills (
-              name,
-              unit_id
-            )
-          `)
-          .eq('player_id', playerId)
+      const { data: skillData, error: skillError } = await supabase
+        .from('player_skill_state')
+        .select(`
+          skill_id,
+          mastery,
+          confidence,
+          difficulty,
+          skills (
+            name,
+            unit_id
+          )
+        `)
+        .eq('player_id', playerId)
 
-      if (skillError) {
-        setMessage(skillError.message)
-      } else {
+      if (!skillError) {
         setSkills((skillData ?? []) as unknown as SkillState[])
       }
 
@@ -183,7 +217,7 @@ export default function Parent() {
     }
 
     load()
-  }, [])
+  }, [router])
 
   if (loading) {
     return (
@@ -201,8 +235,8 @@ export default function Parent() {
         <section className="card">
           <h1>Panel padre</h1>
           <p className="muted">{message}</p>
-          <Link href="/player" className="btn primary">
-            VOLVER A JUGAR
+          <Link href="/parent/setup" className="btn primary">
+            IR A JUGADORES
           </Link>
         </section>
       </main>
@@ -317,19 +351,23 @@ export default function Parent() {
 
         <h2>Habilidades más dominadas</h2>
 
-        {strongest.map((skill) => (
-          <div
-            key={skill.skill_id}
-            className="metric"
-            style={{ marginBottom: 10 }}
-          >
-            <b>{skill.skills?.name ?? skill.skill_id}</b>
+        {strongest.length === 0 ? (
+          <p className="muted">Todavía no hay suficiente información.</p>
+        ) : (
+          strongest.map((skill) => (
+            <div
+              key={skill.skill_id}
+              className="metric"
+              style={{ marginBottom: 10 }}
+            >
+              <b>{skill.skills?.name ?? skill.skill_id}</b>
 
-            <p className="muted">
-              Dominio {Math.round(skill.mastery)}%
-            </p>
-          </div>
-        ))}
+              <p className="muted">
+                Dominio {Math.round(skill.mastery)}%
+              </p>
+            </div>
+          ))
+        )}
       </section>
 
       <section className="card">
@@ -343,9 +381,15 @@ export default function Parent() {
           <i style={{ width: `${dailyProgress}%` }} />
         </div>
 
-        <Link href="/player" className="btn primary">
-          🎮 VOLVER A JUGAR
-        </Link>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <Link href="/player" className="btn primary">
+            🎮 VOLVER A JUGAR
+          </Link>
+
+          <Link href="/parent/setup" className="btn dark">
+            👥 CAMBIAR JUGADOR
+          </Link>
+        </div>
       </section>
     </main>
   )
