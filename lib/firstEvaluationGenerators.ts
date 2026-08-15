@@ -8762,427 +8762,872 @@ if (key === 'composite_area') {
 
 // M13S01 · Coordenadas cartesianas
 if (key === 'coordinates') {
-  if (d === 1) {
-    const x = ri(0, 6)
-    const y = ri(0, 6)
+  const family = pickFamily(seed, 5)
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Qué coordenadas tiene el punto P si está en x = ${x} e y = ${y}?`,
+  if (d === 1) {
+    if (family === 0) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(skill, d, seed,
+        `¿Qué coordenadas tiene el punto P si está en x = ${x} e y = ${y}?`,
+        `(${x}, ${y})`,
+        [`(${y}, ${x})`, `(${-x}, ${y})`, `(${x}, ${-y})`],
+        `Las coordenadas se escriben como (x, y): P = (${x}, ${y}).`,
+        ['coordenadas_cartesianas', 'family:coordinates:d1:leer_par'])
+    }
+
+    if (family === 1) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(skill, d, seed,
+        `El punto A tiene coordenadas (${x}, ${y}). ¿Cuál es su coordenada horizontal?`,
+        String(x),
+        [String(y), String(-x), String(x + y)],
+        `La primera coordenada de un punto es la coordenada x.`,
+        ['coordenadas_cartesianas', 'family:coordinates:d1:coordenada_x'])
+    }
+
+    if (family === 2) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(skill, d, seed,
+        `El punto B tiene coordenadas (${x}, ${y}). ¿Cuál es su coordenada vertical?`,
+        String(y),
+        [String(x), String(-y), String(x + y)],
+        `La segunda coordenada de un punto es la coordenada y.`,
+        ['coordenadas_cartesianas', 'family:coordinates:d1:coordenada_y'])
+    }
+
+    if (family === 3) {
+      const x = ri(1, 6)
+      const y = ri(1, 6)
+      return mc(skill, d, seed,
+        `Desde el origen, un punto está ${x} unidades a la derecha y ${y} hacia arriba. ¿Qué coordenadas tiene?`,
+        `(${x}, ${y})`,
+        [`(${y}, ${x})`, `(${-x}, ${y})`, `(${x}, ${-y})`],
+        `Derecha corresponde a x positiva y arriba a y positiva.`,
+        ['coordenadas_cartesianas', 'family:coordinates:d1:desde_origen'])
+    }
+
+    const x = ri(1, 7)
+    const y = ri(1, 7)
+    return mc(skill, d, seed,
+      `¿Cuál de estos puntos tiene x = ${x} e y = ${y}?`,
       `(${x}, ${y})`,
-      [
-        `(${y}, ${x})`,
-        `(${-x}, ${y})`,
-        `(${x}, ${-y})`,
-      ],
-      `Las coordenadas se escriben como (x, y). P = (${x}, ${y}).`,
-      ['coordenadas_cartesianas']
-    )
+      [`(${y}, ${x})`, `(${-x}, ${y})`, `(${x}, ${-y})`],
+      `El punto que cumple ambas coordenadas es (${x}, ${y}).`,
+      ['coordenadas_cartesianas', 'family:coordinates:d1:elegir_punto'])
   }
 
   if (d === 2) {
-    let x = ri(-6, 6)
-    let y = ri(-6, 6)
+    let x = ri(-7, 7)
+    let y = ri(-7, 7)
+    if (x === 0) x = 3
+    if (y === 0) y = -2
 
-    if (x === 0) x = 2
-    if (y === 0) y = -3
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `¿En qué cuadrante está el punto (${x}, ${y})?`,
+        x > 0 && y > 0 ? 'I' : x < 0 && y > 0 ? 'II' : x < 0 && y < 0 ? 'III' : 'IV',
+        ['I', 'II', 'III', 'IV'].filter((q) => q !== (x > 0 && y > 0 ? 'I' : x < 0 && y > 0 ? 'II' : x < 0 && y < 0 ? 'III' : 'IV')),
+        `El signo de x y de y determina el cuadrante.`,
+        ['coordenadas_cartesianas', 'cuadrantes', 'family:coordinates:d2:cuadrante'])
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Un punto está ${Math.abs(x)} unidades ${x > 0 ? 'a la derecha' : 'a la izquierda'} del origen y ${Math.abs(y)} unidades ${y > 0 ? 'por encima' : 'por debajo'}. ¿Cuáles son sus coordenadas?`,
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `Un punto está ${Math.abs(x)} unidades ${x > 0 ? 'a la derecha' : 'a la izquierda'} del origen y ${Math.abs(y)} ${y > 0 ? 'por encima' : 'por debajo'}. ¿Cuáles son sus coordenadas?`,
+        `(${x}, ${y})`,
+        [`(${y}, ${x})`, `(${-x}, ${y})`, `(${x}, ${-y})`],
+        `El desplazamiento horizontal da x=${x} y el vertical y=${y}.`,
+        ['coordenadas_cartesianas', 'signos', 'family:coordinates:d2:descripcion'])
+    }
+
+    if (family === 2) {
+      const quadrant = ri(1, 4)
+      const answer = quadrant === 1 ? 'x positiva, y positiva' : quadrant === 2 ? 'x negativa, y positiva' : quadrant === 3 ? 'x negativa, y negativa' : 'x positiva, y negativa'
+      return mc(skill, d, seed,
+        `¿Qué signos tienen las coordenadas de un punto del cuadrante ${quadrant}?`,
+        answer,
+        ['x positiva, y positiva', 'x negativa, y positiva', 'x negativa, y negativa', 'x positiva, y negativa'].filter((v) => v !== answer),
+        `En el cuadrante ${quadrant}, los signos son ${answer}.`,
+        ['coordenadas_cartesianas', 'cuadrantes', 'family:coordinates:d2:signos_cuadrante'])
+    }
+
+    if (family === 3) {
+      const axis = ri(0, 1)
+      const value = ri(-7, 7) || 4
+      const answer = axis === 0 ? `(${value}, 0)` : `(0, ${value})`
+      return mc(skill, d, seed,
+        `¿Qué punto está sobre el eje ${axis === 0 ? 'X' : 'Y'} y tiene la otra coordenada igual a ${value}?`,
+        answer,
+        [axis === 0 ? `(0, ${value})` : `(${value}, 0)`, `(${value}, ${value})`, `(${-value}, ${value})`],
+        `En el eje ${axis === 0 ? 'X' : 'Y'} la coordenada ${axis === 0 ? 'y' : 'x'} vale 0.`,
+        ['coordenadas_cartesianas', 'ejes', 'family:coordinates:d2:punto_eje'])
+    }
+
+    return mc(skill, d, seed,
+      `¿Cuál de estos puntos está en el cuadrante ${x > 0 && y > 0 ? 'I' : x < 0 && y > 0 ? 'II' : x < 0 && y < 0 ? 'III' : 'IV'}?`,
       `(${x}, ${y})`,
-      [
-        `(${y}, ${x})`,
-        `(${-x}, ${y})`,
-        `(${x}, ${-y})`,
-      ],
-      `El desplazamiento horizontal da x=${x} y el vertical y=${y}.`,
-      ['coordenadas_cartesianas', 'signos']
-    )
+      [`(${-x}, ${y})`, `(${x}, ${-y})`, `(${-x}, ${-y})`],
+      `Los signos de (${x}, ${y}) corresponden a ese cuadrante.`,
+      ['coordenadas_cartesianas', 'cuadrantes', 'family:coordinates:d2:elegir_por_cuadrante'])
   }
 
   if (d === 3) {
-    const quadrant = ri(1, 4)
+    const x = ri(-6, 6)
+    const y = ri(-6, 6)
+    const dx = ri(2, 6)
+    const dy = ri(2, 6)
 
-    const answer =
-      quadrant === 1
-        ? 'x positiva, y positiva'
-        : quadrant === 2
-          ? 'x negativa, y positiva'
-          : quadrant === 3
-            ? 'x negativa, y negativa'
-            : 'x positiva, y negativa'
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `El punto P está en (${x}, ${y}). Se desplaza ${dx} unidades a la derecha. ¿Dónde queda?`,
+        `(${x + dx}, ${y})`,
+        [`(${x - dx}, ${y})`, `(${x}, ${y + dx})`, `(${y}, ${x + dx})`],
+        `Moverse a la derecha aumenta x en ${dx}.`,
+        ['coordenadas_cartesianas', 'desplazamientos', 'family:coordinates:d3:derecha'])
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Qué signos tienen las coordenadas de un punto situado en el cuadrante ${quadrant}?`,
-      answer,
-      [
-        'x positiva, y positiva',
-        'x negativa, y positiva',
-        'x negativa, y negativa',
-        'x positiva, y negativa',
-      ].filter((x) => x !== answer),
-      `En el cuadrante ${quadrant}, los signos son: ${answer}.`,
-      ['coordenadas_cartesianas', 'cuadrantes']
-    )
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `El punto P está en (${x}, ${y}). Se desplaza ${dy} unidades hacia abajo. ¿Dónde queda?`,
+        `(${x}, ${y - dy})`,
+        [`(${x}, ${y + dy})`, `(${x - dy}, ${y})`, `(${y - dy}, ${x})`],
+        `Moverse hacia abajo disminuye y en ${dy}.`,
+        ['coordenadas_cartesianas', 'desplazamientos', 'family:coordinates:d3:abajo'])
+    }
+
+    if (family === 2) {
+      return mc(skill, d, seed,
+        `El punto P = (${x}, ${y}) se refleja respecto del eje X. ¿Cuál es su imagen?`,
+        `(${x}, ${-y})`,
+        [`(${-x}, ${y})`, `(${-x}, ${-y})`, `(${y}, ${x})`],
+        `Al reflejar respecto del eje X cambia el signo de y.`,
+        ['coordenadas_cartesianas', 'simetria', 'family:coordinates:d3:reflejo_x'])
+    }
+
+    if (family === 3) {
+      return mc(skill, d, seed,
+        `El punto P = (${x}, ${y}) se refleja respecto del eje Y. ¿Cuál es su imagen?`,
+        `(${-x}, ${y})`,
+        [`(${x}, ${-y})`, `(${-x}, ${-y})`, `(${y}, ${x})`],
+        `Al reflejar respecto del eje Y cambia el signo de x.`,
+        ['coordenadas_cartesianas', 'simetria', 'family:coordinates:d3:reflejo_y'])
+    }
+
+    return mc(skill, d, seed,
+      `El punto (${x}, ${y}) se traslada ${dx} a la izquierda y ${dy} hacia arriba. ¿Dónde queda?`,
+      `(${x - dx}, ${y + dy})`,
+      [`(${x + dx}, ${y + dy})`, `(${x - dx}, ${y - dy})`, `(${y + dy}, ${x - dx})`],
+      `Izquierda resta ${dx} a x y arriba suma ${dy} a y.`,
+      ['coordenadas_cartesianas', 'desplazamientos', 'family:coordinates:d3:traslacion_doble'])
   }
 
   if (d === 4) {
-    const x = ri(-6, 6)
-    const y = ri(-6, 6)
-    const moveX = ri(2, 6)
-    const moveY = ri(2, 6)
+    const x1 = ri(-7, 7)
+    const y1 = ri(-7, 7)
+    let x2 = ri(-7, 7)
+    let y2 = ri(-7, 7)
+    if (x2 === x1) x2 += 2
+    if (y2 === y1) y2 -= 2
 
-    const newX = x + moveX
-    const newY = y - moveY
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `¿Cuál es el punto medio entre A(${x1}, ${y1}) y B(${x2}, ${y2})?`,
+        `(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`,
+        [`(${x1 + x2}, ${y1 + y2})`, `(${(x1 - x2) / 2}, ${(y1 - y2) / 2})`, `(${(y1 + y2) / 2}, ${(x1 + x2) / 2})`],
+        `Promediamos por separado las coordenadas x e y.`,
+        ['coordenadas_cartesianas', 'punto_medio', 'family:coordinates:d4:punto_medio'])
+    }
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `El punto P está en (${x}, ${y}). Se desplaza ${moveX} unidades a la derecha y ${moveY} hacia abajo. ¿Dónde queda?`,
-      `(${newX}, ${newY})`,
-      [
-        `(${x - moveX}, ${y - moveY})`,
-        `(${x + moveX}, ${y + moveY})`,
-        `(${newY}, ${newX})`,
-      ],
-      `Derecha: x+${moveX}. Abajo: y-${moveY}. Resultado: (${newX}, ${newY}).`,
-      ['coordenadas_cartesianas', 'desplazamientos']
-    )
+    if (family === 1) {
+      const dx = Math.abs(x2 - x1)
+      return mc(skill, d, seed,
+        `A(${x1}, ${y1}) y B(${x2}, ${y1}) están en una línea horizontal. ¿Qué distancia hay entre ellos?`,
+        String(dx),
+        [String(Math.abs(x2 + x1)), String(dx + 1), String(Math.abs(y1))],
+        `En horizontal, la distancia es |${x2}-${x1}|=${dx}.`,
+        ['coordenadas_cartesianas', 'distancia', 'family:coordinates:d4:distancia_horizontal'])
+    }
+
+    if (family === 2) {
+      const dy = Math.abs(y2 - y1)
+      return mc(skill, d, seed,
+        `A(${x1}, ${y1}) y B(${x1}, ${y2}) están en una línea vertical. ¿Qué distancia hay entre ellos?`,
+        String(dy),
+        [String(Math.abs(y2 + y1)), String(dy + 1), String(Math.abs(x1))],
+        `En vertical, la distancia es |${y2}-${y1}|=${dy}.`,
+        ['coordenadas_cartesianas', 'distancia', 'family:coordinates:d4:distancia_vertical'])
+    }
+
+    if (family === 3) {
+      const dx = ri(2, 5)
+      const dy = ri(2, 5)
+      return mc(skill, d, seed,
+        `Un punto pasa de (${x1}, ${y1}) a (${x1 + dx}, ${y1 - dy}). ¿Qué desplazamiento se ha realizado?`,
+        `${dx} a la derecha y ${dy} hacia abajo`,
+        [`${dx} a la izquierda y ${dy} hacia abajo`, `${dy} a la derecha y ${dx} hacia arriba`, `${dx} a la derecha y ${dy} hacia arriba`],
+        `x aumenta ${dx} e y disminuye ${dy}.`,
+        ['coordenadas_cartesianas', 'desplazamientos', 'family:coordinates:d4:deducir_traslacion'])
+    }
+
+    return mc(skill, d, seed,
+      `¿Qué transformación lleva P(${x1}, ${y1}) a P'(${-x1}, ${-y1})?`,
+      'Simetría respecto del origen',
+      ['Simetría respecto del eje X', 'Simetría respecto del eje Y', 'Traslación horizontal'],
+      `Cambian de signo x e y, lo que corresponde a una simetría respecto del origen.`,
+      ['coordenadas_cartesianas', 'simetria', 'family:coordinates:d4:simetria_origen'])
   }
 
   const x = ri(-8, 8)
   const y = ri(-8, 8)
-  const reflectedX = -x
 
-  return mc(
-    skill,
-    d,
-    seed,
-    `El punto P = (${x}, ${y}) se refleja respecto del eje Y. ¿Cuáles son las coordenadas de su imagen?`,
-    `(${reflectedX}, ${y})`,
-    [
-      `(${x}, ${-y})`,
+  if (family === 0) {
+    return mc(skill, d, seed,
+      `El punto P = (${x}, ${y}) se refleja primero en el eje X y después en el eje Y. ¿Dónde termina?`,
       `(${-x}, ${-y})`,
-      `(${y}, ${x})`,
-    ],
-    `Al reflejar respecto del eje Y cambia el signo de x y se conserva y: (${reflectedX}, ${y}).`,
-    ['coordenadas_cartesianas', 'simetria', 'dificultad_alta']
-  )
+      [`(${x}, ${-y})`, `(${-x}, ${y})`, `(${y}, ${x})`],
+      `La primera reflexión cambia y y la segunda cambia x.`,
+      ['coordenadas_cartesianas', 'simetria', 'family:coordinates:d5:doble_reflejo'])
+  }
+
+  if (family === 1) {
+    const dx = ri(2, 6)
+    const dy = ri(2, 6)
+    return mc(skill, d, seed,
+      `P(${x}, ${y}) se traslada (${dx}, ${-dy}) y después se refleja en el eje Y. ¿Cuál es la posición final?`,
+      `(${-x - dx}, ${y - dy})`,
+      [`(${x + dx}, ${-y + dy})`, `(${-x + dx}, ${y - dy})`, `(${-x - dx}, ${-y + dy})`],
+      `Trasladamos a (${x + dx}, ${y - dy}) y luego cambiamos el signo de x.`,
+      ['coordenadas_cartesianas', 'transformaciones', 'family:coordinates:d5:traslacion_reflejo'])
+  }
+
+  if (family === 2) {
+    const qx = -x
+    const qy = y
+    return mc(skill, d, seed,
+      `Los puntos P(${x}, ${y}) y Q(${qx}, ${qy}) son simétricos. ¿Respecto de qué eje?`,
+      'Eje Y',
+      ['Eje X', 'Origen', 'Recta y = x'],
+      `Solo cambia el signo de x, por lo que la simetría es respecto del eje Y.`,
+      ['coordenadas_cartesianas', 'simetria', 'family:coordinates:d5:deducir_eje'])
+  }
+
+  if (family === 3) {
+    const dx = ri(2, 5)
+    const dy = ri(2, 5)
+    return mc(skill, d, seed,
+      `A(${x}, ${y}) se traslada ${dx} a la derecha y ${dy} hacia arriba. Luego se deshace exactamente esa traslación. ¿Dónde termina?`,
+      `(${x}, ${y})`,
+      [`(${x + dx}, ${y + dy})`, `(${x - dx}, ${y - dy})`, `(${-x}, ${-y})`],
+      `Una traslación seguida de su inversa devuelve el punto a su posición inicial.`,
+      ['coordenadas_cartesianas', 'transformaciones', 'family:coordinates:d5:transformacion_inversa'])
+  }
+
+  return mc(skill, d, seed,
+    `¿Cuál de estas transformaciones conserva siempre la distancia de un punto al origen?`,
+    'Una simetría respecto del origen',
+    ['Una traslación de 3 unidades a la derecha', 'Una traslación de 2 unidades hacia arriba', 'Sumar 4 a la coordenada x'],
+    `La simetría respecto del origen cambia signos, pero no la distancia al origen.`,
+    ['coordenadas_cartesianas', 'razonamiento', 'family:coordinates:d5:invariante'])
 }
 
 // M13S02 · Leer tablas de valores
 if (key === 'value_tables') {
+  const family = pickFamily(seed, 5)
+
   if (d === 1) {
-    const factor = ri(2, 5)
+    const factor = ri(2, 6)
     const x = ri(2, 8)
     const y = x * factor
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `En una tabla se cumple y = ${factor}x. ¿Cuánto vale y cuando x = ${x}?`,
-      String(y),
-      [
-        String(x + factor),
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `En una tabla se cumple y = ${factor}x. ¿Cuánto vale y cuando x = ${x}?`,
+        String(y),
+        [String(x + factor), String(x), String(y + factor)],
+        `y = ${factor}×${x}=${y}.`,
+        ['lectura_tablas', 'family:value_tables:d1:calcular_y'])
+    }
+
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `La tabla contiene el par (${x}, ${y}). ¿Cuál es el valor de y cuando x = ${x}?`,
+        String(y),
+        [String(x), String(factor), String(x + y)],
+        `En el par (x, y), el segundo valor es y.`,
+        ['lectura_tablas', 'family:value_tables:d1:leer_par'])
+    }
+
+    if (family === 2) {
+      return mc(skill, d, seed,
+        `Si y = ${factor}x y y = ${y}, ¿qué valor de x aparece en la tabla?`,
         String(x),
-        String(y + factor),
-      ],
-      `y = ${factor} × ${x} = ${y}.`,
-      ['lectura_tablas']
-    )
+        [String(y), String(factor), String(x + factor)],
+        `${y}÷${factor}=${x}.`,
+        ['lectura_tablas', 'family:value_tables:d1:calcular_x'])
+    }
+
+    if (family === 3) {
+      const x2 = x + 1
+      return mc(skill, d, seed,
+        `¿Qué pareja pertenece a la tabla de y = ${factor}x?`,
+        `(${x2}, ${factor * x2})`,
+        [`(${x2}, ${factor * x2 + 1})`, `(${factor * x2}, ${x2})`, `(${x2}, ${x2 + factor})`],
+        `La pareja correcta cumple y=${factor}×${x2}=${factor * x2}.`,
+        ['lectura_tablas', 'family:value_tables:d1:elegir_par'])
+    }
+
+    return mc(skill, d, seed,
+      `En una tabla proporcional, x pasa de ${x} a ${x + 2}. Si y = ${factor}x, ¿cuánto aumenta y?`,
+      String(2 * factor),
+      [String(factor), String(x + 2), String(2 + factor)],
+      `Al aumentar x en 2, y aumenta en ${factor}×2=${2 * factor}.`,
+      ['lectura_tablas', 'family:value_tables:d1:cambio_simple'])
   }
 
   if (d === 2) {
     const factor = ri(2, 6)
-    const x1 = ri(1, 4)
+    const x1 = ri(1, 5)
     const x2 = x1 + ri(2, 5)
     const y1 = x1 * factor
     const y2 = x2 * factor
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una tabla contiene (${x1}, ${y1}) y sigue la regla y = ${factor}x. ¿Qué pareja corresponde a x = ${x2}?`,
-      `(${x2}, ${y2})`,
-      [
-        `(${x2}, ${y1})`,
-        `(${y2}, ${x2})`,
-        `(${x2}, ${x2 + factor})`,
-      ],
-      `Para x=${x2}: y=${factor}×${x2}=${y2}.`,
-      ['lectura_tablas', 'pares_valores']
-    )
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Una tabla contiene (${x1}, ${y1}) y sigue y = ${factor}x. ¿Qué pareja corresponde a x = ${x2}?`,
+        `(${x2}, ${y2})`,
+        [`(${x2}, ${y1})`, `(${y2}, ${x2})`, `(${x2}, ${x2 + factor})`],
+        `Para x=${x2}, y=${factor}×${x2}=${y2}.`,
+        ['lectura_tablas', 'pares_valores', 'family:value_tables:d2:completar_par'])
+    }
+
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `En la tabla aparecen (${x1}, ${y1}) y (${x2}, ${y2}). ¿Cuál es la constante de proporcionalidad y/x?`,
+        String(factor),
+        [String(x1), String(y1), String(x1 + factor)],
+        `${y1}÷${x1}=${factor}.`,
+        ['lectura_tablas', 'constante', 'family:value_tables:d2:constante'])
+    }
+
+    if (family === 2) {
+      const wrong = y2 + ri(1, 3)
+      return mc(skill, d, seed,
+        `¿Qué fila rompe la proporcionalidad y = ${factor}x?`,
+        `(${x2}, ${wrong})`,
+        [`(${x1}, ${y1})`, `(${x1 + 1}, ${(x1 + 1) * factor})`, `(${x2 + 1}, ${(x2 + 1) * factor})`],
+        `${wrong} no es ${factor}×${x2}.`,
+        ['lectura_tablas', 'family:value_tables:d2:detectar_error'])
+    }
+
+    if (family === 3) {
+      const missingX = ri(2, 8)
+      const missingY = missingX * factor
+      return mc(skill, d, seed,
+        `En una tabla proporcional con constante ${factor}, aparece y = ${missingY}. ¿Qué x corresponde?`,
+        String(missingX),
+        [String(missingY), String(missingX + factor), String(Math.max(1, missingX - 1))],
+        `${missingY}÷${factor}=${missingX}.`,
+        ['lectura_tablas', 'family:value_tables:d2:hallar_x'])
+    }
+
+    return mc(skill, d, seed,
+      `Si una tabla cumple y=${factor}x, ¿cuál es la diferencia entre los valores de y para x=${x1} y x=${x2}?`,
+      String(y2 - y1),
+      [String(y2 + y1), String(x2 - x1), String(factor)],
+      `${y2}-${y1}=${y2 - y1}.`,
+      ['lectura_tablas', 'family:value_tables:d2:diferencia'])
   }
 
   if (d === 3) {
-    const factor = ri(2, 7)
-    const x = ri(2, 8)
-    const y = factor * x
+    const a = ri(2, 5)
+    const b = ri(1, 7)
+    const x = ri(1, 7)
+    const y = a * x + b
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `En una tabla de proporcionalidad aparece x=${x}, y=${y}. ¿Cuál es la constante y/x?`,
-      String(factor),
-      [
-        String(x),
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Una tabla sigue la regla y=${a}x+${b}. ¿Cuánto vale y cuando x=${x}?`,
         String(y),
-        String(x + factor),
-      ],
-      `${y}÷${x}=${factor}.`,
-      ['lectura_tablas', 'constante']
-    )
+        [String(a + x + b), String(a * (x + b)), String(y - b)],
+        `Sustituimos x=${x}: ${a}×${x}+${b}=${y}.`,
+        ['lectura_tablas', 'regla_lineal', 'family:value_tables:d3:evaluar_regla'])
+    }
+
+    if (family === 1) {
+      const x2 = x + 2
+      return mc(skill, d, seed,
+        `Para y=${a}x+${b}, ¿qué pareja corresponde a x=${x2}?`,
+        `(${x2}, ${a * x2 + b})`,
+        [`(${x2}, ${a * x2})`, `(${a * x2 + b}, ${x2})`, `(${x2}, ${a + x2 + b})`],
+        `y=${a}×${x2}+${b}=${a * x2 + b}.`,
+        ['lectura_tablas', 'regla_lineal', 'family:value_tables:d3:par_lineal'])
+    }
+
+    if (family === 2) {
+      const y0 = b
+      return mc(skill, d, seed,
+        `En la regla y=${a}x+${b}, ¿qué valor toma y cuando x=0?`,
+        String(y0),
+        [String(a), String(a + b), '0'],
+        `Al sustituir x=0 queda y=${b}.`,
+        ['lectura_tablas', 'regla_lineal', 'family:value_tables:d3:valor_inicial'])
+    }
+
+    if (family === 3) {
+      const x2 = x + 3
+      const y2 = a * x2 + b
+      return mc(skill, d, seed,
+        `La tabla contiene (${x}, ${y}) y (${x2}, ${y2}). ¿Cuánto aumenta y cuando x aumenta ${x2 - x}?`,
+        String(y2 - y),
+        [String(x2 - x), String(a), String(y2 + y)],
+        `El aumento es ${y2}-${y}=${y2 - y}.`,
+        ['lectura_tablas', 'family:value_tables:d3:cambio_lineal'])
+    }
+
+    const wrongY = y + ri(1, 4)
+    return mc(skill, d, seed,
+      `¿Cuál de estas parejas NO cumple y=${a}x+${b}?`,
+      `(${x}, ${wrongY})`,
+      [`(${x}, ${y})`, `(${x + 1}, ${a * (x + 1) + b})`, `(${x + 2}, ${a * (x + 2) + b})`],
+      `Para x=${x} debería ser y=${y}, no ${wrongY}.`,
+      ['lectura_tablas', 'family:value_tables:d3:detectar_par_invalido'])
   }
 
   if (d === 4) {
     const a = ri(2, 5)
-    const b = ri(1, 8)
-    const x = ri(2, 8)
-    const y = a * x + b
+    const b = ri(-5, 5)
+    const x1 = ri(1, 5)
+    const x2 = x1 + 2
+    const y1 = a * x1 + b
+    const y2 = a * x2 + b
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una tabla sigue la regla y = ${a}x + ${b}. ¿Qué valor de y corresponde a x = ${x}?`,
-      String(y),
-      [
-        String(a + x + b),
-        String(a * (x + b)),
-        String(y - b),
-      ],
-      `Sustituimos x=${x}: y=${a}×${x}+${b}=${y}.`,
-      ['lectura_tablas', 'regla_lineal']
-    )
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Una tabla contiene (${x1}, ${y1}) y (${x2}, ${y2}). ¿Cuál es la tasa de cambio Δy/Δx?`,
+        String(a),
+        [String(y2 - y1), String(x2 - x1), String(a + b)],
+        `Δy/Δx = (${y2}-${y1})/(${x2}-${x1})=${a}.`,
+        ['lectura_tablas', 'tasa_cambio', 'family:value_tables:d4:pendiente'])
+    }
+
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `Los pares (${x1}, ${y1}) y (${x2}, ${y2}) pertenecen a una regla y=ax+b. Si a=${a}, ¿cuánto vale b?`,
+        String(b),
+        [String(a), String(y1), String(a + b)],
+        `b = y-ax = ${y1}-${a}×${x1}=${b}.`,
+        ['lectura_tablas', 'regla_lineal', 'family:value_tables:d4:hallar_b'])
+    }
+
+    if (family === 2) {
+      const targetX = x2 + 2
+      const targetY = a * targetX + b
+      return mc(skill, d, seed,
+        `A partir de (${x1}, ${y1}) y (${x2}, ${y2}), la relación mantiene la misma tasa de cambio. ¿Qué y corresponde a x=${targetX}?`,
+        String(targetY),
+        [String(targetY - a), String(targetY + a), String(targetX + b)],
+        `La tasa es ${a} y la regla es y=${a}x${b >= 0 ? '+' : '-'}${Math.abs(b)}.`,
+        ['lectura_tablas', 'extrapolacion', 'family:value_tables:d4:extrapolar'])
+    }
+
+    if (family === 3) {
+      const targetY = a * (x1 + 3) + b
+      return mc(skill, d, seed,
+        `Una tabla sigue y=${a}x${b >= 0 ? '+' : '-'}${Math.abs(b)}. ¿Qué x produce y=${targetY}?`,
+        String(x1 + 3),
+        [String(targetY), String(a), String(x1 + 2)],
+        `Resolvemos ${targetY}=${a}x${b >= 0 ? '+' : '-'}${Math.abs(b)} y obtenemos x=${x1 + 3}.`,
+        ['lectura_tablas', 'regla_lineal', 'family:value_tables:d4:invertir_regla'])
+    }
+
+    return mc(skill, d, seed,
+      `¿Cuál de estas reglas representa una tabla cuya y aumenta ${a} cada vez que x aumenta 1 y cuyo valor inicial es ${b}?`,
+      `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
+      [`y = ${a + 1}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`, `y = ${a}x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}`, `y = x + ${a}`],
+      `La tasa de cambio es ${a} y el valor inicial es ${b}.`,
+      ['lectura_tablas', 'regla_lineal', 'family:value_tables:d4:elegir_regla'])
   }
 
   const a = ri(2, 5)
   const b = ri(-6, 6)
   const x1 = ri(1, 5)
   const x2 = x1 + 2
-
   const y1 = a * x1 + b
   const y2 = a * x2 + b
 
-  return mc(
-    skill,
-    d,
-    seed,
-    `Una tabla contiene los pares (${x1}, ${y1}) y (${x2}, ${y2}). ¿Qué regla los relaciona?`,
-    `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
-    [
-      `y = ${a + 1}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
-      `y = ${a}x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}`,
-      `y = x + ${a}`,
-    ],
-    `Los dos pares cumplen y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}.`,
-    ['lectura_tablas', 'deducir_regla', 'dificultad_alta']
-  )
+  if (family === 0) {
+    return mc(skill, d, seed,
+      `Una tabla contiene (${x1}, ${y1}) y (${x2}, ${y2}). ¿Qué regla los relaciona?`,
+      `y = ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`,
+      [`y = ${a + 1}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}`, `y = ${a}x ${b >= 0 ? '-' : '+'} ${Math.abs(b)}`, `y = x + ${a}`],
+      `La tasa es ${a} y al sustituir obtenemos b=${b}.`,
+      ['lectura_tablas', 'deducir_regla', 'family:value_tables:d5:deducir_regla'])
+  }
+
+  if (family === 1) {
+    const x3 = x2 + 2
+    const y3 = a * x3 + b
+    return mc(skill, d, seed,
+      `Los pares (${x1}, ${y1}), (${x2}, ${y2}) y (${x3}, ${y3}) siguen una regla lineal. ¿Qué característica permanece constante?`,
+      `La razón entre el cambio de y y el cambio de x`,
+      ['El valor de y', 'La suma x+y', 'El producto x·y'],
+      `En una relación lineal, la tasa de cambio Δy/Δx es constante.`,
+      ['lectura_tablas', 'razonamiento', 'family:value_tables:d5:invariante_lineal'])
+  }
+
+  if (family === 2) {
+    const wrongA = a + 1
+    return mc(skill, d, seed,
+      `Una persona afirma que los pares (${x1}, ${y1}) y (${x2}, ${y2}) cumplen y=${wrongA}x${b >= 0 ? '+' : '-'}${Math.abs(b)}. ¿Qué error comete?`,
+      'Usa una tasa de cambio incorrecta',
+      ['Intercambia x e y', 'El valor inicial es necesariamente 0', 'No se pueden usar dos puntos'],
+      `La tasa real es (${y2}-${y1})/(${x2}-${x1})=${a}, no ${wrongA}.`,
+      ['lectura_tablas', 'razonamiento', 'family:value_tables:d5:detectar_regla_erronea'])
+  }
+
+  if (family === 3) {
+    const x3 = x2 + 3
+    const y3 = a * x3 + b
+    return mc(skill, d, seed,
+      `Una tabla lineal pasa por (${x1}, ${y1}) y (${x2}, ${y2}). Si continúa con la misma regla, ¿qué pareja debe aparecer para x=${x3}?`,
+      `(${x3}, ${y3})`,
+      [`(${x3}, ${y3 + 1})`, `(${y3}, ${x3})`, `(${x3}, ${a * x3})`],
+      `La regla deducida se mantiene y da y=${y3}.`,
+      ['lectura_tablas', 'extrapolacion', 'family:value_tables:d5:predecir_par'])
+  }
+
+  return mc(skill, d, seed,
+    `¿Qué información mínima permite determinar de forma única una regla lineal y=ax+b?`,
+    'Dos puntos con valores de x distintos',
+    ['Un solo valor de x', 'Un solo valor de y', 'Solo el signo de a'],
+    `Dos puntos con x distintas permiten calcular la tasa a y después b.`,
+    ['lectura_tablas', 'razonamiento', 'family:value_tables:d5:informacion_minima'])
 }
 
-// M13S03 · Elegir representación gráfica
+// M13S03 · Representar datos en gráficas
 if (key === 'plot_graph') {
-  const easy = [
-    {
-      situation: 'mostrar cómo cambia la temperatura a lo largo de un día',
-      answer: 'Gráfico de líneas',
-      solution: 'El gráfico de líneas muestra bien la evolución de una magnitud con el tiempo.',
-      distractors: ['Gráfico de barras', 'Diagrama de sectores', 'Pictograma'],
-    },
-    {
-      situation: 'comparar el número de alumnos que prefieren fútbol, baloncesto y tenis',
-      answer: 'Gráfico de barras',
-      solution: 'Las barras permiten comparar fácilmente categorías diferentes.',
-      distractors: ['Gráfico de líneas', 'Diagrama de sectores', 'Plano cartesiano'],
-    },
-    {
-      situation: 'mostrar qué porcentaje del presupuesto corresponde a cada categoría',
-      answer: 'Diagrama de sectores',
-      solution: 'Un diagrama de sectores representa partes de un total.',
-      distractors: ['Gráfico de líneas', 'Gráfico de barras', 'Plano cartesiano'],
-    },
-  ]
+  const family = pickFamily(seed, 5)
 
-  const medium = [
-    {
-      situation: 'comparar las ventas de cinco tiendas durante el mismo mes',
-      answer: 'Gráfico de barras',
-      solution: 'Se comparan categorías independientes: las cinco tiendas.',
-      distractors: ['Gráfico de líneas', 'Plano cartesiano', 'Diagrama de dispersión'],
-    },
-    {
-      situation: 'seguir la evolución del número de visitantes de una web durante doce meses',
-      answer: 'Gráfico de líneas',
-      solution: 'Nos interesa observar cómo cambia una variable a lo largo del tiempo.',
-      distractors: ['Diagrama de sectores', 'Pictograma', 'Gráfico circular'],
-    },
-    {
-      situation: 'mostrar cómo se reparte el tiempo diario entre dormir, estudiar, ocio y deporte',
-      answer: 'Diagrama de sectores',
-      solution: 'Las categorías forman partes de un total diario.',
-      distractors: ['Gráfico de líneas', 'Plano cartesiano', 'Diagrama de dispersión'],
-    },
-  ]
+  const banks = {
+    1: [
+      ['comparar cuántos alumnos prefieren fútbol, baloncesto, natación y tenis', 'Gráfico de barras', 'Las barras facilitan comparar categorías.'],
+      ['mostrar cómo cambia la temperatura durante un día', 'Gráfico de líneas', 'Las líneas muestran bien la evolución en el tiempo.'],
+      ['mostrar qué porcentaje del presupuesto corresponde a cada categoría', 'Diagrama de sectores', 'Los sectores representan partes de un total.'],
+      ['comparar las ventas de cuatro tiendas en el mismo mes', 'Gráfico de barras', 'Se comparan categorías independientes.'],
+      ['seguir la cantidad de lluvia registrada cada día de una semana', 'Gráfico de líneas', 'Interesa observar la evolución día a día.'],
+    ],
+    2: [
+      ['mostrar cómo se reparte un día entre dormir, estudiar, ocio y deporte', 'Diagrama de sectores', 'Las actividades forman partes de un total de 24 horas.'],
+      ['comparar el número de libros prestados por distintas bibliotecas', 'Gráfico de barras', 'Las bibliotecas son categorías comparables.'],
+      ['seguir el número de visitantes de una web durante doce meses', 'Gráfico de líneas', 'Se estudia una evolución temporal.'],
+      ['comparar la frecuencia de varios colores elegidos en una encuesta', 'Gráfico de barras', 'Las barras comparan frecuencias categóricas.'],
+      ['mostrar qué fracción del gasto familiar corresponde a vivienda, comida y transporte', 'Diagrama de sectores', 'Se representan partes de un total.'],
+    ],
+    3: [
+      ['representar las alturas de alumnos agrupadas en intervalos de 5 cm', 'Histograma', 'Los histogramas representan datos cuantitativos agrupados en intervalos.'],
+      ['estudiar si existe relación entre horas de estudio y nota obtenida', 'Diagrama de dispersión', 'Relaciona dos variables numéricas.'],
+      ['representar puntos definidos mediante parejas ordenadas (x, y)', 'Plano cartesiano', 'Las parejas ordenadas se sitúan en un sistema de coordenadas.'],
+      ['comparar frecuencias de categorías y localizar rápidamente la mayor', 'Gráfico de barras', 'La altura de las barras hace visible la comparación.'],
+      ['seguir la evolución de una población a lo largo de 20 años', 'Gráfico de líneas', 'Se analiza una magnitud a lo largo del tiempo.'],
+    ],
+    4: [
+      ['analizar la relación entre temperatura y consumo eléctrico de muchos días', 'Diagrama de dispersión', 'Permite observar asociación entre dos variables cuantitativas.'],
+      ['representar una distribución de edades agrupadas en intervalos', 'Histograma', 'Los intervalos numéricos consecutivos se representan con histograma.'],
+      ['mostrar simultáneamente la evolución mensual de ventas de dos productos', 'Gráfico de líneas', 'Dos líneas permiten comparar tendencias temporales.'],
+      ['comparar porcentajes de participación de varias categorías que suman 100%', 'Diagrama de sectores', 'El total se divide en sectores proporcionales.'],
+      ['situar las posiciones de varios objetos dadas por coordenadas', 'Plano cartesiano', 'Las posiciones (x, y) se representan en el plano.'],
+    ],
+    5: [
+      ['buscar una posible correlación entre edad y presión arterial en una muestra', 'Diagrama de dispersión', 'Se estudia la relación entre dos variables cuantitativas.'],
+      ['comparar la forma de una distribución de tiempos agrupados por intervalos', 'Histograma', 'El histograma permite observar la distribución de frecuencias por intervalos.'],
+      ['mostrar composición porcentual cuando el total es exactamente 100%', 'Diagrama de sectores', 'Representa proporciones de un total.'],
+      ['comparar una misma magnitud en varias categorías sin componente temporal', 'Gráfico de barras', 'Las barras son adecuadas para categorías discretas.'],
+      ['analizar una serie temporal y detectar subidas, bajadas y tendencias', 'Gráfico de líneas', 'La conexión de puntos ordenados temporalmente hace visibles las tendencias.'],
+    ],
+  } as const
 
-  const hard = [
-    {
-      situation: 'estudiar si existe relación entre las horas de estudio y la nota obtenida por distintos alumnos',
-      answer: 'Diagrama de dispersión',
-      solution: 'Un diagrama de dispersión permite estudiar la relación entre dos variables numéricas.',
-      distractors: ['Diagrama de sectores', 'Pictograma', 'Gráfico de barras'],
-    },
-    {
-      situation: 'representar la trayectoria de puntos definidos mediante parejas (x, y)',
-      answer: 'Plano cartesiano',
-      solution: 'Las parejas ordenadas se representan mediante coordenadas en un plano cartesiano.',
-      distractors: ['Diagrama de sectores', 'Pictograma', 'Gráfico circular'],
-    },
-    {
-      situation: 'comparar frecuencias de varias categorías y detectar rápidamente cuál es la mayor',
-      answer: 'Gráfico de barras',
-      solution: 'Las alturas de las barras permiten comparar las frecuencias directamente.',
-      distractors: ['Diagrama de dispersión', 'Plano cartesiano', 'Gráfico de líneas'],
-    },
-  ]
+  const [situation, answer, solution] = banks[d as 1 | 2 | 3 | 4 | 5][family]
+  const allTypes = ['Gráfico de barras', 'Gráfico de líneas', 'Diagrama de sectores', 'Histograma', 'Diagrama de dispersión', 'Plano cartesiano']
+  const distractors = allTypes.filter((type) => type !== answer).slice((family + d) % 2, (family + d) % 2 + 3)
 
-  const pool = d <= 2 ? easy : d <= 4 ? medium : hard
-  const v = pool[ri(0, pool.length - 1)]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `¿Qué tipo de gráfica es más adecuada para ${v.situation}?`,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['representacion_grafica', `dificultad_${d}`]
-  )
+  return mc(skill, d, seed,
+    `¿Qué tipo de gráfica es más adecuada para ${situation}?`,
+    answer,
+    distractors,
+    solution,
+    ['representacion_grafica', `family:plot_graph:d${d}:${family}`])
 }
 
 // M13S04 · Interpretar gráficas
 if (key === 'graph_interpret') {
-  if (d === 1) {
-    const a = ri(10, 25)
-    const b = ri(10, 25)
-    const c = Math.max(a, b) + ri(2, 8)
+  const family = pickFamily(seed, 5)
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Un gráfico de barras muestra: fútbol ${a}, baloncesto ${b} y tenis ${c}. ¿Qué deporte tiene mayor frecuencia?`,
-      'Tenis',
-      ['Fútbol', 'Baloncesto', 'Todos igual'],
-      `El valor mayor es ${c}, correspondiente a tenis.`,
-      ['interpretacion_graficas', 'maximo']
-    )
+  if (d === 1) {
+    const a = ri(8, 20)
+    const b = ri(8, 20)
+    const c = Math.max(a, b) + ri(2, 7)
+
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Un gráfico de barras muestra: fútbol ${a}, baloncesto ${b} y tenis ${c}. ¿Qué deporte tiene mayor frecuencia?`,
+        'Tenis',
+        ['Fútbol', 'Baloncesto', 'Todos igual'],
+        `El valor mayor es ${c}, correspondiente a tenis.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d1:maximo'])
+    }
+
+    if (family === 1) {
+      const min = Math.min(a, b)
+      const answer = a < b ? 'Fútbol' : b < a ? 'Baloncesto' : 'Empate'
+      return mc(skill, d, seed,
+        `Un gráfico muestra fútbol ${a} y baloncesto ${b}. ¿Qué categoría tiene menor valor?`,
+        answer,
+        ['Fútbol', 'Baloncesto', 'Empate'].filter((v) => v !== answer),
+        `El valor menor es ${min}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d1:minimo'])
+    }
+
+    if (family === 2) {
+      return mc(skill, d, seed,
+        `Una barra representa ${a} alumnos y otra ${b}. ¿Cuántos alumnos representan entre las dos?`,
+        String(a + b),
+        [String(Math.abs(a - b)), String(Math.max(a, b)), String(a + b + 2)],
+        `${a}+${b}=${a + b}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d1:suma'])
+    }
+
+    if (family === 3) {
+      const diff = Math.abs(a - b)
+      return mc(skill, d, seed,
+        `En un gráfico de barras dos categorías valen ${a} y ${b}. ¿Cuál es la diferencia entre ambas?`,
+        String(diff),
+        [String(a + b), String(Math.max(a, b)), String(diff + 1)],
+        `La diferencia es |${a}-${b}|=${diff}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d1:diferencia'])
+    }
+
+    return mc(skill, d, seed,
+      `Una gráfica muestra valores ${a}, ${b} y ${c}. ¿Cuántos datos aparecen representados?`,
+      '3',
+      ['2', String(a + b + c), String(c)],
+      `Hay tres categorías o datos representados.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d1:contar_datos'])
   }
 
   if (d === 2) {
-    const monday = ri(10, 30)
-    const tuesday = monday + ri(3, 10)
-    const wednesday = ri(8, monday)
-    const difference = tuesday - wednesday
+    const m = ri(10, 25)
+    const t = m + ri(2, 8)
+    const w = ri(8, m)
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una gráfica muestra ventas de ${monday} el lunes, ${tuesday} el martes y ${wednesday} el miércoles. ¿Cuántas ventas más hubo el martes que el miércoles?`,
-      String(difference),
-      [
-        String(tuesday + wednesday),
-        String(tuesday - monday),
-        String(monday - wednesday),
-      ],
-      `${tuesday}-${wednesday}=${difference}.`,
-      ['interpretacion_graficas', 'diferencia']
-    )
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Ventas: lunes ${m}, martes ${t}, miércoles ${w}. ¿Cuántas más hubo el martes que el miércoles?`,
+        String(t - w),
+        [String(t + w), String(t - m), String(m - w)],
+        `${t}-${w}=${t - w}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d2:diferencia_dias'])
+    }
+
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `Una gráfica registra ${m} el lunes, ${t} el martes y ${w} el miércoles. ¿Cuál es el total de los tres días?`,
+        String(m + t + w),
+        [String(t), String(t - w), String(m + w)],
+        `${m}+${t}+${w}=${m + t + w}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d2:total'])
+    }
+
+    if (family === 2) {
+      return mc(skill, d, seed,
+        `Una serie pasa de ${m} a ${t}. ¿En cuánto aumenta?`,
+        String(t - m),
+        [String(t + m), String(t), String(m)],
+        `${t}-${m}=${t - m}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d2:aumento'])
+    }
+
+    if (family === 3) {
+      const answer = t > m && m > w ? 'Martes > Lunes > Miércoles' : 'Martes es el mayor'
+      return mc(skill, d, seed,
+        `Con valores lunes ${m}, martes ${t}, miércoles ${w}, ¿qué orden de mayor a menor es correcto?`,
+        'Martes > Lunes > Miércoles',
+        ['Lunes > Martes > Miércoles', 'Miércoles > Lunes > Martes', 'Martes > Miércoles > Lunes'],
+        `Como ${t}>${m}>${w}, el orden es martes, lunes, miércoles.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d2:ordenar'])
+    }
+
+    return mc(skill, d, seed,
+      `Una gráfica pasa de ${m} a ${t} y después baja a ${w}. ¿Qué descripción es correcta?`,
+      'Primero sube y después baja',
+      ['Siempre sube', 'Siempre baja', 'No cambia'],
+      `De ${m} a ${t} aumenta y de ${t} a ${w} disminuye.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d2:tendencia'])
   }
 
   if (d === 3) {
     const jan = ri(10, 20)
     const feb = jan + ri(2, 8)
     const mar = feb + ri(2, 8)
-    const increase = mar - jan
+    const apr = mar - ri(1, 5)
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Un gráfico de líneas registra ${jan} unidades en enero, ${feb} en febrero y ${mar} en marzo. ¿Cuánto ha aumentado desde enero hasta marzo?`,
-      String(increase),
-      [
-        String(mar + jan),
-        String(feb - jan),
-        String(mar),
-      ],
-      `${mar}-${jan}=${increase}.`,
-      ['interpretacion_graficas', 'evolucion']
-    )
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Una gráfica registra enero ${jan}, febrero ${feb} y marzo ${mar}. ¿Cuánto ha aumentado desde enero hasta marzo?`,
+        String(mar - jan),
+        [String(mar + jan), String(feb - jan), String(mar)],
+        `${mar}-${jan}=${mar - jan}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d3:cambio_neto'])
+    }
+
+    if (family === 1) {
+      return mc(skill, d, seed,
+        `Valores mensuales: ${jan}, ${feb}, ${mar}, ${apr}. ¿En qué tramo se produce una disminución?`,
+        'De marzo a abril',
+        ['De enero a febrero', 'De febrero a marzo', 'No hay disminución'],
+        `Solo ${apr} es menor que el valor anterior ${mar}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d3:detectar_bajada'])
+    }
+
+    if (family === 2) {
+      const total = jan + feb + mar
+      return mc(skill, d, seed,
+        `Una gráfica muestra ${jan}, ${feb} y ${mar}. ¿Cuál es su media?`,
+        String(total / 3),
+        [String(total), String(mar), String(feb)],
+        `(${jan}+${feb}+${mar})/3=${total / 3}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d3:media'])
+    }
+
+    if (family === 3) {
+      const growth1 = feb - jan
+      const growth2 = mar - feb
+      const answer = growth1 > growth2 ? 'De enero a febrero' : growth2 > growth1 ? 'De febrero a marzo' : 'Aumenta lo mismo'
+      return mc(skill, d, seed,
+        `Valores: enero ${jan}, febrero ${feb}, marzo ${mar}. ¿En qué tramo aumenta más?`,
+        answer,
+        ['De enero a febrero', 'De febrero a marzo', 'Aumenta lo mismo'].filter((v) => v !== answer),
+        `Los aumentos son ${growth1} y ${growth2}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d3:comparar_cambios'])
+    }
+
+    return mc(skill, d, seed,
+      `Una serie mensual vale ${jan}, ${feb}, ${mar}, ${apr}. ¿Cuál es el máximo?`,
+      String(Math.max(jan, feb, mar, apr)),
+      [String(jan), String(feb), String(apr)].filter((v) => v !== String(Math.max(jan, feb, mar, apr))),
+      `El valor máximo es ${Math.max(jan, feb, mar, apr)}.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d3:maximo_serie'])
   }
 
   if (d === 4) {
-    const values = [
-      ri(10, 30),
-      ri(10, 30),
-      ri(10, 30),
-      ri(10, 30),
-    ]
-
+    const values = [ri(10, 30), ri(10, 30), ri(10, 30), ri(10, 30)]
     const total = values.reduce((sum, value) => sum + value, 0)
-    const average = total / values.length
+    const average = total / 4
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una gráfica muestra cuatro valores: ${values.join(', ')}. ¿Cuál es su media?`,
-      String(average),
-      [
-        String(total),
-        String(Math.max(...values)),
-        String(Math.min(...values)),
-      ],
-      `Sumamos: ${total}. Dividimos entre 4: ${total}÷4=${average}.`,
-      ['interpretacion_graficas', 'media']
-    )
+    if (family === 0) {
+      return mc(skill, d, seed,
+        `Una gráfica muestra cuatro valores: ${values.join(', ')}. ¿Cuál es su media?`,
+        String(average),
+        [String(total), String(Math.max(...values)), String(Math.min(...values))],
+        `Sumamos ${total} y dividimos entre 4: ${average}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d4:media'])
+    }
+
+    if (family === 1) {
+      const above = values.filter((v) => v > average).length
+      return mc(skill, d, seed,
+        `Los valores son ${values.join(', ')} y su media es ${average}. ¿Cuántos están por encima de la media?`,
+        String(above),
+        [String(4 - above), '4', '0'].filter((v) => v !== String(above)),
+        `Contamos los valores mayores que ${average}: ${above}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d4:sobre_media'])
+    }
+
+    if (family === 2) {
+      const range = Math.max(...values) - Math.min(...values)
+      return mc(skill, d, seed,
+        `Una gráfica presenta ${values.join(', ')}. ¿Cuál es el rango (máximo - mínimo)?`,
+        String(range),
+        [String(Math.max(...values)), String(Math.min(...values)), String(total)],
+        `Rango = ${Math.max(...values)}-${Math.min(...values)}=${range}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d4:rango'])
+    }
+
+    if (family === 3) {
+      const sorted = [...values].sort((a, b) => a - b)
+      const median = (sorted[1] + sorted[2]) / 2
+      return mc(skill, d, seed,
+        `Los valores de una gráfica son ${values.join(', ')}. ¿Cuál es la mediana?`,
+        String(median),
+        [String(average), String(sorted[1]), String(sorted[2])],
+        `Ordenamos y promediamos los dos centrales: ${median}.`,
+        ['interpretacion_graficas', 'family:graph_interpret:d4:mediana'])
+    }
+
+    const max = Math.max(...values)
+    const min = Math.min(...values)
+    return mc(skill, d, seed,
+      `En una gráfica con valores ${values.join(', ')}, ¿cuál es la diferencia entre el máximo y el mínimo?`,
+      String(max - min),
+      [String(max), String(min), String(total)],
+      `${max}-${min}=${max - min}.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d4:diferencia_extremos'])
   }
 
   const start = ri(20, 40)
   const peak = start + ri(8, 20)
   const end = peak - ri(3, 10)
-  const netChange = end - start
+  const net = end - start
 
-  return mc(
-    skill,
-    d,
-    seed,
-    `Una gráfica de líneas comienza en ${start}, sube hasta ${peak} y termina en ${end}. ¿Cuál es el cambio neto entre el inicio y el final?`,
-    String(netChange),
-    [
-      String(peak - start),
-      String(peak - end),
-      String(end + start),
-    ],
-    `El cambio neto compara únicamente el valor final con el inicial: ${end}-${start}=${netChange}.`,
-    ['interpretacion_graficas', 'cambio_neto', 'dificultad_alta']
-  )
+  if (family === 0) {
+    return mc(skill, d, seed,
+      `Una gráfica comienza en ${start}, alcanza ${peak} y termina en ${end}. ¿Cuál es el cambio neto entre inicio y final?`,
+      String(net),
+      [String(peak - start), String(peak - end), String(end + start)],
+      `Cambio neto = ${end}-${start}=${net}.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d5:cambio_neto'])
+  }
+
+  if (family === 1) {
+    const rise = peak - start
+    const fall = peak - end
+    return mc(skill, d, seed,
+      `Una serie sube de ${start} a ${peak} y después baja a ${end}. ¿Qué cambio es mayor en valor absoluto?`,
+      rise > fall ? 'La subida inicial' : fall > rise ? 'La bajada final' : 'Son iguales',
+      ['La subida inicial', 'La bajada final', 'Son iguales'].filter((v) => v !== (rise > fall ? 'La subida inicial' : fall > rise ? 'La bajada final' : 'Son iguales')),
+      `La subida es ${rise} y la bajada ${fall}.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d5:comparar_cambios'])
+  }
+
+  if (family === 2) {
+    const percent = ((end - start) / start) * 100
+    return mc(skill, d, seed,
+      `Una magnitud pasa de ${start} a ${end}. ¿Cuál es aproximadamente su variación porcentual?`,
+      `${percent.toFixed(1)}%`,
+      [`${(percent + 10).toFixed(1)}%`, `${(percent - 10).toFixed(1)}%`, `${((peak - start) / start * 100).toFixed(1)}%`],
+      `Variación = (${end}-${start})/${start}×100 = ${percent.toFixed(1)}%.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d5:variacion_porcentual'])
+  }
+
+  if (family === 3) {
+    return mc(skill, d, seed,
+      `Una gráfica alcanza un máximo de ${peak} y termina en ${end}. ¿Qué porcentaje del máximo representa el valor final?`,
+      `${((end / peak) * 100).toFixed(1)}%`,
+      [`${((start / peak) * 100).toFixed(1)}%`, `${((peak / end) * 100).toFixed(1)}%`, `${((peak - end) / peak * 100).toFixed(1)}%`],
+      `Calculamos ${end}/${peak}×100=${((end / peak) * 100).toFixed(1)}%.`,
+      ['interpretacion_graficas', 'family:graph_interpret:d5:porcentaje_del_maximo'])
+  }
+
+  return mc(skill, d, seed,
+    `Una serie comienza en ${start}, sube a ${peak} y termina en ${end}. ¿Cuál afirmación resume mejor la evolución?`,
+    'Termina por encima del valor inicial, aunque baja desde el máximo',
+    ['Termina por debajo del valor inicial', 'No presenta ningún descenso', 'El máximo coincide con el valor final'],
+    `Como ${end}>${start} pero ${end}<${peak}, termina por encima del inicio tras descender desde el máximo.`,
+    ['interpretacion_graficas', 'razonamiento', 'family:graph_interpret:d5:resumir_tendencia'])
 }
-// =========================
+
 // M14 · ESTADÍSTICA
 // =========================
 
