@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 
 type Player = {
   id: string
@@ -13,6 +14,7 @@ type Player = {
 }
 
 export default function PlayerSetup() {
+  const router = useRouter()
   const [parentName, setParentName] = useState('')
   const [familyName, setFamilyName] = useState('Familia LEVEL UP')
   const [alias, setAlias] = useState('')
@@ -20,12 +22,15 @@ export default function PlayerSetup() {
   const [players, setPlayers] = useState<Player[]>([])
   const [message, setMessage] = useState('')
   const [ready, setReady] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   async function load() {
     const supabase = createSupabaseBrowserClient()
 
     if (!supabase) {
       setMessage('Supabase no configurado.')
+      setLoading(false)
       return
     }
 
@@ -34,29 +39,46 @@ export default function PlayerSetup() {
     } = await supabase.auth.getUser()
 
     if (!user) {
+      localStorage.removeItem('levelup_player_id')
       setMessage('Primero debes iniciar sesión.')
+      setLoading(false)
       return
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('parent_profiles')
       .select('family_id,display_name')
       .eq('id', user.id)
       .maybeSingle()
 
+    if (profileError) {
+      setMessage(profileError.message)
+      setLoading(false)
+      return
+    }
+
     if (profile?.family_id) {
       setParentName(profile.display_name ?? '')
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('players')
         .select('id,alias,level,xp,streak_days,daily_target_minutes')
         .order('alias')
 
+      if (error) {
+        setMessage(error.message)
+        setLoading(false)
+        return
+      }
+
       setPlayers((data ?? []) as Player[])
       setReady(true)
     } else {
+      setPlayers([])
       setReady(false)
     }
+
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -68,15 +90,20 @@ export default function PlayerSetup() {
 
     if (!supabase) return
 
-    if (!parentName.trim()) {
-      setMessage('Escribe tu nombre.')
+    if (!parentName.trim() || !familyName.trim()) {
+      setMessage('Escribe tu nombre y el nombre de la familia.')
       return
     }
 
+    setSaving(true)
+    setMessage('')
+
     const { error } = await supabase.rpc('setup_parent_family', {
-      family_name: familyName,
-      parent_name: parentName,
+      family_name: familyName.trim(),
+      parent_name: parentName.trim(),
     })
+
+    setSaving(false)
 
     if (error) {
       setMessage(error.message)
@@ -94,34 +121,82 @@ export default function PlayerSetup() {
 
     if (!supabase) return
 
+    if (!alias.trim()) {
+      setMessage('Escribe un nombre o alias para el jugador.')
+      return
+    }
+
+    setSaving(true)
+    setMessage('')
+
     const { data: profile, error: profileError } = await supabase
       .from('parent_profiles')
       .select('family_id')
       .single()
 
     if (profileError || !profile?.family_id) {
+      setSaving(false)
       setMessage('Primero configura la familia.')
       return
     }
 
-    const { error } = await supabase.from('players').insert({
-      family_id: profile.family_id,
-      alias: alias.trim(),
-      daily_target_minutes: minutes,
-      level: 1,
-      xp: 0,
-      coins: 0,
-      streak_days: 0,
-    })
+    const { data: createdPlayer, error } = await supabase
+      .from('players')
+      .insert({
+        family_id: profile.family_id,
+        alias: alias.trim(),
+        daily_target_minutes: minutes,
+        level: 1,
+        xp: 0,
+        coins: 0,
+        streak_days: 0,
+      })
+      .select('id')
+      .single()
+
+    setSaving(false)
+
+    if (error || !createdPlayer) {
+      setMessage(error?.message ?? 'No se pudo crear el jugador.')
+      return
+    }
+
+    localStorage.setItem('levelup_player_id', createdPlayer.id)
+    setAlias('')
+    setMessage('Jugador creado y seleccionado.')
+    await load()
+  }
+
+  function selectPlayer(player: Player) {
+    localStorage.setItem('levelup_player_id', player.id)
+    router.push('/player')
+    router.refresh()
+  }
+
+  async function signOut() {
+    const supabase = createSupabaseBrowserClient()
+    if (!supabase) return
+
+    setSaving(true)
+    const { error } = await supabase.auth.signOut()
+    setSaving(false)
 
     if (error) {
       setMessage(error.message)
       return
     }
 
-    setAlias('')
-    setMessage('Jugador creado y guardado en Supabase.')
-    await load()
+    localStorage.removeItem('levelup_player_id')
+    router.push('/login')
+    router.refresh()
+  }
+
+  if (loading) {
+    return (
+      <section className="card">
+        <p className="muted">Cargando familia...</p>
+      </section>
+    )
   }
 
   if (!ready) {
@@ -149,8 +224,17 @@ export default function PlayerSetup() {
           />
         </label>
 
-        <button className="btn primary" onClick={setupFamily}>
-          CREAR FAMILIA
+        <button className="btn primary" disabled={saving} onClick={setupFamily}>
+          {saving ? 'CREANDO...' : 'CREAR FAMILIA'}
+        </button>
+
+        <button
+          className="btn dark"
+          disabled={saving}
+          onClick={signOut}
+          style={{ marginLeft: 10 }}
+        >
+          CERRAR SESIÓN
         </button>
 
         {message && <p className="muted">{message}</p>}
@@ -171,6 +255,7 @@ export default function PlayerSetup() {
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
               required
+              maxLength={40}
               style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
             />
           </label>
@@ -190,8 +275,8 @@ export default function PlayerSetup() {
 
           <br />
 
-          <button className="btn primary" type="submit">
-            GUARDAR JUGADOR
+          <button className="btn primary" disabled={saving} type="submit">
+            {saving ? 'GUARDANDO...' : 'GUARDAR JUGADOR'}
           </button>
         </form>
 
@@ -200,6 +285,7 @@ export default function PlayerSetup() {
 
       <section className="card">
         <h2>Jugadores guardados</h2>
+        <p className="muted">Elige quién va a jugar.</p>
 
         {players.length === 0 ? (
           <p className="muted">Todavía no hay jugadores.</p>
@@ -208,12 +294,23 @@ export default function PlayerSetup() {
             <div className="metric" key={p.id} style={{ marginBottom: 10 }}>
               <b>{p.alias}</b>
               <p className="muted">
-                Nivel {p.level} · {p.xp} XP · 🔥 {p.streak_days} · objetivo{' '}
-                {p.daily_target_minutes} min
+                Nivel {p.level} · {p.xp} XP · objetivo {p.daily_target_minutes} min
               </p>
+              <button className="btn primary" onClick={() => selectPlayer(p)}>
+                JUGAR COMO {p.alias.toUpperCase()}
+              </button>
             </div>
           ))
         )}
+
+        <button
+          className="btn dark"
+          disabled={saving}
+          onClick={signOut}
+          style={{ marginTop: 12 }}
+        >
+          CERRAR SESIÓN
+        </button>
       </section>
     </>
   )

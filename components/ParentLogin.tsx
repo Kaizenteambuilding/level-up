@@ -22,9 +22,13 @@ export default function ParentLogin() {
     }
 
     setLoading(true)
+    setMessage('')
+
+    // Nunca reutilizamos el jugador seleccionado por otra cuenta del navegador.
+    localStorage.removeItem('levelup_player_id')
 
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.trim(),
       password,
     })
 
@@ -34,11 +38,10 @@ export default function ParentLogin() {
       return
     }
 
-    // Si ya existe un jugador, vamos directamente a jugar.
     const { data: players, error: playersError } = await supabase
       .from('players')
-      .select('id')
-      .limit(1)
+      .select('id,alias')
+      .order('alias', { ascending: true })
 
     setLoading(false)
 
@@ -47,11 +50,11 @@ export default function ParentLogin() {
       return
     }
 
-    if (players && players.length > 0) {
+    if (players?.length === 1) {
       localStorage.setItem('levelup_player_id', players[0].id)
       router.push('/player')
     } else {
-      // Solo la primera vez se muestra la configuración.
+      // Con cero jugadores hay que completar el alta; con varios, elegir cuál jugar.
       router.push('/parent/setup')
     }
 
@@ -67,9 +70,11 @@ export default function ParentLogin() {
     }
 
     setLoading(true)
+    setMessage('')
+    localStorage.removeItem('levelup_player_id')
 
-    const { error } = await supabase.auth.signUp({
-      email,
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
       password,
     })
 
@@ -77,6 +82,12 @@ export default function ParentLogin() {
 
     if (error) {
       setMessage(error.message)
+      return
+    }
+
+    if (data.session) {
+      router.push('/parent/setup')
+      router.refresh()
       return
     }
 
@@ -101,6 +112,7 @@ export default function ParentLogin() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
+            autoComplete="email"
             required
             style={{
               width: '100%',
@@ -117,7 +129,9 @@ export default function ParentLogin() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
+            autoComplete="current-password"
             required
+            minLength={6}
             style={{
               width: '100%',
               padding: 12,
@@ -138,7 +152,7 @@ export default function ParentLogin() {
 
           <button
             className="btn dark"
-            disabled={loading}
+            disabled={loading || !email.trim() || password.length < 6}
             type="button"
             onClick={signUp}
           >
