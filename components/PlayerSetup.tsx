@@ -40,8 +40,7 @@ export default function PlayerSetup() {
 
     if (!user) {
       localStorage.removeItem('levelup_player_id')
-      setMessage('Primero debes iniciar sesión.')
-      setLoading(false)
+      router.replace('/login')
       return
     }
 
