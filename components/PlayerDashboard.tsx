@@ -312,9 +312,6 @@ export default function PlayerDashboard() {
     )
   }
 
-  const currentLevelXP = player.xp % 500
-  const progress = Math.round((currentLevelXP / 500) * 100)
-
   const accuracy =
     sessionAttempts > 0
       ? Math.round((sessionCorrect / sessionAttempts) * 100)
@@ -340,14 +337,6 @@ export default function PlayerDashboard() {
 
         <p className="muted">
           Nivel {player.level} · {player.xp} XP · 🔥 {streak} días de racha
-        </p>
-
-        <div className="bar">
-          <i style={{ width: `${progress}%` }} />
-        </div>
-
-        <p className="muted">
-          {currentLevelXP}/500 XP para avanzar de nivel
         </p>
 
         {hasOpenMission && (
