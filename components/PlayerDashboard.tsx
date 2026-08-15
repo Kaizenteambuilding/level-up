@@ -10,7 +10,6 @@ type Player = {
   level: number
   xp: number
   coins: number
-  streak_days: number
   daily_target_minutes: number
 }
 
@@ -22,6 +21,12 @@ type LastSession = {
   xp_earned: number
 }
 
+type ActivitySession = {
+  started_at: string
+  ended_at: string | null
+  actual_minutes: number | null
+}
+
 type PrioritySkill = {
   skill_id: string
   mastery: number
@@ -31,12 +36,78 @@ type PrioritySkill = {
   name: string
 }
 
+function localDayKey(value: string | Date) {
+  const date = value instanceof Date ? value : new Date(value)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function previousLocalDay(date: Date) {
+  const copy = new Date(date)
+  copy.setHours(12, 0, 0, 0)
+  copy.setDate(copy.getDate() - 1)
+  return copy
+}
+
+function sessionMinutes(session: ActivitySession) {
+  const stored = Number(session.actual_minutes)
+  if (Number.isFinite(stored) && stored > 0) {
+    return Math.min(180, Math.max(1, Math.round(stored)))
+  }
+
+  if (!session.ended_at) return 0
+
+  const elapsed =
+    new Date(session.ended_at).getTime() -
+    new Date(session.started_at).getTime()
+
+  if (!Number.isFinite(elapsed) || elapsed <= 0) return 0
+
+  return Math.min(180, Math.max(1, Math.round(elapsed / 60_000)))
+}
+
+function activitySummary(sessions: ActivitySession[]) {
+  const trainingDays = new Set(
+    sessions.map((session) => localDayKey(session.started_at))
+  )
+
+  const today = new Date()
+  const todayKey = localDayKey(today)
+  const todayMinutes = sessions
+    .filter((session) => localDayKey(session.started_at) === todayKey)
+    .reduce((sum, session) => sum + sessionMinutes(session), 0)
+
+  let cursor = new Date(today)
+  cursor.setHours(12, 0, 0, 0)
+
+  if (!trainingDays.has(localDayKey(cursor))) {
+    cursor = previousLocalDay(cursor)
+  }
+
+  let streak = 0
+  while (trainingDays.has(localDayKey(cursor))) {
+    streak += 1
+    cursor = previousLocalDay(cursor)
+  }
+
+  return {
+    todayMinutes,
+    totalTrainingDays: trainingDays.size,
+    streak,
+  }
+}
+
 export default function PlayerDashboard() {
   const [player, setPlayer] = useState<Player | null>(null)
   const [lastSession, setLastSession] = useState<LastSession | null>(null)
   const [sessionCorrect, setSessionCorrect] = useState(0)
   const [sessionAttempts, setSessionAttempts] = useState(0)
   const [prioritySkills, setPrioritySkills] = useState<PrioritySkill[]>([])
+  const [todayMinutes, setTodayMinutes] = useState(0)
+  const [trainingDays, setTrainingDays] = useState(0)
+  const [streak, setStreak] = useState(0)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
 
@@ -63,9 +134,7 @@ export default function PlayerDashboard() {
 
     let playerQuery = supabase
       .from('players')
-      .select(
-        'id,alias,level,xp,coins,streak_days,daily_target_minutes'
-      )
+      .select('id,alias,level,xp,coins,daily_target_minutes')
 
     if (savedPlayerId) {
       playerQuery = playerQuery.eq('id', savedPlayerId)
@@ -92,6 +161,24 @@ export default function PlayerDashboard() {
 
     setPlayer(currentPlayer)
     localStorage.setItem('levelup_player_id', currentPlayer.id)
+
+    const { data: activityData, error: activityError } = await supabase
+      .from('study_sessions')
+      .select('started_at,ended_at,actual_minutes')
+      .eq('player_id', currentPlayer.id)
+      .eq('completed', true)
+      .not('ended_at', 'is', null)
+      .order('started_at', { ascending: false })
+      .limit(1000)
+
+    if (activityError) {
+      setMessage(activityError.message)
+    } else {
+      const summary = activitySummary((activityData ?? []) as ActivitySession[])
+      setTodayMinutes(summary.todayMinutes)
+      setTrainingDays(summary.totalTrainingDays)
+      setStreak(summary.streak)
+    }
 
     // Última sesión completada
     const { data: sessionData } = await supabase
@@ -184,6 +271,9 @@ export default function PlayerDashboard() {
       ? Math.round((sessionCorrect / sessionAttempts) * 100)
       : 0
 
+  const target = Math.max(1, Number(player.daily_target_minutes) || 35)
+  const dailyProgress = Math.min(100, Math.round((todayMinutes / target) * 100))
+
   return (
     <>
       <section
@@ -199,7 +289,7 @@ export default function PlayerDashboard() {
         <h1>{player.alias}</h1>
 
         <p className="muted">
-          Nivel {player.level} · {player.xp} XP · 🔥 {player.streak_days} días
+          Nivel {player.level} · {player.xp} XP · 🔥 {streak} días de racha
         </p>
 
         <div className="bar">
@@ -299,18 +389,21 @@ export default function PlayerDashboard() {
           </div>
 
           <div className="metric">
-            <b>🔥 {player.streak_days}</b>
-            <p className="muted">días de entrenamiento</p>
+            <b>🔥 {streak}</b>
+            <p className="muted">días de racha actual</p>
           </div>
 
           <div className="metric">
-            <b>🪙 {player.coins}</b>
-            <p className="muted">monedas</p>
+            <b>{trainingDays}</b>
+            <p className="muted">días con entrenamiento completado</p>
           </div>
 
           <div className="metric">
-            <b>{player.daily_target_minutes} min</b>
-            <p className="muted">objetivo diario</p>
+            <b>{todayMinutes}/{target} min</b>
+            <p className="muted">entrenados hoy · objetivo diario</p>
+            <div className="bar">
+              <i style={{ width: `${dailyProgress}%` }} />
+            </div>
           </div>
         </div>
       </section>
