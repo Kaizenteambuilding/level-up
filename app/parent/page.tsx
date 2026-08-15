@@ -104,12 +104,16 @@ function sessionAccuracy(session: RecentSession) {
 }
 
 function averageAccuracy(sessions: RecentSession[]) {
-  const valid = sessions.filter((session) => session.attempts > 0)
-  if (valid.length === 0) return 0
-  return Math.round(
-    valid.reduce((sum, session) => sum + sessionAccuracy(session), 0) /
-      valid.length
+  const totals = sessions.reduce(
+    (acc, session) => ({
+      correct: acc.correct + Number(session.correct || 0),
+      attempts: acc.attempts + Number(session.attempts || 0),
+    }),
+    { correct: 0, attempts: 0 }
   )
+
+  if (totals.attempts === 0) return 0
+  return Math.round((totals.correct / totals.attempts) * 100)
 }
 
 function skillName(skill: SkillState | undefined) {
