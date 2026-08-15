@@ -107,6 +107,22 @@ function formatSessionDate(value: string) {
   }).format(new Date(value))
 }
 
+function sessionAccuracy(session: RecentSession) {
+  return session.attempts > 0
+    ? Math.round((session.correct / session.attempts) * 100)
+    : 0
+}
+
+function averageAccuracy(sessions: RecentSession[]) {
+  const valid = sessions.filter((session) => session.attempts > 0)
+  if (valid.length === 0) return 0
+
+  return Math.round(
+    valid.reduce((sum, session) => sum + sessionAccuracy(session), 0) /
+      valid.length
+  )
+}
+
 export default function Parent() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
@@ -305,63 +321,66 @@ export default function Parent() {
     )
   }
 
-  const sortedSkills = [...skills].sort(
-    (a, b) => a.mastery - b.mastery
-  )
-
+  const sortedSkills = [...skills].sort((a, b) => a.mastery - b.mastery)
   const weakest = sortedSkills.slice(0, 3)
   const strongest = [...sortedSkills].reverse().slice(0, 3)
 
   const averageMastery =
     skills.length > 0
       ? Math.round(
-          skills.reduce(
-            (sum, skill) => sum + Number(skill.mastery),
-            0
-          ) / skills.length
+          skills.reduce((sum, skill) => sum + Number(skill.mastery), 0) /
+            skills.length
         )
       : 0
 
   const target = Math.max(1, Number(player.daily_target_minutes) || 35)
   const dailyProgress = Math.min(100, Math.round((todayMinutes / target) * 100))
 
+  const recentBlock = recentSessions.slice(0, 3)
+  const previousBlock = recentSessions.slice(3, 6)
+  const recentAccuracy = averageAccuracy(recentBlock)
+  const previousAccuracy = averageAccuracy(previousBlock)
+  const accuracyDelta =
+    recentBlock.length > 0 && previousBlock.length > 0
+      ? recentAccuracy - previousAccuracy
+      : null
+  const recentMinutes = recentBlock.reduce(
+    (sum, session) => sum + sessionMinutes(session),
+    0
+  )
+  const recentXp = recentBlock.reduce(
+    (sum, session) => sum + Number(session.xp_earned ?? 0),
+    0
+  )
+
   return (
     <main className="shell">
       <section className="card">
         <span className="tag">👨‍👦 PANEL PADRE · DATOS REALES</span>
-
         <h1>{player.alias}</h1>
-
-        <p className="muted">
-          Resumen actualizado directamente desde Supabase.
-        </p>
+        <p className="muted">Resumen actualizado directamente desde Supabase.</p>
 
         <div className="grid two">
           <div className="metric">
             <b>Nivel {player.level}</b>
             <p className="muted">{player.xp} XP totales</p>
           </div>
-
           <div className="metric">
             <b>🔥 {streak}</b>
             <p className="muted">días de racha actual</p>
           </div>
-
           <div className="metric">
             <b>{trainingDays}</b>
             <p className="muted">días con entrenamiento completado</p>
           </div>
-
           <div className="metric">
             <b>{averageMastery}%</b>
             <p className="muted">dominio medio</p>
           </div>
-
           <div className="metric">
             <b>{skills.length}</b>
             <p className="muted">habilidades evaluadas</p>
           </div>
-
           <div className="metric">
             <b>{todayMinutes}/{target} min</b>
             <p className="muted">entrenados hoy · objetivo diario</p>
@@ -373,6 +392,49 @@ export default function Parent() {
       </section>
 
       <section className="card">
+        <span className="tag">📈 TENDENCIA RECIENTE</span>
+        <h2>Cómo están yendo las últimas sesiones</h2>
+
+        {recentBlock.length === 0 ? (
+          <p className="muted">Todavía no hay suficientes sesiones para calcular tendencia.</p>
+        ) : (
+          <div className="grid two">
+            <div className="metric">
+              <b>{recentAccuracy}%</b>
+              <p className="muted">precisión media en las últimas {recentBlock.length} sesiones</p>
+            </div>
+
+            <div className="metric">
+              <b>
+                {accuracyDelta === null
+                  ? '—'
+                  : `${accuracyDelta > 0 ? '+' : ''}${accuracyDelta} pts`}
+              </b>
+              <p className="muted">
+                {accuracyDelta === null
+                  ? 'faltan sesiones para comparar'
+                  : accuracyDelta > 0
+                    ? 'mejora frente al bloque anterior'
+                    : accuracyDelta < 0
+                      ? 'baja frente al bloque anterior'
+                      : 'estable frente al bloque anterior'}
+              </p>
+            </div>
+
+            <div className="metric">
+              <b>{recentMinutes} min</b>
+              <p className="muted">tiempo total de las últimas {recentBlock.length} sesiones</p>
+            </div>
+
+            <div className="metric">
+              <b>+{recentXp} XP</b>
+              <p className="muted">ganados en las últimas {recentBlock.length} sesiones</p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="card">
         <span className="tag">🗓️ HISTORIAL RECIENTE</span>
         <h2>Últimas misiones</h2>
 
@@ -380,55 +442,33 @@ export default function Parent() {
           <p className="muted">Todavía no hay misiones completadas.</p>
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
-            {recentSessions.map((session) => {
-              const accuracy =
-                session.attempts > 0
-                  ? Math.round((session.correct / session.attempts) * 100)
-                  : 0
-
-              return (
-                <div className="metric" key={session.id}>
-                  <b>{formatSessionDate(session.started_at)}</b>
-                  <p className="muted" style={{ marginBottom: 0 }}>
-                    {session.correct}/{session.attempts} aciertos · {accuracy}% · +{session.xp_earned} XP · {sessionMinutes(session)} min
-                  </p>
-                </div>
-              )
-            })}
+            {recentSessions.map((session) => (
+              <div className="metric" key={session.id}>
+                <b>{formatSessionDate(session.started_at)}</b>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  {session.correct}/{session.attempts} aciertos · {sessionAccuracy(session)}% · +{session.xp_earned} XP · {sessionMinutes(session)} min
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </section>
 
       <section className="card">
         <span className="tag">🎯 PRIORIDAD DE REFUERZO</span>
-
         <h2>Lo que conviene trabajar</h2>
 
         {weakest.length === 0 ? (
-          <p className="muted">
-            Todavía no hay suficiente información.
-          </p>
+          <p className="muted">Todavía no hay suficiente información.</p>
         ) : (
           weakest.map((skill) => (
-            <div
-              key={skill.skill_id}
-              className="metric"
-              style={{ marginBottom: 10 }}
-            >
+            <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
               <b>{skill.skills?.name ?? skill.skill_id}</b>
-
               <p className="muted">
-                Dominio {Math.round(skill.mastery)}%
-                {' · '}
-                dificultad {skill.difficulty}/5
+                Dominio {Math.round(skill.mastery)}% · dificultad {skill.difficulty}/5
               </p>
-
               <div className="bar">
-                <i
-                  style={{
-                    width: `${Math.round(skill.mastery)}%`,
-                  }}
-                />
+                <i style={{ width: `${Math.round(skill.mastery)}%` }} />
               </div>
             </div>
           ))
@@ -437,23 +477,15 @@ export default function Parent() {
 
       <section className="card">
         <span className="tag">🏆 PUNTOS FUERTES</span>
-
         <h2>Habilidades más dominadas</h2>
 
         {strongest.length === 0 ? (
           <p className="muted">Todavía no hay suficiente información.</p>
         ) : (
           strongest.map((skill) => (
-            <div
-              key={skill.skill_id}
-              className="metric"
-              style={{ marginBottom: 10 }}
-            >
+            <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
               <b>{skill.skills?.name ?? skill.skill_id}</b>
-
-              <p className="muted">
-                Dominio {Math.round(skill.mastery)}%
-              </p>
+              <p className="muted">Dominio {Math.round(skill.mastery)}%</p>
             </div>
           ))
         )}
@@ -461,11 +493,9 @@ export default function Parent() {
 
       <section className="card">
         <h2>Objetivo diario</h2>
-
         <p className="muted">
           Hoy lleva {todayMinutes} de {target} minutos de entrenamiento.
         </p>
-
         <div className="bar" style={{ marginBottom: 16 }}>
           <i style={{ width: `${dailyProgress}%` }} />
         </div>
@@ -474,7 +504,6 @@ export default function Parent() {
           <Link href="/player" className="btn primary">
             🎮 VOLVER A JUGAR
           </Link>
-
           <Link href="/parent/setup" className="btn dark">
             👥 CAMBIAR JUGADOR
           </Link>
