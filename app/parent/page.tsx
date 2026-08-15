@@ -30,6 +30,13 @@ type ActivitySession = {
   actual_minutes: number | null
 }
 
+type RecentSession = ActivitySession & {
+  id: string
+  xp_earned: number
+  correct: number
+  attempts: number
+}
+
 function localDayKey(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value)
   const year = date.getFullYear()
@@ -93,10 +100,18 @@ function activitySummary(sessions: ActivitySession[]) {
   }
 }
 
+function formatSessionDate(value: string) {
+  return new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+  }).format(new Date(value))
+}
+
 export default function Parent() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [skills, setSkills] = useState<SkillState[]>([])
+  const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [trainingDays, setTrainingDays] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -193,6 +208,53 @@ export default function Parent() {
         setTodayMinutes(summary.todayMinutes)
         setTrainingDays(summary.totalTrainingDays)
         setStreak(summary.streak)
+      }
+
+      const { data: sessionRows, error: sessionsError } = await supabase
+        .from('study_sessions')
+        .select('id,started_at,ended_at,actual_minutes,xp_earned')
+        .eq('player_id', playerId)
+        .eq('completed', true)
+        .not('ended_at', 'is', null)
+        .order('started_at', { ascending: false })
+        .limit(7)
+
+      if (!sessionsError && sessionRows && sessionRows.length > 0) {
+        const sessionIds = sessionRows.map((session: any) => session.id)
+        const { data: attemptsData, error: attemptsError } = await supabase
+          .from('attempts')
+          .select('session_id,correct')
+          .in('session_id', sessionIds)
+
+        if (!attemptsError) {
+          const counters = new Map<string, { attempts: number; correct: number }>()
+
+          ;(attemptsData ?? []).forEach((attempt: any) => {
+            const current = counters.get(attempt.session_id) ?? {
+              attempts: 0,
+              correct: 0,
+            }
+            current.attempts += 1
+            if (attempt.correct === true) current.correct += 1
+            counters.set(attempt.session_id, current)
+          })
+
+          setRecentSessions(
+            sessionRows.map((session: any) => {
+              const counter = counters.get(session.id) ?? {
+                attempts: 0,
+                correct: 0,
+              }
+
+              return {
+                ...session,
+                xp_earned: Number(session.xp_earned ?? 0),
+                attempts: counter.attempts,
+                correct: counter.correct,
+              }
+            }) as RecentSession[]
+          )
+        }
       }
 
       const { data: skillData, error: skillError } = await supabase
@@ -308,6 +370,33 @@ export default function Parent() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="card">
+        <span className="tag">🗓️ HISTORIAL RECIENTE</span>
+        <h2>Últimas misiones</h2>
+
+        {recentSessions.length === 0 ? (
+          <p className="muted">Todavía no hay misiones completadas.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {recentSessions.map((session) => {
+              const accuracy =
+                session.attempts > 0
+                  ? Math.round((session.correct / session.attempts) * 100)
+                  : 0
+
+              return (
+                <div className="metric" key={session.id}>
+                  <b>{formatSessionDate(session.started_at)}</b>
+                  <p className="muted" style={{ marginBottom: 0 }}>
+                    {session.correct}/{session.attempts} aciertos · {accuracy}% · +{session.xp_earned} XP · {sessionMinutes(session)} min
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       <section className="card">
