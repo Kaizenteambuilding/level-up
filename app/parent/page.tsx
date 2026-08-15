@@ -340,9 +340,9 @@ export default function Parent() {
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
             <div className="metric">
-              <b>🎯 Prioridad próxima sesión · {skillName(attention)}</b>
+              <b>🎯 Prioridad principal de refuerzo · {skillName(attention)}</b>
               <p className="muted" style={{ marginBottom: 0 }}>
-                Dominio {Math.round(attention?.mastery ?? 0)}% · confianza {Math.round(attention?.confidence ?? 0)}% · dificultad {attention?.difficulty ?? 1}/5. Es la señal más clara de necesidad actual y el motor debería darle más oportunidades de práctica.
+                Dominio {Math.round(attention?.mastery ?? 0)}% · confianza {Math.round(attention?.confidence ?? 0)}% · dificultad {attention?.difficulty ?? 1}/5. Es una de las señales de mayor necesidad actual y el motor la favorece junto con otras habilidades que necesitan práctica, sin perder variedad ni cobertura.
               </p>
             </div>
 
