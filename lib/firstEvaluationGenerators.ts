@@ -9853,392 +9853,210 @@ if (key === 'mode') {
 
 // M15S01 · Experimentos aleatorios
 if (key === 'random_experiments') {
-  if (d <= 2) {
-    const variants = [
-      {
-        prompt: '¿Cuál de estas situaciones es un experimento aleatorio?',
-        answer: 'Lanzar un dado y observar el resultado',
-        distractors: [
-          'Calcular 7 + 5',
-          'Contar las patas de una silla',
-          'Escribir el número 10',
-        ],
-        solution:
-          'Antes de lanzar el dado no podemos saber con certeza qué resultado aparecerá.',
-      },
-      {
-        prompt: '¿Cuál de estas situaciones tiene un resultado imprevisible antes de realizarla?',
-        answer: 'Sacar una carta de una baraja mezclada',
-        distractors: [
-          'Sumar 3 + 4',
-          'Contar 10 monedas',
-          'Calcular el doble de 6',
-        ],
-        solution:
-          'No sabemos qué carta saldrá antes de realizar la extracción.',
-      },
-      {
-        prompt: '¿Cuál de estas acciones representa un experimento aleatorio?',
-        answer: 'Girar una ruleta y observar dónde se detiene',
-        distractors: [
-          'Medir un segmento ya dibujado',
-          'Resolver 20 ÷ 4',
-          'Contar cinco libros',
-        ],
-        solution:
-          'El resultado de la ruleta no se conoce con certeza de antemano.',
-      },
-    ]
+  const f = (seed >>> 0) & 7
+  const tag = `family:m15-random:d${d}:f${f}`
 
-    const v = variants[ri(0, variants.length - 1)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['experimentos_aleatorios']
-    )
+  if (f === 0) {
+    const contexts = d <= 2
+      ? [
+          ['Lanzar un dado y observar el resultado', 'Calcular 8 + 7', 'Contar las patas de una mesa', 'Escribir el número 20'],
+          ['Sacar una carta de una baraja mezclada', 'Medir un segmento ya dibujado', 'Calcular 24 ÷ 6', 'Contar 12 lápices'],
+          ['Girar una ruleta y observar dónde se detiene', 'Hallar el doble de 9', 'Leer la hora de un reloj parado', 'Ordenar 3, 5 y 8 de menor a mayor'],
+        ]
+      : [
+          ['Registrar cuántas caras aparecen al lanzar tres monedas', 'Calcular el área de un cuadrado de lado 7', 'Resolver 3x=18', 'Convertir 2 m a cm'],
+          ['Extraer dos bolas sin mirar y anotar sus colores', 'Calcular 15% de 200', 'Ordenar una lista ya conocida', 'Sumar 125 + 375'],
+          ['Lanzar dos dados y anotar la suma', 'Calcular el perímetro de un triángulo conocido', 'Simplificar 12/18', 'Resolver 9-4'],
+        ]
+    const v = contexts[pickFamily(seed ^ 0x11111111, contexts.length)]
+    return mc(skill,d,seed,'¿Cuál de estas situaciones es un experimento aleatorio?',v[0],[v[1],v[2],v[3]],'En un experimento aleatorio conocemos los resultados posibles, pero no podemos saber con certeza cuál ocurrirá antes de realizarlo.',['experimentos_aleatorios',tag])
   }
 
-  if (d === 3) {
-    return mc(
-      skill,
-      d,
-      seed,
-      '¿Cuál de estas situaciones NO es aleatoria?',
-      'Calcular el perímetro de un cuadrado de lado 5 cm',
-      [
-        'Lanzar dos monedas',
-        'Extraer una bola de una bolsa sin mirar',
-        'Elegir una carta de una baraja mezclada',
-      ],
-      'El perímetro se determina exactamente mediante un cálculo; no depende del azar.',
-      ['experimentos_aleatorios', 'clasificacion']
-    )
+  if (f === 1) {
+    if (d <= 2) return mc(skill,d,seed,'¿Cuál es el conjunto de resultados posibles al lanzar una moneda una vez?','{cara, cruz}',['{1, 2}','{cara}','{cara, cruz, borde}'],'Una moneda ordinaria tiene dos resultados posibles: cara o cruz.',['experimentos_aleatorios','espacio_muestral',tag])
+    if (d === 3) return mc(skill,d,seed,'Se lanza un dado y se anota si el resultado es par o impar. ¿Cuáles son los resultados posibles de lo que se anota?','{par, impar}',['{1,2,3,4,5,6}','{2,4,6}','{1,3,5}'],'Aunque el dado tiene seis caras, el registro final solo distingue dos resultados: par o impar.',['experimentos_aleatorios','espacio_muestral_reducido',tag])
+    return mc(skill,d,seed,'Se lanzan dos monedas y solo se anota el número de caras obtenidas. ¿Cuál es el espacio de resultados del registro?','{0, 1, 2}',['{cara, cruz}','{0, 1}','{1, 2, 3}'],'El número de caras puede ser 0, 1 o 2.',['experimentos_aleatorios','espacio_muestral',tag])
   }
 
-  if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Se lanza un dado y después se multiplica por 2 el número obtenido. ¿Por qué sigue siendo un experimento aleatorio?',
-      'Porque el número inicial del dado no se conoce antes del lanzamiento',
-      [
-        'Porque multiplicar por 2 siempre es aleatorio',
-        'Porque todos los resultados finales son iguales',
-        'Porque no se puede calcular ningún resultado posible',
-      ],
-      'La transformación es conocida, pero el resultado del dado sigue siendo incierto.',
-      ['experimentos_aleatorios', 'razonamiento']
-    )
+  if (f === 2) {
+    if (d <= 2) return mc(skill,d,seed,'¿Por qué lanzar un dado es aleatorio?','Porque antes de lanzarlo no sabemos qué cara saldrá',['Porque el dado no tiene números','Porque siempre sale el mismo número','Porque no existen resultados posibles'],'La incertidumbre sobre cuál de los resultados posibles ocurrirá caracteriza al experimento aleatorio.',['experimentos_aleatorios','concepto',tag])
+    const multiplier = d + 1
+    return mc(skill,d,seed,`Se lanza un dado y luego se multiplica por ${multiplier} el resultado. ¿Por qué el resultado final sigue siendo aleatorio?`,'Porque depende del resultado incierto del dado',['Porque multiplicar siempre introduce azar','Porque todos los resultados finales son iguales','Porque no puede calcularse ningún resultado posible'],`La regla ×${multiplier} es determinista, pero se aplica a un resultado del dado que no conocemos de antemano.`,['experimentos_aleatorios','transformacion',tag])
   }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    '¿Qué característica distingue esencialmente un experimento aleatorio de uno determinista?',
-    'Que conocemos los resultados posibles pero no podemos asegurar cuál ocurrirá antes de realizarlo',
-    [
-      'Que no conocemos ningún resultado posible',
-      'Que siempre produce resultados numéricos',
-      'Que necesariamente tiene dos resultados',
-    ],
-    'En un experimento aleatorio podemos describir los posibles resultados, pero no predecir con certeza cuál sucederá.',
-    ['experimentos_aleatorios', 'razonamiento', 'dificultad_alta']
-  )
+  if (f === 3) {
+    const trials = 5 + d
+    if (d <= 2) return mc(skill,d,seed,`Se lanza una moneda ${trials} veces. Antes de empezar, ¿podemos saber exactamente cuántas caras saldrán?`,'No',['Sí, siempre la mitad','Sí, siempre salen todas cara','Solo si la moneda se lanza rápido'],`Conocemos los resultados posibles de cada lanzamiento, pero no la secuencia concreta de ${trials} resultados.`,['experimentos_aleatorios','repeticiones',tag])
+    return mc(skill,d,seed,`Una moneda se lanza ${trials} veces. ¿Qué afirmación es correcta antes de realizar los lanzamientos?`,'Podemos describir resultados posibles, pero no asegurar la secuencia exacta',['Sabemos que habrá exactamente la mitad de caras','La primera tirada determina todas las demás','No podemos describir ningún resultado posible'],'Repetir un experimento no elimina la incertidumbre sobre la secuencia concreta.',['experimentos_aleatorios','repeticiones','razonamiento',tag])
+  }
+
+  if (f === 4) {
+    const n = 4 + d
+    return mc(skill,d,seed,`Una bolsa contiene ${n} fichas numeradas y se extrae una sin mirar. Después se devuelve y se repite. ¿Qué parte del proceso hace que sea aleatorio?`,'No saber qué ficha se extraerá en cada intento',['Devolver la ficha a la bolsa','Que las fichas tengan números','Contar el número de intentos'],'La incertidumbre está en cuál de las fichas posibles aparecerá en cada extracción.',['experimentos_aleatorios','identificar_azar',tag])
+  }
+
+  if (f === 5) {
+    if (d <= 2) return mc(skill,d,seed,'¿Cuál de estos pares contiene dos experimentos aleatorios?','Lanzar una moneda y girar una ruleta',['Sumar 4+5 y lanzar un dado','Medir una mesa y contar libros','Resolver 12÷3 y ordenar números'],'Ambas acciones del par correcto tienen un resultado incierto antes de realizarlas.',['experimentos_aleatorios','comparacion',tag])
+    return mc(skill,d,seed,'¿Cuál de estos procesos contiene una parte aleatoria y después una parte determinista?','Lanzar un dado y sumar 10 al resultado',['Calcular 6×8 y después dividir entre 2','Medir un lado y calcular un perímetro','Ordenar una lista y contar sus elementos'],'El lanzamiento introduce azar; sumar 10 al valor obtenido es una regla fija.',['experimentos_aleatorios','proceso_mixto',tag])
+  }
+
+  if (f === 6) {
+    if (d <= 3) return mc(skill,d,seed,'Una ruleta tiene sectores rojo, azul y verde. ¿Qué podemos conocer antes de girarla?','Los colores que podrían salir',['El color exacto que saldrá','El número exacto de giros hasta rojo','Que siempre saldrá el mismo color'],'Podemos conocer los resultados posibles, pero no cuál ocurrirá en un giro concreto.',['experimentos_aleatorios','posibles_vs_real',tag])
+    return mc(skill,d,seed,'¿Qué información NO basta para convertir un experimento aleatorio en determinista?','Conocer todos sus resultados posibles',['Conocer de antemano el resultado que ocurrirá','Fijar una regla que determine un único resultado','Eliminar toda incertidumbre del proceso'],'Conocer el espacio muestral no nos dice qué resultado concreto aparecerá.',['experimentos_aleatorios','razonamiento',tag])
+  }
+
+  return mc(skill,d,seed,d <= 2 ? '¿Cuál de estas acciones NO depende del azar?' : '¿Cuál de estas situaciones es determinista aunque pueda parecer complicada?',d <= 2 ? 'Calcular 9 × 6' : 'Calcular el área de una figura cuando todas sus medidas son conocidas',d <= 2 ? ['Sacar una bola sin mirar','Lanzar un dado','Girar una ruleta'] : ['Elegir al azar una persona de una lista','Lanzar dos dados y sumar','Extraer una carta de una baraja mezclada'],'Un proceso determinista queda completamente fijado por los datos y las reglas; no depende de un resultado azaroso.',['experimentos_aleatorios','determinista',tag])
 }
 
 // M15S02 · Sucesos
 if (key === 'events') {
-  if (d === 1) {
-    const variants = [
-      {
-        prompt: 'Al lanzar un dado, ¿cuál de estos es un suceso posible?',
-        answer: 'Obtener un número par',
-        distractors: [
-          'Obtener un 8',
-          'Obtener un 0',
-          'Obtener un número mayor que 10',
-        ],
-        solution:
-          'En un dado pueden salir 1, 2, 3, 4, 5 o 6; algunos son pares.',
-      },
-      {
-        prompt: 'Al lanzar una moneda, ¿cuál es un suceso seguro?',
-        answer: 'Obtener cara o cruz',
-        distractors: [
-          'Obtener un 3',
-          'Obtener dos caras a la vez',
-          'No obtener ningún resultado',
-        ],
-        solution:
-          'En una moneda necesariamente se obtiene uno de sus dos resultados posibles.',
-      },
-    ]
+  const f = (seed >>> 0) & 7
+  const tag = `family:m15-events:d${d}:f${f}`
 
-    const v = variants[ri(0, variants.length - 1)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['sucesos']
-    )
+  if (f === 0) {
+    const target = d <= 2 ? 8 : 10 + d
+    return mc(skill,d,seed,`Al lanzar un dado normal, ¿qué tipo de suceso es obtener ${target}?`,'Imposible',['Seguro','Posible pero no seguro','Compuesto'],`Un dado normal solo puede mostrar valores del 1 al 6; ${target} no puede aparecer.`,['sucesos','imposible',tag])
   }
 
-  if (d === 2) {
-    const target = ri(7, 12)
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Se lanza un dado normal. ¿Qué tipo de suceso es obtener ${target}?`,
-      'Imposible',
-      [
-        'Seguro',
-        'Posible pero no seguro',
-        'Equiprobable',
-      ],
-      'Un dado normal solo puede mostrar valores del 1 al 6.',
-      ['sucesos', 'imposible']
-    )
+  if (f === 1) {
+    const limit = 6 + d
+    return mc(skill,d,seed,`Al lanzar un dado, ¿qué tipo de suceso es obtener un número menor que ${limit}?`,'Seguro',['Imposible','Posible pero no seguro','Simple pero imposible'],`Todos los resultados 1, 2, 3, 4, 5 y 6 son menores que ${limit}.`,['sucesos','seguro',tag])
   }
 
-  if (d === 3) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Al lanzar un dado, ¿qué tipo de suceso es obtener un número menor que 7?',
-      'Seguro',
-      [
-        'Imposible',
-        'Posible pero no seguro',
-        'Nunca ocurre',
-      ],
-      'Todos los resultados posibles del dado, del 1 al 6, son menores que 7.',
-      ['sucesos', 'seguro']
-    )
+  if (f === 2) {
+    if (d <= 2) return mc(skill,d,seed,'Al lanzar un dado, ¿cuál es un suceso simple?','Obtener un 4',['Obtener un número par','Obtener un número mayor que 3','Obtener 1, 2 o 3'],'Un suceso simple contiene un único resultado elemental: salir 4.',['sucesos','simple',tag])
+    return mc(skill,d,seed,'Al extraer una carta numerada del 1 al 10, ¿cuál es un suceso simple?','Obtener el 7',['Obtener un número par','Obtener un número mayor que 6','Obtener un múltiplo de 3'],'“Obtener el 7” corresponde a un único resultado del espacio muestral.',['sucesos','simple',tag])
   }
 
-  if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Se extrae una bola de una bolsa que contiene bolas rojas, azules y verdes. ¿Cuál de estos sucesos es compuesto?',
-      'Obtener una bola roja o azul',
-      [
-        'Obtener una bola roja',
-        'Obtener una bola verde',
-        'Obtener una única bola',
-      ],
-      'El suceso incluye más de un resultado favorable: rojo o azul.',
-      ['sucesos', 'suceso_compuesto']
-    )
+  if (f === 3) {
+    if (d <= 2) return mc(skill,d,seed,'Al lanzar un dado, ¿cuál es un suceso compuesto?','Obtener un número par',['Obtener un 2','Obtener un 5','Obtener un 1'],'El suceso “par” contiene tres resultados: 2, 4 y 6.',['sucesos','compuesto',tag])
+    return mc(skill,d,seed,'Se extrae una ficha numerada del 1 al 12. ¿Cuál es un suceso compuesto?','Obtener un múltiplo de 3',['Obtener exactamente 7','Obtener exactamente 11','Obtener exactamente 2'],'Los múltiplos de 3 son 3, 6, 9 y 12: varios resultados favorables.',['sucesos','compuesto',tag])
   }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    'Al lanzar un dado, A = “obtener número par” y B = “obtener número mayor que 3”. ¿Qué resultados pertenecen a A y B a la vez?',
-    '4 y 6',
-    [
-      '2, 4 y 6',
-      '4, 5 y 6',
-      '2 y 3',
-    ],
-    'Los pares son 2, 4 y 6; los mayores que 3 son 4, 5 y 6. La intersección es 4 y 6.',
-    ['sucesos', 'interseccion', 'dificultad_alta']
-  )
+  if (f === 4) {
+    if (d <= 2) return mc(skill,d,seed,'Al lanzar un dado, A = “obtener un número par”. ¿Cuál es el suceso contrario de A?','Obtener un número impar',['Obtener un 2','Obtener un número mayor que 3','Obtener un 6'],'El complementario de “par” contiene los resultados que no son pares: 1, 3 y 5.',['sucesos','complementario',tag])
+    return mc(skill,d,seed,'Se elige un número del 1 al 10. A = “obtener un número mayor que 6”. ¿Cuál es el complementario de A?','Obtener un número menor o igual que 6',['Obtener un número menor que 6','Obtener un número mayor o igual que 6','Obtener exactamente 6'],'El complementario contiene todos los resultados que no pertenecen a A: 1, 2, 3, 4, 5 y 6.',['sucesos','complementario',tag])
+  }
+
+  if (f === 5) {
+    if (d <= 3) return mc(skill,d,seed,'Al lanzar un dado, A = “par” y B = “mayor que 3”. ¿Qué resultados pertenecen a A y B a la vez?','4 y 6',['2, 4 y 6','4, 5 y 6','2 y 3'],'La intersección exige cumplir ambas condiciones: ser par y mayor que 3.',['sucesos','interseccion',tag])
+    return mc(skill,d,seed,'Se elige un número del 1 al 12. A = “múltiplo de 2” y B = “múltiplo de 3”. ¿Cuál es A ∩ B?','{6, 12}',['{2,4,6,8,10,12}','{3,6,9,12}','{2,3,6,12}'],'Los números que son múltiplos de 2 y de 3 a la vez son los múltiplos de 6: 6 y 12.',['sucesos','interseccion',tag])
+  }
+
+  if (f === 6) {
+    if (d <= 3) return mc(skill,d,seed,'Al lanzar un dado, A = “obtener 1 o 2” y B = “obtener 5 o 6”. ¿Qué puede afirmarse?','A y B no pueden ocurrir a la vez',['A está contenido en B','A y B son el mismo suceso','A es un suceso seguro'],'Un único lanzamiento no puede pertenecer simultáneamente a {1,2} y {5,6}.',['sucesos','incompatibles',tag])
+    return mc(skill,d,seed,'Se elige una ficha del 1 al 10. A = “par” y B = “impar”. ¿Qué relación hay entre A y B?','Son incompatibles y complementarios',['Pueden ocurrir a la vez','A está contenido en B','B está contenido en A'],'Todo número del 1 al 10 es par o impar, y ninguno puede ser ambas cosas a la vez.',['sucesos','relacion',tag])
+  }
+
+  return mc(skill,d,seed,d <= 2 ? 'Al lanzar dos monedas, ¿cuál de estos es un suceso?' : 'Al lanzar dos monedas, A = “obtener exactamente una cara”. ¿Qué resultados forman A?',d <= 2 ? 'Obtener exactamente una cara' : '{cara-cruz, cruz-cara}',d <= 2 ? ['Calcular 5+4','Medir una mesa','Escribir 12'] : ['{cara-cara}','{cruz-cruz}','{cara-cara, cruz-cruz}'],'Un suceso es un conjunto de resultados del experimento; exactamente una cara ocurre en cara-cruz o cruz-cara.',['sucesos','dos_etapas',tag])
 }
 
 // M15S03 · Casos favorables y posibles
 if (key === 'favorable_possible') {
-  if (d === 1) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Al lanzar un dado normal, ¿cuántos resultados posibles hay?',
-      '6',
-      ['1', '3', '12'],
-      'Los posibles resultados son 1, 2, 3, 4, 5 y 6.',
-      ['casos_favorables_posibles']
-    )
+  const f = (seed >>> 0) & 7
+  const tag = `family:m15-fav:d${d}:f${f}`
+
+  if (f === 0) {
+    return mc(skill,d,seed,'Al lanzar un dado normal, ¿cuántos resultados posibles hay?','6',['1','3','12'],'El espacio muestral es {1,2,3,4,5,6}: seis resultados posibles.',['casos_favorables_posibles','posibles',tag])
   }
 
-  if (d === 2) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Al lanzar un dado normal, ¿cuántos casos favorables tiene el suceso “obtener un número par”?',
-      '3',
-      ['2', '4', '6'],
-      'Los resultados favorables son 2, 4 y 6: hay 3.',
-      ['casos_favorables_posibles', 'dado']
-    )
+  if (f === 1) {
+    const threshold = d <= 2 ? 3 : 2 + Math.min(d, 4)
+    const favorable = 6 - threshold
+    return mc(skill,d,seed,`Al lanzar un dado, ¿cuántos casos favorables tiene el suceso “obtener un número mayor que ${threshold}”?`,String(favorable),[String(favorable+1),String(Math.max(1,favorable-1)),'6'],`Los valores mayores que ${threshold} entre 1 y 6 son ${Array.from({length:favorable},(_,i)=>threshold+1+i).join(', ')}: ${favorable} casos.`,['casos_favorables_posibles','dado',tag])
   }
 
-  if (d === 3) {
-    const red = ri(2, 6)
-    const blue = ri(2, 6)
-    const green = ri(1, 5)
+  if (f === 2) {
+    const red = ri(2, 5 + d)
+    const blue = ri(2, 5 + d)
+    const green = ri(1, 4 + d)
     const total = red + blue + green
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una bolsa contiene ${red} bolas rojas, ${blue} azules y ${green} verdes. Si queremos sacar una bola azul, ¿cuántos casos favorables y posibles hay?`,
-      `${blue} favorables y ${total} posibles`,
-      [
-        `${total} favorables y ${blue} posibles`,
-        `${red} favorables y ${total} posibles`,
-        `${blue} favorables y ${red + green} posibles`,
-      ],
-      `Hay ${blue} bolas azules de un total de ${total} bolas.`,
-      ['casos_favorables_posibles', 'bolsa']
-    )
+    return mc(skill,d,seed,`Una bolsa contiene ${red} rojas, ${blue} azules y ${green} verdes. Para “sacar azul”, ¿cuántos casos favorables y posibles hay?`,`${blue} favorables y ${total} posibles`,[`${red} favorables y ${total} posibles`,`${total} favorables y ${blue} posibles`,`${blue} favorables y ${red+green} posibles`],`Hay ${blue} bolas azules entre ${total} bolas en total.`,['casos_favorables_posibles','bolsa',tag])
   }
 
-  if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Se lanzan dos monedas. ¿Cuántos resultados posibles hay si distinguimos el resultado de cada moneda?',
-      '4',
-      ['2', '3', '8'],
-      'Los resultados son cara-cara, cara-cruz, cruz-cara y cruz-cruz.',
-      ['casos_favorables_posibles', 'dos_etapas']
-    )
+  if (f === 3) {
+    const sectors = 6 + d
+    const favorable = Math.max(2, Math.floor(sectors/3))
+    return mc(skill,d,seed,`Una ruleta tiene ${sectors} sectores iguales y ${favorable} son rojos. ¿Cuántos casos favorables y posibles hay para caer en rojo?`,`${favorable} favorables y ${sectors} posibles`,[`${sectors} favorables y ${favorable} posibles`,`${sectors-favorable} favorables y ${sectors} posibles`,`${favorable} favorables y ${sectors-favorable} posibles`],`Cada sector es un resultado posible; ${favorable} de ellos son rojos.`,['casos_favorables_posibles','ruleta',tag])
   }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    'Se lanzan dos dados. ¿Cuántos de los 36 resultados posibles tienen suma 7?',
-    '6',
-    ['5', '7', '12'],
-    'Las parejas son (1,6), (2,5), (3,4), (4,3), (5,2) y (6,1): 6 casos favorables.',
-    ['casos_favorables_posibles', 'dos_dados', 'dificultad_alta']
-  )
+  if (f === 4) {
+    if (d <= 2) return mc(skill,d,seed,'Se lanzan dos monedas. ¿Cuántos resultados posibles hay distinguiendo el resultado de cada moneda?','4',['2','3','8'],'Los resultados son CC, CX, XC y XX: cuatro posibilidades.',['casos_favorables_posibles','dos_monedas',tag])
+    return mc(skill,d,seed,'Se lanzan tres monedas. ¿Cuántos resultados posibles hay distinguiendo cada lanzamiento?','8',['3','6','9'],'Cada moneda tiene 2 resultados y hay 3 lanzamientos: 2×2×2=8.',['casos_favorables_posibles','tres_monedas',tag])
+  }
+
+  if (f === 5) {
+    const sum = d <= 2 ? 7 : (d % 2 === 0 ? 8 : 9)
+    const counts: Record<number,number> = {7:6,8:5,9:4}
+    const favorable = counts[sum]
+    return mc(skill,d,seed,`Se lanzan dos dados. De los 36 resultados ordenados posibles, ¿cuántos tienen suma ${sum}?`,String(favorable),[String(favorable+1),String(favorable+2),String(36-favorable)],`Al enumerar las parejas que suman ${sum}, se obtienen ${favorable} casos favorables de 36 posibles.`,['casos_favorables_posibles','dos_dados',tag])
+  }
+
+  if (f === 6) {
+    const max = 8 + d
+    const even = Math.floor(max / 2)
+    return mc(skill,d,seed,`Se elige al azar una tarjeta numerada del 1 al ${max}. ¿Cuántos casos favorables hay para obtener un número par?`,String(even),[String(max-even),String(max),String(Math.max(1,even-1))],`Los pares entre 1 y ${max} son ${even} en total.`,['casos_favorables_posibles','tarjetas',tag])
+  }
+
+  const total = 8 + d
+  const bad = 2 + Math.floor(d/2)
+  const good = total - bad
+  return mc(skill,d,seed,`De ${total} fichas, ${bad} son negras y las demás blancas. Para el suceso “no sacar negra”, ¿cuántos casos favorables hay?`,String(good),[String(bad),String(total),String(Math.max(1,good-1))],`“No negra” significa blanca: ${total}-${bad}=${good} fichas favorables.`,['casos_favorables_posibles','complementario',tag])
 }
 
-// M15S04 · Probabilidad de Laplace
+// M15S04 · Probabilidad de Laplace básica
 if (key === 'laplace_basic') {
-  if (d === 1) {
-    const favorable = ri(1, 4)
-    const possible = favorable + ri(2, 5)
+  const f = (seed >>> 0) & 7
+  const tag = `family:m15-laplace:d${d}:f${f}`
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `En una experiencia equiprobable hay ${possible} resultados posibles y ${favorable} favorables. ¿Cuál es la probabilidad?`,
-      `${favorable}/${possible}`,
-      [
-        `${possible}/${favorable}`,
-        `${possible - favorable}/${possible}`,
-        `${favorable}/${possible + 1}`,
-      ],
-      `Probabilidad = casos favorables / casos posibles = ${favorable}/${possible}.`,
-      ['probabilidad_laplace']
-    )
+  if (f === 0) {
+    const possible = 6 + d
+    const favorable = 1 + (pickFamily(seed ^ 0x22222222, Math.min(4, possible-1)))
+    return mc(skill,d,seed,`En una experiencia equiprobable hay ${possible} resultados posibles y ${favorable} favorables. ¿Cuál es la probabilidad?`,`${favorable}/${possible}`,[`${possible}/${favorable}`,`${possible-favorable}/${possible}`,`${favorable}/${possible+1}`],`Por la regla de Laplace, P = favorables/posibles = ${favorable}/${possible}.`,['probabilidad_laplace','formula',tag])
   }
 
-  if (d === 2) {
-    const favorable = [1, 2, 3][ri(0, 2)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Se lanza un dado normal. ¿Cuál es la probabilidad de obtener uno de ${favorable} resultados favorables?`,
-      `${favorable}/6`,
-      [
-        `6/${favorable}`,
-        `${6 - favorable}/6`,
-        `${favorable}/5`,
-      ],
-      `Hay ${favorable} casos favorables entre 6 resultados equiprobables.`,
-      ['probabilidad_laplace', 'dado']
-    )
+  if (f === 1) {
+    const favorable = d <= 2 ? 3 : (d % 2 === 0 ? 2 : 4)
+    const label = favorable === 3 ? 'número par' : favorable === 2 ? 'múltiplo de 3' : 'número mayor que 2'
+    return mc(skill,d,seed,`Se lanza un dado normal. ¿Cuál es la probabilidad de obtener un ${label}?`,`${favorable}/6`,[`${6-favorable}/6`,`6/${favorable}`,`${favorable}/5`],`Hay ${favorable} resultados favorables entre 6 caras equiprobables.`,['probabilidad_laplace','dado',tag])
   }
 
-  if (d === 3) {
-    const red = ri(2, 6)
-    const blue = ri(2, 6)
+  if (f === 2) {
+    const red = ri(2, 5 + d)
+    const blue = ri(2, 5 + d)
     const total = red + blue
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una bolsa contiene ${red} bolas rojas y ${blue} azules. ¿Cuál es la probabilidad de sacar una roja?`,
-      `${red}/${total}`,
-      [
-        `${blue}/${total}`,
-        `${total}/${red}`,
-        `${red}/${blue}`,
-      ],
-      `Hay ${red} casos favorables de ${total} posibles.`,
-      ['probabilidad_laplace', 'bolsa']
-    )
+    return mc(skill,d,seed,`Una bolsa tiene ${red} bolas rojas y ${blue} azules. ¿Cuál es la probabilidad de sacar roja?`,`${red}/${total}`,[`${blue}/${total}`,`${total}/${red}`,`${red}/${blue}`],`Hay ${red} casos favorables de ${total} posibles.`,['probabilidad_laplace','bolsa',tag])
   }
 
-  if (d === 4) {
-    const red = ri(2, 5)
-    const blue = ri(2, 5)
-    const green = ri(1, 4)
+  if (f === 3) {
+    const sectors = 6 + d
+    const favorable = 2 + (d % 3)
+    return mc(skill,d,seed,`Una ruleta tiene ${sectors} sectores iguales y ${favorable} llevan una estrella. ¿Cuál es la probabilidad de caer en estrella?`,`${favorable}/${sectors}`,[`${sectors-favorable}/${sectors}`,`${sectors}/${favorable}`,`${favorable}/${sectors+1}`],`Hay ${favorable} sectores favorables de ${sectors} equiprobables.`,['probabilidad_laplace','ruleta',tag])
+  }
+
+  if (f === 4) {
+    const red = 2 + d
+    const blue = 3 + d
+    const green = 1 + Math.floor(d/2)
     const total = red + blue + green
     const favorable = red + blue
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una bolsa contiene ${red} bolas rojas, ${blue} azules y ${green} verdes. ¿Cuál es la probabilidad de sacar una bola que NO sea verde?`,
-      `${favorable}/${total}`,
-      [
-        `${green}/${total}`,
-        `${total}/${favorable}`,
-        `${red}/${total}`,
-      ],
-      `No verde significa roja o azul: ${red}+${blue}=${favorable} casos favorables de ${total}.`,
-      ['probabilidad_laplace', 'suceso_compuesto']
-    )
+    return mc(skill,d,seed,`Una bolsa contiene ${red} rojas, ${blue} azules y ${green} verdes. ¿Cuál es la probabilidad de NO sacar verde?`,`${favorable}/${total}`,[`${green}/${total}`,`${total}/${favorable}`,`${red}/${total}`],`No verde significa roja o azul: ${red}+${blue}=${favorable} casos de ${total}.`,['probabilidad_laplace','complementario',tag])
   }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    'Se lanzan dos dados normales. ¿Cuál es la probabilidad de que la suma sea 7?',
-    '6/36',
-    [
-      '7/36',
-      '6/12',
-      '1/36',
-    ],
-    'Hay 36 parejas equiprobables y 6 suman 7, así que la probabilidad es 6/36.',
-    ['probabilidad_laplace', 'dos_dados', 'dificultad_alta']
-  )
+  if (f === 5) {
+    if (d <= 2) return mc(skill,d,seed,'Se lanzan dos monedas equilibradas. ¿Cuál es la probabilidad de obtener exactamente una cara?','2/4',['1/4','3/4','1/2 de 4'],'Los resultados equiprobables son CC, CX, XC y XX; dos tienen exactamente una cara.',['probabilidad_laplace','dos_monedas',tag])
+    return mc(skill,d,seed,'Se lanzan tres monedas equilibradas. ¿Cuál es la probabilidad de obtener exactamente tres caras?','1/8',['3/8','1/3','7/8'],'Hay 8 secuencias equiprobables y solo CCC tiene tres caras.',['probabilidad_laplace','tres_monedas',tag])
+  }
+
+  if (f === 6) {
+    const sum = d <= 2 ? 7 : (d <= 4 ? 8 : 9)
+    const favorable = sum === 7 ? 6 : sum === 8 ? 5 : 4
+    return mc(skill,d,seed,`Se lanzan dos dados normales. ¿Cuál es la probabilidad de que la suma sea ${sum}?`,`${favorable}/36`,[`${sum}/36`,`${favorable}/12`,`1/36`],`Hay 36 parejas ordenadas equiprobables y ${favorable} de ellas suman ${sum}.`,['probabilidad_laplace','dos_dados',tag])
+  }
+
+  if (d <= 2) return mc(skill,d,seed,'¿Cuál de estas probabilidades representa un suceso más probable?','4/6',['1/6','2/6','3/6'],'Con el mismo denominador, una fracción con mayor numerador representa mayor probabilidad.',['probabilidad_laplace','comparar',tag])
+  if (d <= 4) return mc(skill,d,seed,'Dos sucesos equiprobables tienen probabilidades 3/8 y 5/8. ¿Cuál es más probable?','El de 5/8',['El de 3/8','Son igual de probables','No puede compararse'],'Tienen el mismo denominador y 5>3, así que 5/8 es mayor.',['probabilidad_laplace','comparar',tag])
+  return mc(skill,d,seed,'En una experiencia equiprobable, un suceso tiene probabilidad 7/12. ¿Cuál es la probabilidad de que NO ocurra?','5/12',['7/12','1/12','19/12'],'La probabilidad del complementario es 1−7/12=5/12.',['probabilidad_laplace','complementario','razonamiento',tag])
 }
 
 // =========================
