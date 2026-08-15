@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -10,6 +10,46 @@ export default function ParentLogin() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  useEffect(() => {
+    ;(async () => {
+      const supabase = createSupabaseBrowserClient()
+
+      if (!supabase) {
+        setCheckingSession(false)
+        return
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        setCheckingSession(false)
+        return
+      }
+
+      const { data: players, error } = await supabase
+        .from('players')
+        .select('id,alias')
+        .order('alias', { ascending: true })
+
+      if (error) {
+        setMessage(error.message)
+        setCheckingSession(false)
+        return
+      }
+
+      if (players?.length === 1) {
+        localStorage.setItem('levelup_player_id', players[0].id)
+        router.replace('/player')
+      } else {
+        localStorage.removeItem('levelup_player_id')
+        router.replace('/parent/setup')
+      }
+    })()
+  }, [router])
 
   async function signIn(e: FormEvent) {
     e.preventDefault()
@@ -23,8 +63,6 @@ export default function ParentLogin() {
 
     setLoading(true)
     setMessage('')
-
-    // Nunca reutilizamos el jugador seleccionado por otra cuenta del navegador.
     localStorage.removeItem('levelup_player_id')
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -54,7 +92,6 @@ export default function ParentLogin() {
       localStorage.setItem('levelup_player_id', players[0].id)
       router.push('/player')
     } else {
-      // Con cero jugadores hay que completar el alta; con varios, elegir cuál jugar.
       router.push('/parent/setup')
     }
 
@@ -93,6 +130,14 @@ export default function ParentLogin() {
 
     setMessage(
       'Cuenta creada. Revisa tu correo si Supabase pide confirmación y después inicia sesión.'
+    )
+  }
+
+  if (checkingSession) {
+    return (
+      <section className="card">
+        <p className="muted">Comprobando sesión...</p>
+      </section>
     )
   }
 
