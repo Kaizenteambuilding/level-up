@@ -9694,867 +9694,160 @@ if (key === 'stats_population') {
   if (f === 6) return mc(skill,d,seed,'Un estudio separa la población por edades y selecciona al azar dentro de cada grupo. ¿Qué objetivo persigue?','Asegurar presencia de los distintos grupos de edad',['Convertir las edades en individuos','Eliminar la población','Hacer que todos tengan la misma respuesta'],`Seleccionar dentro de grupos ayuda a cubrir segmentos relevantes de la población.`,['estadistica',tag])
   return mc(skill,d,seed,'¿Cuál es el mejor argumento contra “la muestra es grande, por tanto no puede estar sesgada”?','El sesgo depende del modo de selección, no solo del número de participantes',['Toda muestra grande es una población','El tamaño elimina cualquier error posible','Una muestra sesgada siempre tiene menos de 20 individuos'],`Un mecanismo de selección defectuoso puede sesgar incluso muestras muy grandes.`,['estadistica',tag])
 }
-if (key === 'stats_variables') {
-  const f=pickFamily(seed,5), k=ri(12,40)
-  if(f===0)return mc(skill,d,seed,'¿Qué tipo de variable es el color de ojos?','Cualitativa',['Cuantitativa discreta','Cuantitativa continua','Frecuencia'],`Describe una categoría, no una cantidad.`,['variables','family:m14-var-0'])
-  if(f===1)return mc(skill,d,seed,'¿Qué tipo de variable es el número de hermanos?','Cuantitativa discreta',['Cualitativa','Cuantitativa continua','Población'],`Es un recuento con valores enteros.`,['variables','family:m14-var-1'])
-  if(f===2)return mc(skill,d,seed,'¿Qué tipo de variable es la altura de una persona?','Cuantitativa continua',['Cualitativa','Cuantitativa discreta','Muestra'],`Puede tomar valores en un intervalo.`,['variables','family:m14-var-2'])
-  if(f===3)return mc(skill,d,seed,`En una clase de ${k} alumnos se registra su medio de transporte al centro. ¿Cuál es la variable?`,'El medio de transporte',['El número de alumnos','La clase completa','Cada alumno'],`La variable es la característica observada en cada individuo.`,['variables','family:m14-var-3'])
-  return mc(skill,d,seed,'¿Cuál de estas parejas está correctamente clasificada?','Temperatura: cuantitativa continua',['Deporte favorito: cuantitativa continua','Número de mascotas: cualitativa','Código postal: cuantitativa continua'],`La temperatura es una medida numérica que puede tomar valores intermedios.`,['variables','family:m14-var-4'])
-}
-if (key === 'frequency_table') {
-  const f=pickFamily(seed,5), a=ri(2,6), b=ri(2,6), c=ri(2,6), total=a+b+c
-  if(f===0)return mc(skill,d,seed,`En los datos A, B, A, C, A, B, ¿cuál es la frecuencia absoluta de A?`,'3',['2','4','6'],`A aparece 3 veces.`,['frecuencias','family:m14-freq-0'])
-  if(f===1)return mc(skill,d,seed,`Una tabla tiene frecuencias ${a}, ${b} y ${c}. ¿Cuántos datos hay en total?`,String(total),[String(total-1),String(total+1),String(Math.max(a,b,c))],`Sumamos las frecuencias: ${a}+${b}+${c}=${total}.`,['frecuencias','family:m14-freq-1'])
-  if(f===2){const pct=Math.round(100*a/total);return mc(skill,d,seed,`Una categoría aparece ${a} veces entre ${total} datos. Aproximadamente, ¿qué porcentaje representa?`,`${pct}%`,[`${Math.max(0,pct-10)}%`,`${Math.min(100,pct+10)}%`,`${a}%`],`Frecuencia relativa = ${a}/${total}; en porcentaje es aproximadamente ${pct}%.`,['frecuencias','family:m14-freq-2'])}
-  if(f===3)return mc(skill,d,seed,`En una tabla, las frecuencias son ${a}, ${b} y una desconocida. Si hay ${total+4} datos, ¿cuál es la frecuencia que falta?`,String(c+4),[String(c),String(c+3),String(c+5)],`Restamos las conocidas al total: ${total+4}-${a}-${b}=${c+4}.`,['frecuencias','family:m14-freq-3'])
-  return mc(skill,d,seed,`Si una frecuencia relativa es 0,25 en un grupo de ${20*d} datos, ¿cuál es la frecuencia absoluta?`,String(5*d),[String(4*d),String(10*d),'25'],`0,25×${20*d}=${5*d}.`,['frecuencias','family:m14-freq-4'])
-}
-if (key === 'stat_charts') {
-  const f=pickFamily(seed,5)
-  if(f===0)return mc(skill,d,seed,'¿Qué gráfico es especialmente adecuado para comparar frecuencias de categorías?','Diagrama de barras',['Diagrama de dispersión','Recta numérica','Plano cartesiano'],`Las barras facilitan comparar categorías.`,['graficos','family:m14-chart-0'])
-  if(f===1)return mc(skill,d,seed,'¿Qué gráfico muestra bien cómo se reparte un total entre categorías?','Diagrama de sectores',['Diagrama de dispersión','Histograma de una sola barra','Recta numérica'],`Los sectores representan partes de un total.`,['graficos','family:m14-chart-1'])
-  if(f===2)return mc(skill,d,seed,'¿Qué gráfico es apropiado para estudiar la relación entre altura y peso de varias personas?','Diagrama de dispersión',['Diagrama de sectores','Pictograma','Una sola barra'],`La dispersión relaciona dos variables cuantitativas.`,['graficos','family:m14-chart-2'])
-  if(f===3)return mc(skill,d,seed,'En un gráfico de barras, una barra mide el doble que otra usando la misma escala. ¿Qué indica?','Su frecuencia es el doble',['Su frecuencia es la mitad','Las categorías son iguales','No se puede comparar'],`Con la misma escala, doble altura representa doble frecuencia.`,['graficos','family:m14-chart-3'])
-  return mc(skill,d,seed,'¿Qué puede hacer engañoso un gráfico de barras?','Cortar el eje vertical de forma que exagere diferencias',['Poner un título claro','Indicar las unidades','Usar la misma escala para todas las barras'],`Un eje truncado puede hacer parecer enormes diferencias pequeñas.`,['graficos','family:m14-chart-4'])
-}
-if (key === 'mean') {
-  const f=pickFamily(seed,5), m=ri(6,14), x=ri(1,4)
-  if(f===0){const vals=[m-x,m,m+x];return mc(skill,d,seed,`¿Cuál es la media de ${vals.join(', ')}?`,String(m),[String(m-1),String(m+1),String(m+x)],`La suma es ${3*m}; dividimos entre 3: ${m}.`,['media','family:m14-mean-0'])}
-  if(f===1)return mc(skill,d,seed,`La suma de 5 datos es ${5*m}. ¿Cuál es su media?`,String(m),[String(m-1),String(m+1),String(5*m)],`${5*m}/5=${m}.`,['media','family:m14-mean-1'])
-  if(f===2){const miss=4*m-(m-2)-m-(m+1);return mc(skill,d,seed,`La media de 4 números es ${m}. Tres son ${m-2}, ${m} y ${m+1}. ¿Cuál falta?`,String(miss),[String(m),String(miss-1),String(miss+1)],`La suma debe ser ${4*m}; restamos los tres conocidos.`,['media','family:m14-mean-2'])}
-  if(f===3)return mc(skill,d,seed,`Un conjunto tiene media ${m}. Si a todos los datos se les suma ${x}, ¿cuál será la nueva media?`,String(m+x),[String(m),String(m-x),String(m+2*x)],`Sumar ${x} a cada dato aumenta la media en ${x}.`,['media','family:m14-mean-3'])
-  return mc(skill,d,seed,`Dos grupos tienen ${d+2} datos cada uno, con medias ${m} y ${m+4}. ¿Cuál es la media al reunirlos?`,String(m+2),[String(m),String(m+4),String(m+1)],`Como tienen el mismo tamaño, la media conjunta es el promedio de ambas medias: ${m+2}.`,['media','family:m14-mean-4'])
-}
-if (key === 'median') {
-  const f=pickFamily(seed,5), m=ri(8,18)
-  if(f===0)return mc(skill,d,seed,`¿Cuál es la mediana de ${m-3}, ${m-1}, ${m}, ${m+2}, ${m+6}?`,String(m),[String(m-1),String(m+1),String(m+2)],`Con 5 datos ordenados, la mediana es el tercero.`,['mediana','family:m14-med-0'])
-  if(f===1)return mc(skill,d,seed,`Ordena mentalmente: ${m+4}, ${m-2}, ${m}, ${m+1}, ${m-5}. ¿Cuál es la mediana?`,String(m),[String(m-2),String(m+1),String(m+4)],`Ordenados, el valor central es ${m}.`,['mediana','family:m14-med-1'])
-  if(f===2)return mc(skill,d,seed,`¿Cuál es la mediana de ${m-4}, ${m-2}, ${m}, ${m+2}, ${m+4}, ${m+6}?`,String(m+1),[String(m),String(m+2),String(m+3)],`Con 6 datos, promediamos los dos centrales: (${m}+${m+2})/2=${m+1}.`,['mediana','family:m14-med-2'])
-  if(f===3)return mc(skill,d,seed,`Un conjunto ordenado es 2, 5, ${m}, 20, 25. Si se añade 100 al final, ¿qué ocurre con la mediana?`,'Puede cambiar porque ahora hay un número par de datos',['Siempre sigue siendo '+m,'Se convierte en 100','Desaparece'],`Al pasar de 5 a 6 datos, la mediana se calcula con los dos centrales.`,['mediana','family:m14-med-3'])
-  return mc(skill,d,seed,'¿Qué afirmación sobre la mediana es correcta?','Es resistente a valores extremadamente grandes o pequeños',['Siempre coincide con la media','Solo existe si hay un número impar de datos','Es siempre el dato más frecuente'],`Los valores extremos suelen afectar menos a la mediana que a la media.`,['mediana','family:m14-med-4'])
-}
-if (key === 'mode') {
-  const f=pickFamily(seed,5), a=ri(3,9)
-  if(f===0)return mc(skill,d,seed,`¿Cuál es la moda de ${a}, ${a+1}, ${a}, ${a+2}, ${a}?`,String(a),[String(a+1),String(a+2),'No hay moda'],`${a} es el valor que más se repite.`,['moda','family:m14-mode-0'])
-  if(f===1)return mc(skill,d,seed,`En los datos 2, 2, 5, 5, 7, ¿qué ocurre?`,'Hay dos modas: 2 y 5',['La moda es 7','No hay moda','La moda es 3,5'],`2 y 5 comparten la frecuencia máxima.`,['moda','family:m14-mode-1'])
-  if(f===2)return mc(skill,d,seed,'En los datos 3, 5, 7, 9, cada valor aparece una vez. ¿Cuál es la moda?','No hay moda',['3','6','9'],`Ningún valor aparece más veces que los demás.`,['moda','family:m14-mode-2'])
-  if(f===3)return mc(skill,d,seed,`Una tabla indica: A→${a}, B→${a+3}, C→${a+1}. ¿Cuál es la moda?`,'B',['A','C','No hay moda'],`B tiene la frecuencia más alta: ${a+3}.`,['moda','family:m14-mode-3'])
-  return mc(skill,d,seed,'¿Cuál es una ventaja de la moda frente a la media?','Puede usarse con datos cualitativos',['Siempre es única','Siempre usa todos los valores numéricos','Nunca depende de frecuencias'],`La categoría más frecuente puede identificarse incluso en variables cualitativas.`,['moda','family:m14-mode-4'])
-}
-
-if (key === 'stats_population') {
-  const easy = [
-    {
-      prompt:
-        'En un instituto se quiere estudiar la altura de todos los alumnos de 1º ESO. ¿Cuál es la población?',
-      answer: 'Todos los alumnos de 1º ESO',
-      distractors: [
-        'Un alumno cualquiera',
-        'Los 20 alumnos medidos',
-        'Las alturas obtenidas',
-      ],
-      solution:
-        'La población es el conjunto completo que se quiere estudiar.',
-    },
-    {
-      prompt:
-        'De 500 clientes se eligen 50 para responder una encuesta. ¿Qué son esos 50 clientes?',
-      answer: 'La muestra',
-      distractors: [
-        'La población',
-        'La variable',
-        'La frecuencia',
-      ],
-      solution:
-        'La muestra es una parte de la población utilizada para realizar el estudio.',
-    },
-    {
-      prompt:
-        'En un estudio sobre hábitos deportivos, cada persona encuestada es...',
-      answer: 'Un individuo',
-      distractors: [
-        'Una muestra',
-        'Una variable',
-        'Una frecuencia',
-      ],
-      solution:
-        'Cada elemento de la población es un individuo.',
-    },
-  ]
-
-  if (d <= 2) {
-    const v = easy[ri(0, easy.length - 1)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['poblacion_muestra_individuo']
-    )
-  }
-
-  if (d === 3) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'Una ciudad tiene 20.000 habitantes. Se entrevista a 400 para estudiar sus hábitos de transporte. ¿Cuál es la muestra?',
-      'Los 400 habitantes entrevistados',
-      [
-        'Los 20.000 habitantes',
-        'Los medios de transporte',
-        'Una sola persona entrevistada',
-      ],
-      'La muestra está formada por las 400 personas seleccionadas.',
-      ['poblacion_muestra_individuo', 'contexto']
-    )
-  }
-
-  if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
-      'En un estudio sobre el tiempo de uso del móvil de todos los alumnos de un centro, se seleccionan 80 alumnos. ¿Cuál es la población?',
-      'Todos los alumnos del centro',
-      [
-        'Los 80 alumnos seleccionados',
-        'El tiempo de uso del móvil',
-        'Cada teléfono móvil',
-      ],
-      'La población es el conjunto total sobre el que se desea obtener información.',
-      ['poblacion_muestra_individuo', 'razonamiento']
-    )
-  }
-
-  return mc(
-    skill,
-    d,
-    seed,
-    'Se estudia el consumo eléctrico de todas las viviendas de una ciudad usando datos de 600 viviendas seleccionadas. ¿Qué afirmación es correcta?',
-    'Las viviendas de la ciudad forman la población y las 600 seleccionadas forman la muestra',
-    [
-      'Las 600 viviendas forman la población',
-      'El consumo eléctrico es la muestra',
-      'Cada ciudad es un individuo',
-    ],
-    'La población es el conjunto completo y la muestra es el subconjunto observado.',
-    ['poblacion_muestra_individuo', 'razonamiento', 'dificultad_alta']
-  )
-}
-
 // M14S02 · Variables estadísticas
 if (key === 'stats_variables') {
-  if (d === 1) {
-    const variants = [
-      {
-        prompt:
-          'La altura de una persona, medida en centímetros, es una variable...',
-        answer: 'Cuantitativa',
-        distractors: [
-          'Cualitativa',
-          'No estadística',
-          'Nominal',
-        ],
-        solution:
-          'La altura se expresa mediante números.',
-      },
-      {
-        prompt:
-          'El color favorito de una persona es una variable...',
-        answer: 'Cualitativa',
-        distractors: [
-          'Cuantitativa',
-          'Continua',
-          'Numérica',
-        ],
-        solution:
-          'El color favorito describe una categoría.',
-      },
-    ]
+  const f = pickFamily(seed, 8)
+  const tag = `family:m14-var:d${d}:f${f}`
 
+  if (f === 0) {
+    const variants = d <= 2
+      ? [
+          ['El color de ojos de una persona', 'Cualitativa'],
+          ['El número de hermanos de un alumno', 'Cuantitativa discreta'],
+          ['La altura de una persona', 'Cuantitativa continua'],
+        ]
+      : [
+          ['El código postal de una vivienda', 'Cualitativa'],
+          ['El número de mensajes recibidos en un día', 'Cuantitativa discreta'],
+          ['El tiempo empleado en una carrera', 'Cuantitativa continua'],
+        ]
     const v = variants[ri(0, variants.length - 1)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['variables_estadisticas']
-    )
+    return mc(skill,d,seed,`${v[0]} es una variable...`,v[1],[ 'Cualitativa','Cuantitativa discreta','Cuantitativa continua','No estadística' ].filter(x=>x!==v[1]),`La clasificación correcta es ${v[1].toLowerCase()}.`,['variables_estadisticas',tag])
   }
-
-  if (d === 2) {
-    const variants = [
-      {
-        prompt:
-          'El número de hermanos de un alumno es una variable...',
-        answer: 'Cuantitativa discreta',
-        distractors: [
-          'Cualitativa',
-          'Cuantitativa continua',
-          'No estadística',
-        ],
-        solution:
-          'Es numérica y solo puede tomar valores enteros contables.',
-      },
-      {
-        prompt:
-          'El número de libros leídos durante un mes es una variable...',
-        answer: 'Cuantitativa discreta',
-        distractors: [
-          'Cualitativa',
-          'Cuantitativa continua',
-          'Nominal',
-        ],
-        solution:
-          'Los libros se cuentan mediante números enteros.',
-      },
-    ]
-
-    const v = variants[ri(0, variants.length - 1)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      v.prompt,
-      v.answer,
-      v.distractors,
-      v.solution,
-      ['variables_estadisticas', 'discreta']
-    )
-  }
-
-  if (d === 3) {
-    const variants = [
-      'La masa de una persona medida con precisión',
-      'La temperatura de una habitación',
-      'El tiempo empleado en recorrer una distancia',
-    ]
-
-    const variable = variants[ri(0, variants.length - 1)]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `${variable} es una variable...`,
-      'Cuantitativa continua',
-      [
-        'Cuantitativa discreta',
-        'Cualitativa',
-        'No estadística',
-      ],
-      'Puede tomar cualquier valor dentro de un intervalo, por eso es continua.',
-      ['variables_estadisticas', 'continua']
-    )
-  }
-
-  if (d === 4) {
-    return mc(
-      skill,
-      d,
-      seed,
-      '¿Cuál de estas variables es cualitativa?',
-      'El medio de transporte utilizado para ir al instituto',
-      [
-        'La distancia recorrida en kilómetros',
-        'El número de hermanos',
-        'La temperatura corporal',
-      ],
-      'El medio de transporte describe categorías, no cantidades numéricas.',
-      ['variables_estadisticas', 'clasificacion']
-    )
-  }
-
-  return mc(
-    skill,
-    d,
-    seed,
-    '¿Qué pareja está correctamente clasificada?',
-    'Número de mascotas: cuantitativa discreta; altura: cuantitativa continua',
-    [
-      'Número de mascotas: continua; altura: discreta',
-      'Color de ojos: cuantitativa; altura: cualitativa',
-      'Temperatura: discreta; deporte favorito: cuantitativa',
-    ],
-    'Las mascotas se cuentan y la altura se mide sobre una escala continua.',
-    ['variables_estadisticas', 'razonamiento', 'dificultad_alta']
-  )
+  if (f === 1) return mc(skill,d,seed,'¿Cuál de estas variables es cualitativa?','El medio de transporte habitual',['La temperatura corporal','El número de mascotas','La distancia recorrida'],`El medio de transporte describe categorías, no cantidades.`,['variables_estadisticas',tag])
+  if (f === 2) return mc(skill,d,seed,'¿Cuál de estas variables es cuantitativa discreta?','El número de libros leídos en un mes',['La masa corporal','El color favorito','El tiempo de viaje'],`Los libros se cuentan mediante valores enteros.`,['variables_estadisticas',tag])
+  if (f === 3) return mc(skill,d,seed,'¿Cuál de estas variables es cuantitativa continua?','La temperatura de una habitación',['El número de alumnos','La marca de móvil','El número de goles'],`La temperatura puede tomar valores intermedios en una escala continua.`,['variables_estadisticas',tag])
+  if (f === 4) return mc(skill,d,seed,'¿Qué pareja está correctamente clasificada?','Número de llamadas: discreta; duración de llamadas: continua',['Número de llamadas: continua; duración: discreta','Color del teléfono: continua; duración: cualitativa','Marca del teléfono: discreta; número de llamadas: cualitativa'],`Contar llamadas produce una variable discreta; medir duración produce una continua.`,['variables_estadisticas',tag])
+  if (f === 5) return mc(skill,d,seed,'Se estudia si los alumnos van andando, en bici, autobús o coche. ¿Cuál es la variable?','El medio de transporte utilizado',['Los alumnos encuestados','El número total de alumnos','El instituto'],`La variable es la característica registrada en cada individuo.`,['variables_estadisticas',tag])
+  if (f === 6) return mc(skill,d,seed,'¿Qué clasificación es incorrecta?','Altura: cuantitativa discreta',['Número de hermanos: cuantitativa discreta','Deporte favorito: cualitativa','Temperatura: cuantitativa continua'],`La altura se mide de forma continua, no mediante conteos enteros.`,['variables_estadisticas',tag])
+  return mc(skill,d,seed,'Un dorsal de corredor está escrito con números. ¿Por qué no es necesariamente una variable cuantitativa?','Porque puede funcionar solo como una etiqueta o identificador',['Porque todos los números son cualitativos','Porque una variable cuantitativa nunca usa enteros','Porque los identificadores siempre son continuos'],`Que algo use cifras no implica que represente una cantidad medible.`,['variables_estadisticas','razonamiento',tag])
 }
 
 // M14S03 · Tabla de frecuencias
 if (key === 'frequency_table') {
-  if (d === 1) {
-    const target = ri(1, 5)
-    const frequency = ri(2, 5)
+  const f = pickFamily(seed, 8)
+  const tag = `family:m14-freq:d${d}:f${f}`
+  const a = ri(2, 5 + d)
+  const b = ri(2, 5 + d)
+  const c = ri(2, 5 + d)
+  const total = a + b + c
 
-    const values = [
-      target,
-      target + 1,
-      target,
-      target + 2,
-      target,
-      target + 3,
-    ]
-
-    if (frequency >= 4) values.push(target)
-    if (frequency >= 5) values.push(target)
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `En los datos ${values.join(', ')}, ¿cuál es la frecuencia del valor ${target}?`,
-      String(frequency),
-      [
-        String(Math.max(1, frequency - 1)),
-        String(frequency + 1),
-        String(values.length),
-      ],
-      `El valor ${target} aparece ${frequency} veces.`,
-      ['tabla_frecuencias']
-    )
+  if (f === 0) {
+    const target = ri(2, 6)
+    const values = [target, target+1, target, target+2, target, target+1, target]
+    return mc(skill,d,seed,`En los datos ${values.join(', ')}, ¿cuál es la frecuencia absoluta de ${target}?`,'4',['2','3','7'],`${target} aparece 4 veces.`,['tabla_frecuencias',tag])
   }
-
-  if (d === 2) {
-    const a = ri(1, 4)
-    const b = a + 1
-    const c = a + 2
-
-    const freqA = ri(1, 3)
-    const freqB = ri(3, 5)
-    const freqC = ri(1, 2)
-
-    const total = freqA + freqB + freqC
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una tabla muestra: ${a} aparece ${freqA} veces, ${b} aparece ${freqB} veces y ${c} aparece ${freqC} veces. ¿Cuántos datos hay en total?`,
-      String(total),
-      [
-        String(freqB),
-        String(a + b + c),
-        String(total + 1),
-      ],
-      `Sumamos las frecuencias: ${freqA}+${freqB}+${freqC}=${total}.`,
-      ['tabla_frecuencias', 'frecuencia_total']
-    )
+  if (f === 1) return mc(skill,d,seed,`Una tabla tiene frecuencias ${a}, ${b} y ${c}. ¿Cuántos datos hay en total?`,String(total),[String(total-1),String(total+1),String(Math.max(a,b,c))],`Sumamos las frecuencias: ${a}+${b}+${c}=${total}.`,['tabla_frecuencias',tag])
+  if (f === 2) {
+    const n = 4 * (d + 2)
+    const fav = n / 4
+    return mc(skill,d,seed,`Una categoría aparece ${fav} veces entre ${n} datos. ¿Cuál es su frecuencia relativa?`,'0,25',['0,50','0,75',String(fav)],`${fav}/${n}=0,25.`,['tabla_frecuencias','frecuencia_relativa',tag])
   }
-
-  if (d === 3) {
-    const total = ri(20, 50)
-    const frequency = ri(5, total - 5)
-    const relative = frequency / total
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `En un grupo de ${total} personas, ${frequency} eligen una opción. ¿Cuál es su frecuencia relativa?`,
-      String(relative),
-      [
-        String(frequency),
-        String(total - frequency),
-        String(total / frequency),
-      ],
-      `Frecuencia relativa = ${frequency}/${total} = ${relative}.`,
-      ['tabla_frecuencias', 'frecuencia_relativa']
-    )
+  if (f === 3) {
+    const n = 20 * (d + 1)
+    const fav = n / 5
+    return mc(skill,d,seed,`En un grupo de ${n} personas, ${fav} pertenecen a una categoría. ¿Qué porcentaje representan?`,'20%',['5%','25%','80%'],`${fav}/${n}=0,20=20%.`,['tabla_frecuencias','porcentaje',tag])
   }
-
-  if (d === 4) {
-    const values = [2, 3, 4, 5]
-    const winnerIndex = ri(0, values.length - 1)
-    const frequencies = [
-      ri(1, 4),
-      ri(1, 4),
-      ri(1, 4),
-      ri(1, 4),
-    ]
-    const maxOther = Math.max(
-      ...frequencies.filter((_, index) => index !== winnerIndex)
-    )
-    frequencies[winnerIndex] = maxOther + ri(1, 3)
-
-    const maxFreq = frequencies[winnerIndex]
-    const answer = String(values[winnerIndex])
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una tabla tiene valores ${values.join(', ')} con frecuencias ${frequencies.join(', ')} respectivamente. ¿Qué valor tiene mayor frecuencia?`,
-      answer,
-      values
-        .map(String)
-        .filter((x) => x !== answer),
-      `La frecuencia mayor es ${maxFreq}, correspondiente al valor ${answer}.`,
-      ['tabla_frecuencias', 'interpretacion']
-    )
+  if (f === 4) {
+    const missing = ri(2, 7)
+    const grand = a + b + missing
+    return mc(skill,d,seed,`Las frecuencias de tres categorías son ${a}, ${b} y una desconocida. Si hay ${grand} datos en total, ¿qué frecuencia falta?`,String(missing),[String(missing+1),String(Math.max(1,missing-1)),String(a+b)],`${grand}-${a}-${b}=${missing}.`,['tabla_frecuencias','frecuencia_desconocida',tag])
   }
-
-  const f1 = ri(2, 6)
-  const f2 = ri(2, 6)
-  const f3 = ri(2, 6)
-  const knownTotal = f1 + f2 + f3
-  const missing = ri(2, 6)
-  const total = knownTotal + missing
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Una tabla de frecuencias tiene valores con frecuencias ${f1}, ${f2}, ${f3} y una frecuencia desconocida. Si hay ${total} datos en total, ¿cuál es la frecuencia que falta?`,
-    String(missing),
-    [
-      String(total),
-      String(knownTotal),
-      String(missing + 1),
-    ],
-    `Frecuencia desconocida = ${total}-(${f1}+${f2}+${f3})=${missing}.`,
-    ['tabla_frecuencias', 'frecuencia_desconocida', 'dificultad_alta']
-  )
+  if (f === 5) {
+    const freqs = [a, a+3, a+1]
+    return mc(skill,d,seed,`Las frecuencias de A, B y C son ${freqs.join(', ')}. ¿Qué categoría es la más frecuente?`,'B',['A','C','Todas igual'],`B tiene frecuencia ${a+3}, la mayor de las tres.`,['tabla_frecuencias','interpretacion',tag])
+  }
+  if (f === 6) {
+    const n = 40 + 10*d
+    const rel = 0.4
+    const abs = Math.round(n*rel)
+    return mc(skill,d,seed,`Una frecuencia relativa es 0,4 en un conjunto de ${n} datos. ¿Cuál es la frecuencia absoluta?`,String(abs),[String(n),String(abs+10),String(Math.max(1,abs-10))],`0,4×${n}=${abs}.`,['tabla_frecuencias','frecuencia_relativa',tag])
+  }
+  const firstTwo = a+b
+  return mc(skill,d,seed,`En una tabla ordenada, las dos primeras categorías tienen frecuencias ${a} y ${b}. ¿Cuál es su frecuencia acumulada hasta la segunda categoría?`,String(firstTwo),[String(a),String(b),String(total)],`Frecuencia acumulada = ${a}+${b}=${firstTwo}.`,['tabla_frecuencias','acumulada',tag])
 }
 
 // M14S04 · Gráficos estadísticos
 if (key === 'stat_charts') {
-  const easy = [
-    {
-      situation:
-        'comparar el número de alumnos que eligen cada deporte',
-      answer: 'Gráfico de barras',
-      distractors: [
-        'Gráfico de líneas',
-        'Diagrama de sectores',
-        'Plano cartesiano',
-      ],
-      solution:
-        'Las barras permiten comparar categorías.',
-    },
-    {
-      situation:
-        'mostrar cómo se reparte un total entre varias categorías',
-      answer: 'Diagrama de sectores',
-      distractors: [
-        'Gráfico de líneas',
-        'Gráfico de barras',
-        'Plano cartesiano',
-      ],
-      solution:
-        'Los sectores representan partes de un total.',
-    },
-    {
-      situation:
-        'mostrar cómo cambia una temperatura durante varias horas',
-      answer: 'Gráfico de líneas',
-      distractors: [
-        'Diagrama de sectores',
-        'Gráfico de barras',
-        'Pictograma',
-      ],
-      solution:
-        'Las líneas permiten observar cambios a lo largo del tiempo.',
-    },
-  ]
-
-  const hard = [
-    {
-      situation:
-        'representar la distribución de alturas agrupadas en intervalos',
-      answer: 'Histograma',
-      distractors: [
-        'Diagrama de sectores',
-        'Pictograma',
-        'Plano cartesiano',
-      ],
-      solution:
-        'El histograma es apropiado para datos cuantitativos agrupados en intervalos.',
-    },
-    {
-      situation:
-        'estudiar la relación entre horas de estudio y nota obtenida',
-      answer: 'Diagrama de dispersión',
-      distractors: [
-        'Diagrama de sectores',
-        'Histograma',
-        'Pictograma',
-      ],
-      solution:
-        'El diagrama de dispersión permite analizar la relación entre dos variables numéricas.',
-    },
-  ]
-
-  const pool = d <= 3 ? easy : hard
-  const v = pool[ri(0, pool.length - 1)]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `¿Qué gráfico es más adecuado para ${v.situation}?`,
-    v.answer,
-    v.distractors,
-    v.solution,
-    ['graficos_estadisticos', `dificultad_${d}`]
-  )
+  const f = pickFamily(seed, 8)
+  const tag = `family:m14-chart:d${d}:f${f}`
+  if (f === 0) return mc(skill,d,seed,'¿Qué gráfico es especialmente adecuado para comparar cantidades entre categorías?','Gráfico de barras',['Gráfico de líneas','Diagrama de dispersión','Plano cartesiano'],`Las barras permiten comparar visualmente categorías.`,['graficos_estadisticos',tag])
+  if (f === 1) return mc(skill,d,seed,'¿Qué gráfico muestra bien cómo se reparte un total entre varias categorías?','Diagrama de sectores',['Gráfico de líneas','Diagrama de dispersión','Recta numérica'],`Los sectores representan partes de un total.`,['graficos_estadisticos',tag])
+  if (f === 2) return mc(skill,d,seed,'¿Qué gráfico es adecuado para mostrar cómo cambia una temperatura durante varias horas?','Gráfico de líneas',['Diagrama de sectores','Pictograma','Diagrama de dispersión'],`Las líneas muestran bien una evolución temporal.`,['graficos_estadisticos',tag])
+  if (f === 3) return mc(skill,d,seed,'¿Qué gráfico usarías para estudiar la relación entre horas de estudio y nota obtenida por muchos alumnos?','Diagrama de dispersión',['Diagrama de sectores','Pictograma','Gráfico circular'],`La dispersión permite observar la relación entre dos variables cuantitativas.`,['graficos_estadisticos',tag])
+  if (f === 4) return mc(skill,d,seed,'¿Qué gráfico es apropiado para representar alturas agrupadas en intervalos?','Histograma',['Diagrama de sectores','Gráfico de líneas temporal','Pictograma'],`El histograma representa frecuencias de una variable cuantitativa agrupada.`,['graficos_estadisticos',tag])
+  if (f === 5) return mc(skill,d,seed,'¿Qué puede hacer engañoso un gráfico de barras?','Empezar el eje vertical muy por encima de cero para exagerar diferencias',['Indicar las unidades','Poner un título claro','Usar la misma escala en todas las barras'],`Un eje truncado puede exagerar visualmente diferencias pequeñas.`,['graficos_estadisticos','lectura_critica',tag])
+  if (f === 6) return mc(skill,d,seed,'Se quieren comparar las ventas de 6 tiendas en un mismo mes. ¿Qué representación es más directa?','Gráfico de barras',['Gráfico de líneas de una sola serie temporal','Diagrama de dispersión sin segunda variable','Circunferencia geométrica'],`Se comparan categorías independientes: las tiendas.`,['graficos_estadisticos',tag])
+  return mc(skill,d,seed,'En un gráfico de barras con la misma escala, una barra mide aproximadamente el doble que otra. ¿Qué indica?','Que su frecuencia es aproximadamente el doble',['Que su frecuencia es la mitad','Que ambas frecuencias son iguales','Que no se pueden comparar'],`Con una escala común, la altura representa proporcionalmente la frecuencia.`,['graficos_estadisticos','interpretacion',tag])
 }
 
 // M14S05 · Media aritmética
 if (key === 'mean') {
-  if (d <= 2) {
-    const result = ri(3, 10)
-    const a = result - ri(0, 2)
-    const b = result + ri(0, 2)
-    const c = result - ri(0, 2)
-    const d4 = result * 4 - a - b - c
+  const f = pickFamily(seed, 8)
+  const tag = `family:m14-mean:d${d}:f${f}`
+  const m = ri(6, 10 + d*2)
+  const x = ri(1, 2 + d)
 
-    const values = [a, b, c, d4]
-    const total = values.reduce((sum, value) => sum + value, 0)
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula la media de ${values.join(', ')}`,
-      String(result),
-      [
-        String(total),
-        String(Math.max(...values)),
-        String(Math.min(...values)),
-      ],
-      `Sumamos ${total} y dividimos entre 4: ${total}/4=${result}.`,
-      ['media_aritmetica']
-    )
+  if (f === 0) {
+    const vals = [m-x, m, m+x]
+    return mc(skill,d,seed,`Calcula la media de ${vals.join(', ')}`,String(m),[String(m-1),String(m+1),String(m+x)],`La suma es ${3*m}; dividimos entre 3 y obtenemos ${m}.`,['media_aritmetica',tag])
   }
-
-  if (d === 3) {
-    const result = ri(5, 15)
-    const values = [
-      result - 4,
-      result - 2,
-      result,
-      result + 2,
-      result + 4,
-    ]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la media de ${values.join(', ')}?`,
-      String(result),
-      [
-        String(result + 2),
-        String(values[0]),
-        String(values[4]),
-      ],
-      `Los valores están equilibrados alrededor de ${result}, que es su media.`,
-      ['media_aritmetica', 'cinco_datos']
-    )
+  if (f === 1) {
+    const count = 4+d
+    const sum = count*m
+    return mc(skill,d,seed,`La suma de ${count} datos es ${sum}. ¿Cuál es su media?`,String(m),[String(count),String(sum),String(m+1)],`${sum}/${count}=${m}.`,['media_aritmetica',tag])
   }
-
-  if (d === 4) {
-    const mean = ri(6, 15)
-    const known = [mean - 2, mean, mean + 3]
-    const totalNeeded = mean * 4
-    const missing =
-      totalNeeded -
-      known.reduce((sum, value) => sum + value, 0)
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `La media de cuatro números es ${mean}. Tres de ellos son ${known.join(', ')}. ¿Cuál es el cuarto número?`,
-      String(missing),
-      [
-        String(mean),
-        String(totalNeeded),
-        String(missing + 2),
-      ],
-      `La suma total debe ser ${mean}×4=${totalNeeded}. Restamos los tres conocidos y obtenemos ${missing}.`,
-      ['media_aritmetica', 'dato_desconocido']
-    )
+  if (f === 2) {
+    const vals = [m-2,m,m+1]
+    const missing = 4*m - vals.reduce((s,v)=>s+v,0)
+    return mc(skill,d,seed,`La media de 4 números es ${m}. Tres son ${vals.join(', ')}. ¿Cuál falta?`,String(missing),[String(m),String(missing-1),String(missing+1)],`La suma total debe ser ${4*m}; restamos los tres conocidos.`,['media_aritmetica','dato_desconocido',tag])
   }
-
-  const oldMean = ri(6, 12)
-  const count = ri(4, 6)
-  const oldTotal = oldMean * count
-  const newValue = ri(oldMean + 2, oldMean + 8)
-  const newMean = (oldTotal + newValue) / (count + 1)
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `La media de ${count} valores es ${oldMean}. Se añade un nuevo valor ${newValue}. ¿Cuál es la nueva media?`,
-    String(newMean),
-    [
-      String(oldMean),
-      String(newValue),
-      String((oldMean + newValue) / 2),
-    ],
-    `La suma inicial es ${oldMean}×${count}=${oldTotal}. Añadimos ${newValue} y dividimos entre ${count + 1}: ${newMean}.`,
-    ['media_aritmetica', 'actualizar_media', 'dificultad_alta']
-  )
+  if (f === 3) return mc(skill,d,seed,`Un conjunto tiene media ${m}. Si a todos los datos se les suma ${x}, ¿cuál será la nueva media?`,String(m+x),[String(m),String(m-x),String(m+2*x)],`Sumar ${x} a todos los datos aumenta la media exactamente en ${x}.`,['media_aritmetica','transformacion',tag])
+  if (f === 4) return mc(skill,d,seed,`Dos grupos del mismo tamaño tienen medias ${m} y ${m+4}. ¿Cuál es la media al reunirlos?`,String(m+2),[String(m),String(m+4),String(m+1)],`Al tener el mismo tamaño, la media conjunta es el promedio de las dos medias.`,['media_aritmetica','grupos',tag])
+  if (f === 5) {
+    const a = m-2, b = m+1
+    const weighted = (2*a + 3*b)/5
+    return mc(skill,d,seed,`En una tabla, el valor ${a} aparece 2 veces y ${b} aparece 3 veces. ¿Cuál es la media?`,String(weighted),[String((a+b)/2),String(b),String(a)],`Media = (2×${a}+3×${b})/5=${weighted}.`,['media_aritmetica','frecuencias',tag])
+  }
+  if (f === 6) return mc(skill,d,seed,'¿Qué medida suele cambiar más al añadir un valor extremadamente grande a un conjunto?','La media',['La mediana','La moda necesariamente','El número de datos no cambia'],`La media utiliza todos los valores y es sensible a valores extremos.`,['media_aritmetica','razonamiento',tag])
+  const old = m
+  const newVal = m + 4 + d
+  const newMean = (4*old + newVal)/5
+  return mc(skill,d,seed,`Cuatro valores tienen media ${old}. Se añade el valor ${newVal}. ¿Cuál es la nueva media?`,String(newMean),[String(old),String(newVal),String((old+newVal)/2)],`La suma inicial es ${4*old}; añadimos ${newVal} y dividimos entre 5: ${newMean}.`,['media_aritmetica','actualizar_media',tag])
 }
 
 // M14S06 · Mediana
 if (key === 'median') {
-  if (d <= 2) {
-    const values = [
-      ri(1, 5),
-      ri(6, 10),
-      ri(11, 15),
-      ri(16, 20),
-      ri(21, 25),
-    ]
+  const f = pickFamily(seed, 8)
+  const tag = `family:m14-med:d${d}:f${f}`
+  const m = ri(8, 14 + d)
 
-    const answer = String(values[2])
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la mediana de ${values.join(', ')}?`,
-      answer,
-      [
-        String(values[0]),
-        String(values[4]),
-        String(values[1]),
-      ],
-      `Hay 5 datos ordenados, así que la mediana es el valor central: ${answer}.`,
-      ['mediana']
-    )
-  }
-
-  if (d === 3) {
-    const values = [
-      ri(1, 5),
-      ri(6, 10),
-      ri(11, 15),
-      ri(16, 20),
-      ri(21, 25),
-    ]
-
-    const shuffled = [
-      values[3],
-      values[0],
-      values[4],
-      values[1],
-      values[2],
-    ]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la mediana de ${shuffled.join(', ')}?`,
-      String(values[2]),
-      [
-        String(values[0]),
-        String(values[4]),
-        String(values[1]),
-      ],
-      `Primero ordenamos los datos. El valor central es ${values[2]}.`,
-      ['mediana', 'datos_desordenados']
-    )
-  }
-
-  if (d === 4) {
-    const values = [
-      ri(1, 4),
-      ri(5, 8),
-      ri(9, 12),
-      ri(13, 16),
-      ri(17, 20),
-      ri(21, 24),
-    ]
-
-    const result = (values[2] + values[3]) / 2
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la mediana de ${values.join(', ')}?`,
-      String(result),
-      [
-        String(values[2]),
-        String(values[3]),
-        String(values[2] + values[3]),
-      ],
-      `Hay 6 datos. La mediana es la media de los dos centrales: (${values[2]}+${values[3]})/2=${result}.`,
-      ['mediana', 'numero_par_datos']
-    )
-  }
-
-  const values = [
-    ri(1, 5),
-    ri(6, 10),
-    ri(11, 15),
-    ri(16, 20),
-    ri(21, 25),
-    ri(26, 30),
-  ]
-
-  const shuffled = [
-    values[4],
-    values[1],
-    values[5],
-    values[0],
-    values[3],
-    values[2],
-  ]
-
-  const result = (values[2] + values[3]) / 2
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Los datos son ${shuffled.join(', ')}. ¿Cuál es la mediana?`,
-    String(result),
-    [
-      String(values[2]),
-      String(values[3]),
-      String(values[0]),
-    ],
-    `Ordenamos los seis datos y calculamos la media de los dos centrales: ${result}.`,
-    ['mediana', 'datos_desordenados', 'dificultad_alta']
-  )
+  if (f === 0) return mc(skill,d,seed,`¿Cuál es la mediana de ${m-4}, ${m-2}, ${m}, ${m+2}, ${m+5}?`,String(m),[String(m-2),String(m+2),String(m+5)],`Con 5 datos ordenados, la mediana es el tercero.`,['mediana',tag])
+  if (f === 1) return mc(skill,d,seed,`Ordena mentalmente: ${m+3}, ${m-4}, ${m+1}, ${m}, ${m-2}. ¿Cuál es la mediana?`,String(m),[String(m-2),String(m+1),String(m+3)],`Al ordenar, ${m} queda en la posición central.`,['mediana','datos_desordenados',tag])
+  if (f === 2) return mc(skill,d,seed,`¿Cuál es la mediana de ${m-5}, ${m-3}, ${m-1}, ${m+1}, ${m+3}, ${m+5}?`,String(m),[String(m-1),String(m+1),String(m+2)],`Con 6 datos promediamos los dos centrales: (${m-1}+${m+1})/2=${m}.`,['mediana','numero_par_datos',tag])
+  if (f === 3) return mc(skill,d,seed,`Los datos ordenados son 2, 5, ${m}, 20, 25. Se añade 100. ¿Cómo se calcula ahora la mediana?`,'Promediando los dos valores centrales',['Tomando siempre '+m,'Tomando 100','Sumando todos los datos'],`Con 6 datos, la mediana es la media de los dos centrales.`,['mediana','cambio_tamano',tag])
+  if (f === 4) return mc(skill,d,seed,'¿Qué afirmación sobre la mediana es correcta?','Suele ser menos sensible que la media a valores extremos',['Siempre coincide con la media','Solo existe con un número impar de datos','Siempre es el valor más frecuente'],`La mediana depende de la posición central y suele resistir mejor los extremos.`,['mediana','razonamiento',tag])
+  if (f === 5) return mc(skill,d,seed,`Un conjunto ordenado es ${m-4}, ${m-1}, ${m}, ${m+3}, ${m+7}. Si se elimina el mayor valor, ¿qué ocurre?`,'La nueva mediana es el promedio de los dos valores centrales restantes',['La mediana sigue siendo necesariamente '+m,'La mediana pasa a ser el menor valor','Ya no existe mediana'],`Quedan 4 datos, así que se promedian los dos centrales.`,['mediana','eliminar_dato',tag])
+  if (f === 6) return mc(skill,d,seed,'Para describir salarios cuando hay unos pocos sueldos extremadamente altos, ¿qué medida central suele ser más robusta?','La mediana',['La media siempre','La suma','La frecuencia absoluta'],`Los valores extremos afectan menos a la mediana.`,['mediana','contexto',tag])
+  return mc(skill,d,seed,`En los datos 4, 4, ${m}, ${m+2}, ${m+2}, ¿cuál es la mediana?`,String(m),['4',String(m+2),String((m+2+4)/2)],`Al ordenar cinco datos, el tercero es ${m}.`,['mediana','repeticiones',tag])
 }
 
 // M14S07 · Moda
 if (key === 'mode') {
-  if (d <= 2) {
-    const repeated = ri(2, 9)
+  const f = pickFamily(seed, 8)
+  const tag = `family:m14-mode:d${d}:f${f}`
+  const a = ri(3, 8 + d)
 
-    const values = [
-      repeated,
-      repeated + 1,
-      repeated,
-      repeated + 2,
-      repeated,
-      repeated + 3,
-    ]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la moda de ${values.join(', ')}?`,
-      String(repeated),
-      [
-        String(repeated + 1),
-        String(repeated + 2),
-        String(repeated + 3),
-      ],
-      `La moda es el valor que más se repite. ${repeated} aparece 3 veces.`,
-      ['moda']
-    )
-  }
-
-  if (d === 3) {
-    const a = ri(2, 6)
-    const b = a + ri(2, 4)
-
-    const values = [
-      a,
-      b,
-      a,
-      b,
-      a,
-      b,
-      a + 1,
-    ]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la moda de ${values.join(', ')}?`,
-      'Hay dos modas',
-      [
-        String(a),
-        String(b),
-        'No hay moda',
-      ],
-      `${a} y ${b} aparecen el mismo número máximo de veces. La distribución es bimodal.`,
-      ['moda', 'bimodal']
-    )
-  }
-
-  if (d === 4) {
-    const start = ri(2, 7)
-
-    const values = [
-      start,
-      start + 1,
-      start + 2,
-      start + 3,
-      start + 4,
-    ]
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `¿Cuál es la moda de ${values.join(', ')}?`,
-      'No hay moda',
-      [
-        String(start),
-        String(start + 2),
-        String(start + 4),
-      ],
-      'Todos los valores aparecen una sola vez, por lo que no existe moda.',
-      ['moda', 'sin_moda']
-    )
-  }
-
-  const a = ri(2, 6)
-  const b = a + 1
-  const c = a + 2
-
-  const values = [
-    a,
-    b,
-    a,
-    c,
-    b,
-    a,
-    b,
-    b,
-  ]
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `En los datos ${values.join(', ')}, ¿qué valor es la moda y cuántas veces aparece?`,
-    `${b}, 4 veces`,
-    [
-      `${a}, 3 veces`,
-      `${c}, 1 vez`,
-      `${b}, 3 veces`,
-    ],
-    `${b} aparece 4 veces, más que cualquier otro valor.`,
-    ['moda', 'frecuencia', 'dificultad_alta']
-  )
+  if (f === 0) return mc(skill,d,seed,`¿Cuál es la moda de ${a}, ${a+1}, ${a}, ${a+2}, ${a}?`,String(a),[String(a+1),String(a+2),'No hay moda'],`${a} es el valor que más se repite.`,['moda',tag])
+  if (f === 1) return mc(skill,d,seed,`En los datos ${a}, ${a}, ${a+2}, ${a+2}, ${a+5}, ¿qué ocurre?`,`Hay dos modas: ${a} y ${a+2}`,[`La moda es ${a+5}`,'No hay moda',`La moda es ${a+1}`],`Los valores ${a} y ${a+2} comparten la frecuencia máxima.`,['moda','bimodal',tag])
+  if (f === 2) return mc(skill,d,seed,`En los datos ${a}, ${a+1}, ${a+2}, ${a+3}, cada valor aparece una vez. ¿Cuál es la moda?`,'No hay moda',[String(a),String(a+1),String(a+3)],`Ningún valor aparece más veces que los demás.`,['moda','sin_moda',tag])
+  if (f === 3) return mc(skill,d,seed,`Una tabla indica A→${a}, B→${a+3}, C→${a+1}. ¿Cuál es la moda?`,'B',['A','C','No hay moda'],`B tiene la frecuencia más alta: ${a+3}.`,['moda','tabla',tag])
+  if (f === 4) return mc(skill,d,seed,'En una encuesta sobre color favorito, ¿puede calcularse la moda?','Sí, es la categoría más frecuente',['No, porque la moda solo sirve con números','Solo si hay exactamente dos colores','Solo si todas las frecuencias son iguales'],`La moda puede utilizarse con variables cualitativas.`,['moda','cualitativa',tag])
+  if (f === 5) return mc(skill,d,seed,`Los datos son ${a}, ${a}, ${a+1}, ${a+2}. Si añadimos otro ${a+1}, ¿qué ocurre?`,`Hay dos modas: ${a} y ${a+1}`,[`La única moda es ${a}`,`La única moda es ${a+2}`,'No hay moda'],`Tras añadir ${a+1}, ${a} y ${a+1} aparecen dos veces.`,['moda','cambio_datos',tag])
+  if (f === 6) return mc(skill,d,seed,'¿Cuál es la diferencia esencial entre moda y mediana?','La moda depende de la frecuencia; la mediana de la posición ordenada',['Ambas significan siempre lo mismo','La moda solo existe con números continuos','La mediana es siempre el valor más frecuente'],`Son medidas distintas: frecuencia frente a posición central.`,['moda','comparacion',tag])
+  return mc(skill,d,seed,`En los datos ${a}, ${a}, ${a+1}, ${a+1}, ${a+1}, ${a+2}, ${a+2}, ¿qué valor es la moda y cuántas veces aparece?`,`${a+1}, 3 veces`,[`${a}, 2 veces`,`${a+2}, 2 veces`,`${a+1}, 2 veces`],`${a+1} aparece 3 veces, más que cualquier otro valor.`,['moda','frecuencia',tag])
 }
-// =========================
+
 // M15 · PROBABILIDAD
 // =========================
 
