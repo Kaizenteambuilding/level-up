@@ -110,6 +110,7 @@ export default function PlayerDashboard() {
   const [sessionCorrect, setSessionCorrect] = useState(0)
   const [sessionAttempts, setSessionAttempts] = useState(0)
   const [openMissionProgress, setOpenMissionProgress] = useState<number | null>(null)
+  const [openMissionProgressUnknown, setOpenMissionProgressUnknown] = useState(false)
   const [prioritySkills, setPrioritySkills] = useState<PrioritySkill[]>([])
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [trainingDays, setTrainingDays] = useState(0)
@@ -192,7 +193,7 @@ export default function PlayerDashboard() {
     setMessage('')
 
     const resumeSince = new Date(Date.now() - RESUME_WINDOW_MS).toISOString()
-    const { data: openSession } = await supabase
+    const { data: openSession, error: openSessionError } = await supabase
       .from('study_sessions')
       .select('id')
       .eq('player_id', currentPlayer.id)
@@ -204,16 +205,25 @@ export default function PlayerDashboard() {
       .limit(1)
       .maybeSingle()
 
-    if (openSession) {
-      const { count } = await supabase
+    if (openSessionError) {
+      setOpenMissionProgress(null)
+      setOpenMissionProgressUnknown(false)
+    } else if (openSession) {
+      const { count, error: countError } = await supabase
         .from('attempts')
         .select('id', { count: 'exact', head: true })
         .eq('session_id', openSession.id)
 
-      const progress = Math.min(SESSION_LENGTH, Number(count ?? 0))
-      setOpenMissionProgress(progress)
+      if (countError || count === null) {
+        setOpenMissionProgress(null)
+        setOpenMissionProgressUnknown(true)
+      } else {
+        setOpenMissionProgress(Math.min(SESSION_LENGTH, Number(count)))
+        setOpenMissionProgressUnknown(false)
+      }
     } else {
       setOpenMissionProgress(null)
+      setOpenMissionProgressUnknown(false)
     }
 
     const { data: activityData, error: activityError } = await supabase
@@ -319,7 +329,7 @@ export default function PlayerDashboard() {
 
   const target = Math.max(1, Number(player.daily_target_minutes) || 35)
   const dailyProgress = Math.min(100, Math.round((todayMinutes / target) * 100))
-  const hasOpenMission = openMissionProgress !== null
+  const hasOpenMission = openMissionProgress !== null || openMissionProgressUnknown
 
   return (
     <>
@@ -341,9 +351,11 @@ export default function PlayerDashboard() {
 
         {hasOpenMission && (
           <div className="metric" style={{ marginTop: 14 }}>
-            <b>⏯ Misión en curso · {openMissionProgress}/{SESSION_LENGTH}</b>
+            <b>{openMissionProgressUnknown ? '⏯ Misión en curso' : `⏯ Misión en curso · ${openMissionProgress}/${SESSION_LENGTH}`}</b>
             <p className="muted" style={{ marginBottom: 0 }}>
-              Tu progreso está guardado. Puedes continuar exactamente donde lo dejaste.
+              {openMissionProgressUnknown
+                ? 'Tu misión está guardada. No se ha podido leer el progreso exacto en este momento.'
+                : 'Tu progreso está guardado. Puedes continuar exactamente donde lo dejaste.'}
             </p>
           </div>
         )}
@@ -365,7 +377,9 @@ export default function PlayerDashboard() {
             }}
           >
             {hasOpenMission
-              ? `▶ CONTINUAR MISIÓN · ${openMissionProgress}/${SESSION_LENGTH}`
+              ? openMissionProgressUnknown
+                ? '▶ CONTINUAR MISIÓN'
+                : `▶ CONTINUAR MISIÓN · ${openMissionProgress}/${SESSION_LENGTH}`
               : '▶ MISIÓN DE HOY'}
           </Link>
 
