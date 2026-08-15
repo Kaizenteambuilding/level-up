@@ -307,9 +307,17 @@ export default function Parent() {
     )
   }
 
-  const sortedSkills = [...skills].sort((a, b) => a.mastery - b.mastery)
-  const weakest = sortedSkills.slice(0, 3)
-  const strongest = [...sortedSkills].reverse().slice(0, 3)
+  const byPriority = [...skills].sort(
+    (a, b) => Number(b.priority) - Number(a.priority) || Number(a.mastery) - Number(b.mastery)
+  )
+  const reinforcement = byPriority.slice(0, 3)
+  const strongest = [...skills]
+    .filter((skill) => Number(skill.confidence) >= 60)
+    .sort(
+      (a, b) => Number(b.mastery) - Number(a.mastery) || Number(b.confidence) - Number(a.confidence)
+    )
+    .slice(0, 3)
+
   const totalEvidence = skills.reduce(
     (sum, skill) => sum + Number(skillAttemptCounts[skill.skill_id] ?? 0),
     0
@@ -338,14 +346,13 @@ export default function Parent() {
   const recentMinutes = recentBlock.reduce((sum, session) => sum + sessionMinutes(session), 0)
   const recentXp = recentBlock.reduce((sum, session) => sum + Number(session.xp_earned ?? 0), 0)
 
-  const byPriority = [...skills].sort((a, b) => Number(b.priority) - Number(a.priority))
   const attention = byPriority.find((skill) => skill.mastery < 60 || skill.confidence < 60) ?? byPriority[0]
   const consolidating = [...skills]
     .filter((skill) => skill.mastery >= 55 && skill.mastery < 80)
     .sort((a, b) => b.mastery - a.mastery)[0]
   const secure = [...skills]
     .filter((skill) => skill.mastery >= 80 && skill.confidence >= 70)
-    .sort((a, b) => b.mastery - a.mastery)[0] ?? strongest[0]
+    .sort((a, b) => b.mastery - a.mastery)[0]
 
   return (
     <main className="shell">
@@ -438,11 +445,11 @@ export default function Parent() {
 
       <section className="card">
         <span className="tag">🎯 PRIORIDAD DE REFUERZO</span>
-        <h2>Lo que conviene trabajar</h2>
-        {weakest.length === 0 ? <p className="muted">Todavía no hay suficiente información.</p> : weakest.map((skill) => (
+        <h2>Lo que el motor considera más urgente</h2>
+        {reinforcement.length === 0 ? <p className="muted">Todavía no hay suficiente información.</p> : reinforcement.map((skill) => (
           <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
             <b>{skill.skills?.name ?? skill.skill_id}</b>
-            <p className="muted">Dominio {Math.round(skill.mastery)}% · dificultad {skill.difficulty}/5</p>
+            <p className="muted">Prioridad {Math.round(skill.priority)}/100 · dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}% · dificultad {skill.difficulty}/5</p>
             <div className="bar"><i style={{ width: `${Math.round(skill.mastery)}%` }} /></div>
           </div>
         ))}
@@ -450,11 +457,11 @@ export default function Parent() {
 
       <section className="card">
         <span className="tag">🏆 PUNTOS FUERTES</span>
-        <h2>Habilidades más dominadas</h2>
-        {strongest.length === 0 ? <p className="muted">Todavía no hay suficiente información.</p> : strongest.map((skill) => (
+        <h2>Habilidades con dominio y confianza suficientes</h2>
+        {strongest.length === 0 ? <p className="muted">Todavía no hay suficiente confianza acumulada para señalar puntos fuertes.</p> : strongest.map((skill) => (
           <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
             <b>{skill.skills?.name ?? skill.skill_id}</b>
-            <p className="muted">Dominio {Math.round(skill.mastery)}%</p>
+            <p className="muted">Dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}%</p>
           </div>
         ))}
       </section>
