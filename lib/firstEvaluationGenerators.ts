@@ -481,7 +481,7 @@ if (key === 'operation_priority') {
 }
 
 if (key === 'natural_word_problem') {
-  const family = pickFamily(seed, 8)
+  const family = pickFamily(seed, 12)
   const scale = [1, 2, 4, 7, 10][d - 1]
   const tag = `family:m01-word:d${d}:f${family}`
 
@@ -536,14 +536,47 @@ if (key === 'natural_word_problem') {
       [String(days + perDay + extra), String(days * perDay), String(total + perDay)], `${days}×${perDay}+${extra}=${total}.`, ['problema_naturales', 'dos_operaciones', tag])
   }
 
-  const groups = ri(2, 5 + d)
-  const boxes = ri(2, 5)
-  const each = ri(8, 18 * scale)
-  const used = ri(5, 20 * scale)
-  const total = groups * boxes * each
-  const result = total - used
-  return mc(skill, d, seed, `Hay ${groups} grupos con ${boxes} cajas cada uno y ${each} objetos por caja. Se usan ${used} objetos. ¿Cuántos quedan?`, String(result),
-    [String(total), String(groups * boxes + each - used), String(total + used)], `Total: ${groups}×${boxes}×${each}=${total}; después restamos ${used}: ${result}.`, ['problema_naturales', 'varias_operaciones', tag])
+  if (family === 7) {
+    const groups = ri(2, 5 + d)
+    const boxes = ri(2, 5)
+    const each = ri(8, 18 * scale)
+    const used = ri(5, 20 * scale)
+    const total = groups * boxes * each
+    const result = total - used
+    return mc(skill, d, seed, `Hay ${groups} grupos con ${boxes} cajas cada uno y ${each} objetos por caja. Se usan ${used} objetos. ¿Cuántos quedan?`, String(result),
+      [String(total), String(groups * boxes + each - used), String(total + used)], `Total: ${groups}×${boxes}×${each}=${total}; después restamos ${used}: ${result}.`, ['problema_naturales', 'varias_operaciones', tag])
+  }
+  if (family === 8) {
+    const adults = ri(12, 35 * scale)
+    const children = ri(8, 25 * scale)
+    const buses = ri(2, 5 + d)
+    const total = adults + children
+    return mc(skill, d, seed, `A una excursión van ${adults} adultos y ${children} niños. Se reparten por igual en ${buses} autobuses solo si es posible. ¿Cuántas personas van en total antes de repartirlas?`, String(total),
+      [String(adults - children), String(adults * children), String(total + buses)], `Para saber cuántas personas hay, sumamos ${adults}+${children}=${total}.`, ['problema_naturales', 'seleccionar_operacion', tag])
+  }
+  if (family === 9) {
+    const packs = ri(3, 7 + d)
+    const each = ri(6, 16 * scale)
+    const needed = packs * each
+    return mc(skill, d, seed, `Para preparar ${packs} equipos hacen falta ${each} fichas por equipo. ¿Qué operación permite calcular cuántas fichas se necesitan?`, `${packs} × ${each}`,
+      [`${packs} + ${each}`, `${each} - ${packs}`, `${each} ÷ ${packs}`], `Hay grupos iguales, así que corresponde multiplicar.`, ['problema_naturales', 'elegir_operacion', tag])
+  }
+  if (family === 10) {
+    const start = ri(80, 180 * scale)
+    const morning = ri(10, 35 * scale)
+    const afternoon = ri(10, 30 * scale)
+    const result = start - morning - afternoon
+    return mc(skill, d, seed, `Un depósito contiene ${start} litros. Por la mañana se usan ${morning} y por la tarde ${afternoon}. ¿Cuántos litros quedan?`, String(result),
+      [String(start - morning + afternoon), String(start + morning + afternoon), String(morning + afternoon)], `${start}-${morning}-${afternoon}=${result}.`, ['problema_naturales', 'restas_sucesivas', tag])
+  }
+
+  const price = ri(4, 12 * scale)
+  const count = ri(3, 9 + d)
+  const paid = price * count + ri(5, 20 * scale)
+  const cost = price * count
+  const change = paid - cost
+  return mc(skill, d, seed, `Se compran ${count} artículos de ${price} € cada uno y se pagan con ${paid} €. ¿Cuánto cambio corresponde?`, `${change} €`,
+    [`${cost} €`, `${paid + cost} €`, `${paid - price} €`], `Coste: ${count}×${price}=${cost} €. Cambio: ${paid}-${cost}=${change} €.`, ['problema_naturales', 'dinero', tag])
 }
 
   // =========================
