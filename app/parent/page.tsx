@@ -124,6 +124,7 @@ export default function Parent() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [skills, setSkills] = useState<SkillState[]>([])
+  const [skillAttemptCounts, setSkillAttemptCounts] = useState<Record<string, number>>({})
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [trainingDays, setTrainingDays] = useState(0)
@@ -267,6 +268,23 @@ export default function Parent() {
         .eq('player_id', playerId)
 
       if (!skillError) setSkills((skillData ?? []) as unknown as SkillState[])
+
+      const { data: evidenceData, error: evidenceError } = await supabase
+        .from('attempts')
+        .select('skill_id')
+        .eq('player_id', playerId)
+        .limit(5000)
+
+      if (!evidenceError) {
+        const counts: Record<string, number> = {}
+        ;(evidenceData ?? []).forEach((attempt: any) => {
+          const skillId = String(attempt.skill_id ?? '')
+          if (!skillId) return
+          counts[skillId] = (counts[skillId] ?? 0) + 1
+        })
+        setSkillAttemptCounts(counts)
+      }
+
       setLoading(false)
     }
 
@@ -292,8 +310,20 @@ export default function Parent() {
   const sortedSkills = [...skills].sort((a, b) => a.mastery - b.mastery)
   const weakest = sortedSkills.slice(0, 3)
   const strongest = [...sortedSkills].reverse().slice(0, 3)
+  const totalEvidence = skills.reduce(
+    (sum, skill) => sum + Number(skillAttemptCounts[skill.skill_id] ?? 0),
+    0
+  )
   const averageMastery = skills.length > 0
-    ? Math.round(skills.reduce((sum, skill) => sum + Number(skill.mastery), 0) / skills.length)
+    ? totalEvidence > 0
+      ? Math.round(
+          skills.reduce(
+            (sum, skill) =>
+              sum + Number(skill.mastery) * Number(skillAttemptCounts[skill.skill_id] ?? 0),
+            0
+          ) / totalEvidence
+        )
+      : Math.round(skills.reduce((sum, skill) => sum + Number(skill.mastery), 0) / skills.length)
     : 0
 
   const target = Math.max(1, Number(player.daily_target_minutes) || 35)
@@ -327,7 +357,7 @@ export default function Parent() {
           <div className="metric"><b>Nivel {player.level}</b><p className="muted">{player.xp} XP totales</p></div>
           <div className="metric"><b>🔥 {streak}</b><p className="muted">días de racha actual</p></div>
           <div className="metric"><b>{trainingDays}</b><p className="muted">días con entrenamiento completado</p></div>
-          <div className="metric"><b>{averageMastery}%</b><p className="muted">dominio medio</p></div>
+          <div className="metric"><b>{averageMastery}%</b><p className="muted">dominio medio ponderado por práctica</p></div>
           <div className="metric"><b>{skills.length}</b><p className="muted">habilidades evaluadas</p></div>
           <div className="metric">
             <b>{todayMinutes}/{target} min</b><p className="muted">entrenados hoy · objetivo diario</p>
