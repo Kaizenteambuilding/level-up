@@ -63,6 +63,7 @@ function mc(
   // pueden coincidir con la respuesta para ciertos valores aleatorios.
   const fractionMatch = answer.match(/^(-?\d+)\/(\d+)(.*)$/)
   const numberMatch = answer.match(/^(-?\d+(?:[.,]\d+)?)(.*)$/)
+  const pairMatch = answer.match(/^\((-?\d+(?:[.,]\d+)?),\s*(-?\d+(?:[.,]\d+)?)\)$/)
   let fallbackStep = 1
 
   while (pool.length < 4) {
@@ -73,6 +74,10 @@ function mc(
       const denominator = Number(fractionMatch[2])
       const suffix = fractionMatch[3]
       candidate = `${numerator + fallbackStep}/${denominator}${suffix}`
+    } else if (pairMatch) {
+      const first = Number(pairMatch[1].replace(',', '.'))
+      const second = Number(pairMatch[2].replace(',', '.'))
+      candidate = `(${first + fallbackStep}, ${second + fallbackStep})`
     } else if (numberMatch) {
       const rawNumber = numberMatch[1].replace(',', '.')
       const numericAnswer = Number(rawNumber)
@@ -102,16 +107,39 @@ function mc(
 
   const options = shuffle(r, pool.slice(0, 4))
 
+  // M02-M10 were created before the family-based anti-repetition system.
+  // Keep their mathematical generators intact, but give every fixed-difficulty
+  // sequence eight deterministic presentation families so consecutive items
+  // do not feel like the same template with only different numbers.
+  const legacyUnit = /^M(0[2-9]|10)S\d+$/.test(skill.id)
+  let finalPrompt = prompt
+  let finalTags = tags
+  if (legacyUnit) {
+    const family = pickFamily(seed, 8)
+    const openers = [
+      '',
+      'Elige la opción correcta. ',
+      'Reto rápido: ',
+      'Razona antes de responder. ',
+      'Comprueba cuál es correcta. ',
+      'Aplica la idea adecuada. ',
+      'Selecciona la respuesta válida. ',
+      'Piensa con atención: ',
+    ]
+    finalPrompt = `${openers[family]}${prompt}`
+    finalTags = [...tags, `family:legacy-${skill.generator_key}:d${difficulty}:f${family}`]
+  }
+
   return {
     skillId: skill.id,
     label: skill.name,
     difficulty,
     seed,
-    prompt,
+    prompt: finalPrompt,
     options,
     answerIndex: options.indexOf(answer),
     solution,
-    tags,
+    tags: finalTags,
   }
 }
 
