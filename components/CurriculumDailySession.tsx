@@ -23,6 +23,7 @@ type SkillState = {
   priority: number
   last_practiced_at?: string | null
 }
+
 const ACTIVE_CURRICULUM_UNITS = [
   'M01',
   'M02',
@@ -40,7 +41,9 @@ const ACTIVE_CURRICULUM_UNITS = [
   'M14',
   'M15',
 ]
+
 const SESSION_LENGTH = 10
+const RESUME_WINDOW_MS = 24 * 60 * 60 * 1000
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -77,11 +80,11 @@ export default function CurriculumDailySession() {
   }, [])
 
   const [playerId, setPlayerId] = useState<string | null>(null)
-const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [skills, setSkills] = useState<SkillRow[]>([])
   const [states, setStates] = useState<Record<string, SkillState>>({})
   const [question, setQuestion] = useState<GeneratedQuestion | null>(null)
- const [seed, setSeed] = useState(() => Date.now())
+  const [seed, setSeed] = useState(() => Date.now())
   const [index, setIndex] = useState(0)
   const [answered, setAnswered] = useState(false)
   const [feedback, setFeedback] = useState('')
@@ -90,19 +93,20 @@ const [sessionId, setSessionId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const questionStarted = useRef(Date.now())
-const recentTemplates = useRef<string[]>([])
-const recentFamilies = useRef<string[]>([])
-const recentSkillIds = useRef<string[]>([])
-const recentUnitIds = useRef<string[]>([])
+  const recentTemplates = useRef<string[]>([])
+  const recentFamilies = useRef<string[]>([])
+  const recentSkillIds = useRef<string[]>([])
+  const recentUnitIds = useRef<string[]>([])
 
-function questionTemplate(prompt: string) {
-  return prompt
-    .toLowerCase()
-    .replace(/\d+(?:[.,]\d+)?\/\d+(?:[.,]\d+)?/g, '#/#')
-    .replace(/\d+(?:[.,]\d+)?/g, '#')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
+  function questionTemplate(prompt: string) {
+    return prompt
+      .toLowerCase()
+      .replace(/\d+(?:[.,]\d+)?\/\d+(?:[.,]\d+)?/g, '#/#')
+      .replace(/\d+(?:[.,]\d+)?/g, '#')
+      .replace(/\s+/g, ' ')
+      .trim()
+  }
+
   const testMode = Boolean(forcedSkillId)
 
   useEffect(() => {
@@ -123,28 +127,83 @@ function questionTemplate(prompt: string) {
         setLoading(false)
         return
       }
-if (!forcedSkillId) {
-  const { data: sessionData, error: sessionError } = await retryJwtFuture(
-    async () =>
-      await supabase
-        .from('study_sessions')
-        .insert({
-          player_id: id,
-          mode: 'daily',
-          phase: 'warmup',
-        })
-        .select('id')
-        .single()
-  )
 
-  if (sessionError) {
-    setLoadError('No se pudo crear la sesión: ' + sessionError.message)
-    setLoading(false)
-    return
-  }
+      if (!forcedSkillId) {
+        const resumeSince = new Date(Date.now() - RESUME_WINDOW_MS).toISOString()
 
-  setSessionId(sessionData.id)
-}
+        const { data: openSession, error: openSessionError } =
+          await retryJwtFuture(async () =>
+            await supabase
+              .from('study_sessions')
+              .select('id,started_at')
+              .eq('player_id', id)
+              .eq('mode', 'daily')
+              .eq('completed', false)
+              .is('ended_at', null)
+              .gte('started_at', resumeSince)
+              .order('started_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+          )
+
+        if (openSessionError) {
+          setLoadError('No se pudo revisar la sesión anterior: ' + openSessionError.message)
+          setLoading(false)
+          return
+        }
+
+        if (openSession) {
+          const { data: previousAttempts, error: attemptsError } =
+            await retryJwtFuture(async () =>
+              await supabase
+                .from('attempts')
+                .select('correct,xp_awarded')
+                .eq('session_id', openSession.id)
+                .order('created_at', { ascending: true })
+            )
+
+          if (attemptsError) {
+            setLoadError('No se pudo recuperar la sesión anterior: ' + attemptsError.message)
+            setLoading(false)
+            return
+          }
+
+          const attempts = previousAttempts ?? []
+          setSessionId(openSession.id)
+          setIndex(Math.min(SESSION_LENGTH, attempts.length))
+          setCorrect(
+            attempts.filter((attempt: any) => attempt.correct === true).length
+          )
+          setXp(
+            attempts.reduce(
+              (sum: number, attempt: any) =>
+                sum + Number(attempt.xp_awarded ?? 0),
+              0
+            )
+          )
+        } else {
+          const { data: sessionData, error: sessionError } =
+            await retryJwtFuture(async () =>
+              await supabase
+                .from('study_sessions')
+                .insert({
+                  player_id: id,
+                  mode: 'daily',
+                  phase: 'warmup',
+                })
+                .select('id')
+                .single()
+            )
+
+          if (sessionError) {
+            setLoadError('No se pudo crear la sesión: ' + sessionError.message)
+            setLoading(false)
+            return
+          }
+
+          setSessionId(sessionData.id)
+        }
+      }
 
       const loadSkills = async () => {
         let skillsQuery = supabase
@@ -185,12 +244,16 @@ if (!forcedSkillId) {
         async () =>
           await supabase
             .from('player_skill_state')
-            .select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at')
+            .select(
+              'skill_id,mastery,confidence,difficulty,priority,last_practiced_at'
+            )
             .eq('player_id', id)
       )
 
       if (stateError) {
-        setLoadError('No se pudo cargar el progreso adaptativo: ' + stateError.message)
+        setLoadError(
+          'No se pudo cargar el progreso adaptativo: ' + stateError.message
+        )
         setLoading(false)
         return
       }
@@ -274,9 +337,8 @@ if (!forcedSkillId) {
       }
     })
 
-    // 60% refuerzo dirigido: prioriza necesidad real, pero elige entre
-    // varios candidatos fuertes para no convertir la sesión en un bucle.
     const mode = currentIndex % 10
+
     if (mode <= 5) {
       const focusPool = [...scored]
         .sort((a, b) => b.score - a.score)
@@ -286,8 +348,6 @@ if (!forcedSkillId) {
       return pickFrom(focusPool, 0x13579bdf) ?? skills[0]
     }
 
-    // 20% cobertura: recupera habilidades no vistas o practicadas hace más
-    // tiempo, evitando que las 91 habilidades compitan solo por mastery.
     if (mode <= 7) {
       const coveragePool = [...scored]
         .sort((a, b) => {
@@ -302,7 +362,6 @@ if (!forcedSkillId) {
       return pickFrom(coveragePool, 0x2468ace0) ?? skills[0]
     }
 
-    // 10% mantenimiento: vuelve a habilidades ya dominadas pero antiguas.
     if (mode === 8) {
       const maintenance = scored
         .filter((item) => item.state && item.mastery >= 70)
@@ -320,8 +379,6 @@ if (!forcedSkillId) {
       }
     }
 
-    // 10% exploración amplia. Sigue respetando la penalización por repetir
-    // habilidad/unidad, pero evita que el motor se encierre en el top ranking.
     const explorationPool = [...scored]
       .sort((a, b) => b.score - a.score)
       .slice(0, Math.min(24, scored.length))
@@ -347,74 +404,65 @@ if (!forcedSkillId) {
 
     let candidateSeed = seed
 
-let nextQuestion = generateFirstEvaluationQuestion(
-  skill,
-  difficulty,
-  candidateSeed
-)
+    let nextQuestion = generateFirstEvaluationQuestion(
+      skill,
+      difficulty,
+      candidateSeed
+    )
 
-for (let attempt = 0; attempt < 80; attempt++) {
-  const template = questionTemplate(nextQuestion.prompt)
-  const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
+    for (let attempt = 0; attempt < 80; attempt++) {
+      const template = questionTemplate(nextQuestion.prompt)
+      const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
+      const repeatsTemplate = family
+        ? false
+        : recentTemplates.current.includes(template)
+      const repeatsFamily = family
+        ? recentFamilies.current.includes(`${skill.id}:${family}`)
+        : false
 
-  // Si el generador identifica una familia pedagógica, esa familia es la
-  // unidad correcta de anti-repetición. No bloqueamos dos familias distintas
-  // solo porque al normalizar números sus textos se parezcan.
-  const repeatsTemplate = family
-    ? false
-    : recentTemplates.current.includes(template)
-  const repeatsFamily = family
-    ? recentFamilies.current.includes(`${skill.id}:${family}`)
-    : false
+      if (!repeatsTemplate && !repeatsFamily) {
+        break
+      }
 
-  if (!repeatsTemplate && !repeatsFamily) {
-    break
-  }
+      candidateSeed =
+        (seed + Math.imul(attempt + 1, 0x9e3779b9)) >>> 0
 
-  // Saltos bien separados evitan que el LCG de la sesión y el LCG interno
-  // del generador recorran siempre el mismo subconjunto de familias.
-  candidateSeed =
-    (seed + Math.imul(attempt + 1, 0x9e3779b9)) >>> 0
+      nextQuestion = generateFirstEvaluationQuestion(
+        skill,
+        difficulty,
+        candidateSeed
+      )
+    }
 
-  nextQuestion = generateFirstEvaluationQuestion(
-    skill,
-    difficulty,
-    candidateSeed
-  )
-}
+    const template = questionTemplate(nextQuestion.prompt)
+    const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
 
-const template = questionTemplate(nextQuestion.prompt)
-const family = nextQuestion.tags.find((tag) => tag.startsWith('family:'))
+    recentTemplates.current = [
+      template,
+      ...recentTemplates.current.filter((item) => item !== template),
+    ].slice(0, 10)
 
-recentTemplates.current = [
-  template,
-  ...recentTemplates.current.filter(
-    (item) => item !== template
-  ),
-].slice(0, 10)
+    if (family) {
+      const familyKey = `${skill.id}:${family}`
+      recentFamilies.current = [
+        familyKey,
+        ...recentFamilies.current.filter((item) => item !== familyKey),
+      ].slice(0, skill.id === 'M11S06' ? 9 : 3)
+    }
 
-if (family) {
-  const familyKey = `${skill.id}:${family}`
-  recentFamilies.current = [
-    familyKey,
-    ...recentFamilies.current.filter((item) => item !== familyKey),
-  ].slice(0, skill.id === 'M11S06' ? 9 : 3)
-}
+    if (!testMode) {
+      recentSkillIds.current = [
+        skill.id,
+        ...recentSkillIds.current.filter((id) => id !== skill.id),
+      ].slice(0, 5)
 
-if (!testMode) {
-  recentSkillIds.current = [
-    skill.id,
-    ...recentSkillIds.current.filter((id) => id !== skill.id),
-  ].slice(0, 5)
+      recentUnitIds.current = [
+        skill.unit_id,
+        ...recentUnitIds.current.filter((id) => id !== skill.unit_id),
+      ].slice(0, 4)
+    }
 
-  recentUnitIds.current = [
-    skill.unit_id,
-    ...recentUnitIds.current.filter((id) => id !== skill.unit_id),
-  ].slice(0, 4)
-}
-
-setQuestion(nextQuestion)
-
+    setQuestion(nextQuestion)
     setAnswered(false)
     setFeedback('')
     questionStarted.current = Date.now()
@@ -426,51 +474,80 @@ setQuestion(nextQuestion)
     forcedSkillId,
     testMode,
   ])
-useEffect(() => {
-  if (
-    testMode ||
-    !sessionId ||
-    !playerId ||
-    index < SESSION_LENGTH
-  ) {
-    return
-  }
 
-  ;(async () => {
-    const supabase = createSupabaseBrowserClient()
-
-    if (!supabase) return
-
-    const finishedAt = new Date().toISOString()
-
-    const { error } = await supabase
-      .from('study_sessions')
-      .update({
-        ended_at: finishedAt,
-        completed_at: finishedAt,
-        completed: true,
-        xp_earned: xp,
-        phase: 'done',
-      })
-      .eq('id', sessionId)
-      .eq('player_id', playerId)
-
-    if (error) {
-      console.error('No se pudo cerrar la sesión:', error)
+  useEffect(() => {
+    if (
+      testMode ||
+      !sessionId ||
+      !playerId ||
+      index < SESSION_LENGTH
+    ) {
+      return
     }
-  })()
-}, [index, sessionId, playerId, testMode, xp])
+
+    ;(async () => {
+      const supabase = createSupabaseBrowserClient()
+      if (!supabase) return
+
+      const { data: sessionAttempts, error: attemptsError } =
+        await retryJwtFuture(async () =>
+          await supabase
+            .from('attempts')
+            .select('xp_awarded,response_ms')
+            .eq('session_id', sessionId)
+        )
+
+      if (attemptsError) {
+        console.error('No se pudo verificar el cierre de la sesión:', attemptsError)
+        return
+      }
+
+      const attempts = sessionAttempts ?? []
+      if (attempts.length < SESSION_LENGTH) return
+
+      const finishedAt = new Date().toISOString()
+      const sessionXp = attempts.reduce(
+        (sum: number, attempt: any) => sum + Number(attempt.xp_awarded ?? 0),
+        0
+      )
+      const activeMs = attempts.reduce(
+        (sum: number, attempt: any) => sum + Number(attempt.response_ms ?? 0),
+        0
+      )
+      const actualMinutes = Math.min(
+        180,
+        Math.max(1, Math.round(activeMs / 60_000))
+      )
+
+      setXp(sessionXp)
+
+      const { error } = await supabase
+        .from('study_sessions')
+        .update({
+          ended_at: finishedAt,
+          completed_at: finishedAt,
+          completed: true,
+          xp_earned: sessionXp,
+          actual_minutes: actualMinutes,
+          phase: 'done',
+        })
+        .eq('id', sessionId)
+        .eq('player_id', playerId)
+        .eq('completed', false)
+
+      if (error) {
+        console.error('No se pudo cerrar la sesión:', error)
+      }
+    })()
+  }, [index, sessionId, playerId, testMode])
+
   async function submit(optionIndex: number) {
     if (answered || !playerId || !question) return
 
     setAnswered(true)
 
     const ok = optionIndex === question.answerIndex
-    const responseMs = Math.max(
-      1,
-      Date.now() - questionStarted.current
-    )
-
+    const responseMs = Math.max(1, Date.now() - questionStarted.current)
     const supabase = createSupabaseBrowserClient()
 
     if (!supabase) return
@@ -492,13 +569,16 @@ useEffect(() => {
 
     if (error) {
       setFeedback('Error: ' + error.message)
+      setAnswered(false)
       return
     }
+
     const result = data as {
       xp_awarded: number
       mastery: number
       confidence: number
       difficulty: number
+      priority?: number
     }
 
     setXp((value) => value + Number(result.xp_awarded))
@@ -508,31 +588,33 @@ useEffect(() => {
     }
 
     setStates((current) => ({
-  ...current,
-  [question.skillId]: {
-    skill_id: question.skillId,
-    mastery: Number(result.mastery),
-    confidence: Number(result.confidence),
-    difficulty: Number(result.difficulty),
-    priority: Math.max(
-      1,
-      Math.min(
-        100,
-        Math.round(
-          50 +
-            (50 - Number(result.mastery)) * 0.8 +
-            (50 - Number(result.confidence)) * 0.4
-        )
-      )
-    ),
-    last_practiced_at: new Date().toISOString(),
-  },
-}))
+      ...current,
+      [question.skillId]: {
+        skill_id: question.skillId,
+        mastery: Number(result.mastery),
+        confidence: Number(result.confidence),
+        difficulty: Number(result.difficulty),
+        priority: Number.isFinite(Number(result.priority))
+          ? Number(result.priority)
+          : Math.max(
+              1,
+              Math.min(
+                100,
+                Math.round(
+                  50 +
+                    (50 - Number(result.mastery)) * 0.8 +
+                    (50 - Number(result.confidence)) * 0.4
+                )
+              )
+            ),
+        last_practiced_at: new Date().toISOString(),
+      },
+    }))
 
     setFeedback(
-  (ok ? '✓ Correcto' : '↻ Incorrecto') +
-    ` · ${result.xp_awarded} XP · dominio ${result.mastery}/100`
-)
+      (ok ? '✓ Correcto' : '↻ Incorrecto') +
+        ` · ${result.xp_awarded} XP · dominio ${result.mastery}/100`
+    )
   }
 
   function next() {
@@ -551,9 +633,7 @@ useEffect(() => {
   if (loading) {
     return (
       <section className="card">
-        <p className="muted">
-          Cargando Curriculum Engine...
-        </p>
+        <p className="muted">Cargando Curriculum Engine...</p>
       </section>
     )
   }
@@ -583,34 +663,22 @@ useEffect(() => {
   }
 
   if (!testMode && index >= SESSION_LENGTH) {
-    const accuracy = Math.round(
-      (correct / SESSION_LENGTH) * 100
-    )
+    const accuracy = Math.round((correct / SESSION_LENGTH) * 100)
 
     return (
       <section
         className="card"
-        style={{
-          textAlign: 'center',
-          padding: 45,
-        }}
+        style={{ textAlign: 'center', padding: 45 }}
       >
         <div style={{ fontSize: 90 }}>🏆</div>
-
-        <span className="tag">
-          CURRICULUM ENGINE
-        </span>
-
+        <span className="tag">CURRICULUM ENGINE</span>
         <h1>Sesión completada</h1>
-
         <p className="muted">
           {SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP
         </p>
-
         <p className="muted">
           La próxima sesión priorizará las habilidades con menor dominio.
         </p>
-
         <Link href="/player" className="btn primary">
           CONTINUAR AVENTURA
         </Link>
@@ -621,9 +689,7 @@ useEffect(() => {
   if (!question) {
     return (
       <section className="card">
-        <p className="muted">
-          Preparando el siguiente reto...
-        </p>
+        <p className="muted">Preparando el siguiente reto...</p>
       </section>
     )
   }
@@ -653,9 +719,7 @@ useEffect(() => {
           <div className="bar">
             <i
               style={{
-                width: `${Math.round(
-                  (index / SESSION_LENGTH) * 100
-                )}%`,
+                width: `${Math.round((index / SESSION_LENGTH) * 100)}%`,
               }}
             />
           </div>
@@ -666,39 +730,32 @@ useEffect(() => {
         <span className="tag">
           {question.label} · dificultad {question.difficulty}/5
         </span>
-{!testMode && (
-  <div
-    className="metric"
-    style={{
-      marginTop: 14,
-      marginBottom: 18,
-    }}
-  >
-    <b>🎯 REFUERZO PERSONALIZADO</b>
 
-    <p className="muted" style={{ marginBottom: 0 }}>
-      {(() => {
-        const mastery = states[question.skillId]?.mastery ?? 0
+        {!testMode && (
+          <div
+            className="metric"
+            style={{ marginTop: 14, marginBottom: 18 }}
+          >
+            <b>🎯 REFUERZO PERSONALIZADO</b>
+            <p className="muted" style={{ marginBottom: 0 }}>
+              {(() => {
+                const mastery = states[question.skillId]?.mastery ?? 0
 
-        if (mastery < 50) {
-          return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`
-        }
+                if (mastery < 50) {
+                  return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`
+                }
 
-        if (mastery < 75) {
-          return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`
-        }
+                if (mastery < 75) {
+                  return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`
+                }
 
-        return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.`
-      })()}
-    </p>
-  </div>
-)}
-        <p
-          style={{
-            fontSize: 24,
-            fontWeight: 900,
-          }}
-        >
+                return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.`
+              })()}
+            </p>
+          </div>
+        )}
+
+        <p style={{ fontSize: 24, fontWeight: 900 }}>
           {question.prompt}
         </p>
 
@@ -717,21 +774,16 @@ useEffect(() => {
 
         {feedback && (
           <>
-<div
-  className="metric"
-  style={{ marginTop: 16 }}
->
-  <b>{feedback}</b>
-</div>
-            <div
-  className="metric"
-  style={{ marginTop: 10 }}
->
-  <b>💡 Por qué</b>
-  <p className="muted" style={{ marginBottom: 0 }}>
-    {question.solution}
-  </p>
-</div>
+            <div className="metric" style={{ marginTop: 16 }}>
+              <b>{feedback}</b>
+            </div>
+
+            <div className="metric" style={{ marginTop: 10 }}>
+              <b>💡 Por qué</b>
+              <p className="muted" style={{ marginBottom: 0 }}>
+                {question.solution}
+              </p>
+            </div>
 
             <button
               className="btn primary"
@@ -752,9 +804,7 @@ useEffect(() => {
         <div className="grid two">
           <div className="metric">
             <b>{xp} XP</b>
-            <p className="muted">
-              ganados en esta pantalla
-            </p>
+            <p className="muted">ganados en esta pantalla</p>
           </div>
 
           <div className="metric">
@@ -766,9 +816,7 @@ useEffect(() => {
                   : 0
                 : index + (answered ? 1 : 0)}
             </b>
-            <p className="muted">
-              aciertos
-            </p>
+            <p className="muted">aciertos</p>
           </div>
         </div>
       </section>
