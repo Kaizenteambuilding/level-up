@@ -95,13 +95,38 @@ export default function CurriculumDailySession() {
         const { data: openSession, error: openSessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').select('id,started_at').eq('player_id', id).eq('mode', 'daily').eq('completed', false).is('ended_at', null).gte('started_at', resumeSince).order('started_at', { ascending: false }).limit(1).maybeSingle())
         if (openSessionError) { setLoadError('No se pudo revisar la sesión anterior: ' + openSessionError.message); setLoading(false); return }
         if (openSession) {
-          const { data: previousAttempts, error: attemptsError } = await retryJwtFuture(async () => await supabase.from('attempts').select('correct,xp_awarded').eq('session_id', openSession.id).order('created_at', { ascending: true }))
+          const { data: previousAttempts, error: attemptsError } = await retryJwtFuture(async () => await supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,diagnostic_tags').eq('session_id', openSession.id).order('created_at', { ascending: true }))
           if (attemptsError) { setLoadError('No se pudo recuperar la sesión anterior: ' + attemptsError.message); setLoading(false); return }
           const attempts = previousAttempts ?? []
           setSessionId(openSession.id)
           setIndex(Math.min(SESSION_LENGTH, attempts.length))
           setCorrect(attempts.filter((attempt: any) => attempt.correct === true).length)
           setXp(attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.xp_awarded ?? 0), 0))
+
+          const rememberedAttempts = attempts.slice(-10).reverse()
+          recentTemplates.current = rememberedAttempts
+            .map((attempt: any) => questionTemplate(String(attempt.prompt_snapshot ?? '')))
+            .filter(Boolean)
+            .slice(0, 10)
+
+          recentSkillIds.current = Array.from(
+            new Set(
+              rememberedAttempts
+                .map((attempt: any) => String(attempt.skill_id ?? ''))
+                .filter(Boolean)
+            )
+          ).slice(0, 5)
+
+          recentFamilies.current = rememberedAttempts
+            .flatMap((attempt: any) => {
+              const tags = Array.isArray(attempt.diagnostic_tags)
+                ? attempt.diagnostic_tags
+                : []
+              return tags
+                .filter((tag: unknown) => typeof tag === 'string' && tag.startsWith('family:'))
+                .map((tag: string) => `${attempt.skill_id}:${tag}`)
+            })
+            .slice(0, 9)
         } else {
           const { data: sessionData, error: sessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').insert({ player_id: id, mode: 'daily', phase: 'warmup' }).select('id').single())
           if (sessionError) { setLoadError('No se pudo crear la sesión: ' + sessionError.message); setLoading(false); return }
@@ -119,11 +144,23 @@ export default function CurriculumDailySession() {
       if (skillsError) { setLoadError(skillsError.message); setLoading(false); return }
       if (!skillRows || skillRows.length === 0) { setLoadError(forcedSkillId ? `No encuentro la habilidad ${forcedSkillId}.` : 'No encuentro habilidades activas para la 1ª evaluación.'); setLoading(false); return }
 
+      const typedSkillRows = skillRows as SkillRow[]
+      if (!forcedSkillId && recentSkillIds.current.length > 0) {
+        const unitBySkill = new Map(typedSkillRows.map((skill) => [skill.id, skill.unit_id]))
+        recentUnitIds.current = Array.from(
+          new Set(
+            recentSkillIds.current
+              .map((skillId) => unitBySkill.get(skillId) ?? '')
+              .filter(Boolean)
+          )
+        ).slice(0, 4)
+      }
+
       const { data: stateRows, error: stateError } = await retryJwtFuture(async () => await supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id))
       if (stateError) { setLoadError('No se pudo cargar el progreso adaptativo: ' + stateError.message); setLoading(false); return }
       const stateMap: Record<string, SkillState> = {}
       ;(stateRows ?? []).forEach((s: any) => { stateMap[s.skill_id] = s })
-      setSkills(skillRows as SkillRow[])
+      setSkills(typedSkillRows)
       setStates(stateMap)
       setLoading(false)
     })()
@@ -229,7 +266,11 @@ export default function CurriculumDailySession() {
     const ok = optionIndex === question.answerIndex
     const responseMs = Math.max(1, Date.now() - questionStarted.current)
     const supabase = createSupabaseBrowserClient()
-    if (!supabase) return
+    if (!supabase) {
+      setFeedback('No se pudo conectar. Inténtalo de nuevo.')
+      setAnswered(false)
+      return
+    }
     const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: sessionId, p_diagnostic_tags: question.tags }))
     if (error) { setFeedback('Error: ' + error.message); setAnswered(false); return }
     const result = data as { xp_awarded:number; mastery:number; confidence:number; difficulty:number; priority?:number }
