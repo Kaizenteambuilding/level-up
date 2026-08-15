@@ -137,21 +137,16 @@ export function generateFirstEvaluationQuestion(
   const key = keyAliases[skill.generator_key] ?? skill.generator_key
 
   // =========================
-  // M01 · NÚMEROS NATURALES
   // =========================
-
- // =========================
 // M01 · NÚMEROS NATURALES
 // =========================
 
 if (key === 'natural_place_value') {
-  const digitsByDifficulty = [3, 4, 5, 6, 7]
-  const digits = digitsByDifficulty[d - 1]
-
+  const family = pickFamily(seed, 8)
+  const digits = [3, 4, 5, 6, 7][d - 1]
   const min = 10 ** (digits - 1)
   const max = 10 ** digits - 1
   const n = ri(min, max)
-
   const positions = [
     { label: 'unidades', divisor: 1 },
     { label: 'decenas', divisor: 10 },
@@ -161,429 +156,397 @@ if (key === 'natural_place_value') {
     { label: 'centenas de millar', divisor: 100000 },
     { label: 'unidades de millón', divisor: 1000000 },
   ].filter((p) => p.divisor < 10 ** digits)
+  const pos = positions[ri(0, positions.length - 1)]
+  const digit = Math.floor(n / pos.divisor) % 10
+  const tag = `family:m01-place:d${d}:f${family}`
 
-  const position = positions[ri(0, positions.length - 1)]
-  const answer = Math.floor(n / position.divisor) % 10
+  if (family === 0) {
+    return mc(skill, d, seed,
+      `En el número ${n}, ¿qué cifra ocupa las ${pos.label}?`,
+      String(digit),
+      [String((digit + 1) % 10), String((digit + 3) % 10), String((digit + 7) % 10)],
+      `La cifra situada en las ${pos.label} es ${digit}.`,
+      ['valor_posicional', tag])
+  }
 
-  const distractors = shuffle(r, [
-    String((answer + 1) % 10),
-    String((answer + 2) % 10),
-    String((answer + 5) % 10),
-    String(Math.floor(n / 10) % 10),
-  ])
-    .filter((x) => x !== String(answer))
-    .slice(0, 3)
+  if (family === 1) {
+    const value = digit * pos.divisor
+    return mc(skill, d, seed,
+      `En ${n}, ¿qué valor tiene la cifra ${digit} situada en las ${pos.label}?`,
+      String(value),
+      [String(digit), String(digit * Math.max(1, pos.divisor / 10)), String(digit * pos.divisor * 10)],
+      `Su valor es ${digit} × ${pos.divisor} = ${value}.`,
+      ['valor_posicional', tag])
+  }
 
-  return mc(
-    skill,
-    d,
-    seed,
-    `En el número ${n}, ¿qué cifra ocupa las ${position.label}?`,
-    String(answer),
-    distractors,
-    `La cifra que ocupa las ${position.label} es ${answer}.`,
-    ['valor_posicional']
-  )
+  if (family === 2) {
+    const highDiv = 10 ** (digits - 1)
+    const lead = Math.floor(n / highDiv)
+    const rest = n - lead * highDiv
+    return mc(skill, d, seed,
+      `¿Qué descomposición comienza correctamente el número ${n}?`,
+      `${lead * highDiv} + ${rest}`,
+      [`${lead} + ${rest}`, `${lead * highDiv * 10} + ${rest}`, `${lead * highDiv} + ${rest + highDiv}`],
+      `${lead} ocupa la posición de valor ${highDiv}, por eso aporta ${lead * highDiv}.`,
+      ['descomposicion_natural', tag])
+  }
+
+  if (family === 3) {
+    const a = ri(1, 9)
+    const b = ri(0, 9)
+    const c = ri(0, 9)
+    const number = a * 1000 + b * 100 + c * 10 + ri(0, 9)
+    return mc(skill, d, seed,
+      `¿Qué número tiene ${a} unidades de millar, ${b} centenas y ${c} decenas?`,
+      String(number - (number % 10)),
+      [String(a * 100 + b * 10 + c), String(a * 1000 + c * 100 + b * 10), String(a * 10000 + b * 100 + c * 10)],
+      `Las posiciones aportan ${a * 1000} + ${b * 100} + ${c * 10}.`,
+      ['construccion_numero', tag])
+  }
+
+  if (family === 4) {
+    const increase = pos.divisor
+    const changed = n + increase
+    return mc(skill, d, seed,
+      `Si a ${n} le sumamos ${increase}, ¿qué posición estamos aumentando en una unidad antes de posibles llevadas?`,
+      pos.label,
+      [...positions.filter((p) => p.label !== pos.label).map((p) => p.label), 'todas las posiciones'].slice(0, 3),
+      `Sumar ${increase} equivale a sumar una unidad en la posición de ${pos.label}. El resultado sería ${changed}.`,
+      ['valor_posicional', 'cambio_posicion', tag])
+  }
+
+  if (family === 5) {
+    const p1 = positions[Math.min(positions.length - 1, ri(1, positions.length - 1))]
+    const p2 = positions[Math.max(0, positions.indexOf(p1) - 1)]
+    const v1 = ri(1, 9) * p1.divisor
+    const v2 = ri(1, 9) * p2.divisor
+    const answer = v1 > v2 ? `${v1} es mayor` : `${v2} es mayor`
+    return mc(skill, d, seed,
+      `¿Qué valor posicional es mayor: ${v1} o ${v2}?`,
+      answer,
+      [v1 > v2 ? `${v2} es mayor` : `${v1} es mayor`, 'Son iguales', 'No se pueden comparar'],
+      `Comparamos los valores completos: ${v1} y ${v2}.`,
+      ['valor_posicional', 'comparacion', tag])
+  }
+
+  if (family === 6) {
+    const divisor = 10 ** ri(0, Math.min(digits - 1, 5))
+    const targetDigit = ri(1, 9)
+    const base = Math.floor(n / (divisor * 10)) * divisor * 10 + targetDigit * divisor + (n % divisor)
+    return mc(skill, d, seed,
+      `¿Cuál de estos números tiene un ${targetDigit} en la posición de valor ${divisor}?`,
+      String(base),
+      [String(base + divisor), String(base + 10 * divisor), String(Math.max(0, base - divisor))],
+      `En ${base}, la cifra de la posición ${divisor} es ${targetDigit}.`,
+      ['valor_posicional', 'identificacion', tag])
+  }
+
+  const divisor = pos.divisor
+  const lower = Math.floor(n / (divisor * 10)) * divisor * 10
+  const upper = lower + divisor * 10
+  return mc(skill, d, seed,
+    `El número ${n} está entre dos múltiplos consecutivos de ${divisor * 10}. ¿Cuáles?`,
+    `${lower} y ${upper}`,
+    [`${lower - divisor * 10} y ${lower}`, `${upper} y ${upper + divisor * 10}`, `${lower + divisor} y ${upper + divisor}`],
+    `${lower} ≤ ${n} < ${upper}.`,
+    ['valor_posicional', 'encuadre', tag])
 }
 
 if (key === 'natural_compare') {
-  const ranges = [
-    [10, 99],
-    [100, 999],
-    [1000, 9999],
-    [10000, 99999],
-    [100000, 999999],
-  ]
-
+  const family = pickFamily(seed, 8)
+  const ranges = [[10, 99], [100, 999], [1000, 9999], [10000, 99999], [100000, 999999]]
   const [min, max] = ranges[d - 1]
-
-  let a = ri(min, max)
+  const a = ri(min, max)
   let b = ri(min, max)
+  if (b === a) b = Math.min(max, a + 1)
+  const tag = `family:m01-compare:d${d}:f${family}`
 
-  if (d >= 4 && seed % 2 === 0) {
-    const base = ri(min, max - 20)
-    a = base + ri(1, 9)
-    b = base + ri(10, 19)
+  if (family === 0) {
+    const answer = a > b ? '>' : '<'
+    return mc(skill, d, seed, `Completa: ${a} __ ${b}`, answer,
+      ['<', '>', '=', '≠'].filter((x) => x !== answer), `${a} ${answer} ${b}.`, ['comparacion', tag])
   }
 
-  const answer = a > b ? '>' : a < b ? '<' : '='
+  const c = ri(min, max)
+  const e = ri(min, max)
+  const vals = [a, b, c, e]
+  const largest = Math.max(...vals)
+  const smallest = Math.min(...vals)
 
-  return mc(
-    skill,
-    d,
-    seed,
-    `Completa: ${a} __ ${b}`,
-    answer,
-    ['<', '>', '=', '≠'].filter((x) => x !== answer),
-    `${a} ${answer} ${b}.`,
-    ['comparacion']
-  )
+  if (family === 1) {
+    return mc(skill, d, seed, `¿Cuál es el mayor de estos números: ${vals.join(', ')}?`, String(largest),
+      vals.filter((x) => x !== largest).map(String), `El mayor es ${largest}.`, ['orden_naturales', tag])
+  }
+  if (family === 2) {
+    return mc(skill, d, seed, `¿Cuál es el menor de estos números: ${vals.join(', ')}?`, String(smallest),
+      vals.filter((x) => x !== smallest).map(String), `El menor es ${smallest}.`, ['orden_naturales', tag])
+  }
+
+  const sorted = [...vals].sort((x, y) => x - y)
+  if (family === 3) {
+    const answer = sorted.join(' < ')
+    return mc(skill, d, seed, `¿Qué orden de menor a mayor es correcto para ${vals.join(', ')}?`, answer,
+      [ [...sorted].reverse().join(' < '), `${sorted[0]} < ${sorted[2]} < ${sorted[1]} < ${sorted[3]}`, `${sorted[1]} < ${sorted[0]} < ${sorted[2]} < ${sorted[3]}`],
+      `Ordenamos comparando primero las cifras de mayor valor posicional.`, ['orden_naturales', tag])
+  }
+  if (family === 4) {
+    const answer = [...sorted].reverse().join(' > ')
+    return mc(skill, d, seed, `¿Qué orden de mayor a menor es correcto para ${vals.join(', ')}?`, answer,
+      [sorted.join(' > '), `${sorted[3]} > ${sorted[1]} > ${sorted[2]} > ${sorted[0]}`, `${sorted[2]} > ${sorted[3]} > ${sorted[1]} > ${sorted[0]}`],
+      `De mayor a menor empezamos por ${sorted[3]}.`, ['orden_naturales', tag])
+  }
+  if (family === 5) {
+    const low = Math.min(a, b)
+    const high = Math.max(a, b)
+    const middle = Math.floor((low + high) / 2)
+    return mc(skill, d, seed, `¿Qué número está entre ${low} y ${high}?`, String(middle),
+      [String(Math.max(min, low - 1)), String(Math.min(max, high + 1)), String(high)],
+      `${low} < ${middle} < ${high}.`, ['orden_naturales', 'entre', tag])
+  }
+  if (family === 6) {
+    const target = ri(min, max)
+    const delta1 = ri(1, Math.max(2, Math.floor((max - min) / 20)))
+    const delta2 = delta1 + ri(2, 10)
+    const x = Math.max(min, target - delta1)
+    const y = Math.min(max, target + delta2)
+    const answer = Math.abs(target - x) <= Math.abs(target - y) ? String(x) : String(y)
+    return mc(skill, d, seed, `¿Cuál está más cerca de ${target}: ${x} o ${y}?`, answer,
+      [answer === String(x) ? String(y) : String(x), String(target), 'Están a la misma distancia'],
+      `Comparamos las distancias a ${target}.`, ['orden_naturales', 'distancia', tag])
+  }
+
+  const prefix = ri(1, 9) * 10 ** (Math.max(1, d))
+  const x = prefix + ri(10, 49)
+  const y = prefix + ri(50, 89)
+  return mc(skill, d, seed, `Dos números empiezan por las mismas cifras. ¿Cuál es mayor: ${x} o ${y}?`, String(Math.max(x, y)),
+    [String(Math.min(x, y)), 'Son iguales', 'No se puede saber'],
+    `Al coincidir las cifras iniciales, decide la primera posición en la que son diferentes.`, ['comparacion', 'valor_posicional', tag])
 }
 
 if (key === 'natural_add_sub') {
-  const maxByDifficulty = [
-    100,
-    1000,
-    10000,
-    100000,
-    1000000,
-  ]
+  const family = pickFamily(seed, 8)
+  const max = [100, 1000, 10000, 100000, 1000000][d - 1]
+  const a = ri(Math.floor(max / 10), max)
+  const b = ri(1, Math.max(2, Math.floor(max / 3)))
+  const tag = `family:m01-addsub:d${d}:f${family}`
 
-  const max = maxByDifficulty[d - 1]
-  const add = seed % 2 === 0
-
-  if (add) {
-    const a = ri(Math.floor(max / 10), max)
-    const b = ri(Math.floor(max / 20), max)
+  if (family === 0) {
     const result = a + b
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} + ${b}`,
-      String(result),
-      [
-        String(result + 10),
-        String(result - 10),
-        String(Math.abs(a - b)),
-      ],
-      `${a} + ${b} = ${result}.`,
-      ['suma_naturales']
-    )
+    return mc(skill, d, seed, `Calcula ${a} + ${b}`, String(result),
+      [String(result + 10), String(Math.abs(a - b)), String(result - 1)], `${a} + ${b} = ${result}.`, ['suma_naturales', tag])
+  }
+  if (family === 1) {
+    const high = Math.max(a, b)
+    const low = Math.min(a, b)
+    const result = high - low
+    return mc(skill, d, seed, `Calcula ${high} - ${low}`, String(result),
+      [String(high + low), String(result + 10), String(result + 1)], `${high} - ${low} = ${result}.`, ['resta_naturales', tag])
+  }
+  if (family === 2) {
+    const total = a + b
+    return mc(skill, d, seed, `Completa: ${a} + □ = ${total}`, String(b),
+      [String(a), String(total), String(Math.max(0, b - 1))], `El sumando que falta es ${total} - ${a} = ${b}.`, ['suma_naturales', 'termino_desconocido', tag])
+  }
+  if (family === 3) {
+    const total = a + b
+    return mc(skill, d, seed, `Completa: ${total} - □ = ${a}`, String(b),
+      [String(a), String(total), String(Math.max(0, b + 1))], `El número que falta es ${total} - ${a} = ${b}.`, ['resta_naturales', 'termino_desconocido', tag])
+  }
+  if (family === 4) {
+    const c = ri(1, Math.max(2, Math.floor(max / 5)))
+    const result = a + b - c
+    return mc(skill, d, seed, `Calcula ${a} + ${b} - ${c}`, String(result),
+      [String(a + b + c), String(a - b + c), String(result + c)], `Primero sumamos y después restamos: ${result}.`, ['suma_resta_naturales', 'dos_pasos', tag])
+  }
+  if (family === 5) {
+    const roundBase = d <= 2 ? 10 : d <= 4 ? 100 : 1000
+    const roundedA = Math.round(a / roundBase) * roundBase
+    const roundedB = Math.round(b / roundBase) * roundBase
+    const estimate = roundedA + roundedB
+    return mc(skill, d, seed, `Redondeando al múltiplo de ${roundBase} más cercano, ¿qué estimación obtienes para ${a} + ${b}?`, String(estimate),
+      [String(a + b), String(roundedA), String(roundedB)], `Aproximamos a ${roundedA} y ${roundedB}; suman aproximadamente ${estimate}.`, ['estimacion_suma', tag])
+  }
+  if (family === 6) {
+    const result = a + b
+    const proposed = result + ri(2, 9)
+    return mc(skill, d, seed, `Alguien afirma que ${a} + ${b} = ${proposed}. ¿Qué es correcto?`, `Es incorrecto; el resultado es ${result}`,
+      [`Es correcto; da ${proposed}`, `Es incorrecto; el resultado es ${a - b}`, `No se puede comprobar`], `Calculando la suma obtenemos ${result}.`, ['comprobacion_operacion', tag])
   }
 
-  const a = ri(Math.floor(max / 2), max)
-  const b = ri(1, a)
-  const result = a - b
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Calcula ${a} - ${b}`,
-    String(result),
-    [
-      String(a + b),
-      String(Math.abs(b - a)),
-      String(result + 10),
-    ],
-    `${a} - ${b} = ${result}.`,
-    ['resta_naturales']
-  )
+  const delta = ri(2, 20)
+  const result = (a + delta) + (b - Math.min(delta, b - 1))
+  const adjustedB = b - Math.min(delta, b - 1)
+  return mc(skill, d, seed, `Para calcular mentalmente ${a} + ${b}, se transforma en ${a + (b - adjustedB)} + ${adjustedB}. ¿Cuál es el resultado?`, String(result),
+    [String(a + b + delta), String(a + b - delta), String(a + adjustedB)], `Compensar un sumando y el otro mantiene la suma: ${result}.`, ['calculo_mental', 'compensacion', tag])
 }
 
 if (key === 'natural_mult_div') {
-  if (d === 1) {
-    const a = ri(2, 10)
-    const b = ri(2, 10)
-    const result = a * b
+  const family = pickFamily(seed, 8)
+  const factorMax = [10, 12, 20, 50, 99][d - 1]
+  const a = ri(2, factorMax)
+  const b = ri(2, d <= 2 ? 12 : 25)
+  const product = a * b
+  const tag = `family:m01-multdiv:d${d}:f${family}`
 
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} × ${b}`,
-      String(result),
-      [
-        String(a + b),
-        String(result + a),
-        String(result - b),
-      ],
-      `${a} × ${b} = ${result}.`,
-      ['multiplicacion']
-    )
+  if (family === 0) {
+    return mc(skill, d, seed, `Calcula ${a} × ${b}`, String(product),
+      [String(a + b), String(product + a), String(Math.max(1, product - b))], `${a} × ${b} = ${product}.`, ['multiplicacion', tag])
+  }
+  if (family === 1) {
+    return mc(skill, d, seed, `Calcula ${product} ÷ ${a}`, String(b),
+      [String(a), String(product), String(b + 1)], `${product} ÷ ${a} = ${b}.`, ['division', tag])
+  }
+  if (family === 2) {
+    return mc(skill, d, seed, `Completa: ${a} × □ = ${product}`, String(b),
+      [String(a), String(product), String(b + 2)], `El factor que falta es ${product} ÷ ${a} = ${b}.`, ['multiplicacion', 'factor_desconocido', tag])
+  }
+  if (family === 3) {
+    return mc(skill, d, seed, `Completa: □ ÷ ${a} = ${b}`, String(product),
+      [String(a + b), String(b), String(product + a)], `El dividendo debe ser ${a} × ${b} = ${product}.`, ['division', 'dividendo_desconocido', tag])
+  }
+  if (family === 4) {
+    const remainder = ri(1, Math.max(1, a - 1))
+    const dividend = product + remainder
+    return mc(skill, d, seed, `Al dividir ${dividend} entre ${a}, ¿cuál es el cociente y el resto?`, `${b} y resto ${remainder}`,
+      [`${b + 1} y resto ${remainder}`, `${b} y resto ${a - remainder}`, `${a} y resto ${remainder}`], `${dividend} = ${a} × ${b} + ${remainder}.`, ['division', 'resto', tag])
+  }
+  if (family === 5) {
+    const c = ri(1, 9)
+    const result = a * (b + c)
+    return mc(skill, d, seed, `Usa la distributiva: ${a} × (${b} + ${c}). ¿Cuál es el resultado?`, String(result),
+      [String(a * b + c), String(product), String(result + a)], `${a}×${b} + ${a}×${c} = ${result}.`, ['multiplicacion', 'distributiva', tag])
+  }
+  if (family === 6) {
+    const groups = a
+    const each = b
+    return mc(skill, d, seed, `Se reparten ${groups * each} objetos en ${groups} grupos iguales. ¿Cuántos objetos recibe cada grupo?`, String(each),
+      [String(groups), String(groups * each), String(each + 1)], `${groups * each} ÷ ${groups} = ${each}.`, ['division', 'reparto', tag])
   }
 
-  if (d === 2) {
-    const a = ri(2, 12)
-    const b = ri(2, 20)
-    const result = a * b
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} × ${b}`,
-      String(result),
-      [
-        String(result + a),
-        String(a + b),
-        String(result - b),
-      ],
-      `${a} × ${b} = ${result}.`,
-      ['multiplicacion']
-    )
-  }
-
-  if (d === 3) {
-    const divisor = ri(2, 12)
-    const quotient = ri(2, 25)
-    const dividend = divisor * quotient
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${dividend} ÷ ${divisor}`,
-      String(quotient),
-      [
-        String(divisor),
-        String(quotient + 1),
-        String(dividend - divisor),
-      ],
-      `${dividend} ÷ ${divisor} = ${quotient}.`,
-      ['division']
-    )
-  }
-
-  if (d === 4) {
-    const a = ri(12, 99)
-    const b = ri(2, 15)
-    const result = a * b
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} × ${b}`,
-      String(result),
-      [
-        String(result + b),
-        String(a + b),
-        String(result - a),
-      ],
-      `${a} × ${b} = ${result}.`,
-      ['multiplicacion_avanzada']
-    )
-  }
-
-  const divisor = ri(11, 25)
-  const quotient = ri(12, 50)
-  const dividend = divisor * quotient
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Calcula ${dividend} ÷ ${divisor}`,
-    String(quotient),
-    [
-      String(quotient + 1),
-      String(quotient - 1),
-      String(divisor),
-    ],
-    `${dividend} ÷ ${divisor} = ${quotient}.`,
-    ['division_avanzada']
-  )
+  return mc(skill, d, seed, `Si ${a} × ${b} = ${product}, ¿qué división relacionada es correcta?`, `${product} ÷ ${a} = ${b}`,
+    [`${product} ÷ ${b} = ${a + 1}`, `${a} ÷ ${b} = ${product}`, `${product} ÷ ${a + 1} = ${b}`], `Multiplicación y división son operaciones inversas.`, ['multiplicacion_division', 'operaciones_inversas', tag])
 }
 
 if (key === 'operation_priority') {
-  if (d === 1) {
-    const a = ri(2, 10)
-    const b = ri(2, 10)
-    const c = ri(2, 10)
+  const family = pickFamily(seed, 8)
+  const m = d <= 2 ? 9 : d <= 4 ? 15 : 25
+  const a = ri(2, m)
+  const b = ri(2, Math.min(10, m))
+  const c = ri(2, Math.min(9, m))
+  const e = ri(2, Math.min(8, m))
+  const tag = `family:m01-priority:d${d}:f${family}`
+
+  if (family === 0) {
     const result = a + b * c
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} + ${b} × ${c}`,
-      String(result),
-      [
-        String((a + b) * c),
-        String(a + b + c),
-        String(a * b + c),
-      ],
-      `Primero ${b} × ${c} = ${b * c}; después sumamos ${a}. Resultado: ${result}.`,
-      ['jerarquia_operaciones']
-    )
+    return mc(skill, d, seed, `Calcula ${a} + ${b} × ${c}`, String(result),
+      [String((a + b) * c), String(a + b + c), String(a * b + c)], `Primero multiplicamos: ${b}×${c}; después sumamos ${a}.`, ['jerarquia_operaciones', tag])
   }
-
-  if (d === 2) {
-    const a = ri(2, 15)
-    const b = ri(2, 10)
-    const c = ri(2, 10)
+  if (family === 1) {
     const result = a * b + c
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} × ${b} + ${c}`,
-      String(result),
-      [
-        String(a * (b + c)),
-        String(a + b + c),
-        String(a * b - c),
-      ],
-      `Primero multiplicamos: ${a} × ${b} = ${a * b}. Después sumamos ${c}. Resultado: ${result}.`,
-      ['jerarquia_operaciones']
-    )
+    return mc(skill, d, seed, `Calcula ${a} × ${b} + ${c}`, String(result),
+      [String(a * (b + c)), String(a + b + c), String(a * b - c)], `La multiplicación se resuelve antes que la suma.`, ['jerarquia_operaciones', tag])
+  }
+  if (family === 2) {
+    const result = (a + b) * c
+    return mc(skill, d, seed, `Calcula (${a} + ${b}) × ${c}`, String(result),
+      [String(a + b * c), String(a * c + b), String(a + b + c)], `Primero resolvemos el paréntesis y después multiplicamos.`, ['jerarquia_operaciones', 'parentesis', tag])
+  }
+  if (family === 3) {
+    const result = a * (b + c)
+    return mc(skill, d, seed, `Calcula ${a} × (${b} + ${c})`, String(result),
+      [String(a * b + c), String((a + b) * c), String(a + b + c)], `El paréntesis se resuelve primero.`, ['jerarquia_operaciones', 'parentesis', tag])
+  }
+  if (family === 4) {
+    const result = a + b * c - e
+    return mc(skill, d, seed, `Calcula ${a} + ${b} × ${c} - ${e}`, String(result),
+      [String((a + b) * c - e), String(a + b * (c - e)), String(result + e)], `Primero ${b}×${c}; después suma y resta de izquierda a derecha.`, ['jerarquia_operaciones', 'tres_operaciones', tag])
+  }
+  if (family === 5) {
+    const div = b * c
+    const result = div / b + a
+    return mc(skill, d, seed, `Calcula ${div} ÷ ${b} + ${a}`, String(result),
+      [String(div / (b + a)), String(div + b + a), String(c * a)], `Primero ${div}÷${b}=${c}; después sumamos ${a}.`, ['jerarquia_operaciones', 'division', tag])
+  }
+  if (family === 6) {
+    const first = `(${a} + ${b}) × ${c}`
+    return mc(skill, d, seed, `En la expresión ${first}, ¿qué operación debe hacerse primero?`, `${a} + ${b}`,
+      [`${b} × ${c}`, `${a} × ${c}`, 'Da igual el orden'], `Los paréntesis tienen prioridad.`, ['jerarquia_operaciones', 'razonamiento', tag])
   }
 
-  if (d === 3) {
-    const a = ri(10, 30)
-    const b = ri(2, 8)
-    const c = ri(2, 8)
-    const result = a - b * c
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula ${a} - ${b} × ${c}`,
-      String(result),
-      [
-        String((a - b) * c),
-        String(a - b - c),
-        String(a + b * c),
-      ],
-      `Primero ${b} × ${c} = ${b * c}; después ${a} - ${b * c} = ${result}.`,
-      ['jerarquia_operaciones']
-    )
-  }
-
-  if (d === 4) {
-    const a = ri(2, 9)
-    const b = ri(2, 9)
-    const c = ri(2, 9)
-    const e = ri(2, 9)
-    const result = (a + b) * c - e
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Calcula (${a} + ${b}) × ${c} - ${e}`,
-      String(result),
-      [
-        String(a + b * c - e),
-        String((a + b) * (c - e)),
-        String(result + c),
-      ],
-      `Primero resolvemos el paréntesis: ${a} + ${b} = ${a + b}. Después multiplicamos por ${c} y finalmente restamos ${e}. Resultado: ${result}.`,
-      ['jerarquia_operaciones', 'parentesis']
-    )
-  }
-
-  const a = ri(2, 10)
-  const b = ri(2, 10)
-  const c = ri(2, 8)
-  const e = ri(2, 8)
-  const f = ri(1, 10)
-  const result = a * (b + c) - e * f
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Calcula ${a} × (${b} + ${c}) - ${e} × ${f}`,
-    String(result),
-    [
-      String(a * b + c - e * f),
-      String((a + b + c) * e),
-      String(result + f),
-    ],
-    `Primero resolvemos el paréntesis y las multiplicaciones. Resultado: ${result}.`,
-    ['jerarquia_operaciones', 'parentesis', 'operaciones_combinadas']
-  )
+  const left = a + b * c
+  const right = (a + b) * c
+  return mc(skill, d, seed, `¿Cuál es mayor: ${a} + ${b} × ${c} o (${a} + ${b}) × ${c}?`, right > left ? 'La expresión con paréntesis' : 'La expresión sin paréntesis',
+    [right > left ? 'La expresión sin paréntesis' : 'La expresión con paréntesis', 'Son iguales', 'No se puede determinar'],
+    `Sus valores son ${left} y ${right}.`, ['jerarquia_operaciones', 'comparacion', tag])
 }
 
 if (key === 'natural_word_problem') {
-  if (d <= 2) {
+  const family = pickFamily(seed, 8)
+  const scale = [1, 2, 4, 7, 10][d - 1]
+  const tag = `family:m01-word:d${d}:f${family}`
+
+  if (family === 0) {
+    const a = ri(20, 80 * scale)
+    const b = ri(10, 50 * scale)
+    return mc(skill, d, seed, `En una biblioteca había ${a} libros y llegaron ${b} más. ¿Cuántos hay ahora?`, String(a + b),
+      [String(a), String(b), String(Math.abs(a - b))], `${a}+${b}=${a + b}.`, ['problema_naturales', 'suma', tag])
+  }
+  if (family === 1) {
+    const total = ri(60, 150 * scale)
+    const used = ri(10, Math.max(11, Math.floor(total / 2)))
+    return mc(skill, d, seed, `Un almacén tenía ${total} cajas y envió ${used}. ¿Cuántas quedan?`, String(total - used),
+      [String(total + used), String(used), String(total)], `${total}-${used}=${total - used}.`, ['problema_naturales', 'resta', tag])
+  }
+  if (family === 2) {
+    const groups = ri(3, 8 + d)
+    const each = ri(4, 12 * scale)
+    return mc(skill, d, seed, `Hay ${groups} filas con ${each} asientos en cada una. ¿Cuántos asientos hay en total?`, String(groups * each),
+      [String(groups + each), String(groups * each - each), String(each)], `${groups}×${each}=${groups * each}.`, ['problema_naturales', 'multiplicacion', tag])
+  }
+  if (family === 3) {
+    const groups = ri(3, 10)
+    const each = ri(4, 15 * scale)
+    const total = groups * each
+    return mc(skill, d, seed, `Se reparten ${total} pegatinas por igual entre ${groups} personas. ¿Cuántas recibe cada una?`, String(each),
+      [String(groups), String(total), String(each + 1)], `${total}÷${groups}=${each}.`, ['problema_naturales', 'division', tag])
+  }
+  if (family === 4) {
     const boxes = ri(2, 6 + d)
-    const perBox = ri(5, 20 + d * 5)
-    const result = boxes * perBox
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Hay ${boxes} cajas con ${perBox} cromos en cada caja. ¿Cuántos cromos hay en total?`,
-      String(result),
-      [
-        String(boxes + perBox),
-        String(result - perBox),
-        String(result + boxes),
-      ],
-      `${boxes} × ${perBox} = ${result}.`,
-      ['problema_naturales']
-    )
+    const each = ri(8, 20 * scale)
+    const loose = ri(3, 15 * scale)
+    const total = boxes * each + loose
+    return mc(skill, d, seed, `Hay ${boxes} cajas con ${each} piezas cada una y ${loose} piezas sueltas. ¿Cuántas piezas hay?`, String(total),
+      [String(boxes * each), String(boxes + each + loose), String(total - loose)], `${boxes}×${each}+${loose}=${total}.`, ['problema_naturales', 'dos_operaciones', tag])
   }
-
-  if (d === 3) {
-    const boxes = ri(3, 10)
-    const perBox = ri(10, 40)
-    const loose = ri(5, 30)
-    const result = boxes * perBox + loose
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Hay ${boxes} cajas con ${perBox} cromos cada una y además ${loose} cromos sueltos. ¿Cuántos cromos hay en total?`,
-      String(result),
-      [
-        String(boxes + perBox + loose),
-        String(boxes * perBox),
-        String(result - loose),
-      ],
-      `${boxes} × ${perBox} + ${loose} = ${result}.`,
-      ['problema_naturales', 'dos_operaciones']
-    )
-  }
-
-  if (d === 4) {
-    const boxes = ri(4, 12)
-    const perBox = ri(15, 50)
-    const sold = ri(10, 50)
-    const total = boxes * perBox
+  if (family === 5) {
+    const boxes = ri(3, 8 + d)
+    const each = ri(10, 25 * scale)
+    const sold = ri(5, Math.max(6, each))
+    const total = boxes * each
     const result = total - sold
-
-    return mc(
-      skill,
-      d,
-      seed,
-      `Una tienda recibe ${boxes} cajas con ${perBox} cromos cada una. Después vende ${sold} cromos. ¿Cuántos quedan?`,
-      String(result),
-      [
-        String(total),
-        String(total + sold),
-        String(boxes + perBox - sold),
-      ],
-      `Primero ${boxes} × ${perBox} = ${total}. Después ${total} - ${sold} = ${result}.`,
-      ['problema_naturales', 'dos_operaciones']
-    )
+    return mc(skill, d, seed, `Una tienda recibe ${boxes} cajas de ${each} artículos y vende ${sold}. ¿Cuántos quedan?`, String(result),
+      [String(total), String(total + sold), String(boxes + each - sold)], `Primero ${boxes}×${each}=${total}; después ${total}-${sold}=${result}.`, ['problema_naturales', 'dos_operaciones', tag])
+  }
+  if (family === 6) {
+    const days = ri(3, 7)
+    const perDay = ri(20, 60 * scale)
+    const extra = ri(5, 20 * scale)
+    const total = days * perDay + extra
+    return mc(skill, d, seed, `Durante ${days} días se recogen ${perDay} unidades cada día y el último día se añaden ${extra} extra. ¿Cuántas se recogen en total?`, String(total),
+      [String(days + perDay + extra), String(days * perDay), String(total + perDay)], `${days}×${perDay}+${extra}=${total}.`, ['problema_naturales', 'dos_operaciones', tag])
   }
 
-  const groups = ri(3, 8)
-  const boxesPerGroup = ri(2, 6)
-  const perBox = ri(10, 30)
-  const used = ri(10, 50)
-
-  const total = groups * boxesPerGroup * perBox
+  const groups = ri(2, 5 + d)
+  const boxes = ri(2, 5)
+  const each = ri(8, 18 * scale)
+  const used = ri(5, 20 * scale)
+  const total = groups * boxes * each
   const result = total - used
-
-  return mc(
-    skill,
-    d,
-    seed,
-    `Hay ${groups} grupos con ${boxesPerGroup} cajas cada uno y cada caja contiene ${perBox} piezas. Se utilizan ${used} piezas. ¿Cuántas quedan?`,
-    String(result),
-    [
-      String(total),
-      String(groups * boxesPerGroup + perBox - used),
-      String(total + used),
-    ],
-    `Total inicial: ${groups} × ${boxesPerGroup} × ${perBox} = ${total}. Después restamos ${used}. Resultado: ${result}.`,
-    ['problema_naturales', 'varias_operaciones']
-  )
+  return mc(skill, d, seed, `Hay ${groups} grupos con ${boxes} cajas cada uno y ${each} objetos por caja. Se usan ${used} objetos. ¿Cuántos quedan?`, String(result),
+    [String(total), String(groups * boxes + each - used), String(total + used)], `Total: ${groups}×${boxes}×${each}=${total}; después restamos ${used}: ${result}.`, ['problema_naturales', 'varias_operaciones', tag])
 }
 
   // =========================
- // =========================
 // M02 · POTENCIAS Y RAÍCES
 // =========================
 
