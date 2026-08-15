@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 
 type Player = {
@@ -100,6 +101,7 @@ function activitySummary(sessions: ActivitySession[]) {
 }
 
 export default function PlayerDashboard() {
+  const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [lastSession, setLastSession] = useState<LastSession | null>(null)
   const [sessionCorrect, setSessionCorrect] = useState(0)
@@ -125,42 +127,65 @@ export default function PlayerDashboard() {
     } = await supabase.auth.getUser()
 
     if (!user) {
-      setMessage('Debes iniciar sesión.')
-      setLoading(false)
+      localStorage.removeItem('levelup_player_id')
+      router.replace('/login')
       return
     }
 
     const savedPlayerId = localStorage.getItem('levelup_player_id')
-
-    let playerQuery = supabase
-      .from('players')
-      .select('id,alias,level,xp,coins,daily_target_minutes')
+    let currentPlayer: Player | null = null
 
     if (savedPlayerId) {
-      playerQuery = playerQuery.eq('id', savedPlayerId)
+      const { data: savedPlayer, error: savedPlayerError } = await supabase
+        .from('players')
+        .select('id,alias,level,xp,coins,daily_target_minutes')
+        .eq('id', savedPlayerId)
+        .maybeSingle()
+
+      if (savedPlayerError) {
+        setMessage(savedPlayerError.message)
+        setLoading(false)
+        return
+      }
+
+      if (savedPlayer) {
+        currentPlayer = savedPlayer as Player
+      } else {
+        localStorage.removeItem('levelup_player_id')
+      }
     }
 
-    const { data: playerData, error: playerError } = await playerQuery
-      .order('xp', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    if (!currentPlayer) {
+      const { data: availablePlayers, error: playersError } = await supabase
+        .from('players')
+        .select('id,alias,level,xp,coins,daily_target_minutes')
+        .order('alias', { ascending: true })
 
-    if (playerError) {
-      setMessage(playerError.message)
-      setLoading(false)
-      return
+      if (playersError) {
+        setMessage(playersError.message)
+        setLoading(false)
+        return
+      }
+
+      const players = (availablePlayers ?? []) as Player[]
+
+      if (players.length === 0) {
+        setMessage('Todavía no hay ningún jugador creado.')
+        setLoading(false)
+        return
+      }
+
+      if (players.length > 1) {
+        router.replace('/parent/setup')
+        return
+      }
+
+      currentPlayer = players[0]
+      localStorage.setItem('levelup_player_id', currentPlayer.id)
     }
-
-    if (!playerData) {
-      setMessage('Todavía no hay ningún jugador creado.')
-      setLoading(false)
-      return
-    }
-
-    const currentPlayer = playerData as Player
 
     setPlayer(currentPlayer)
-    localStorage.setItem('levelup_player_id', currentPlayer.id)
+    setMessage('')
 
     const { data: activityData, error: activityError } = await supabase
       .from('study_sessions')
@@ -171,16 +196,13 @@ export default function PlayerDashboard() {
       .order('started_at', { ascending: false })
       .limit(1000)
 
-    if (activityError) {
-      setMessage(activityError.message)
-    } else {
+    if (!activityError) {
       const summary = activitySummary((activityData ?? []) as ActivitySession[])
       setTodayMinutes(summary.todayMinutes)
       setTrainingDays(summary.totalTrainingDays)
       setStreak(summary.streak)
     }
 
-    // Última sesión completada
     const { data: sessionData } = await supabase
       .from('study_sessions')
       .select('id,started_at,ended_at,completed,xp_earned')
@@ -193,7 +215,6 @@ export default function PlayerDashboard() {
     if (sessionData) {
       setLastSession(sessionData as LastSession)
 
-      // Resultados reales de esa sesión
       const { data: attemptsData } = await supabase
         .from('attempts')
         .select('correct')
@@ -207,7 +228,6 @@ export default function PlayerDashboard() {
       )
     }
 
-    // Habilidades con mayor necesidad de refuerzo
     const { data: stateData } = await supabase
       .from('player_skill_state')
       .select('skill_id,mastery,confidence,difficulty,priority')
@@ -257,7 +277,7 @@ export default function PlayerDashboard() {
         <p className="muted">{message}</p>
 
         <Link href="/parent/setup" className="btn primary">
-          CREAR PRIMER JUGADOR
+          IR A JUGADORES
         </Link>
       </section>
     )
@@ -317,6 +337,10 @@ export default function PlayerDashboard() {
             }}
           >
             ▶ MISIÓN DE HOY
+          </Link>
+
+          <Link href="/parent/setup" className="btn dark">
+            👥 CAMBIAR JUGADOR
           </Link>
 
           <Link href="/parent" className="btn dark">
