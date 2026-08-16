@@ -281,21 +281,15 @@ export default function CurriculumDailySession() {
     ;(async () => {
       const supabase = createSupabaseBrowserClient()
       if (!supabase) { setCloseError('No se pudo conectar para guardar el cierre.'); setClosing(false); closeStarted.current = false; return }
-      const { data: sessionAttempts, error: attemptsError } = await retryJwtFuture(async () => await supabase.from('attempts').select('xp_awarded,response_ms').eq('session_id', sessionId))
-      if (attemptsError) { setCloseError('No se pudo verificar el cierre de la sesión.'); setClosing(false); closeStarted.current = false; return }
-      const attempts = sessionAttempts ?? []
-      if (attempts.length < SESSION_LENGTH) { setCloseError('Falta guardar parte de la sesión. Inténtalo de nuevo.'); setClosing(false); closeStarted.current = false; return }
-      const finishedAt = new Date().toISOString()
-      const sessionXp = attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.xp_awarded ?? 0), 0)
-      const activeMs = attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.response_ms ?? 0), 0)
-      const actualMinutes = Math.min(180, Math.max(1, Math.round(activeMs / 60_000)))
-      setXp(sessionXp)
-      const { data: closedSession, error } = await supabase.from('study_sessions').update({ ended_at: finishedAt, completed_at: finishedAt, completed: true, xp_earned: sessionXp, actual_minutes: actualMinutes, phase: 'done' }).eq('id', sessionId).eq('player_id', playerId).eq('completed', false).select('id').maybeSingle()
-      if (error) { setCloseError('No se pudo guardar el cierre de la sesión.'); setClosing(false); closeStarted.current = false; return }
-      if (!closedSession) {
-        const { data: existing } = await supabase.from('study_sessions').select('id,completed').eq('id', sessionId).eq('player_id', playerId).maybeSingle()
-        if (!existing?.completed) { setCloseError('No se pudo confirmar el cierre de la sesión.'); setClosing(false); closeStarted.current = false; return }
-      }
+      const { data, error } = await retryJwtFuture(async () =>
+        await supabase.rpc('complete_levelup_session', {
+          p_session_id: sessionId,
+        })
+      )
+      if (error) { setCloseError(userFacingError(error, 'No se pudo guardar el cierre de la sesión.')); setClosing(false); closeStarted.current = false; return }
+      const result = data as { completed?: boolean; attempts?: number; xp_earned?: number }
+      if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) { setCloseError('No se pudo confirmar el cierre completo de la sesión.'); setClosing(false); closeStarted.current = false; return }
+      setXp(Number(result.xp_earned ?? 0))
       setSessionClosed(true)
       setClosing(false)
     })()
