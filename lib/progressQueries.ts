@@ -21,6 +21,7 @@ export async function fetchCompletedActivity(
       .select('id,started_at,ended_at,actual_minutes')
       .eq('player_id', playerId)
       .eq('completed', true)
+      .eq('phase', 'done')
       .not('ended_at', 'is', null)
       .order('started_at', { ascending: false })
       .order('id', { ascending: false })

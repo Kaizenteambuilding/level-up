@@ -218,6 +218,7 @@ export default function Parent() {
           .select('id,started_at,ended_at,actual_minutes,xp_earned')
           .eq('player_id', playerId)
           .eq('completed', true)
+          .eq('phase', 'done')
           .not('ended_at', 'is', null)
           .order('started_at', { ascending: false })
           .limit(7),

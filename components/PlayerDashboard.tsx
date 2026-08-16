@@ -244,6 +244,7 @@ export default function PlayerDashboard() {
         .select('id,started_at,ended_at,completed,xp_earned')
         .eq('player_id', currentPlayer.id)
         .eq('completed', true)
+        .eq('phase', 'done')
         .order('started_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
