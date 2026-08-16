@@ -38,6 +38,9 @@ jobs:
       - name: Audit pedagogical question quality
         run: npm run audit:question-quality
 
+      - name: Audit longitudinal adaptive behavior
+        run: npm run audit:adaptive-engine
+
       - name: Build production application
         run: npm run build
 
