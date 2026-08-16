@@ -53,12 +53,18 @@ export default function DemoWorld() {
             <h2>Tienda del Explorador</h2>
             <p>Prueba objetos cosméticos con las monedas de demostración.</p>
           </Link>
+          <Link href="/base" className="world-zone base-zone unlocked">
+            <span className="zone-icon" aria-hidden="true">🚀</span>
+            <span className="zone-state">TU ESPACIO</span>
+            <h2>Refugio del Explorador</h2>
+            <p>Viste el avatar, abre la mochila y personaliza tu base.</p>
+          </Link>
         </div>
       </section>
       <nav className="game-dock" aria-label="Navegación del mundo">
         <Link href="/world" aria-current="page">🗺️ <span>MAPA</span></Link>
         <Link href="/mission/briefing">📋 <span>MISIÓN</span></Link>
-        <Link href="/shop#inventory">🎒 <span>MOCHILA</span></Link>
+        <Link href="/base">🚀 <span>REFUGIO</span></Link>
         <Link href="/shop">🛒 <span>TIENDA</span></Link>
       </nav>
       <p className="demo-notice">Demo visual: las compras se guardan solo en este navegador y no modifican XP ni datos académicos.</p>

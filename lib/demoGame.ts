@@ -12,7 +12,10 @@ export type DemoGameState = {
   owned: string[]
   equipped: Partial<Record<DemoItem['slot'], string>>
   rewardedSessions: string[]
+  baseTheme: DemoBaseTheme
 }
+
+export type DemoBaseTheme = 'space' | 'forest' | 'arcade'
 
 export const DEMO_ITEMS: DemoItem[] = [
   { id: 'headphones', name: 'Auriculares neón', description: 'Para explorar con ritmo.', icon: '🎧', price: 90, slot: 'head' },
@@ -28,6 +31,7 @@ export const INITIAL_DEMO_STATE: DemoGameState = {
   owned: [],
   equipped: {},
   rewardedSessions: [],
+  baseTheme: 'space',
 }
 
 export function demoStorageKey(playerId: string) {
@@ -56,6 +60,7 @@ export function normalizeDemoState(value: unknown): DemoGameState {
     rewardedSessions: Array.isArray(candidate.rewardedSessions)
       ? Array.from(new Set(candidate.rewardedSessions.filter((id): id is string => typeof id === 'string' && id.length > 0))).slice(-100)
       : [],
+    baseTheme: candidate.baseTheme === 'forest' || candidate.baseTheme === 'arcade' ? candidate.baseTheme : 'space',
   }
 }
 
@@ -87,6 +92,11 @@ export function equipDemoItem(state: DemoGameState, itemId: string) {
   const item = DEMO_ITEMS.find((entry) => entry.id === itemId)
   if (!item || !state.owned.includes(itemId)) return state
   return { ...state, equipped: { ...state.equipped, [item.slot]: item.id } }
+}
+
+export function setDemoBaseTheme(state: DemoGameState, theme: string): DemoGameState {
+  if (theme !== 'space' && theme !== 'forest' && theme !== 'arcade') return state
+  return { ...state, baseTheme: theme }
 }
 
 export function equippedDemoItems(state: DemoGameState) {

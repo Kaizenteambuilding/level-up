@@ -51,7 +51,7 @@ export default function DemoShop() {
       <section className="card" id="inventory">
         <span className="tag">🎒 MOCHILA</span><h2>Objetos conseguidos</h2>
         {game.owned.length ? <p className="inventory-icons">{game.owned.map((id) => DEMO_ITEMS.find((item) => item.id === id)?.icon).join(' ')}</p> : <p className="muted">Todavía no has elegido ningún objeto.</p>}
-        <Link href="/world" className="btn dark">← VOLVER AL MAPA</Link>
+        <div className="action-row"><Link href="/base" className="btn primary">VER EN EL REFUGIO</Link><Link href="/world" className="btn dark">← VOLVER AL MAPA</Link></div>
       </section>
       <p className="demo-notice">Las 450 monedas son parte de la demo y se guardan únicamente en este navegador.</p>
     </>
