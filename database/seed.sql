@@ -1,4 +1,5 @@
-insert into skills(id,name,subject_id) values
-('fractions_apply','Problemas con fracciones','math'),
-('equation_1step','Ecuaciones de un paso','math')
-on conflict (id) do nothing;
+-- ARCHIVO HISTÓRICO: NO EJECUTAR.
+--
+-- Las dos habilidades del seed original son registros antiguos e inactivos.
+-- El currículo vigente se administra en la base de producción y deberá formar
+-- parte del futuro baseline completo antes de provisionar un proyecto nuevo.
