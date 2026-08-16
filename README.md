@@ -44,6 +44,8 @@ Migraciones versionadas:
 - `20260816_require_family_setup_rpc.sql`: impide crear o reasignar relaciones familiares directamente y obliga a utilizar la RPC atómica de alta.
 - `20260816_open_mission_atomically.sql`: abre o recupera una única misión mediante RPC y serializa accesos simultáneos del mismo jugador.
 - `20260816_restrict_table_write_grants.sql`: aplica mínimo privilegio y reserva las escrituras de progreso, sesiones y familia a las RPC protegidas.
+- `20260816_create_player_atomically.sql`: valida y crea jugadores mediante una RPC protegida, sin permitir inserciones directas desde el navegador.
+- `20260816_unique_player_alias_per_family.sql`: evita alias duplicados dentro de una familia aunque solo cambien mayúsculas o espacios.
 
 Los avisos de Supabase sobre las cuatro funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `open_levelup_session`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 

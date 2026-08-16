@@ -134,41 +134,27 @@ export default function PlayerSetup() {
     setSaving(true)
     setMessage('')
 
-    const { data: profile, error: profileError } = await supabase
-      .from('parent_profiles')
-      .select('family_id')
-      .single()
-
-    if (profileError || !profile?.family_id) {
-      actionLocked.current = false
-      setSaving(false)
-      setMessage('Primero configura la familia.')
-      return
-    }
-
-    const { data: createdPlayer, error } = await supabase
-      .from('players')
-      .insert({
-        family_id: profile.family_id,
-        alias: alias.trim(),
-        daily_target_minutes: minutes,
-        level: 1,
-        xp: 0,
-        coins: 0,
-        streak_days: 0,
-      })
-      .select('id')
-      .single()
+    const { data: createdPlayer, error } = await supabase.rpc(
+      'create_levelup_player',
+      {
+        p_alias: alias.trim(),
+        p_daily_target_minutes: minutes,
+      }
+    )
 
     actionLocked.current = false
     setSaving(false)
 
-    if (error || !createdPlayer) {
+    const createdPlayerId = String(
+      (createdPlayer as { player_id?: string } | null)?.player_id ?? ''
+    )
+
+    if (error || !createdPlayerId) {
       setMessage(userFacingError(error, 'No se pudo crear el jugador.'))
       return
     }
 
-    localStorage.setItem('levelup_player_id', createdPlayer.id)
+    localStorage.setItem('levelup_player_id', createdPlayerId)
     setAlias('')
     setMessage('Jugador creado y seleccionado.')
     await load()

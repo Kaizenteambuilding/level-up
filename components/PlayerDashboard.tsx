@@ -122,6 +122,7 @@ export default function PlayerDashboard() {
   const [dataWarnings, setDataWarnings] = useState<string[]>([])
 
   async function load() {
+    setLoading(true)
     const supabase = createSupabaseBrowserClient()
 
     if (!supabase) {
@@ -332,9 +333,14 @@ export default function PlayerDashboard() {
         <h1>Primero crea un jugador</h1>
         <p className="muted">{message}</p>
 
-        <Link href="/parent/setup" className="btn primary">
-          IR A JUGADORES
-        </Link>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button className="btn primary" type="button" onClick={load}>
+            REINTENTAR
+          </button>
+          <Link href="/parent/setup" className="btn dark">
+            IR A JUGADORES
+          </Link>
+        </div>
       </section>
     )
   }
@@ -418,6 +424,9 @@ export default function PlayerDashboard() {
           <ul className="muted">
             {dataWarnings.map((warning) => <li key={warning}>{warning}</li>)}
           </ul>
+          <button className="btn dark" type="button" onClick={load}>
+            ACTUALIZAR DATOS
+          </button>
         </section>
       )}
 

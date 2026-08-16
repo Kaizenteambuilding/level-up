@@ -141,6 +141,7 @@ export default function Parent() {
 
   useEffect(() => {
     async function load() {
+      setLoading(true)
       const supabase = createSupabaseBrowserClient()
       if (!supabase) {
         setMessage('Supabase no configurado.')
@@ -313,7 +314,10 @@ export default function Parent() {
         <section className="card">
           <h1>Panel padre</h1>
           <p className="muted">{message}</p>
-          <Link href="/parent/setup" className="btn primary">IR A JUGADORES</Link>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button>
+            <Link href="/parent/setup" className="btn dark">IR A JUGADORES</Link>
+          </div>
         </section>
       </main>
     )
@@ -398,6 +402,9 @@ export default function Parent() {
           <ul className="muted">
             {dataWarnings.map((warning) => <li key={warning}>{warning}</li>)}
           </ul>
+          <button className="btn dark" type="button" onClick={() => window.location.reload()}>
+            ACTUALIZAR DATOS
+          </button>
         </section>
       )}
 
