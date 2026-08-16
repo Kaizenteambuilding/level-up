@@ -8,6 +8,7 @@ import {
   GeneratedQuestion,
 } from '@/lib/firstEvaluationGenerators'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
+import { buildMissionRecap, MissionSkillResult } from '@/lib/missionRecap'
 import { userFacingError } from '@/lib/userFacingError'
 
 type SkillRow = {
@@ -66,6 +67,7 @@ export default function CurriculumDailySession() {
   const [xp, setXp] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [testAttempts, setTestAttempts] = useState(0)
+  const [sessionSkillResults, setSessionSkillResults] = useState<Record<string, MissionSkillResult>>({})
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [closing, setClosing] = useState(false)
@@ -130,6 +132,18 @@ export default function CurriculumDailySession() {
           setIndex(Math.min(SESSION_LENGTH, attempts.length))
           setCorrect(attempts.filter((attempt: any) => attempt.correct === true).length)
           setXp(attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.xp_awarded ?? 0), 0))
+          setSessionSkillResults(
+            attempts.reduce((summary: Record<string, MissionSkillResult>, attempt: any) => {
+              const skillId = String(attempt.skill_id ?? '')
+              if (!skillId) return summary
+              const current = summary[skillId] ?? { attempts: 0, correct: 0 }
+              summary[skillId] = {
+                attempts: current.attempts + 1,
+                correct: current.correct + Number(attempt.correct === true),
+              }
+              return summary
+            }, {})
+          )
 
           const rememberedAttempts = attempts.slice(-10).reverse()
           recentTemplates.current = rememberedAttempts
@@ -335,7 +349,7 @@ export default function CurriculumDailySession() {
       // persisted attempts before presenting a retry that could never succeed.
       const { data: persistedAttempts, error: recoveryError } = await supabase
         .from('attempts')
-        .select('question_seed,correct,xp_awarded')
+        .select('question_seed,correct,xp_awarded,skill_id')
         .eq('session_id', activeSessionId)
         .order('created_at', { ascending: true })
         .order('id', { ascending: true })
@@ -346,6 +360,20 @@ export default function CurriculumDailySession() {
         const currentWasRecorded = persistedAttempts.some(
           (attempt) => Number(attempt.question_seed) === question.seed
         )
+        const recoveredSkillResults = persistedAttempts.reduce(
+          (summary: Record<string, MissionSkillResult>, attempt: any) => {
+            const skillId = String(attempt.skill_id ?? '')
+            if (!skillId) return summary
+            const current = summary[skillId] ?? { attempts: 0, correct: 0 }
+            summary[skillId] = {
+              attempts: current.attempts + 1,
+              correct: current.correct + Number(attempt.correct === true),
+            }
+            return summary
+          },
+          {}
+        )
+        setSessionSkillResults(recoveredSkillResults)
 
         if (persistedAttempts.length >= SESSION_LENGTH) {
           setCorrect(persistedCorrect)
@@ -373,6 +401,16 @@ export default function CurriculumDailySession() {
     const result = data as { xp_awarded:number; mastery:number; confidence:number; difficulty:number; priority?:number }
     setXp((value) => value + Number(result.xp_awarded))
     if (ok) setCorrect((value) => value + 1)
+    setSessionSkillResults((current) => {
+      const previous = current[question.skillId] ?? { attempts: 0, correct: 0 }
+      return {
+        ...current,
+        [question.skillId]: {
+          attempts: previous.attempts + 1,
+          correct: previous.correct + Number(ok),
+        },
+      }
+    })
     setStates((current) => ({ ...current, [question.skillId]: { skill_id:question.skillId, mastery:Number(result.mastery), confidence:Number(result.confidence), difficulty:Number(result.difficulty), priority:Number.isFinite(Number(result.priority)) ? Number(result.priority) : Math.max(1,Math.min(100,Math.round(50+(50-Number(result.mastery))*0.8+(50-Number(result.confidence))*0.4))), last_practiced_at:new Date().toISOString() } }))
     setFeedback((ok ? '✓ Correcto' : '↻ Incorrecto') + ` · ${result.xp_awarded} XP · dominio ${result.mastery}/100`)
   }
@@ -392,6 +430,10 @@ export default function CurriculumDailySession() {
 
   if (!testMode && index >= SESSION_LENGTH) {
     const accuracy = Math.round((correct / SESSION_LENGTH) * 100)
+    const recap = buildMissionRecap(
+      sessionSkillResults,
+      Object.fromEntries(skills.map((skill) => [skill.id, skill.name]))
+    )
     if (!sessionClosed) {
       return (
         <section className="card" style={{ textAlign:'center', padding:45 }}>
@@ -409,7 +451,21 @@ export default function CurriculumDailySession() {
         <span className="tag">CURRICULUM ENGINE</span>
         <h1>Sesión completada</h1>
         <p className="muted">{SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP</p>
-        <p className="muted">Resultados guardados. La próxima sesión priorizará las habilidades con menor dominio.</p>
+        <p className="muted">Resultados guardados. La próxima sesión utilizará esta evidencia para ajustar la práctica.</p>
+        <div style={{ display: 'grid', gap: 10, margin: '20px 0', textAlign: 'left' }}>
+          {recap.review.length > 0 && (
+            <div className="metric">
+              <b>🎯 Para volver a practicar</b>
+              <p className="muted">{recap.review.map((item) => `${item.label} (${item.correct}/${item.attempts})`).join(' · ')}</p>
+            </div>
+          )}
+          {recap.resolved.length > 0 && (
+            <div className="metric">
+              <b>✨ Bien resuelto hoy</b>
+              <p className="muted">{recap.resolved.map((item) => `${item.label} (${item.correct}/${item.attempts})`).join(' · ')}</p>
+            </div>
+          )}
+        </div>
         <Link href="/player" className="btn primary">CONTINUAR AVENTURA</Link>
       </section>
     )

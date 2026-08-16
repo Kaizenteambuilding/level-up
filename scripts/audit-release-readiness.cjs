@@ -6,7 +6,7 @@ const packageLock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'))
 const versionSource = fs.readFileSync('lib/version.ts', 'utf8')
 const expectedVersion = packageJson.version
 
-if (expectedVersion !== '1.0.0') failures.push('package_not_v1')
+if (!/^1\.\d+\.\d+$/.test(expectedVersion)) failures.push('package_not_v1')
 if (packageLock.version !== expectedVersion) failures.push('lockfile_root_version_mismatch')
 if (packageLock.packages?.['']?.version !== expectedVersion) failures.push('lockfile_package_version_mismatch')
 if (!versionSource.includes(`APP_VERSION = '${expectedVersion}'`)) failures.push('runtime_version_mismatch')

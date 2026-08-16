@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión familiar estable: **v1.0.0**.
+Versión actual: **v1.1.0**. La base familiar estable se cerró en v1.0.0; v1.1 añade el resumen pedagógico de cada misión.
 
 Producción: https://level-up-a544.vercel.app
 
@@ -47,6 +47,8 @@ El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 
 `npm run audit:adaptive-engine` simula 4.800 respuestas de cuatro perfiles durante 480 misiones y comprueba cobertura, antirrepetición, dificultad y prioridad adaptativa.
 
 `npm run audit:parent-insights` valida que el panel no declare fortalezas ni dificultades sin evidencia completada suficiente. `npm run audit:release` comprueba que versión, endpoint de salud y documentación operativa permanecen coordinados.
+
+`npm run audit:mission-recap` comprueba que el cierre de cada misión separa correctamente lo que conviene volver a practicar de lo bien resuelto, sin mezclar ambos grupos.
 
 `database/schema.sql` y `database/seed.sql` se conservan únicamente como marcadores históricos y no deben ejecutarse. El esquema inicial antiguo dejó de representar la base real. Antes de crear un Supabase nuevo hace falta versionar un baseline completo de la base actual.
 
