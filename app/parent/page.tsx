@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { userFacingError } from '@/lib/userFacingError'
+import {
+  fetchCompletedActivity,
+  fetchSkillAttemptCounts,
+} from '@/lib/progressQueries'
 
 type Player = {
   id: string
@@ -202,14 +206,39 @@ export default function Parent() {
       setMessage('')
       setDataWarnings([])
 
-      const { data: activityData, error: activityError } = await supabase
-        .from('study_sessions')
-        .select('started_at,ended_at,actual_minutes')
-        .eq('player_id', playerId)
-        .eq('completed', true)
-        .not('ended_at', 'is', null)
-        .order('started_at', { ascending: false })
-        .limit(1000)
+      const [
+        { data: activityData, error: activityError },
+        { data: sessionRows, error: sessionsError },
+        { data: skillData, error: skillError },
+        { data: evidenceData, error: evidenceError },
+      ] = await Promise.all([
+        fetchCompletedActivity(supabase, playerId),
+        supabase
+          .from('study_sessions')
+          .select('id,started_at,ended_at,actual_minutes,xp_earned')
+          .eq('player_id', playerId)
+          .eq('completed', true)
+          .not('ended_at', 'is', null)
+          .order('started_at', { ascending: false })
+          .limit(7),
+        supabase
+          .from('player_skill_state')
+          .select(`
+            skill_id,
+            mastery,
+            confidence,
+            difficulty,
+            priority,
+            skills!inner (
+              name,
+              unit_id
+            )
+          `)
+          .eq('player_id', playerId)
+          .eq('skills.active', true)
+          .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS),
+        fetchSkillAttemptCounts(supabase, playerId),
+      ])
 
       if (activityError) {
         warnings.push('No se pudieron cargar el tiempo, los días de entrenamiento y la racha.')
@@ -219,15 +248,6 @@ export default function Parent() {
         setTrainingDays(summary.totalTrainingDays)
         setStreak(summary.streak)
       }
-
-      const { data: sessionRows, error: sessionsError } = await supabase
-        .from('study_sessions')
-        .select('id,started_at,ended_at,actual_minutes,xp_earned')
-        .eq('player_id', playerId)
-        .eq('completed', true)
-        .not('ended_at', 'is', null)
-        .order('started_at', { ascending: false })
-        .limit(7)
 
       if (sessionsError) {
         warnings.push('No se pudieron cargar las sesiones recientes.')
@@ -263,45 +283,16 @@ export default function Parent() {
         }
       }
 
-      const { data: skillData, error: skillError } = await supabase
-        .from('player_skill_state')
-        .select(`
-          skill_id,
-          mastery,
-          confidence,
-          difficulty,
-          priority,
-          skills!inner (
-            name,
-            unit_id
-          )
-        `)
-        .eq('player_id', playerId)
-        .eq('skills.active', true)
-        .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
-
       if (skillError) {
         warnings.push('No se pudieron cargar las habilidades adaptativas.')
       } else {
         setSkills((skillData ?? []) as unknown as SkillState[])
       }
 
-      const { data: evidenceData, error: evidenceError } = await supabase
-        .from('attempts')
-        .select('skill_id')
-        .eq('player_id', playerId)
-        .limit(5000)
-
       if (evidenceError) {
         warnings.push('No se pudo cargar la evidencia necesaria para ponderar el dominio.')
       } else {
-        const counts: Record<string, number> = {}
-        ;(evidenceData ?? []).forEach((attempt: any) => {
-          const skillId = String(attempt.skill_id ?? '')
-          if (!skillId) return
-          counts[skillId] = (counts[skillId] ?? 0) + 1
-        })
-        setSkillAttemptCounts(counts)
+        setSkillAttemptCounts(evidenceData ?? {})
       }
 
       setDataWarnings(warnings)

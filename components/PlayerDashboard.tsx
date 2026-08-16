@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { userFacingError } from '@/lib/userFacingError'
+import { fetchCompletedActivity } from '@/lib/progressQueries'
 
 type Player = {
   id: string
@@ -232,14 +233,39 @@ export default function PlayerDashboard() {
       setOpenMissionProgressUnknown(false)
     }
 
-    const { data: activityData, error: activityError } = await supabase
-      .from('study_sessions')
-      .select('started_at,ended_at,actual_minutes')
-      .eq('player_id', currentPlayer.id)
-      .eq('completed', true)
-      .not('ended_at', 'is', null)
-      .order('started_at', { ascending: false })
-      .limit(1000)
+    const [
+      { data: activityData, error: activityError },
+      { data: sessionData, error: sessionError },
+      { data: stateData, error: stateError },
+    ] = await Promise.all([
+      fetchCompletedActivity(supabase, currentPlayer.id),
+      supabase
+        .from('study_sessions')
+        .select('id,started_at,ended_at,completed,xp_earned')
+        .eq('player_id', currentPlayer.id)
+        .eq('completed', true)
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('player_skill_state')
+        .select(`
+          skill_id,
+          mastery,
+          confidence,
+          difficulty,
+          priority,
+          skills!inner (
+            name,
+            unit_id
+          )
+        `)
+        .eq('player_id', currentPlayer.id)
+        .eq('skills.active', true)
+        .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
+        .order('priority', { ascending: false })
+        .limit(3),
+    ])
 
     if (activityError) {
       warnings.push('No se pudieron cargar el tiempo, los días de entrenamiento y la racha.')
@@ -249,15 +275,6 @@ export default function PlayerDashboard() {
       setTrainingDays(summary.totalTrainingDays)
       setStreak(summary.streak)
     }
-
-    const { data: sessionData, error: sessionError } = await supabase
-      .from('study_sessions')
-      .select('id,started_at,ended_at,completed,xp_earned')
-      .eq('player_id', currentPlayer.id)
-      .eq('completed', true)
-      .order('started_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
 
     if (sessionError) {
       warnings.push('No se pudo cargar la última misión completada.')
@@ -280,25 +297,6 @@ export default function PlayerDashboard() {
         attempts.filter((attempt: any) => attempt.correct === true).length
       )
     }
-
-    const { data: stateData, error: stateError } = await supabase
-      .from('player_skill_state')
-      .select(`
-        skill_id,
-        mastery,
-        confidence,
-        difficulty,
-        priority,
-        skills!inner (
-          name,
-          unit_id
-        )
-      `)
-      .eq('player_id', currentPlayer.id)
-      .eq('skills.active', true)
-      .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
-      .order('priority', { ascending: false })
-      .limit(3)
 
     if (stateError) {
       warnings.push('No se pudieron cargar las recomendaciones adaptativas.')

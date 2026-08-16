@@ -8,7 +8,9 @@ Producción: https://level-up-a544.vercel.app
 
 `/login` → selección del jugador → `/player` → `/mission` → 10 respuestas persistidas → cierre de sesión → dashboard → `/parent`.
 
-La aplicación incluye autenticación real, separación por familia y jugador, reanudación de misiones, motor adaptativo, memoria antirrepetición, XP, métricas basadas en intentos y panel familiar.
+La aplicación incluye autenticación real, separación por familia y jugador, reanudación de misiones, motor adaptativo, memoria antirrepetición, XP, métricas basadas en intentos y panel familiar. El currículo activo contiene 15 unidades y 91 habilidades de matemáticas de 1.º de ESO.
+
+El nivel numérico se conserva en la base por compatibilidad, pero no se muestra ni se recalcula: todavía no existe una regla pedagógica aprobada para convertir XP en niveles.
 
 ## Desarrollo local
 
@@ -30,12 +32,20 @@ La base de producción ya está configurada. Los cambios nuevos deben añadirse 
 
 Migraciones versionadas:
 
-- `20260816_harden_attempts_and_abandon_sessions.sql`: unifica y protege el registro atómico de intentos; recupera o abandona sesiones históricas; impide más de una sesión abierta por jugador.
+- `20260816_harden_attempts_and_abandon_sessions.sql`: protege el registro atómico de intentos, abandona sesiones caducadas e impide más de una sesión abierta por jugador.
 - `20260816_harden_legacy_functions.sql`: retira RPC antiguas y restringe helpers internos.
+- `20260816_optimize_rls_and_foreign_keys.sql`: optimiza RLS, completa `WITH CHECK` e indexa claves foráneas.
+- `20260816_preserve_player_level_in_attempt_rpc.sql`: elimina la fórmula no validada de 500 XP por nivel y endurece la RPC de intentos.
+- `20260816_harden_setup_parent_family_rpc.sql`: valida el alta familiar, limita permisos y aísla el `search_path`.
+
+Los avisos de Supabase sobre las dos funciones `SECURITY DEFINER` son intencionados: solo puede ejecutarlas `authenticated` y ambas verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
 ## Comprobaciones antes de publicar
 
-- `npm run build`
+- `npm run lint` (`tsc --noEmit`).
+- `npm run build`.
+- `npm audit`.
 - Recorrido autenticado completo de 10 preguntas.
 - Confirmar persistencia de 10 intentos y cierre de la sesión.
 - Revisar los avisos de seguridad y rendimiento de Supabase después de cualquier DDL.
+- Confirmar el estado del deployment de Vercel asociado al commit.
