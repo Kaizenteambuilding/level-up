@@ -207,6 +207,14 @@ export default function CurriculumDailySession() {
       x ^= x >>> 16; x = Math.imul(x, 0x7feb352d) >>> 0; x ^= x >>> 15; x = Math.imul(x, 0x846ca68b) >>> 0; x ^= x >>> 16
       return x >>> 0
     }
+    const skillSalt = (skillId: string) => {
+      let hash = 2166136261
+      for (let i = 0; i < skillId.length; i++) {
+        hash ^= skillId.charCodeAt(i)
+        hash = Math.imul(hash, 16777619)
+      }
+      return hash >>> 0
+    }
     const pickFrom = (items: SkillRow[], salt: number) => items.length ? items[mixedSeed(salt) % items.length] : null
     const scored = skills.map((skill) => {
       const state = states[skill.id]
@@ -220,16 +228,17 @@ export default function CurriculumDailySession() {
       const recencyBonus = Math.min(14, daysSincePractice * 1.5)
       const recentUnitPenalty = recentUnits[0] === skill.unit_id ? 3 : recentUnits.slice(0, 3).includes(skill.unit_id) ? 1 : 0
       const recentSkillPenalty = recentSkills.has(skill.id) ? 1000 : 0
-      return { skill, state, score: needScore + unseenBonus + recencyBonus - recentUnitPenalty - recentSkillPenalty, lastPracticed, mastery }
+      const tieBreaker = mixedSeed(skillSalt(skill.id))
+      return { skill, state, score: needScore + unseenBonus + recencyBonus - recentUnitPenalty - recentSkillPenalty, lastPracticed, mastery, tieBreaker }
     })
     const mode = currentIndex % 10
-    if (mode <= 5) return pickFrom([...scored].sort((a,b) => b.score-a.score).slice(0, Math.min(6, scored.length)).map(i=>i.skill), 0x13579bdf) ?? skills[0]
-    if (mode <= 7) return pickFrom([...scored].sort((a,b) => a.lastPracticed !== b.lastPracticed ? a.lastPracticed-b.lastPracticed : b.score-a.score).slice(0, Math.min(10, scored.length)).map(i=>i.skill), 0x2468ace0) ?? skills[0]
+    if (mode <= 5) return pickFrom([...scored].sort((a,b) => b.score-a.score || b.tieBreaker-a.tieBreaker).slice(0, Math.min(6, scored.length)).map(i=>i.skill), 0x13579bdf) ?? skills[0]
+    if (mode <= 7) return pickFrom([...scored].sort((a,b) => a.lastPracticed !== b.lastPracticed ? a.lastPracticed-b.lastPracticed : b.score-a.score || b.tieBreaker-a.tieBreaker).slice(0, Math.min(10, scored.length)).map(i=>i.skill), 0x2468ace0) ?? skills[0]
     if (mode === 8) {
-      const maintenance = scored.filter(i=>i.state && i.mastery>=70).sort((a,b)=>a.lastPracticed!==b.lastPracticed?a.lastPracticed-b.lastPracticed:b.score-a.score).slice(0,8).map(i=>i.skill)
+      const maintenance = scored.filter(i=>i.state && i.mastery>=70).sort((a,b)=>a.lastPracticed!==b.lastPracticed?a.lastPracticed-b.lastPracticed:b.score-a.score || b.tieBreaker-a.tieBreaker).slice(0,8).map(i=>i.skill)
       if (maintenance.length) return pickFrom(maintenance, 0x55aa55aa) ?? skills[0]
     }
-    return pickFrom([...scored].sort((a,b)=>b.score-a.score).slice(0,Math.min(24,scored.length)).map(i=>i.skill),0xa5a5a5a5) ?? skills[0]
+    return pickFrom([...scored].sort((a,b)=>b.score-a.score || b.tieBreaker-a.tieBreaker).slice(0,Math.min(24,scored.length)).map(i=>i.skill),0xa5a5a5a5) ?? skills[0]
   }
 
   useEffect(() => {
