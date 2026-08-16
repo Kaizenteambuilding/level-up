@@ -27,7 +27,6 @@ type SkillState = {
 
 const ACTIVE_CURRICULUM_UNITS = ['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13','M14','M15']
 const SESSION_LENGTH = 10
-const RESUME_WINDOW_MS = 24 * 60 * 60 * 1000
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -94,14 +93,27 @@ export default function CurriculumDailySession() {
       if (!supabase) { setLoadError('Supabase no está configurado.'); setLoading(false); return }
 
       if (!forcedSkillId) {
-        const resumeSince = new Date(Date.now() - RESUME_WINDOW_MS).toISOString()
-        const { data: openSession, error: openSessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').select('id,started_at').eq('player_id', id).eq('mode', 'daily').eq('completed', false).is('ended_at', null).gte('started_at', resumeSince).order('started_at', { ascending: false }).limit(1).maybeSingle())
-        if (openSessionError) { setLoadError(userFacingError(openSessionError, 'No se pudo revisar la misión anterior.')); setLoading(false); return }
-        if (openSession) {
-          const { data: previousAttempts, error: attemptsError } = await retryJwtFuture(async () => await supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,diagnostic_tags').eq('session_id', openSession.id).order('created_at', { ascending: true }))
-          if (attemptsError) { setLoadError(userFacingError(attemptsError, 'No se pudo recuperar la misión anterior.')); setLoading(false); return }
-          const attempts = previousAttempts ?? []
-          setSessionId(openSession.id)
+        const { data: openedSession, error: openSessionError } = await retryJwtFuture(async () =>
+          await supabase.rpc('open_levelup_session', { p_player_id: id })
+        )
+        if (openSessionError) { setLoadError(userFacingError(openSessionError, 'No se pudo abrir la misión.')); setLoading(false); return }
+
+        const openedSessionId = String((openedSession as { session_id?: string } | null)?.session_id ?? '')
+        if (!openedSessionId) { setLoadError('No se pudo confirmar la misión abierta.'); setLoading(false); return }
+        setSessionId(openedSessionId)
+
+        const { data: previousAttempts, error: attemptsError } = await retryJwtFuture(async () =>
+          await supabase
+            .from('attempts')
+            .select('correct,xp_awarded,skill_id,prompt_snapshot,diagnostic_tags')
+            .eq('session_id', openedSessionId)
+            .order('created_at', { ascending: true })
+            .order('id', { ascending: true })
+        )
+        if (attemptsError) { setLoadError(userFacingError(attemptsError, 'No se pudo recuperar la misión.')); setLoading(false); return }
+
+        const attempts = previousAttempts ?? []
+        if (attempts.length > 0) {
           setIndex(Math.min(SESSION_LENGTH, attempts.length))
           setCorrect(attempts.filter((attempt: any) => attempt.correct === true).length)
           setXp(attempts.reduce((sum: number, attempt: any) => sum + Number(attempt.xp_awarded ?? 0), 0))
@@ -160,9 +172,6 @@ export default function CurriculumDailySession() {
             .filter((family: string, index: number, families: string[]) => families.indexOf(family) === index)
             .slice(0, 9)
 
-          const { data: sessionData, error: sessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').insert({ player_id: id, mode: 'daily', phase: 'warmup' }).select('id').single())
-          if (sessionError) { setLoadError(userFacingError(sessionError, 'No se pudo crear la misión.')); setLoading(false); return }
-          setSessionId(sessionData.id)
         }
       }
 

@@ -42,8 +42,9 @@ Migraciones versionadas:
 - `20260816_mark_unverified_legacy_sessions.sql`: conserva pero aparta de las métricas las sesiones históricas que no tienen intentos verificables.
 - `20260816_prevent_duplicate_session_attempts.sql`: impide respuestas duplicadas y aplica invariantes a todos los intentos nuevos.
 - `20260816_require_family_setup_rpc.sql`: impide crear o reasignar relaciones familiares directamente y obliga a utilizar la RPC atómica de alta.
+- `20260816_open_mission_atomically.sql`: abre o recupera una única misión mediante RPC y serializa accesos simultáneos del mismo jugador.
 
-Los avisos de Supabase sobre las tres funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
+Los avisos de Supabase sobre las cuatro funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `open_levelup_session`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
 ## Comprobaciones antes de publicar
 
