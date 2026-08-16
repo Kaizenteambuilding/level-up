@@ -302,6 +302,12 @@ begin
 end;
 $function$;
 
+-- This helper is internal to the trigger and must not be callable through the API.
+revoke all on function public.abandon_expired_levelup_sessions_on_insert()
+  from public, anon, authenticated;
+grant execute on function public.abandon_expired_levelup_sessions_on_insert()
+  to service_role;
+
 drop trigger if exists abandon_expired_levelup_sessions_before_insert
   on public.study_sessions;
 create trigger abandon_expired_levelup_sessions_before_insert
