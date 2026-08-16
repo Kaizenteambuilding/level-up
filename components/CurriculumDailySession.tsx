@@ -63,6 +63,7 @@ export default function CurriculumDailySession() {
   const [feedback, setFeedback] = useState('')
   const [xp, setXp] = useState(0)
   const [correct, setCorrect] = useState(0)
+  const [testAttempts, setTestAttempts] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [closing, setClosing] = useState(false)
@@ -294,6 +295,14 @@ export default function CurriculumDailySession() {
     setAnswered(true)
     const ok = optionIndex === question.answerIndex
     const responseMs = Math.max(1, Date.now() - questionStarted.current)
+
+    if (testMode) {
+      setTestAttempts((value) => value + 1)
+      if (ok) setCorrect((value) => value + 1)
+      setFeedback(ok ? '✓ Correcto · modo prueba, sin guardar progreso' : '↻ Incorrecto · modo prueba, sin guardar progreso')
+      return
+    }
+
     const supabase = createSupabaseBrowserClient()
     if (!supabase) {
       setFeedback('No se pudo conectar. Inténtalo de nuevo.')
@@ -360,6 +369,6 @@ export default function CurriculumDailySession() {
       <div className="answers">{question.options.map((option,i)=><button key={i} className="answer" disabled={answered} onClick={()=>submit(i)}>{String.fromCharCode(65+i)} · {option}</button>)}</div>
       {feedback && <><div className="metric" style={{ marginTop:16 }}><b>{feedback}</b></div><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button className="btn primary" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
     </section>
-    <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testMode ? answered ? 1 : 0 : index+(answered?1:0)}</b><p className="muted">aciertos</p></div></div></section>
+    <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testMode ? testAttempts : index+(answered?1:0)}</b><p className="muted">aciertos</p></div></div></section>
   </>
 }
