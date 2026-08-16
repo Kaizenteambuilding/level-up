@@ -327,6 +327,7 @@ export default function Parent() {
     .filter(
       (skill) =>
         Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0 &&
+        Number(skill.mastery) >= 70 &&
         Number(skill.confidence) >= 60
     )
     .sort(
