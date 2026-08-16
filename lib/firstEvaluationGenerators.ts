@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 116881)
-Total output lines: 12084
-
 export type GeneratedQuestion = {
   skillId: string
   label: string
@@ -7344,7 +7341,1275 @@ if (key === 'quadrilateral_types') {
   if (d === 4) {
     const family = ri(0, 4)
 
-    if (f…16881 tokens truncated…espondiente'],`El área necesita base y altura perpendicular; otro lado no determina necesariamente la altura.`,['area_triangulo','razonamiento','family:m12s03_d4_dato'])
+    if (family === 0) return mc(skill, d, seed,
+      '¿Qué condición basta por sí sola para asegurar que un paralelogramo es un rectángulo?',
+      'Uno de sus ángulos es recto', ['Dos lados consecutivos son distintos', 'Sus lados opuestos son paralelos', 'Tiene dos diagonales'],
+      'En un paralelogramo, si un ángulo es de 90°, los consecutivos también lo son y los cuatro resultan rectos.', ['cuadrilateros', 'family:sufficient_rectangle'])
+
+    if (family === 1) return mc(skill, d, seed,
+      '¿Qué condición basta por sí sola para asegurar que un rectángulo es un cuadrado?',
+      'Dos lados consecutivos tienen la misma longitud', ['Sus diagonales son iguales', 'Tiene cuatro ángulos rectos', 'Sus lados opuestos son paralelos'],
+      'En un rectángulo los lados opuestos ya son iguales; si dos consecutivos también lo son, los cuatro lados quedan iguales.', ['cuadrilateros', 'family:sufficient_square'])
+
+    if (family === 2) {
+      const x = ri(20, 55)
+      const a = 2*x, b = 180-a
+      return mc(skill, d, seed,
+        `En un paralelogramo, dos ángulos consecutivos miden 2x y ${b}°. ¿Cuánto vale x?`, `${x}°`,
+        [`${x+10}°`, `${Math.max(5,x-10)}°`, `${90-x}°`],
+        `Los consecutivos suman 180°: 2x+${b}=180, por lo que 2x=${180-b} y x=${x}.`, ['cuadrilateros', 'family:solve_x_parallelogram'])
+    }
+
+    if (family === 3) return mc(skill, d, seed,
+      'Un alumno afirma: «Si un cuadrilátero tiene cuatro lados iguales, entonces es un cuadrado». ¿Cuál es el mejor análisis?',
+      'Es falso: puede ser un rombo sin ángulos rectos', ['Es verdadero por definición', 'Es falso porque un cuadrado no tiene lados iguales', 'Es verdadero solo si tiene exactamente un par de lados paralelos'],
+      'Tener cuatro lados iguales no obliga a que los cuatro ángulos sean de 90°; un rombo es un contraejemplo.', ['cuadrilateros', 'family:error_analysis_equal_sides'])
+
+    return mc(skill, d, seed,
+      'Ordena de más específica a más general la clasificación de una figura con cuatro lados iguales y cuatro ángulos rectos.',
+      'Cuadrado → rectángulo/paralelogramo y rombo → cuadrilátero',
+      ['Cuadrilátero → cuadrado → triángulo', 'Trapecio → rombo → cuadrado', 'Rectángulo → triángulo → cuadrado'],
+      'El cuadrado pertenece a varias clases más generales: es rectángulo, rombo, paralelogramo y cuadrilátero.', ['cuadrilateros', 'family:classification_hierarchy'])
+  }
+
+  const family = ri(0, 4)
+
+  if (family === 0) {
+    const x = ri(20, 40)
+    const angles = [x, 2*x, 3*x, 360-6*x]
+    return mc(skill, d, seed,
+      `Tres ángulos de un cuadrilátero miden x, 2x y 3x. El cuarto mide ${angles[3]}°. ¿Cuánto vale x?`, `${x}°`,
+      [`${x+5}°`, `${Math.max(5,x-5)}°`, `${2*x}°`],
+      `x+2x+3x+${angles[3]}=360; entonces 6x=${360-angles[3]} y x=${x}.`, ['cuadrilateros', 'family:multi_step_angle_equation'])
+  }
+
+  if (family === 1) return mc(skill, d, seed,
+    'Un cuadrilátero tiene diagonales de la misma longitud. ¿Podemos concluir necesariamente que es un rectángulo?',
+    'No; esa propiedad por sí sola no basta', ['Sí, siempre', 'Sí, y además tiene que ser un cuadrado', 'No, porque ningún rectángulo tiene diagonales iguales'],
+    'La igualdad de las diagonales aparece en los rectángulos, pero por sí sola no caracteriza a todos los cuadriláteros.', ['cuadrilateros', 'family:converse_diagonals'])
+
+  if (family === 2) {
+    const k = ri(15, 30)
+    const angles = [2*k, 3*k, 2*k, 3*k]
+    return mc(skill, d, seed,
+      `Los ángulos de un paralelogramo están en la razón 2:3:2:3. ¿Cuánto mide el ángulo menor?`, `${2*36}°`,
+      ['60°', '90°', '108°'],
+      'Hay 10 partes en total y suman 360°, así que cada parte vale 36°. El ángulo menor mide 2×36°=72°.', ['cuadrilateros', 'family:angle_ratio'])
+  }
+
+  if (family === 3) return mc(skill, d, seed,
+    'Se sabe que una figura es a la vez rectángulo y rombo. ¿Qué se puede concluir necesariamente?',
+    'Es un cuadrado', ['Es un trapecio con un solo par de lados paralelos', 'No puede existir', 'Tiene algún ángulo distinto de 90°'],
+    'Ser rectángulo aporta cuatro ángulos rectos y ser rombo aporta cuatro lados iguales; juntas son las propiedades de un cuadrado.', ['cuadrilateros', 'family:intersection_classes'])
+
+  return mc(skill, d, seed,
+    '¿Cuál es el contraejemplo más directo a la afirmación «todo paralelogramo con lados opuestos iguales es un rectángulo»?',
+    'Un paralelogramo oblicuo sin ángulos rectos', ['Un cuadrado', 'Un rectángulo', 'Un triángulo rectángulo'],
+    'Todo paralelogramo ya tiene lados opuestos iguales; uno oblicuo muestra que esa propiedad no obliga a tener ángulos rectos.', ['cuadrilateros', 'family:counterexample_parallelogram'])
+}
+
+if (key === 'circle_elements') {
+  // En modo prueba la semilla avanza con un LCG. Sus 3 bits bajos recorren
+  // los 8 valores antes de repetirse, así que esta selección evita quedarse
+  // atrapado en una sola familia al pulsar "Generar otra".
+  const family = (seed >>> 0) & 7
+
+  if (d === 1) {
+    if (family === 0) return mc(skill, d, seed,
+      'El segmento que une el centro de una circunferencia con uno de sus puntos se llama...',
+      'Radio', ['Diámetro', 'Cuerda', 'Arco'],
+      'El radio une el centro con un punto de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d1_radius'])
+
+    if (family === 1) return mc(skill, d, seed,
+      '¿Cómo se llama el segmento que une dos puntos de una circunferencia y pasa por el centro?',
+      'Diámetro', ['Radio', 'Arco', 'Tangente'],
+      'Un diámetro es una cuerda que pasa por el centro.',
+      ['circunferencia', 'elementos', 'family:circle_d1_diameter'])
+
+    if (family === 2) return mc(skill, d, seed,
+      'Un segmento une dos puntos de una circunferencia, pero no tiene por qué pasar por el centro. ¿Qué es?',
+      'Cuerda', ['Radio', 'Diámetro', 'Arco'],
+      'Cualquier segmento con extremos en la circunferencia es una cuerda.',
+      ['circunferencia', 'elementos', 'family:circle_d1_chord'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Una parte curva de la circunferencia comprendida entre dos puntos se llama...',
+      'Arco', ['Radio', 'Cuerda', 'Centro'],
+      'Un arco es una porción de la propia circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d1_arc'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Qué punto está a la misma distancia de todos los puntos de una circunferencia?',
+      'El centro', ['Un extremo de un diámetro', 'Un punto cualquiera del círculo', 'El punto medio de cualquier arco'],
+      'El centro es el punto equidistante de todos los puntos de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d1_center'])
+
+    if (family === 5) {
+      const radius = ri(2, 10)
+      return mc(skill, d, seed,
+        `Un círculo tiene radio de ${radius} cm. ¿Cuánto mide su diámetro?`,
+        `${radius * 2} cm`, [`${radius} cm`, `${radius + 2} cm`, `${radius * 3} cm`],
+        `El diámetro mide el doble que el radio: ${radius}×2=${radius * 2} cm.`,
+        ['circunferencia', 'radio_diametro', 'family:circle_d1_double'])
+    }
+
+    if (family === 6) return mc(skill, d, seed,
+      '¿Cuál de estos elementos tiene uno de sus extremos en el centro y el otro en la circunferencia?',
+      'Un radio', ['Una cuerda', 'Un arco', 'Una secante'],
+      'Esa es exactamente la definición de radio.',
+      ['circunferencia', 'elementos', 'family:circle_d1_endpoint'])
+
+    return mc(skill, d, seed,
+      '¿Cuál de estas afirmaciones es correcta?',
+      'Un diámetro está formado por dos radios alineados',
+      ['Un radio mide el doble que un diámetro', 'Toda cuerda pasa por el centro', 'Un arco es un segmento recto'],
+      'El centro divide cualquier diámetro en dos radios iguales.',
+      ['circunferencia', 'elementos', 'family:circle_d1_two_radii'])
+  }
+
+  if (d === 2) {
+    if (family === 0) {
+      const radius = ri(3, 15)
+      return mc(skill, d, seed,
+        `El radio de una circunferencia mide ${radius} cm. ¿Cuánto mide su diámetro?`,
+        `${radius * 2} cm`, [`${radius} cm`, `${radius + 2} cm`, `${radius * 4} cm`],
+        `Diámetro = 2×radio = ${radius * 2} cm.`,
+        ['circunferencia', 'radio_diametro', 'family:circle_d2_radius_to_diameter'])
+    }
+
+    if (family === 1) {
+      const radius = ri(3, 15)
+      const diameter = radius * 2
+      return mc(skill, d, seed,
+        `Una circunferencia tiene ${diameter} cm de diámetro. ¿Cuál es su radio?`,
+        `${radius} cm`, [`${diameter} cm`, `${diameter * 2} cm`, `${radius + 2} cm`],
+        `El radio es la mitad del diámetro: ${diameter}÷2=${radius} cm.`,
+        ['circunferencia', 'radio_diametro', 'family:circle_d2_diameter_to_radius'])
+    }
+
+    if (family === 2) return mc(skill, d, seed,
+      '¿Cuál de estos elementos es siempre también una cuerda?',
+      'El diámetro', ['El radio', 'El arco', 'El centro'],
+      'Todo diámetro une dos puntos de la circunferencia, así que es una cuerda especial.',
+      ['circunferencia', 'propiedades', 'family:circle_d2_diameter_chord'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Una cuerda pasa por el centro de la circunferencia. ¿Cómo se llama entonces?',
+      'Diámetro', ['Radio', 'Arco', 'Tangente'],
+      'La cuerda que pasa por el centro es el diámetro.',
+      ['circunferencia', 'propiedades', 'family:circle_d2_center_chord'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Qué diferencia hay entre un círculo y una circunferencia?',
+      'La circunferencia es el borde y el círculo incluye también el interior',
+      ['Son exactamente lo mismo', 'El círculo es solo el borde', 'La circunferencia incluye el interior y el círculo no'],
+      'La circunferencia es una línea curva cerrada; el círculo es la región interior junto con su borde.',
+      ['circunferencia', 'conceptos', 'family:circle_d2_circle_vs_circumference'])
+
+    if (family === 5) return mc(skill, d, seed,
+      'Si A y B son los extremos de un diámetro y O es el centro, ¿qué relación hay entre OA y OB?',
+      'Tienen la misma longitud', ['OA mide el doble que OB', 'OB mide el doble que OA', 'No se puede comparar'],
+      'OA y OB son radios de la misma circunferencia.',
+      ['circunferencia', 'radio_diametro', 'family:circle_d2_equal_radii'])
+
+    if (family === 6) return mc(skill, d, seed,
+      '¿Cuál de estos segmentos puede ser una cuerda sin ser un diámetro?',
+      'Uno que une dos puntos de la circunferencia sin pasar por el centro',
+      ['Uno que une el centro con la circunferencia', 'Uno que toca la circunferencia en un único punto desde fuera', 'Un arco de la circunferencia'],
+      'Una cuerda no necesita pasar por el centro; si pasa, sería diámetro.',
+      ['circunferencia', 'cuerda', 'family:circle_d2_non_diameter_chord'])
+
+    return mc(skill, d, seed,
+      'Un diámetro divide una circunferencia en dos arcos iguales. ¿Cómo se llama cada uno de esos arcos?',
+      'Semicircunferencia', ['Radio', 'Sector', 'Cuerda'],
+      'Cada mitad de una circunferencia determinada por un diámetro es una semicircunferencia.',
+      ['circunferencia', 'arcos', 'family:circle_d2_semicircle'])
+  }
+
+  if (d === 3) {
+    if (family === 0) {
+      const r = ri(4, 12)
+      const d2 = r * 2
+      return mc(skill, d, seed,
+        `El segmento AB es un diámetro de ${d2} cm y O es el centro. ¿Cuánto mide AO?`,
+        `${r} cm`, [`${d2} cm`, `${r * 2 + 2} cm`, `${Math.max(1, r - 2)} cm`],
+        `AO es un radio, así que mide la mitad del diámetro: ${r} cm.`,
+        ['circunferencia', 'razonamiento', 'family:circle_d3_half_diameter'])
+    }
+
+    if (family === 1) return mc(skill, d, seed,
+      '¿Cuál de estas afirmaciones es siempre cierta?',
+      'Todos los radios de una misma circunferencia miden lo mismo',
+      ['Todas las cuerdas miden lo mismo', 'Todo radio es un diámetro', 'Todo arco es una semicircunferencia'],
+      'La igualdad de los radios es una propiedad básica de la circunferencia.',
+      ['circunferencia', 'propiedades', 'family:circle_d3_equal_radii'])
+
+    if (family === 2) return mc(skill, d, seed,
+      'Una recta toca una circunferencia en un único punto. ¿Cómo se llama esa recta?',
+      'Tangente', ['Secante', 'Diámetro', 'Cuerda'],
+      'Una tangente tiene exactamente un punto común con la circunferencia.',
+      ['circunferencia', 'rectas', 'family:circle_d3_tangent'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Una recta corta una circunferencia en dos puntos distintos. ¿Cómo se llama?',
+      'Secante', ['Tangente', 'Radio', 'Arco'],
+      'Una secante atraviesa la circunferencia y tiene dos puntos de corte.',
+      ['circunferencia', 'rectas', 'family:circle_d3_secant'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Qué afirmación distingue correctamente una tangente de una secante?',
+      'La tangente tiene un punto común con la circunferencia y la secante tiene dos',
+      ['La tangente tiene dos puntos comunes y la secante uno', 'Ambas tienen siempre dos puntos comunes', 'Ninguna toca la circunferencia'],
+      'La cantidad de puntos de intersección permite distinguirlas.',
+      ['circunferencia', 'rectas', 'family:circle_d3_tangent_vs_secant'])
+
+    if (family === 5) return mc(skill, d, seed,
+      'Si una cuerda no pasa por el centro, ¿podemos afirmar que es un diámetro?',
+      'No', ['Sí, siempre', 'Solo si es corta', 'Solo si sus extremos están dentro del círculo'],
+      'Para ser diámetro, una cuerda debe pasar necesariamente por el centro.',
+      ['circunferencia', 'razonamiento', 'family:circle_d3_not_diameter'])
+
+    if (family === 6) return mc(skill, d, seed,
+      'Un punto P está en la circunferencia y O es el centro. ¿Qué tipo de segmento es OP?',
+      'Radio', ['Diámetro', 'Cuerda que no pasa por el centro', 'Tangente'],
+      'OP une el centro con un punto de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d3_point_radius'])
+
+    return mc(skill, d, seed,
+      '¿Cuál de estos elementos pertenece a la circunferencia como línea curva y no es un segmento recto?',
+      'Un arco', ['Un radio', 'Un diámetro', 'Una cuerda'],
+      'El arco es una porción curva de la circunferencia.',
+      ['circunferencia', 'elementos', 'family:circle_d3_arc_not_segment'])
+  }
+
+  if (d === 4) {
+    if (family === 0) return mc(skill, d, seed,
+      '¿Cuál de estas afirmaciones es siempre cierta?',
+      'Todo diámetro es una cuerda, pero no toda cuerda es un diámetro',
+      ['Toda cuerda es un diámetro', 'Todo radio es una cuerda', 'Todo diámetro es un arco'],
+      'El diámetro es una cuerda especial que pasa por el centro.',
+      ['circunferencia', 'razonamiento', 'family:circle_d4_inclusion'])
+
+    if (family === 1) return mc(skill, d, seed,
+      'Una tangente toca la circunferencia en P y OP es un radio. ¿Qué relación forman la tangente y OP en P?',
+      'Son perpendiculares', ['Son paralelos', 'Forman siempre 45°', 'Coinciden en la misma recta'],
+      'El radio al punto de tangencia es perpendicular a la tangente.',
+      ['circunferencia', 'tangente', 'family:circle_d4_tangent_perpendicular'])
+
+    if (family === 2) return mc(skill, d, seed,
+      'Desde el centro O se traza un segmento perpendicular a una cuerda AB. ¿Qué ocurre con AB?',
+      'Queda dividida en dos partes iguales', ['Se convierte en un diámetro necesariamente', 'Deja de ser una cuerda', 'Su longitud se duplica'],
+      'La perpendicular trazada desde el centro a una cuerda la biseca.',
+      ['circunferencia', 'cuerdas', 'family:circle_d4_perpendicular_bisects'])
+
+    if (family === 3) return mc(skill, d, seed,
+      'Dos cuerdas de una misma circunferencia tienen la misma longitud. ¿Qué puede decirse de su distancia al centro?',
+      'Es la misma', ['La cuerda más alta está siempre más cerca', 'Una debe pasar por el centro', 'No existe ninguna relación'],
+      'Cuerdas iguales de una misma circunferencia están a igual distancia del centro.',
+      ['circunferencia', 'cuerdas', 'family:circle_d4_equal_chords'])
+
+    if (family === 4) return mc(skill, d, seed,
+      '¿Cuál es la cuerda de mayor longitud que puede trazarse en una circunferencia?',
+      'El diámetro', ['Cualquier radio', 'Una tangente', 'El arco mayor'],
+      'La cuerda máxima es la que pasa por el centro: el diámetro.',
+      ['circunferencia', 'cuerdas', 'family:circle_d4_longest_chord'])
+
+    if (family === 5) return mc(skill, d, seed,
+      'Una recta tiene exactamente dos puntos comunes con una circunferencia. ¿Cuál de estas opciones la describe correctamente?',
+      'Es secante', ['Es tangente', 'Es un radio', 'Es necesariamente un diámetro'],
+      'Una recta secante corta la circunferencia en dos puntos.',
+      ['circunferencia', 'rectas', 'family:circle_d4_two_intersections'])
+
+    if (family === 6) return mc(skill, d, seed,
+      'Una recta es tangente a una circunferencia. ¿Cuántos puntos tienen en común?',
+      '1', ['0', '2', 'Infinitos'],
+      'Por definición, una tangente toca la circunferencia en un único punto.',
+      ['circunferencia', 'rectas', 'family:circle_d4_one_intersection'])
+
+    return mc(skill, d, seed,
+      '¿Qué condición basta para asegurar que una cuerda es un diámetro?',
+      'Que pase por el centro de la circunferencia', ['Que sea horizontal', 'Que mida lo mismo que un radio', 'Que sus extremos estén muy próximos'],
+      'Toda cuerda que pasa por el centro es un diámetro.',
+      ['circunferencia', 'razonamiento', 'family:circle_d4_condition_diameter'])
+  }
+
+  if (family === 0) return mc(skill, d, seed,
+    'Una cuerda pasa exactamente por el centro de una circunferencia. ¿Qué podemos afirmar?',
+    'Esa cuerda es un diámetro', ['Esa cuerda es un radio', 'La cuerda deja de pertenecer a la circunferencia', 'Su longitud es la mitad del radio'],
+    'Una cuerda que pasa por el centro es precisamente un diámetro.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_center_chord'])
+
+  if (family === 1) return mc(skill, d, seed,
+    'Una cuerda AB no pasa por el centro O. Se traza desde O una perpendicular a AB que la corta en M. ¿Qué afirmación es correcta?',
+    'AM y MB tienen la misma longitud', ['AM es siempre el doble de MB', 'M debe coincidir con O', 'AB deja de ser una cuerda'],
+    'La perpendicular desde el centro a una cuerda la divide en dos partes iguales.',
+    ['circunferencia', 'cuerdas', 'family:circle_d5_bisector'])
+
+  if (family === 2) return mc(skill, d, seed,
+    'Una recta t es tangente a una circunferencia en P. Si O es el centro, ¿cuánto mide el ángulo entre OP y t?',
+    '90°', ['45°', '60°', '180°'],
+    'El radio al punto de tangencia es perpendicular a la tangente.',
+    ['circunferencia', 'tangente', 'family:circle_d5_tangent_angle'])
+
+  if (family === 3) return mc(skill, d, seed,
+    'Dos cuerdas de una misma circunferencia están a distinta distancia del centro. ¿Cuál será más larga?',
+    'La que esté más cerca del centro', ['La que esté más lejos del centro', 'Siempre miden lo mismo', 'La que tenga un extremo más alto'],
+    'En una misma circunferencia, las cuerdas más próximas al centro son más largas.',
+    ['circunferencia', 'cuerdas', 'family:circle_d5_chord_distance'])
+
+  if (family === 4) return mc(skill, d, seed,
+    '¿Cuál de estas cadenas de inclusión es correcta?',
+    'Todo diámetro es una cuerda, pero no toda cuerda es un diámetro',
+    ['Todo radio es un diámetro', 'Toda tangente es una secante', 'Todo arco es una cuerda'],
+    'El diámetro pertenece a la familia de las cuerdas, con la condición adicional de pasar por el centro.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_inclusion'])
+
+  if (family === 5) return mc(skill, d, seed,
+    'Una recta corta a una circunferencia en A y B. Si además pasa por el centro O, ¿qué segmento es AB?',
+    'Un diámetro', ['Un radio', 'Una tangente', 'Un arco'],
+    'AB es una cuerda que pasa por el centro, por lo que es un diámetro.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_secant_center'])
+
+  if (family === 6) return mc(skill, d, seed,
+    'Si una cuerda es la más larga de todas las cuerdas posibles de una circunferencia, ¿qué debe cumplir?',
+    'Pasar por el centro', ['Ser tangente', 'Tener la misma longitud que un radio', 'Formar siempre 45° con un radio'],
+    'La cuerda de máxima longitud es el diámetro y, por tanto, pasa por el centro.',
+    ['circunferencia', 'cuerdas', 'family:circle_d5_max_chord'])
+
+  return mc(skill, d, seed,
+    'Se afirma: «Toda recta que toca una circunferencia es tangente». ¿Qué corrección hace precisa la afirmación?',
+    'Debe tocarla en exactamente un punto',
+    ['Debe pasar por el centro', 'Debe cortarla en dos puntos', 'Debe medir lo mismo que el diámetro'],
+    'Una tangente se caracteriza por tener un único punto común con la circunferencia.',
+    ['circunferencia', 'razonamiento', 'family:circle_d5_definition_precision'])
+}
+if (key === 'symmetry') {
+  const family = ri(0, 4)
+  const familyTag = `family:symmetry_d${d}_f${family}`
+
+  if (d === 1) {
+    if (family === 0) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Una línea divide una figura en dos mitades que coinciden exactamente al doblarla. ¿Cómo se llama esa línea?',
+        'Eje de simetría',
+        ['Diagonal', 'Radio', 'Secante'],
+        'Un eje de simetría divide una figura en dos partes que se superponen exactamente.',
+        ['simetria', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuántos ejes de simetría tiene un cuadrado?',
+        '4',
+        ['1', '2', '3'],
+        'El cuadrado tiene dos ejes que pasan por los puntos medios de lados opuestos y dos diagonales: 4 en total.',
+        ['simetria', 'cuadrado', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuántos ejes de simetría tiene un rectángulo que no es cuadrado?',
+        '2',
+        ['1', '3', '4'],
+        'Un rectángulo no cuadrado tiene dos ejes de simetría: uno horizontal y otro vertical por su centro.',
+        ['simetria', 'rectangulo', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuántos ejes de simetría tiene un triángulo equilátero?',
+        '3',
+        ['0', '1', '2'],
+        'Cada vértice y el punto medio del lado opuesto determinan un eje de simetría: hay 3.',
+        ['simetria', 'triangulo_equilatero', familyTag]
+      )
+    }
+
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas figuras tiene infinitos ejes de simetría?',
+      'Círculo',
+      ['Cuadrado', 'Rectángulo', 'Triángulo equilátero'],
+      'Cualquier recta que pase por el centro de un círculo puede actuar como eje de simetría.',
+      ['simetria', 'circulo', familyTag]
+    )
+  }
+
+  if (d === 2) {
+    if (family === 0) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Un triángulo tiene exactamente un eje de simetría. ¿Qué tipo puede ser?',
+        'Isósceles no equilátero',
+        ['Escaleno', 'Equilátero', 'Ningún triángulo'],
+        'Un triángulo isósceles no equilátero tiene un único eje de simetría.',
+        ['simetria', 'triangulos', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuál de estos triángulos no tiene ningún eje de simetría?',
+        'Escaleno',
+        ['Equilátero', 'Isósceles', 'Ninguno'],
+        'Un triángulo escaleno tiene sus tres lados distintos y no posee ejes de simetría.',
+        ['simetria', 'triangulos', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Una figura tiene 4 ejes de simetría y cuatro lados iguales. ¿Qué figura encaja con esa descripción?',
+        'Cuadrado',
+        ['Rectángulo no cuadrado', 'Rombo no cuadrado', 'Trapecio'],
+        'El cuadrado tiene cuatro lados iguales y cuatro ejes de simetría.',
+        ['simetria', 'clasificacion', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      const sides = [5, 6, 8][ri(0, 2)]
+      const names: Record<number, string> = {
+        5: 'pentágono regular',
+        6: 'hexágono regular',
+        8: 'octógono regular',
+      }
+      return mc(
+        skill,
+        d,
+        seed,
+        `¿Cuántos ejes de simetría tiene un ${names[sides]}?`,
+        String(sides),
+        [String(sides - 1), String(sides + 1), String(Math.floor(sides / 2))],
+        `Un polígono regular de ${sides} lados tiene ${sides} ejes de simetría.`,
+        ['simetria', 'poligono_regular', familyTag]
+      )
+    }
+
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Qué afirmación es correcta?',
+      'Un triángulo equilátero tiene más ejes de simetría que un isósceles no equilátero',
+      [
+        'Un triángulo escaleno tiene un eje de simetría',
+        'Un rectángulo no cuadrado tiene cuatro ejes de simetría',
+        'Un círculo tiene exactamente ocho ejes de simetría',
+      ],
+      'El equilátero tiene 3 ejes; un isósceles no equilátero tiene 1.',
+      ['simetria', 'comparacion', familyTag]
+    )
+  }
+
+  if (d === 3) {
+    if (family === 0) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto P = (${x}, ${y}) se refleja respecto del eje Y. ¿Dónde queda P'?`,
+        `(${-x}, ${y})`,
+        [`(${x}, ${-y})`, `(${-x}, ${-y})`, `(${y}, ${x})`],
+        `Reflejar respecto del eje Y cambia el signo de x y mantiene y: (${-x}, ${y}).`,
+        ['simetria', 'coordenadas', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      const x = ri(1, 7)
+      const y = ri(1, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto A = (${-x}, ${y}) se refleja respecto del eje X. ¿Cuáles son las coordenadas de su imagen?`,
+        `(${-x}, ${-y})`,
+        [`(${x}, ${y})`, `(${x}, ${-y})`, `(${-y}, ${-x})`],
+        `Al reflejar respecto del eje X, x se mantiene y cambia el signo de y: (${-x}, ${-y}).`,
+        ['simetria', 'coordenadas', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuál de estas figuras tiene exactamente dos ejes de simetría?',
+        'Rectángulo no cuadrado',
+        ['Triángulo equilátero', 'Cuadrado', 'Triángulo escaleno'],
+        'Un rectángulo no cuadrado tiene exactamente dos ejes de simetría.',
+        ['simetria', 'clasificacion', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Cuál de estas figuras tiene exactamente un eje de simetría?',
+        'Triángulo isósceles no equilátero',
+        ['Cuadrado', 'Círculo', 'Triángulo escaleno'],
+        'Un triángulo isósceles no equilátero tiene un único eje: el que pasa por el vértice principal y el punto medio de la base.',
+        ['simetria', 'clasificacion', familyTag]
+      )
+    }
+
+    const n = [5, 6, 7, 8][ri(0, 3)]
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un polígono regular tiene ${n} ejes de simetría. ¿Cuántos lados tiene?`,
+      String(n),
+      [String(n - 1), String(n + 1), String(n * 2)],
+      `En un polígono regular, el número de ejes de simetría coincide con el número de lados: ${n}.`,
+      ['simetria', 'poligono_regular', 'razonamiento', familyTag]
+    )
+  }
+
+  if (d === 4) {
+    if (family === 0) {
+      const x = ri(-7, 7)
+      const y = ri(-7, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto P = (${x}, ${y}) se refleja primero respecto del eje X y después respecto del eje Y. ¿Dónde termina?`,
+        `(${-x}, ${-y})`,
+        [`(${x}, ${-y})`, `(${-x}, ${y})`, `(${y}, ${x})`],
+        `La primera reflexión cambia y; la segunda cambia x. El resultado es (${-x}, ${-y}).`,
+        ['simetria', 'coordenadas', 'doble_reflexion', familyTag]
+      )
+    }
+
+    if (family === 1) {
+      const x = ri(-7, 7)
+      const y = ri(-7, 7)
+      return mc(
+        skill,
+        d,
+        seed,
+        `El punto Q = (${x}, ${y}) se refleja dos veces seguidas respecto del eje Y. ¿Cuál es el resultado final?`,
+        `(${x}, ${y})`,
+        [`(${-x}, ${y})`, `(${x}, ${-y})`, `(${-x}, ${-y})`],
+        'Dos reflexiones sucesivas respecto del mismo eje devuelven cada punto a su posición inicial.',
+        ['simetria', 'doble_reflexion', familyTag]
+      )
+    }
+
+    if (family === 2) {
+      return mc(
+        skill,
+        d,
+        seed,
+        'Una figura tiene exactamente 3 ejes de simetría. ¿Cuál de estas opciones puede ser?',
+        'Triángulo equilátero',
+        ['Cuadrado', 'Rectángulo no cuadrado', 'Triángulo isósceles no equilátero'],
+        'El triángulo equilátero tiene exactamente tres ejes de simetría.',
+        ['simetria', 'deduccion', familyTag]
+      )
+    }
+
+    if (family === 3) {
+      return mc(
+        skill,
+        d,
+        seed,
+        '¿Qué información permite asegurar que un rectángulo es además un cuadrado usando simetrías?',
+        'Que tiene 4 ejes de simetría',
+        ['Que tiene 2 ejes de simetría', 'Que tiene centro', 'Que tiene diagonales'],
+        'Un rectángulo no cuadrado tiene 2 ejes; si tiene 4, debe ser un cuadrado.',
+        ['simetria', 'razonamiento', familyTag]
+      )
+    }
+
+    return mc(
+      skill,
+      d,
+      seed,
+      'Un polígono regular tiene un número impar de lados. ¿Qué afirmación es cierta sobre sus ejes de simetría?',
+      'Cada eje pasa por un vértice y por el punto medio del lado opuesto',
+      [
+        'Cada eje pasa por dos vértices opuestos',
+        'No tiene ejes de simetría',
+        'Solo tiene un eje de simetría',
+      ],
+      'En un polígono regular con número impar de lados, cada eje une un vértice con el punto medio del lado opuesto.',
+      ['simetria', 'poligono_regular', 'razonamiento', familyTag]
+    )
+  }
+
+  if (family === 0) {
+    const x = ri(-8, 8)
+    const y = ri(-8, 8)
+    return mc(
+      skill,
+      d,
+      seed,
+      `P = (${x}, ${y}) se refleja respecto del eje Y y luego respecto del eje X. ¿Qué transformación única produce el mismo resultado?`,
+      'Una rotación de 180° alrededor del origen',
+      [
+        'Una traslación horizontal',
+        'Una rotación de 90° alrededor del origen',
+        'Una sola reflexión respecto del eje X',
+      ],
+      `Las dos reflexiones llevan P a (${-x}, ${-y}), igual que una rotación de 180° alrededor del origen.`,
+      ['simetria', 'transformaciones', 'dificultad_alta', familyTag]
+    )
+  }
+
+  if (family === 1) {
+    const n = [5, 7, 9][ri(0, 2)]
+    return mc(
+      skill,
+      d,
+      seed,
+      `Un polígono regular tiene ${n} lados. ¿Cuántos ejes de simetría tiene y qué característica comparten?`,
+      `${n}; cada eje pasa por un vértice y el punto medio del lado opuesto`,
+      [
+        `${n - 1}; cada eje pasa por dos vértices`,
+        `${n}; cada eje pasa por dos lados completos`,
+        `1; pasa por el centro`,
+      ],
+      `Al ser regular y tener un número impar de lados, tiene ${n} ejes, cada uno desde un vértice al punto medio del lado opuesto.`,
+      ['simetria', 'poligono_regular', 'dificultad_alta', familyTag]
+    )
+  }
+
+  if (family === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estas afirmaciones es necesariamente verdadera?',
+      'Si una figura tiene un eje de simetría, reflejarla respecto de ese eje no cambia su apariencia',
+      [
+        'Toda figura con centro tiene un eje de simetría',
+        'Toda figura con cuatro lados tiene al menos dos ejes de simetría',
+        'Una figura solo puede tener un número finito de ejes de simetría',
+      ],
+      'La definición de eje de simetría exige que la figura coincida consigo misma después de reflejarse respecto de él.',
+      ['simetria', 'razonamiento', 'dificultad_alta', familyTag]
+    )
+  }
+
+  if (family === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Un cuadrado se deforma manteniendo solo los lados opuestos paralelos y deja de tener lados iguales. ¿Qué figura puede resultar y cuántos ejes de simetría conserva si sus ángulos siguen siendo rectos?',
+      'Un rectángulo no cuadrado, con 2 ejes',
+      [
+        'Un rombo, con 4 ejes',
+        'Un trapecio, con 3 ejes',
+        'Un triángulo, con 1 eje',
+      ],
+      'Si conserva cuatro ángulos rectos pero ya no tiene todos los lados iguales, es un rectángulo no cuadrado, que tiene 2 ejes de simetría.',
+      ['simetria', 'clasificacion', 'dificultad_alta', familyTag]
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Qué dato basta para descartar que una figura sea un cuadrado?',
+    'Que tenga exactamente 2 ejes de simetría',
+    [
+      'Que tenga 4 ejes de simetría',
+      'Que tenga diagonales',
+      'Que tenga cuatro vértices',
+    ],
+    'Todo cuadrado tiene 4 ejes de simetría. Si una figura tiene exactamente 2, no puede ser un cuadrado.',
+    ['simetria', 'contraejemplo', 'dificultad_alta', familyTag]
+  )
+}
+
+if (key === 'solid_figures') {
+  if (d === 1) {
+    const variants = [
+      {
+        prompt: 'Un cuerpo geométrico tiene 6 caras cuadradas iguales. ¿Cuál es?',
+        answer: 'Cubo',
+      },
+      {
+        prompt: 'Un cuerpo tiene dos bases circulares iguales y una superficie lateral curva. ¿Cuál es?',
+        answer: 'Cilindro',
+      },
+      {
+        prompt: 'Un cuerpo tiene una base circular y termina en un vértice. ¿Cuál es?',
+        answer: 'Cono',
+      },
+      {
+        prompt: 'Un cuerpo es completamente redondo y todos sus puntos están a la misma distancia del centro. ¿Cuál es?',
+        answer: 'Esfera',
+      },
+    ]
+
+    const v = variants[ri(0, variants.length - 1)]
+
+    return mc(
+      skill,
+      d,
+      seed,
+      v.prompt,
+      v.answer,
+      ['Cubo', 'Cilindro', 'Cono', 'Esfera'].filter((x) => x !== v.answer),
+      `La descripción corresponde a ${v.answer.toLowerCase()}.`,
+      ['cuerpos_geometricos']
+    )
+  }
+
+  if (d === 2) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Qué cuerpo geométrico puede rodar y además tiene dos bases circulares planas?',
+      'Cilindro',
+      ['Cubo', 'Pirámide', 'Prisma rectangular'],
+      'El cilindro tiene una superficie curva y dos bases circulares.',
+      ['cuerpos_geometricos', 'propiedades']
+    )
+  }
+
+  if (d === 3) {
+    return mc(
+      skill,
+      d,
+      seed,
+      '¿Cuál de estos cuerpos NO tiene vértices?',
+      'Esfera',
+      ['Cubo', 'Pirámide', 'Prisma triangular'],
+      'La esfera no tiene caras planas, aristas ni vértices.',
+      ['cuerpos_geometricos', 'vertices']
+    )
+  }
+
+  if (d === 4) {
+    return mc(
+      skill,
+      d,
+      seed,
+      'Un cuerpo tiene dos bases poligonales iguales y paralelas unidas por caras laterales. ¿Qué familia de cuerpos describe?',
+      'Prismas',
+      ['Pirámides', 'Conos', 'Esferas'],
+      'Los prismas tienen dos bases iguales y paralelas.',
+      ['cuerpos_geometricos', 'prismas']
+    )
+  }
+
+  return mc(
+    skill,
+    d,
+    seed,
+    '¿Qué diferencia esencial existe entre un prisma y una pirámide?',
+    'El prisma tiene dos bases iguales y paralelas; la pirámide tiene una base y un vértice común para las caras laterales',
+    [
+      'El prisma siempre tiene base circular',
+      'La pirámide tiene dos bases iguales y paralelas',
+      'Todos los prismas tienen seis caras cuadradas',
+    ],
+    'La estructura de las bases permite distinguir prismas y pirámides.',
+    ['cuerpos_geometricos', 'razonamiento', 'dificultad_alta']
+  )
+}
+
+// =========================
+// M12 · PERÍMETROS Y ÁREAS
+// =========================
+
+// M12S01 · Perímetro de polígonos
+if (key === 'perimeter') {
+  const family = pickFamily(seed, 5)
+
+  if (d === 1) {
+    if (family === 0) {
+      const side = ri(3, 12)
+      const result = side * 4
+      return mc(skill, d, seed,
+        `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${side * side} cm`, `${side * 2} cm`, `${result + side} cm`],
+        `Sumamos sus cuatro lados: 4 × ${side} = ${result} cm.`,
+        ['perimetro', 'cuadrado', 'family:m12s01_d1_cuadrado'])
+    }
+    if (family === 1) {
+      const a = ri(3, 9)
+      const b = ri(3, 9)
+      const c = ri(3, 9)
+      const result = a + b + c
+      return mc(skill, d, seed,
+        `Un triángulo tiene lados de ${a} cm, ${b} cm y ${c} cm. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${a * b} cm`, `${result + 2} cm`, `${a + b} cm`],
+        `Perímetro = ${a}+${b}+${c}=${result} cm.`,
+        ['perimetro', 'triangulo', 'family:m12s01_d1_triangulo'])
+    }
+    if (family === 2) {
+      const width = ri(3, 10)
+      const height = ri(2, 8)
+      const result = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Un rectángulo mide ${width} cm de largo y ${height} cm de ancho. ¿Cuánto mide todo su borde?`,
+        `${result} cm`,
+        [`${width * height} cm`, `${width + height} cm`, `${result - 2} cm`],
+        `El borde completo es el perímetro: 2×(${width}+${height})=${result} cm.`,
+        ['perimetro', 'rectangulo', 'family:m12s01_d1_rectangulo'])
+    }
+    if (family === 3) {
+      const side = ri(3, 10)
+      const result = side * 5
+      return mc(skill, d, seed,
+        `Un pentágono regular tiene lados de ${side} cm. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${side * 4} cm`, `${side + 5} cm`, `${side * side} cm`],
+        `Tiene cinco lados iguales: 5×${side}=${result} cm.`,
+        ['perimetro', 'poligono_regular', 'family:m12s01_d1_pentagono'])
+    }
+    const side = ri(2, 8)
+    const result = side * 6
+    return mc(skill, d, seed,
+      `Una pieza tiene forma de hexágono regular de lado ${side} cm. ¿Cuánto mide su contorno?`,
+      `${result} cm`,
+      [`${side * 5} cm`, `${side * side} cm`, `${side + 6} cm`],
+      `Un hexágono regular tiene 6 lados iguales: 6×${side}=${result} cm.`,
+      ['perimetro', 'poligono_regular', 'family:m12s01_d1_hexagono'])
+  }
+
+  if (d === 2) {
+    if (family === 0) {
+      const width = ri(4, 14)
+      const height = ri(3, 10)
+      const result = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Calcula el perímetro de un rectángulo de ${width} cm por ${height} cm.`,
+        `${result} cm`,
+        [`${width * height} cm`, `${width + height} cm`, `${2 * width + height} cm`],
+        `P=2(${width}+${height})=${result} cm.`,
+        ['perimetro', 'rectangulo', 'family:m12s01_d2_formula_rectangulo'])
+    }
+    if (family === 1) {
+      const side = ri(3, 11)
+      const n = [5, 6, 8][ri(0, 2)]
+      const result = side * n
+      return mc(skill, d, seed,
+        `Un polígono regular tiene ${n} lados de ${side} cm cada uno. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${side + n} cm`, `${side * (n - 1)} cm`, `${side * side} cm`],
+        `Perímetro = número de lados × longitud del lado = ${n}×${side}=${result} cm.`,
+        ['perimetro', 'poligono_regular', 'family:m12s01_d2_regular'])
+    }
+    if (family === 2) {
+      const a = ri(4, 10)
+      const b = ri(4, 10)
+      const c = ri(4, 10)
+      const d4 = ri(4, 10)
+      const result = a + b + c + d4
+      return mc(skill, d, seed,
+        `Un cuadrilátero tiene lados de ${a}, ${b}, ${c} y ${d4} cm. ¿Cuál es su perímetro?`,
+        `${result} cm`,
+        [`${a + b + c} cm`, `${a * b} cm`, `${result + 4} cm`],
+        `Sumamos los cuatro lados: ${a}+${b}+${c}+${d4}=${result} cm.`,
+        ['perimetro', 'cuadrilatero', 'family:m12s01_d2_irregular'])
+    }
+    if (family === 3) {
+      const width = ri(5, 15)
+      const height = ri(3, 10)
+      const result = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Una pista rectangular mide ${width} m de largo y ${height} m de ancho. ¿Cuántos metros se recorren al dar una vuelta completa por el borde?`,
+        `${result} m`,
+        [`${width * height} m`, `${width + height} m`, `${2 * width} m`],
+        `Una vuelta completa es el perímetro: ${result} m.`,
+        ['perimetro', 'contexto', 'family:m12s01_d2_pista'])
+    }
+    const side = ri(4, 12)
+    const perimeter = side * 4
+    return mc(skill, d, seed,
+      `Una cuerda de ${perimeter} cm rodea exactamente un marco cuadrado. ¿Cuánto mide cada lado?`,
+      `${side} cm`,
+      [`${perimeter / 2} cm`, `${side * 2} cm`, `${side + 4} cm`],
+      `Cada lado es la cuarta parte del perímetro: ${perimeter}÷4=${side} cm.`,
+      ['perimetro', 'inverso', 'family:m12s01_d2_cuadrado_inverso'])
+  }
+
+  if (d === 3) {
+    if (family === 0) {
+      const a = ri(4, 10)
+      const b = ri(4, 10)
+      const c = ri(4, 10)
+      const result = a + b + c
+      return mc(skill, d, seed,
+        `Un terreno triangular tiene lados de ${a} m, ${b} m y ${c} m. ¿Cuántos metros de valla hacen falta para rodearlo?`,
+        `${result} m`,
+        [`${a * b} m`, `${result + c} m`, `${a + b} m`],
+        `Hay que sumar los tres lados: ${result} m.`,
+        ['perimetro', 'problema', 'family:m12s01_d3_valla'])
+    }
+    if (family === 1) {
+      const side = ri(4, 10)
+      const n = [6, 8, 10][ri(0, 2)]
+      const perimeter = side * n
+      return mc(skill, d, seed,
+        `Un polígono regular tiene perímetro ${perimeter} cm y ${n} lados. ¿Cuánto mide cada lado?`,
+        `${side} cm`,
+        [`${perimeter - n} cm`, `${side * 2} cm`, `${perimeter / (n - 1)} cm`],
+        `Lado = perímetro ÷ número de lados = ${perimeter}÷${n}=${side} cm.`,
+        ['perimetro', 'inverso', 'family:m12s01_d3_regular_inverso'])
+    }
+    if (family === 2) {
+      const width = ri(6, 16)
+      const height = ri(4, 12)
+      const laps = ri(2, 5)
+      const p = 2 * (width + height)
+      const result = p * laps
+      return mc(skill, d, seed,
+        `Una pista rectangular mide ${width} m por ${height} m. Si das ${laps} vueltas completas, ¿qué distancia recorres?`,
+        `${result} m`,
+        [`${p} m`, `${width * height * laps} m`, `${result - p} m`],
+        `Una vuelta mide ${p} m. ${laps} vueltas: ${p}×${laps}=${result} m.`,
+        ['perimetro', 'varios_pasos', 'family:m12s01_d3_vueltas'])
+    }
+    if (family === 3) {
+      const width = ri(6, 14)
+      const height = ri(4, 10)
+      const gap = ri(1, 3)
+      const p = 2 * (width + height)
+      const result = p - gap
+      return mc(skill, d, seed,
+        `Un jardín rectangular de ${width} m por ${height} m se valla dejando una puerta de ${gap} m sin vallar. ¿Cuántos metros de valla se necesitan?`,
+        `${result} m`,
+        [`${p} m`, `${width * height - gap} m`, `${result + gap * 2} m`],
+        `Perímetro ${p} m; restamos la puerta de ${gap} m: ${result} m.`,
+        ['perimetro', 'contexto', 'family:m12s01_d3_puerta'])
+    }
+    const side = ri(5, 12)
+    const triangleP = side * 3
+    const squareSide = ri(4, 10)
+    const squareP = squareSide * 4
+    const answer = triangleP > squareP ? 'El triángulo' : triangleP < squareP ? 'El cuadrado' : 'Tienen el mismo perímetro'
+    return mc(skill, d, seed,
+      `Compara un triángulo equilátero de lado ${side} cm con un cuadrado de lado ${squareSide} cm. ¿Cuál tiene mayor perímetro?`,
+      answer,
+      ['El triángulo', 'El cuadrado', 'Tienen el mismo perímetro', 'No se puede determinar con esos datos'].filter(x => x !== answer),
+      `Triángulo: ${triangleP} cm. Cuadrado: ${squareP} cm.`,
+      ['perimetro', 'comparacion', 'family:m12s01_d3_comparar'])
+  }
+
+  if (d === 4) {
+    if (family === 0) {
+      const width = ri(5, 14)
+      const height = ri(3, 10)
+      const perimeter = 2 * (width + height)
+      return mc(skill, d, seed,
+        `Un rectángulo tiene ${width} cm de largo y un perímetro de ${perimeter} cm. ¿Cuánto mide su ancho?`,
+        `${height} cm`,
+        [`${perimeter - width} cm`, `${perimeter / 2} cm`, `${height * 2} cm`],
+        `La semiperímetro es ${perimeter / 2}; ancho = ${perimeter / 2}-${width}=${height} cm.`,
+        ['perimetro', 'medida_desconocida', 'family:m12s01_d4_rectangulo_inverso'])
+    }
+    if (family === 1) {
+      const side = ri(5, 12)
+      const n = [5, 6, 8][ri(0, 2)]
+      const p = side * n
+      const extra = ri(2, 5)
+      return mc(skill, d, seed,
+        `El perímetro de un polígono regular de ${n} lados es ${p} cm. Si cada lado aumenta ${extra} cm, ¿cuál será el nuevo perímetro?`,
+        `${(side + extra) * n} cm`,
+        [`${p + extra} cm`, `${p + extra * 2} cm`, `${p * extra} cm`],
+        `Cada uno de los ${n} lados aumenta ${extra} cm: nuevo perímetro ${(side + extra) * n} cm.`,
+        ['perimetro', 'cambio', 'family:m12s01_d4_cambio_lado'])
+    }
+    if (family === 2) {
+      const width = ri(8, 16)
+      const height = ri(5, 12)
+      const p = 2 * (width + height)
+      const price = ri(2, 6)
+      return mc(skill, d, seed,
+        `Vallar un terreno rectangular de ${width} m por ${height} m cuesta ${price} € por metro. ¿Cuál es el coste total?`,
+        `${p * price} €`,
+        [`${width * height * price} €`, `${p} €`, `${(width + height) * price} €`],
+        `Perímetro ${p} m; coste ${p}×${price}=${p * price} €.`,
+        ['perimetro', 'coste', 'family:m12s01_d4_coste'])
+    }
+    if (family === 3) {
+      const side = ri(4, 10)
+      const p = side * 6
+      const missing = ri(1, side - 1)
+      const result = p - missing
+      return mc(skill, d, seed,
+        `Un hexágono regular de lado ${side} m se rodea con una valla, excepto un acceso de ${missing} m. ¿Cuánta valla se coloca?`,
+        `${result} m`,
+        [`${p} m`, `${p - side} m`, `${result + missing * 2} m`],
+        `Perímetro ${p} m menos acceso ${missing} m = ${result} m.`,
+        ['perimetro', 'regular', 'family:m12s01_d4_acceso'])
+    }
+    const a = ri(6, 14)
+    const b = ri(4, 10)
+    const perimeter = 2 * (a + b)
+    const newA = a + ri(2, 5)
+    const newP = 2 * (newA + b)
+    return mc(skill, d, seed,
+      `Un rectángulo de ${a}×${b} cm tiene perímetro ${perimeter} cm. Si solo el largo pasa a ${newA} cm, ¿cuánto aumenta el perímetro?`,
+      `${newP - perimeter} cm`,
+      [`${newA - a} cm`, `${2 * b} cm`, `${newP} cm`],
+      `Perímetro nuevo ${newP}; aumento ${newP}-${perimeter}=${newP - perimeter} cm.`,
+      ['perimetro', 'razonamiento', 'family:m12s01_d4_variacion'])
+  }
+
+  if (family === 0) {
+    const side = ri(5, 14)
+    const perimeter = side * 4
+    return mc(skill, d, seed,
+      `Una parcela cuadrada necesita ${perimeter} m de valla para cerrar todo su contorno. ¿Cuánto mide cada lado?`,
+      `${side} m`,
+      [`${perimeter / 2} m`, `${side * 2} m`, `${perimeter - 4} m`],
+      `Lado = ${perimeter}÷4=${side} m.`,
+      ['perimetro', 'problema_inverso', 'family:m12s01_d5_cuadrado_inverso'])
+  }
+  if (family === 1) {
+    const side = ri(4, 10)
+    const n = [6, 8, 10][ri(0, 2)]
+    const laps = ri(2, 4)
+    const distance = side * n * laps
+    return mc(skill, d, seed,
+      `Una pista tiene forma de polígono regular de ${n} lados de ${side} m. ¿Cuántas vueltas completas se han dado si se recorren ${distance} m?`,
+      String(laps),
+      [String(laps + 1), String(laps - 1), String(n)],
+      `Una vuelta mide ${side * n} m. ${distance}÷${side * n}=${laps} vueltas.`,
+      ['perimetro', 'varios_pasos', 'family:m12s01_d5_vueltas_inverso'])
+  }
+  if (family === 2) {
+    const width = ri(8, 16)
+    const height = ri(5, 12)
+    const p = 2 * (width + height)
+    const postsEvery = 2
+    const posts = p / postsEvery
+    return mc(skill, d, seed,
+      `Un terreno rectangular de ${width} m por ${height} m se rodea con postes separados cada ${postsEvery} m. Si el perímetro es múltiplo de ${postsEvery}, ¿cuántos intervalos de ${postsEvery} m hay alrededor?`,
+      String(posts),
+      [String(p), String(posts + 2), String(width + height)],
+      `Perímetro = ${p} m. ${p}÷${postsEvery}=${posts} intervalos.`,
+      ['perimetro', 'varios_pasos', 'family:m12s01_d5_postes'])
+  }
+  if (family === 3) {
+    const x = ri(4, 10)
+    const long = x + 4
+    const p = 2 * (x + long)
+    return mc(skill, d, seed,
+      `El largo de un rectángulo mide 4 cm más que el ancho. Si su perímetro es ${p} cm, ¿cuánto mide el ancho?`,
+      `${x} cm`,
+      [`${long} cm`, `${p / 2} cm`, `${x + 2} cm`],
+      `2(x+x+4)=${p}. Entonces 4x+8=${p} y x=${x}.`,
+      ['perimetro', 'ecuacion', 'family:m12s01_d5_ecuacion'])
+  }
+  const sideA = ri(4, 10)
+  const sideB = ri(4, 10)
+  const pA = 6 * sideA
+  const pB = 4 * sideB
+  return mc(skill, d, seed,
+    `Un hexágono regular tiene lado ${sideA} cm y un cuadrado lado ${sideB} cm. ¿Cuál es la diferencia entre sus perímetros?`,
+    `${Math.abs(pA - pB)} cm`,
+    [`${pA + pB} cm`, `${Math.abs(sideA - sideB)} cm`, `${Math.abs(pA - pB) + 2} cm`],
+    `Perímetros: ${pA} cm y ${pB} cm. Diferencia = ${Math.abs(pA - pB)} cm.`,
+    ['perimetro', 'comparacion', 'family:m12s01_d5_diferencia'])
+}
+
+// M12S02 · Área de rectángulo y cuadrado
+if (key === 'rectangle_square_area') {
+  const family = pickFamily(seed, 5)
+
+  if (d === 1) {
+    const side = ri(3, 12)
+    const base = ri(4, 12)
+    const height = ri(3, 10)
+    if (family === 0) {
+      const result = side * side
+      return mc(skill, d, seed, `Un cuadrado tiene ${side} cm de lado. ¿Cuál es su área?`, `${result} cm²`, [`${side * 4} cm²`, `${side * 2} cm²`, `${result + side} cm²`], `Área = ${side}×${side}=${result} cm².`, ['area_cuadrado', 'family:m12s02_d1_cuadrado'])
+    }
+    if (family === 1) {
+      const result = base * height
+      return mc(skill, d, seed, `Un rectángulo mide ${base} cm por ${height} cm. ¿Cuál es su área?`, `${result} cm²`, [`${2 * (base + height)} cm²`, `${base + height} cm²`, `${result + base} cm²`], `Área = ${base}×${height}=${result} cm².`, ['area_rectangulo', 'family:m12s02_d1_rectangulo'])
+    }
+    if (family === 2) {
+      const result = base * height
+      return mc(skill, d, seed, `Una cuadrícula rectangular tiene ${base} columnas y ${height} filas de cuadrados de 1 cm². ¿Qué área ocupa?`, `${result} cm²`, [`${base + height} cm²`, `${2 * base} cm²`, `${result - height} cm²`], `Hay ${base}×${height}=${result} cuadrados de 1 cm².`, ['area_rectangulo', 'modelo_cuadricula', 'family:m12s02_d1_cuadricula'])
+    }
+    if (family === 3) {
+      const result = side * side
+      return mc(skill, d, seed, `Una baldosa cuadrada mide ${side} cm de lado. ¿Qué superficie cubre una baldosa?`, `${result} cm²`, [`${side * 4} cm²`, `${side + side} cm²`, `${result + 1} cm²`], `Superficie = lado² = ${result} cm².`, ['area_cuadrado', 'contexto', 'family:m12s02_d1_baldosa'])
+    }
+    const result = base * height
+    return mc(skill, d, seed, `¿Qué operación permite hallar el área de un rectángulo de base ${base} cm y altura ${height} cm?`, `${base} × ${height}`, [`2 × (${base} + ${height})`, `${base} + ${height}`, `${base} × 2`], `El área de un rectángulo se calcula base × altura.`, ['area_rectangulo', 'concepto', 'family:m12s02_d1_operacion'])
+  }
+
+  if (d === 2) {
+    if (family === 0) {
+      const base = ri(5, 15), height = ri(3, 10), result = base * height
+      return mc(skill,d,seed,`Una pared rectangular mide ${base} m de largo y ${height} m de alto. ¿Qué superficie tiene?`,`${result} m²`,[`${2*(base+height)} m²`,`${base+height} m²`,`${result+height} m²`],`Área = ${base}×${height}=${result} m².`,['area_rectangulo','contexto','family:m12s02_d2_pared'])
+    }
+    if (family === 1) {
+      const side = ri(4, 12), tiles = ri(2,5), area = side*side, result = area*tiles
+      return mc(skill,d,seed,`${tiles} paneles cuadrados iguales tienen lado ${side} cm. ¿Qué área suman entre todos?`,`${result} cm²`,[`${area} cm²`,`${side*4*tiles} cm²`,`${result+side} cm²`],`Cada panel ocupa ${area} cm²; ${tiles} paneles ocupan ${result} cm².`,['area_cuadrado','varios_objetos','family:m12s02_d2_paneles'])
+    }
+    if (family === 2) {
+      const base = ri(5,14), height=ri(3,10), area=base*height
+      return mc(skill,d,seed,`Un jardín rectangular de ${base} m por ${height} m se divide en cuadrados de 1 m². ¿Cuántos cuadrados caben exactamente?`,String(area),[String(base+height),String(2*(base+height)),String(area-height)],`El número de cuadrados de 1 m² coincide con el área: ${area}.`,['area_rectangulo','cuadricula','family:m12s02_d2_jardin'])
+    }
+    if (family === 3) {
+      const side=ri(4,12), area=side*side
+      return mc(skill,d,seed,`Un cuadrado y un rectángulo de ${side} cm por ${side} cm tienen la misma forma y medidas. ¿Cuál es su área?`,`${area} cm²`,[`${side*4} cm²`,`${side*2} cm²`,`${area+side} cm²`],`Ambas descripciones representan un cuadrado de lado ${side}: área ${area} cm².`,['area_cuadrado','equivalencia','family:m12s02_d2_equivalencia'])
+    }
+    const base=ri(5,15), height=ri(3,10), area=base*height
+    return mc(skill,d,seed,`¿Cuál de estas magnitudes corresponde al área de un rectángulo de ${base} cm por ${height} cm?`,`${area} cm²`,[`${2*(base+height)} cm`,`${base+height} cm²`,`${area} cm`],`El área se expresa en unidades cuadradas: ${area} cm².`,['area_rectangulo','unidades','family:m12s02_d2_unidades'])
+  }
+
+  if (d === 3) {
+    if (family === 0) {
+      const base=ri(5,15),height=ri(3,10),area=base*height
+      return mc(skill,d,seed,`Un rectángulo tiene área ${area} cm² y altura ${height} cm. ¿Cuánto mide la base?`,`${base} cm`,[`${area-height} cm`,`${base+height} cm`,`${height*2} cm`],`Base = área÷altura = ${area}÷${height}=${base} cm.`,['area_rectangulo','inverso','family:m12s02_d3_base_inversa'])
+    }
+    if (family === 1) {
+      const side=ri(4,12),area=side*side,perimeter=side*4
+      return mc(skill,d,seed,`Un cuadrado tiene área ${area} cm². ¿Cuál es su perímetro?`,`${perimeter} cm`,[`${area*4} cm`,`${side*2} cm`,`${area/2} cm`],`El lado mide ${side} cm; perímetro = 4×${side}=${perimeter} cm.`,['area_cuadrado','varios_pasos','family:m12s02_d3_area_a_perimetro'])
+    }
+    if (family === 2) {
+      const base=ri(6,14),height=ri(4,10),area=base*height,price=ri(2,5)
+      return mc(skill,d,seed,`Cubrir un suelo rectangular de ${base} m por ${height} m cuesta ${price} € por m². ¿Cuál es el coste total?`,`${area*price} €`,[`${area} €`,`${2*(base+height)*price} €`,`${area+price} €`],`Área ${area} m²; coste ${area}×${price}=${area*price} €.`,['area_rectangulo','coste','family:m12s02_d3_coste'])
+    }
+    if (family === 3) {
+      const side=ri(4,10),extra=ri(1,4),oldArea=side*side,newArea=(side+extra)*(side+extra)
+      return mc(skill,d,seed,`El lado de un cuadrado pasa de ${side} cm a ${side+extra} cm. ¿Cuánto aumenta su área?`,`${newArea-oldArea} cm²`,[`${extra*extra} cm²`,`${extra*4} cm²`,`${newArea} cm²`],`Área antigua ${oldArea}; nueva ${newArea}; aumento ${newArea-oldArea} cm².`,['area_cuadrado','cambio','family:m12s02_d3_aumento'])
+    }
+    const base=ri(6,14),height=ri(4,10),area=base*height,half=area/2
+    return mc(skill,d,seed,`Un rectángulo de área ${area} cm² se divide en dos partes iguales por una línea paralela a uno de sus lados. ¿Qué área tiene cada parte?`,`${half} cm²`,[`${area} cm²`,`${base+height} cm²`,`${half+2} cm²`],`Dos partes iguales reparten el área por la mitad: ${area}÷2=${half} cm².`,['area_rectangulo','particion','family:m12s02_d3_mitad'])
+  }
+
+  if (d === 4) {
+    if (family === 0) {
+      const base=ri(6,15),height=ri(4,10),area=base*height
+      return mc(skill,d,seed,`Un rectángulo tiene área ${area} cm² y base ${base} cm. ¿Cuál es su altura?`,`${height} cm`,[`${area-base} cm`,`${base+height} cm`,`${height*2} cm`],`Altura = ${area}÷${base}=${height} cm.`,['area_rectangulo','inverso','family:m12s02_d4_altura'])
+    }
+    if (family === 1) {
+      const side=ri(4,12),area=side*side,scale=2,newArea=(side*scale)**2
+      return mc(skill,d,seed,`Un cuadrado de lado ${side} cm duplica la longitud de su lado. ¿Por cuánto se multiplica su área?`,'Por 4',['Por 2','Por 8','No cambia'],`Al duplicar el lado, el área pasa de ${area} a ${newArea}: se multiplica por 4.`,['area_cuadrado','escala','family:m12s02_d4_escala'])
+    }
+    if (family === 2) {
+      const base=ri(8,16),height=ri(5,12),area=base*height,cut=ri(1,3),newArea=(base-cut)*height
+      return mc(skill,d,seed,`Un rectángulo mide ${base}×${height} cm. Se reduce su base en ${cut} cm manteniendo la altura. ¿Cuánto disminuye el área?`,`${area-newArea} cm²`,[`${cut} cm²`,`${cut*base} cm²`,`${newArea} cm²`],`Disminución = ${cut}×${height}=${area-newArea} cm².`,['area_rectangulo','variacion','family:m12s02_d4_reduccion'])
+    }
+    if (family === 3) {
+      const area=ri(4,12)**2
+      const side=Math.sqrt(area)
+      return mc(skill,d,seed,`Un cuadrado tiene área ${area} cm². ¿Cuánto mide su lado?`,`${side} cm`,[`${area/4} cm`,`${side*2} cm`,`${area/2} cm`],`El lado es la raíz cuadrada del área: √${area}=${side} cm.`,['area_cuadrado','inverso','family:m12s02_d4_raiz'])
+    }
+    const base=ri(6,14),height=ri(4,10),area=base*height
+    return mc(skill,d,seed,`¿Qué rectángulo tiene la misma área que uno de ${base}×${height} cm?`,`${base*2} cm × ${height/2} cm`,[`${base+2} cm × ${height} cm`,`${base} cm × ${height+2} cm`,`${base*2} cm × ${height} cm`],`Mantener el producto base×altura conserva el área: ${base*2}×${height/2}=${area}.`,['area_rectangulo','equivalencia','family:m12s02_d4_misma_area'])
+  }
+
+  if (family === 0) {
+    const x=ri(4,10),base=x+3,height=x,area=base*height
+    return mc(skill,d,seed,`El largo de un rectángulo mide 3 cm más que el ancho. Si el ancho es ${x} cm, ¿cuál es el área?`,`${area} cm²`,[`${2*(base+height)} cm²`,`${x*x} cm²`,`${area+3} cm²`],`Base ${base}, altura ${x}; área ${area} cm².`,['area_rectangulo','algebra','family:m12s02_d5_relacion_lados'])
+  }
+  if (family === 1) {
+    const side=ri(4,10),area=side*side,tiles=ri(2,5),total=area*tiles
+    return mc(skill,d,seed,`${tiles} cuadrados iguales cubren en total ${total} cm². ¿Cuál es el área de cada cuadrado?`,`${area} cm²`,[`${total} cm²`,`${area*2} cm²`,`${side} cm²`],`Área de cada uno = ${total}÷${tiles}=${area} cm².`,['area_cuadrado','inverso','family:m12s02_d5_reparto'])
+  }
+  if (family === 2) {
+    const base=ri(8,16),height=ri(5,12),area=base*height,p=2*(base+height)
+    return mc(skill,d,seed,`Un rectángulo mide ${base}×${height} cm. ¿Qué fracción representa la razón área/perímetro?`,`${area}/${p}`,[`${p}/${area}`,String(area),String(p)],`Área ${area}; perímetro ${p}; por tanto la razón área/perímetro es ${area}/${p}.`,['area_rectangulo','razonamiento','family:m12s02_d5_razon'])
+  }
+  if (family === 3) {
+    const side=ri(5,10),outer=(side+2)**2,inner=side**2,border=outer-inner
+    return mc(skill,d,seed,`Un cuadrado de lado ${side} cm se rodea por un marco que aumenta 1 cm por cada lado exterior. El lado exterior pasa a ${side+2} cm. ¿Qué área ocupa solo el marco?`,`${border} cm²`,[`${outer} cm²`,`${inner} cm²`,`${2*(side+2)} cm²`],`Área del marco = ${outer}-${inner}=${border} cm².`,['area_cuadrado','diferencia_areas','family:m12s02_d5_marco'])
+  }
+  const base=ri(8,16),height=ri(5,12),area=base*height,scale=2,newArea=(base*scale)*(height*scale)
+  return mc(skill,d,seed,`Si se duplican a la vez la base y la altura de un rectángulo de ${base}×${height} cm, ¿por cuánto se multiplica el área?`,'Por 4',['Por 2','Por 8','No cambia'],`El área pasa de ${area} a ${newArea}, cuatro veces mayor.`,['area_rectangulo','escala','family:m12s02_d5_doble_escala'])
+}
+
+// M12S03 · Área de triángulo
+if (key === 'triangle_area') {
+  const family = pickFamily(seed, 5)
+
+  if (d === 1) {
+    const base = ri(3, 10) * 2
+    const height = ri(2, 8)
+    const area = (base * height) / 2
+    if (family === 0) return mc(skill,d,seed,`Un triángulo tiene base ${base} cm y altura ${height} cm. ¿Cuál es su área?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area+height} cm²`],`Área = (${base}×${height})÷2=${area} cm².`,['area_triangulo','family:m12s03_d1_formula'])
+    if (family === 1) return mc(skill,d,seed,`¿Qué operación calcula el área de un triángulo de base ${base} cm y altura ${height} cm?`,`(${base} × ${height}) ÷ 2`,[`${base} × ${height}`,`${base}+${height}`,`2×(${base}+${height})`],`Se multiplica base por altura y se divide entre 2.`,['area_triangulo','concepto','family:m12s03_d1_operacion'])
+    if (family === 2) return mc(skill,d,seed,`Una bandera triangular mide ${base} cm de base y ${height} cm de altura. ¿Qué superficie ocupa?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area*2+1} cm²`],`Área triangular = ${area} cm².`,['area_triangulo','contexto','family:m12s03_d1_bandera'])
+    if (family === 3) return mc(skill,d,seed,`Un triángulo ocupa la mitad de un rectángulo de ${base} cm por ${height} cm. ¿Qué área tiene?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area/2} cm²`],`La mitad de ${base*height} cm² es ${area} cm².`,['area_triangulo','mitad_rectangulo','family:m12s03_d1_mitad'])
+    return mc(skill,d,seed,`¿Cuál es la unidad correcta para expresar el área de un triángulo de base ${base} cm y altura ${height} cm?`,'cm²',['cm','cm³','grados'],`El área se expresa en unidades cuadradas.`,['area_triangulo','unidades','family:m12s03_d1_unidades'])
+  }
+
+  if (d === 2) {
+    const base=ri(4,12)*2,height=ri(3,9),area=(base*height)/2
+    if (family===0) return mc(skill,d,seed,`Calcula el área de un triángulo de base ${base} cm y altura ${height} cm.`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area+base} cm²`],`A=bh/2=${area} cm².`,['area_triangulo','family:m12s03_d2_directa'])
+    if (family===1) return mc(skill,d,seed,`Una parcela triangular tiene base ${base} m y altura ${height} m. ¿Qué superficie ocupa?`,`${area} m²`,[`${base*height} m²`,`${base+height} m²`,`${area*2+height} m²`],`A=(${base}×${height})/2=${area} m².`,['area_triangulo','contexto','family:m12s03_d2_parcela'])
+    if (family===2) return mc(skill,d,seed,`Dos triángulos iguales, cada uno de base ${base} cm y altura ${height} cm, se unen sin solaparse. ¿Qué área total ocupan?`,`${area*2} cm²`,[`${area} cm²`,`${base*height*2} cm²`,`${area+height} cm²`],`Cada uno ocupa ${area}; juntos ${area*2} cm².`,['area_triangulo','dos_figuras','family:m12s03_d2_dos'])
+    if (family===3) return mc(skill,d,seed,`Un rectángulo de ${base}×${height} cm se corta por una diagonal. ¿Qué área tiene cada triángulo resultante?`,`${area} cm²`,[`${base*height} cm²`,`${base+height} cm²`,`${area+2} cm²`],`La diagonal divide el rectángulo en dos triángulos de igual área.`,['area_triangulo','diagonal','family:m12s03_d2_diagonal'])
+    return mc(skill,d,seed,`Si se mantiene la misma altura ${height} cm y la base de un triángulo se duplica de ${base} a ${base*2} cm, ¿qué ocurre con el área?`,'Se duplica',['Se reduce a la mitad','Se cuadruplica','No cambia'],`El área es proporcional a la base si la altura no cambia.`,['area_triangulo','proporcionalidad','family:m12s03_d2_duplicar_base'])
+  }
+
+  if (d === 3) {
+    const base=ri(4,12)*2,height=ri(3,10),area=(base*height)/2
+    if (family===0) return mc(skill,d,seed,`Un triángulo tiene área ${area} cm² y altura ${height} cm. ¿Cuánto mide su base?`,`${base} cm`,[`${area/height} cm`,`${area-height} cm`,`${base/2} cm`],`Base=(2×${area})÷${height}=${base} cm.`,['area_triangulo','inverso','family:m12s03_d3_base'])
+    if (family===1) return mc(skill,d,seed,`Un triángulo tiene área ${area} cm² y base ${base} cm. ¿Cuál es su altura?`,`${height} cm`,[`${area/base} cm`,`${area-base} cm`,`${height*2} cm`],`Altura=(2×${area})÷${base}=${height} cm.`,['area_triangulo','inverso','family:m12s03_d3_altura'])
+    if (family===2) {
+      const price=ri(2,5)
+      return mc(skill,d,seed,`Cubrir una parcela triangular de base ${base} m y altura ${height} m cuesta ${price} € por m². ¿Cuál es el coste?`,`${area*price} €`,[`${area} €`,`${base*height*price} €`,`${area+price} €`],`Área ${area} m²; coste ${area}×${price}=${area*price} €.`,['area_triangulo','coste','family:m12s03_d3_coste'])
+    }
+    if (family===3) return mc(skill,d,seed,`Dos triángulos tienen la misma altura ${height} cm. Uno tiene base ${base} cm y otro ${base/2} cm. ¿Qué relación hay entre sus áreas?`,'El primero tiene el doble de área',['Tienen la misma área','El segundo tiene el doble','El primero tiene cuatro veces más'],`Con igual altura, el área es proporcional a la base.`,['area_triangulo','comparacion','family:m12s03_d3_comparar'])
+    return mc(skill,d,seed,`Un triángulo y un rectángulo tienen la misma base ${base} cm y altura ${height} cm. Si el rectángulo ocupa ${base*height} cm², ¿qué área ocupa el triángulo?`,`${area} cm²`,[`${base*height} cm²`,`${area*2+1} cm²`,`${base+height} cm²`],`El triángulo ocupa la mitad del rectángulo: ${area} cm².`,['area_triangulo','comparacion','family:m12s03_d3_rectangulo'])
+  }
+
+  if (d === 4) {
+    const base=ri(4,12)*2,height=ri(3,10),area=(base*height)/2
+    if (family===0) {
+      const extra=ri(2,6),newArea=((base+extra)*height)/2
+      return mc(skill,d,seed,`La base de un triángulo pasa de ${base} a ${base+extra} cm, manteniendo altura ${height} cm. ¿Cuánto aumenta el área?`,`${newArea-area} cm²`,[`${extra} cm²`,`${extra*height} cm²`,`${newArea} cm²`],`Aumento = (${extra}×${height})/2=${newArea-area} cm².`,['area_triangulo','variacion','family:m12s03_d4_aumento_base'])
+    }
+    if (family===1) return mc(skill,d,seed,`Si se duplican simultáneamente la base y la altura de un triángulo, ¿por cuánto se multiplica su área?`,'Por 4',['Por 2','Por 8','No cambia'],`A=(bh)/2; duplicar b y h multiplica bh por 4.`,['area_triangulo','escala','family:m12s03_d4_doble'])
+    if (family===2) {
+      const totalBase=base*2
+      return mc(skill,d,seed,`Un triángulo de base ${totalBase} cm y altura ${height} cm se divide desde el vértice hasta el punto medio de la base. ¿Qué área tiene cada triángulo pequeño?`,`${area} cm²`,[`${area*2} cm²`,`${totalBase*height} cm²`,`${area/2} cm²`],`Cada pequeño tiene base ${base} cm y la misma altura: área ${area} cm².`,['area_triangulo','particion','family:m12s03_d4_mediana'])
+    }
+    if (family===3) return mc(skill,d,seed,`Un triángulo tiene área ${area} cm². Otro tiene la misma base y triple altura. ¿Cuál será el área del segundo?`,`${area*3} cm²`,[`${area*2} cm²`,`${area+3} cm²`,`${area*9} cm²`],`Con la misma base, triplicar la altura triplica el área.`,['area_triangulo','proporcionalidad','family:m12s03_d4_triple_altura'])
+    return mc(skill,d,seed,`¿Qué dato NO basta por sí solo, junto con la base, para calcular el área de un triángulo?`,'La longitud de otro lado cualquiera',['La altura correspondiente a la base','La distancia perpendicular del vértice a la base','La altura exterior correspondiente'],`El área necesita base y altura perpendicular; otro lado no determina necesariamente la altura.`,['area_triangulo','razonamiento','family:m12s03_d4_dato'])
   }
 
   const base=ri(6,14)*2,height=ri(4,10),area=(base*height)/2
