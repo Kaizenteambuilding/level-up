@@ -107,11 +107,15 @@ function mc(
 
   const options = shuffle(r, pool.slice(0, 4))
 
-  // M02-M10 were created before the family-based anti-repetition system.
+  // M02-M11 were created before the family-based anti-repetition system.
   // Keep their mathematical generators intact, but give every fixed-difficulty
   // sequence eight deterministic presentation families so consecutive items
   // do not feel like the same template with only different numbers.
-  const legacyUnit = /^M(0[2-9]|10)S\d+$/.test(skill.id)
+  // Some newer M11 generators already expose their own semantic families;
+  // preserve those instead of layering a second family tag on top.
+  const legacyUnit =
+    /^M(0[2-9]|1[01])S\d+$/.test(skill.id) &&
+    !tags.some((tag) => tag.startsWith('family:'))
   let finalPrompt = prompt
   let finalTags = tags
   if (legacyUnit) {
