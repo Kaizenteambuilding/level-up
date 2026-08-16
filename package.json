@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "audit:questions": "node scripts/audit-question-generators.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.5.2",

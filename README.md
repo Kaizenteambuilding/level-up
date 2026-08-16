@@ -30,6 +30,10 @@ La base de producción ya está configurada. Los cambios nuevos deben añadirse 
 
 La prueba transaccional `database/tests/rpc_integrity.sql` valida el recorrido completo de escritura y revierte todos los datos temporales al finalizar.
 
+El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 15 unidades y 91 habilidades activas, incluidas sus claves de generador, objetivos, prerrequisitos y errores frecuentes.
+
+`npm run audit:questions` genera 113.750 preguntas deterministas y falla si detecta generadores de reserva, opciones repetidas o de relleno, respuestas inválidas o valores numéricos rotos.
+
 `database/schema.sql` y `database/seed.sql` se conservan únicamente como marcadores históricos y no deben ejecutarse. El esquema inicial antiguo dejó de representar la base real. Antes de crear un Supabase nuevo hace falta versionar un baseline completo de la base actual.
 
 Migraciones versionadas:
