@@ -307,7 +307,13 @@ export default function CurriculumDailySession() {
   }, [index, sessionId, playerId, testMode])
 
   async function submit(optionIndex: number) {
-    if (answerLocked.current || answered || !playerId || !question) return
+    if (
+      answerLocked.current ||
+      answered ||
+      !playerId ||
+      !question ||
+      (!testMode && !sessionId)
+    ) return
     answerLocked.current = true
     setAnswered(true)
     const ok = optionIndex === question.answerIndex
@@ -325,6 +331,13 @@ export default function CurriculumDailySession() {
       return
     }
 
+    if (!sessionId) {
+      answerLocked.current = false
+      setAnswered(false)
+      return
+    }
+    const activeSessionId = sessionId
+
     const supabase = createSupabaseBrowserClient()
     if (!supabase) {
       setFeedback('No se pudo conectar. Inténtalo de nuevo.')
@@ -332,13 +345,13 @@ export default function CurriculumDailySession() {
       setAnswered(false)
       return
     }
-    const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: sessionId, p_diagnostic_tags: question.tags }))
+    const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: activeSessionId, p_diagnostic_tags: question.tags }))
     if (error) {
-      if (error.code === '23505' && sessionId) {
+      if (error.code === '23505' && activeSessionId) {
         const { data: recordedAttempt } = await supabase
           .from('attempts')
           .select('correct,xp_awarded')
-          .eq('session_id', sessionId)
+          .eq('session_id', activeSessionId)
           .eq('question_seed', question.seed)
           .maybeSingle()
 

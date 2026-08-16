@@ -28,6 +28,8 @@ La clave pública de Supabase puede utilizarse en el navegador. Nunca añadas un
 
 La base de producción ya está configurada. Los cambios nuevos deben añadirse como migraciones revisables en `database/migrations/` y aplicarse mediante el flujo de migraciones de Supabase.
 
+`lib/database.types.ts` es el contrato TypeScript generado desde el esquema real de Supabase y el cliente de navegador lo utiliza para validar tablas y RPC durante la compilación.
+
 La prueba transaccional `database/tests/rpc_integrity.sql` valida el recorrido completo de escritura y revierte todos los datos temporales al finalizar.
 
 El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 15 unidades y 91 habilidades activas, incluidas sus claves de generador, objetivos, prerrequisitos y errores frecuentes.
