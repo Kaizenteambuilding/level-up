@@ -322,7 +322,28 @@ export default function CurriculumDailySession() {
       return
     }
     const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: sessionId, p_diagnostic_tags: question.tags }))
-    if (error) { setFeedback(userFacingError(error, 'No se pudo guardar la respuesta. Inténtalo de nuevo.')); answerLocked.current = false; setAnswered(false); return }
+    if (error) {
+      if (error.code === '23505' && sessionId) {
+        const { data: recordedAttempt } = await supabase
+          .from('attempts')
+          .select('correct,xp_awarded')
+          .eq('session_id', sessionId)
+          .eq('question_seed', question.seed)
+          .maybeSingle()
+
+        if (recordedAttempt) {
+          setXp((value) => value + Number(recordedAttempt.xp_awarded ?? 0))
+          if (recordedAttempt.correct === true) setCorrect((value) => value + 1)
+          setFeedback('✓ Esta respuesta ya estaba guardada · avance recuperado')
+          return
+        }
+      }
+
+      setFeedback(userFacingError(error, 'No se pudo guardar la respuesta. Inténtalo de nuevo.'))
+      answerLocked.current = false
+      setAnswered(false)
+      return
+    }
     const result = data as { xp_awarded:number; mastery:number; confidence:number; difficulty:number; priority?:number }
     setXp((value) => value + Number(result.xp_awarded))
     if (ok) setCorrect((value) => value + 1)
