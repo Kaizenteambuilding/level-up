@@ -70,6 +70,7 @@ export default function CurriculumDailySession() {
   const [sessionClosed, setSessionClosed] = useState(false)
   const [closeError, setCloseError] = useState('')
   const closeStarted = useRef(false)
+  const answerLocked = useRef(false)
   const questionStarted = useRef(Date.now())
   const recentTemplates = useRef<string[]>([])
   const recentFamilies = useRef<string[]>([])
@@ -300,7 +301,8 @@ export default function CurriculumDailySession() {
   }, [index, sessionId, playerId, testMode])
 
   async function submit(optionIndex: number) {
-    if (answered || !playerId || !question) return
+    if (answerLocked.current || answered || !playerId || !question) return
+    answerLocked.current = true
     setAnswered(true)
     const ok = optionIndex === question.answerIndex
     const responseMs = Math.max(1, Date.now() - questionStarted.current)
@@ -315,11 +317,12 @@ export default function CurriculumDailySession() {
     const supabase = createSupabaseBrowserClient()
     if (!supabase) {
       setFeedback('No se pudo conectar. Inténtalo de nuevo.')
+      answerLocked.current = false
       setAnswered(false)
       return
     }
     const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: sessionId, p_diagnostic_tags: question.tags }))
-    if (error) { setFeedback('Error: ' + error.message); setAnswered(false); return }
+    if (error) { setFeedback('Error: ' + error.message); answerLocked.current = false; setAnswered(false); return }
     const result = data as { xp_awarded:number; mastery:number; confidence:number; difficulty:number; priority?:number }
     setXp((value) => value + Number(result.xp_awarded))
     if (ok) setCorrect((value) => value + 1)
@@ -328,6 +331,7 @@ export default function CurriculumDailySession() {
   }
 
   function next() {
+    answerLocked.current = false
     setSeed((s) => (Math.imul(s, 1664525) + 1013904223) >>> 0)
     if (testMode) { setAnswered(false); setFeedback(''); questionStarted.current = Date.now(); return }
     setIndex((i) => i + 1)
