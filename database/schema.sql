@@ -1,8 +1,10 @@
-create extension if not exists "pgcrypto";
-create table if not exists families(id uuid primary key default gen_random_uuid(),name text not null,created_at timestamptz default now());
-create table if not exists players(id uuid primary key default gen_random_uuid(),family_id uuid references families(id),alias text not null,level int default 1,xp int default 0,coins int default 0,streak_days int default 0,daily_target_minutes int default 35,avatar jsonb default '{}'::jsonb);
-create table if not exists skills(id text primary key,name text not null,subject_id text not null);
-create table if not exists player_skill_state(player_id uuid references players(id),skill_id text references skills(id),mastery numeric default 50,confidence numeric default 50,difficulty int default 2,priority numeric default 50,error_tags jsonb default '{}'::jsonb,updated_at timestamptz default now(),primary key(player_id,skill_id));
-create table if not exists study_sessions(id uuid primary key default gen_random_uuid(),player_id uuid references players(id),started_at timestamptz default now(),ended_at timestamptz,mode text default 'daily',completed boolean default false,generated_plan jsonb default '{}'::jsonb);
-create table if not exists attempts(id uuid primary key default gen_random_uuid(),session_id uuid references study_sessions(id),player_id uuid references players(id),skill_id text references skills(id),question_seed bigint,difficulty int,prompt_snapshot text,correct boolean,response_ms int,xp_awarded int default 0,diagnostic_tags text[] default '{}',created_at timestamptz default now());
-create table if not exists exams(id uuid primary key default gen_random_uuid(),player_id uuid references players(id),subject_id text,exam_date date,title text,topic_ids text[] default '{}',created_at timestamptz default now());
+-- ARCHIVO HISTÓRICO: NO EJECUTAR.
+--
+-- El esquema inicial que contenía este archivo dejó de representar la base
+-- real de Level Up. Ejecutarlo en un proyecto nuevo produciría una instalación
+-- incompleta y sin las políticas, columnas, funciones y datos curriculares
+-- necesarios.
+--
+-- Los cambios vigentes están versionados en database/migrations/.
+-- Antes de provisionar un Supabase nuevo debe incorporarse al repositorio un
+-- baseline completo exportado y revisado desde la base actual.
