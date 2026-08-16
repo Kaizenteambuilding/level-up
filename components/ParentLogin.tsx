@@ -122,6 +122,11 @@ export default function ParentLogin() {
       return
     }
 
+    if (password.length < 8) {
+      setMessage('Para crear una cuenta, usa una contraseña de al menos 8 caracteres.')
+      return
+    }
+
     authLocked.current = true
     setLoading(true)
     setMessage('')
@@ -204,6 +209,10 @@ export default function ParentLogin() {
           />
         </label>
 
+        <p className="muted" style={{ marginTop: -8 }}>
+          Para crear una cuenta nueva, usa al menos 8 caracteres.
+        </p>
+
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button
             className="btn primary"
@@ -215,7 +224,7 @@ export default function ParentLogin() {
 
           <button
             className="btn dark"
-            disabled={loading || !email.trim() || password.length < 6}
+            disabled={loading || !email.trim() || password.length < 8}
             type="button"
             onClick={signUp}
           >

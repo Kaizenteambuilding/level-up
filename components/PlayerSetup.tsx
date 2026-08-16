@@ -217,36 +217,45 @@ export default function PlayerSetup() {
         <h1>Configura tu familia</h1>
         <p className="muted">Solo se hace una vez.</p>
 
-        <label>
-          Tu nombre
-          <input
-            value={parentName}
-            onChange={(e) => setParentName(e.target.value)}
-            style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
-          />
-        </label>
+        <form onSubmit={(event) => { event.preventDefault(); setupFamily() }}>
+          <label>
+            Tu nombre
+            <input
+              value={parentName}
+              onChange={(e) => setParentName(e.target.value)}
+              autoComplete="name"
+              required
+              maxLength={80}
+              style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
+            />
+          </label>
 
-        <label>
-          Nombre de la familia
-          <input
-            value={familyName}
-            onChange={(e) => setFamilyName(e.target.value)}
-            style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
-          />
-        </label>
+          <label>
+            Nombre de la familia
+            <input
+              value={familyName}
+              onChange={(e) => setFamilyName(e.target.value)}
+              required
+              maxLength={80}
+              style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
+            />
+          </label>
 
-        <button className="btn primary" disabled={saving} onClick={setupFamily}>
-          {saving ? 'CREANDO...' : 'CREAR FAMILIA'}
-        </button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button className="btn primary" disabled={saving} type="submit">
+              {saving ? 'CREANDO...' : 'CREAR FAMILIA'}
+            </button>
 
-        <button
-          className="btn dark"
-          disabled={saving}
-          onClick={signOut}
-          style={{ marginLeft: 10 }}
-        >
-          CERRAR SESIÓN
-        </button>
+            <button
+              className="btn dark"
+              disabled={saving}
+              onClick={signOut}
+              type="button"
+            >
+              CERRAR SESIÓN
+            </button>
+          </div>
+        </form>
 
         {message && <p className="muted">{message}</p>}
       </section>
