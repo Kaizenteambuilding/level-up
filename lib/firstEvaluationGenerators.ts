@@ -8266,7 +8266,7 @@ if (key === 'perimeter') {
     return mc(skill, d, seed,
       `Compara un triángulo equilátero de lado ${side} cm con un cuadrado de lado ${squareSide} cm. ¿Cuál tiene mayor perímetro?`,
       answer,
-      ['El triángulo', 'El cuadrado', 'Tienen el mismo perímetro'].filter(x => x !== answer),
+      ['El triángulo', 'El cuadrado', 'Tienen el mismo perímetro', 'No se puede determinar con esos datos'].filter(x => x !== answer),
       `Triángulo: ${triangleP} cm. Cuadrado: ${squareP} cm.`,
       ['perimetro', 'comparacion', 'family:m12s01_d3_comparar'])
   }
@@ -9467,7 +9467,7 @@ if (key === 'graph_interpret') {
       return mc(skill, d, seed,
         `Un gráfico muestra fútbol ${a} y baloncesto ${b}. ¿Qué categoría tiene menor valor?`,
         answer,
-        ['Fútbol', 'Baloncesto', 'Empate'].filter((v) => v !== answer),
+        ['Fútbol', 'Baloncesto', 'Empate', 'No se puede determinar'].filter((v) => v !== answer),
         `El valor menor es ${min}.`,
         ['interpretacion_graficas', 'family:graph_interpret:d1:minimo'])
     }
@@ -9590,7 +9590,7 @@ if (key === 'graph_interpret') {
       return mc(skill, d, seed,
         `Valores: enero ${jan}, febrero ${feb}, marzo ${mar}. ¿En qué tramo aumenta más?`,
         answer,
-        ['De enero a febrero', 'De febrero a marzo', 'Aumenta lo mismo'].filter((v) => v !== answer),
+        ['De enero a febrero', 'De febrero a marzo', 'Aumenta lo mismo', 'No hay ningún aumento'].filter((v) => v !== answer),
         `Los aumentos son ${growth1} y ${growth2}.`,
         ['interpretacion_graficas', 'family:graph_interpret:d3:comparar_cambios'])
     }
@@ -9678,7 +9678,7 @@ if (key === 'graph_interpret') {
     return mc(skill, d, seed,
       `Una serie sube de ${start} a ${peak} y después baja a ${end}. ¿Qué cambio es mayor en valor absoluto?`,
       rise > fall ? 'La subida inicial' : fall > rise ? 'La bajada final' : 'Son iguales',
-      ['La subida inicial', 'La bajada final', 'Son iguales'].filter((v) => v !== (rise > fall ? 'La subida inicial' : fall > rise ? 'La bajada final' : 'Son iguales')),
+      ['La subida inicial', 'La bajada final', 'Son iguales', 'No se puede determinar'].filter((v) => v !== (rise > fall ? 'La subida inicial' : fall > rise ? 'La bajada final' : 'Son iguales')),
       `La subida es ${rise} y la bajada ${fall}.`,
       ['interpretacion_graficas', 'family:graph_interpret:d5:comparar_cambios'])
   }
@@ -11051,7 +11051,9 @@ if (key === 'triangle_angle_sum') {
 
     if (family === 3) {
       const a = ri(25, 70)
-      const b = ri(25, 70)
+      let b = ri(25, 70)
+      if (b === a) b = b === 70 ? 69 : b + 1
+      if (a + b === 90) b = b === 70 ? 69 : b + 1
       const c = 180 - a - b
       return mc(
         skill, d, seed,
