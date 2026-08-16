@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -11,6 +11,16 @@ export default function ParentLogin() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
+  const authLocked = useRef(false)
+
+  function authMessage(error: { code?: string; message: string }) {
+    if (error.code === 'invalid_credentials') return 'El email o la contraseña no son correctos.'
+    if (error.code === 'email_not_confirmed') return 'Confirma primero el correo electrónico y vuelve a intentarlo.'
+    if (error.code === 'user_already_exists' || error.code === 'email_exists') return 'Ya existe una cuenta con este correo.'
+    if (error.code === 'weak_password') return 'La contraseña no cumple los requisitos de seguridad.'
+    if (error.code === 'over_request_rate_limit' || error.code === 'over_email_send_rate_limit') return 'Demasiados intentos seguidos. Espera un momento y vuelve a probar.'
+    return 'No se pudo completar el acceso. Inténtalo de nuevo.'
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -53,6 +63,7 @@ export default function ParentLogin() {
 
   async function signIn(e: FormEvent) {
     e.preventDefault()
+    if (authLocked.current) return
 
     const supabase = createSupabaseBrowserClient()
 
@@ -61,6 +72,8 @@ export default function ParentLogin() {
       return
     }
 
+    authLocked.current = true
+    authLocked.current = true
     setLoading(true)
     setMessage('')
     localStorage.removeItem('levelup_player_id')
@@ -71,8 +84,9 @@ export default function ParentLogin() {
     })
 
     if (error) {
+      authLocked.current = false
       setLoading(false)
-      setMessage(error.message)
+      setMessage(authMessage(error))
       return
     }
 
@@ -81,6 +95,7 @@ export default function ParentLogin() {
       .select('id,alias')
       .order('alias', { ascending: true })
 
+    authLocked.current = false
     setLoading(false)
 
     if (playersError) {
@@ -99,6 +114,7 @@ export default function ParentLogin() {
   }
 
   async function signUp() {
+    if (authLocked.current) return
     const supabase = createSupabaseBrowserClient()
 
     if (!supabase) {
@@ -115,10 +131,11 @@ export default function ParentLogin() {
       password,
     })
 
+    authLocked.current = false
     setLoading(false)
 
     if (error) {
-      setMessage(error.message)
+      setMessage(authMessage(error))
       return
     }
 
