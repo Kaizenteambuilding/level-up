@@ -2,8 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
-import CurriculumDailySession from '@/components/CurriculumDailySession'
+
+const CurriculumDailySession = dynamic(
+  () => import('@/components/CurriculumDailySession'),
+  {
+    loading: () => (
+      <section className="card" aria-live="polite">
+        <p className="muted">Preparando el motor de matemáticas...</p>
+      </section>
+    ),
+  }
+)
 
 export default function MissionGuard() {
   const router = useRouter()
