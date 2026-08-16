@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 
 const CurriculumDailySession = dynamic(
   () => import('@/components/CurriculumDailySession'),
@@ -20,15 +21,23 @@ export default function MissionGuard() {
   const router = useRouter()
   const [ready, setReady] = useState(false)
   const [message, setMessage] = useState('Comprobando acceso...')
+  const [canRetry, setCanRetry] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     let active = true
 
     async function checkAccess() {
+      setReady(false)
+      setCanRetry(false)
+      setMessage('Comprobando acceso...')
       const supabase = createSupabaseBrowserClient()
 
       if (!supabase) {
-        if (active) setMessage('Supabase no está configurado.')
+        if (active) {
+          setMessage('Supabase no está configurado.')
+          setCanRetry(true)
+        }
         return
       }
 
@@ -39,9 +48,15 @@ export default function MissionGuard() {
 
       if (!active) return
 
-      if (userError || !user) {
+      if (!user && (!userError || isAuthenticationExpired(userError))) {
         localStorage.removeItem('levelup_player_id')
         router.replace('/login')
+        return
+      }
+
+      if (userError || !user) {
+        setMessage(userFacingError(userError, 'No se pudo comprobar tu sesión.'))
+        setCanRetry(true)
         return
       }
 
@@ -61,7 +76,8 @@ export default function MissionGuard() {
       if (!active) return
 
       if (playerError) {
-        setMessage('No se pudo comprobar el jugador seleccionado.')
+        setMessage(userFacingError(playerError, 'No se pudo comprobar el jugador seleccionado.'))
+        setCanRetry(true)
         return
       }
 
@@ -79,12 +95,17 @@ export default function MissionGuard() {
     return () => {
       active = false
     }
-  }, [router])
+  }, [router, retryKey])
 
   if (!ready) {
     return (
       <section className="card">
         <p className="muted">{message}</p>
+        {canRetry && (
+          <button className="btn primary" type="button" onClick={() => setRetryKey((value) => value + 1)}>
+            REINTENTAR
+          </button>
+        )}
       </section>
     )
   }

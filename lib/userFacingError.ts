@@ -3,6 +3,20 @@ type SupabaseLikeError = {
   message?: string | null
 }
 
+export function isAuthenticationExpired(error: SupabaseLikeError | null | undefined) {
+  const code = String(error?.code ?? '').toLowerCase()
+  const message = String(error?.message ?? '').toLowerCase()
+
+  return (
+    code.includes('jwt') ||
+    code.includes('refresh_token') ||
+    code === 'session_not_found' ||
+    message.includes('jwt') ||
+    (message.includes('session') && (message.includes('expired') || message.includes('missing'))) ||
+    (message.includes('refresh token') && (message.includes('invalid') || message.includes('not found')))
+  )
+}
+
 export function userFacingError(
   error: SupabaseLikeError | null | undefined,
   fallback: string
@@ -10,11 +24,7 @@ export function userFacingError(
   const code = String(error?.code ?? '').toLowerCase()
   const message = String(error?.message ?? '').toLowerCase()
 
-  if (
-    code.includes('jwt') ||
-    message.includes('jwt') ||
-    message.includes('session') && message.includes('expired')
-  ) {
+  if (isAuthenticationExpired(error)) {
     return 'Tu sesión ha caducado. Vuelve a entrar para continuar.'
   }
 

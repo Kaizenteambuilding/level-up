@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
-import { userFacingError } from '@/lib/userFacingError'
+import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 import { fetchCompletedActivity } from '@/lib/progressQueries'
 
 type Player = {
@@ -134,11 +134,18 @@ export default function PlayerDashboard() {
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (!user && (!userError || isAuthenticationExpired(userError))) {
       localStorage.removeItem('levelup_player_id')
       router.replace('/login')
+      return
+    }
+
+    if (userError || !user) {
+      setMessage(userFacingError(userError, 'No se pudo comprobar tu sesión.'))
+      setLoading(false)
       return
     }
 

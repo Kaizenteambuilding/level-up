@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
-import { userFacingError } from '@/lib/userFacingError'
+import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 import { useRouter } from 'next/navigation'
 
 type Player = {
@@ -27,6 +27,7 @@ export default function PlayerSetup() {
   const actionLocked = useRef(false)
 
   async function load() {
+    setLoading(true)
     const supabase = createSupabaseBrowserClient()
 
     if (!supabase) {
@@ -37,11 +38,18 @@ export default function PlayerSetup() {
 
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (!user && (!userError || isAuthenticationExpired(userError))) {
       localStorage.removeItem('levelup_player_id')
       router.replace('/login')
+      return
+    }
+
+    if (userError || !user) {
+      setMessage(userFacingError(userError, 'No se pudo comprobar tu sesión.'))
+      setLoading(false)
       return
     }
 
