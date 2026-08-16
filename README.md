@@ -32,6 +32,8 @@ La base de producción ya está configurada. Los cambios nuevos deben añadirse 
 
 La prueba transaccional `database/tests/rpc_integrity.sql` valida el recorrido completo de escritura y revierte todos los datos temporales al finalizar.
 
+La comprobación de solo lectura `database/tests/production_invariants.sql` detecta sesiones incompletas o duplicadas, intentos sin sesión, misiones cerradas sin diez respuestas y discrepancias de XP sin modificar producción.
+
 El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 15 unidades y 91 habilidades activas, incluidas sus claves de generador, objetivos, prerrequisitos y errores frecuentes.
 
 `npm run audit:questions` genera 113.750 preguntas deterministas y falla si detecta generadores de reserva, opciones repetidas o de relleno, respuestas inválidas o valores numéricos rotos.
