@@ -5416,15 +5416,55 @@ if (key === 'proportion_word_problem') {
 
 if (key === 'algebra_expression') {
   if (d === 1) {
+    const n = ri(2, 9)
+    const family = pickFamily(seed, 5)
+    const variants = [
+      {
+        prompt: `¿Qué expresión representa "un número más ${n}"?`,
+        answer: `x + ${n}`,
+        distractors: [`${n}x`, `x - ${n}`, `${n} - x`],
+        solution: `Si llamamos x al número, sumarle ${n} se escribe x + ${n}.`,
+        tag: 'sumar_constante',
+      },
+      {
+        prompt: `¿Qué expresión representa "un número menos ${n}"?`,
+        answer: `x - ${n}`,
+        distractors: [`${n} - x`, `${n}x`, `x + ${n}`],
+        solution: `Partimos del número x y le restamos ${n}: x - ${n}.`,
+        tag: 'restar_constante',
+      },
+      {
+        prompt: '¿Qué expresión representa "el doble de un número"?',
+        answer: '2x',
+        distractors: ['x + 2', 'x²', '2 - x'],
+        solution: 'El doble de x se obtiene multiplicando x por 2: 2x.',
+        tag: 'doble',
+      },
+      {
+        prompt: '¿Qué expresión representa "la mitad de un número"?',
+        answer: 'x ÷ 2',
+        distractors: ['2x', 'x - 2', '2 ÷ x'],
+        solution: 'La mitad de x se obtiene dividiendo x entre 2: x ÷ 2.',
+        tag: 'mitad',
+      },
+      {
+        prompt: `¿Qué expresión representa "la diferencia entre un número y ${n}"?`,
+        answer: `x - ${n}`,
+        distractors: [`${n} - x`, `x + ${n}`, `${n}x`],
+        solution: `La diferencia entre el número x y ${n}, en ese orden, es x - ${n}.`,
+        tag: 'diferencia_orden',
+      },
+    ]
+    const variant = variants[family]
     return mc(
       skill,
       d,
       seed,
-      '¿Qué expresión representa "un número más 5"?',
-      'x + 5',
-      ['5x', 'x - 5', '5 - x'],
-      'Si llamamos x al número, sumarle 5 se escribe x + 5.',
-      ['lenguaje_algebraico']
+      variant.prompt,
+      variant.answer,
+      variant.distractors,
+      variant.solution,
+      ['lenguaje_algebraico', `family:algebra_expression:d1:${variant.tag}`]
     )
   }
 
