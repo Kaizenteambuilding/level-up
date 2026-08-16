@@ -489,14 +489,27 @@ export default function CurriculumDailySession() {
 
   if (!question) return <section className="card"><p className="muted">Preparando el siguiente reto...</p></section>
 
-  return <>
-    <section className="card">
-      <span className="tag">{testMode ? `🧪 MODO PRUEBA · ${question.skillId}` : 'REPASO DE MATEMÁTICAS · CURRICULUM ENGINE'}</span>
-      <h1>{testMode ? 'Prueba de habilidad' : `Reto ${index + 1} de ${SESSION_LENGTH}`}</h1>
-      <p className="muted">{testMode ? 'Esta pantalla fuerza una habilidad concreta para poder validar su generador.' : 'LEVEL UP selecciona habilidades según el dominio real del jugador.'}</p>
-      {!testMode && <div className="bar" role="progressbar" aria-label="Progreso de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={index}><i style={{ width:`${Math.round((index/SESSION_LENGTH)*100)}%` }} /></div>}
+  return <div className={testMode ? '' : 'mission-console'}>
+    <section className="card mission-control">
+      <div>
+        <span className="tag">{testMode ? `🧪 MODO PRUEBA · ${question.skillId}` : '🏙️ CIUDAD MATEMÁTICA · NÚCLEO DE ENERGÍA'}</span>
+        <h1>{testMode ? 'Prueba de habilidad' : `Reto ${index + 1} de ${SESSION_LENGTH}`}</h1>
+        <p className="muted">{testMode ? 'Esta pantalla fuerza una habilidad concreta para poder validar su generador.' : 'Resuelve el reto para activar el siguiente módulo del núcleo.'}</p>
+      </div>
+      {!testMode && <Link className="btn dark mission-exit" href="/world">SALIR AL MAPA</Link>}
+      {!testMode && <div className="energy-track" role="progressbar" aria-label="Energía de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={index}>
+        {Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < index ? 'charged' : position === index ? 'active' : ''} aria-hidden="true">{position < index ? '⚡' : position + 1}</span>)}
+      </div>}
     </section>
-    <section className="card">
+    <div className="mission-stage">
+      {!testMode && <aside className="mission-core" aria-label="Estado del núcleo">
+        <span className="core-city" aria-hidden="true">🏙️</span>
+        <div className="core-orb" aria-hidden="true" style={{ '--mission-charge': `${Math.max(8, Math.round((index / SESSION_LENGTH) * 100))}%` } as React.CSSProperties}>⚡</div>
+        <b>Núcleo {Math.round((index / SESSION_LENGTH) * 100)}%</b>
+        <span>{correct} aciertos · {xp} XP</span>
+        <small>Recompensa actual: 🪙 {40 + correct * 5}</small>
+      </aside>}
+    <section className="card mission-question">
       <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
       {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>🎯 REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
       <p ref={questionPrompt} tabIndex={-1} style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
@@ -510,6 +523,7 @@ export default function CurriculumDailySession() {
       {feedback && <div className="metric" style={{ marginTop:16 }} role={answered ? 'status' : 'alert'} aria-live="polite"><b>{feedback}</b></div>}
       {answered && feedback && <><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button ref={nextButton} className="btn primary" type="button" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
     </section>
-    <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testMode ? testAttempts : index+(answered?1:0)}</b><p className="muted">aciertos</p></div></div></section>
-  </>
+    </div>
+    {testMode && <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testAttempts}</b><p className="muted">aciertos</p></div></div></section>}
+  </div>
 }
