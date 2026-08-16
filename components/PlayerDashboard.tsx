@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { userFacingError } from '@/lib/userFacingError'
 
 type Player = {
   id: string
@@ -150,7 +151,7 @@ export default function PlayerDashboard() {
         .maybeSingle()
 
       if (savedPlayerError) {
-        setMessage(savedPlayerError.message)
+        setMessage(userFacingError(savedPlayerError, 'No se pudo cargar el jugador seleccionado.'))
         setLoading(false)
         return
       }
@@ -169,7 +170,7 @@ export default function PlayerDashboard() {
         .order('alias', { ascending: true })
 
       if (playersError) {
-        setMessage(playersError.message)
+        setMessage(userFacingError(playersError, 'No se pudieron cargar los jugadores.'))
         setLoading(false)
         return
       }

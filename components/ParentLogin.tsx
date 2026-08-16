@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { userFacingError } from '@/lib/userFacingError'
 import { useRouter } from 'next/navigation'
 
 export default function ParentLogin() {
@@ -46,7 +47,7 @@ export default function ParentLogin() {
         .order('alias', { ascending: true })
 
       if (error) {
-        setMessage(error.message)
+        setMessage(userFacingError(error, 'No se pudieron cargar los jugadores.'))
         setCheckingSession(false)
         return
       }
@@ -73,7 +74,6 @@ export default function ParentLogin() {
     }
 
     authLocked.current = true
-    authLocked.current = true
     setLoading(true)
     setMessage('')
     localStorage.removeItem('levelup_player_id')
@@ -99,7 +99,7 @@ export default function ParentLogin() {
     setLoading(false)
 
     if (playersError) {
-      setMessage(playersError.message)
+      setMessage(userFacingError(playersError, 'Has entrado, pero no se pudieron cargar los jugadores.'))
       return
     }
 
@@ -122,6 +122,7 @@ export default function ParentLogin() {
       return
     }
 
+    authLocked.current = true
     setLoading(true)
     setMessage('')
     localStorage.removeItem('levelup_player_id')

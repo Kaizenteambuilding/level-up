@@ -7,6 +7,7 @@ import {
   generateFirstEvaluationQuestion,
   GeneratedQuestion,
 } from '@/lib/firstEvaluationGenerators'
+import { userFacingError } from '@/lib/userFacingError'
 
 type SkillRow = {
   id: string
@@ -95,10 +96,10 @@ export default function CurriculumDailySession() {
       if (!forcedSkillId) {
         const resumeSince = new Date(Date.now() - RESUME_WINDOW_MS).toISOString()
         const { data: openSession, error: openSessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').select('id,started_at').eq('player_id', id).eq('mode', 'daily').eq('completed', false).is('ended_at', null).gte('started_at', resumeSince).order('started_at', { ascending: false }).limit(1).maybeSingle())
-        if (openSessionError) { setLoadError('No se pudo revisar la sesión anterior: ' + openSessionError.message); setLoading(false); return }
+        if (openSessionError) { setLoadError(userFacingError(openSessionError, 'No se pudo revisar la misión anterior.')); setLoading(false); return }
         if (openSession) {
           const { data: previousAttempts, error: attemptsError } = await retryJwtFuture(async () => await supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,diagnostic_tags').eq('session_id', openSession.id).order('created_at', { ascending: true }))
-          if (attemptsError) { setLoadError('No se pudo recuperar la sesión anterior: ' + attemptsError.message); setLoading(false); return }
+          if (attemptsError) { setLoadError(userFacingError(attemptsError, 'No se pudo recuperar la misión anterior.')); setLoading(false); return }
           const attempts = previousAttempts ?? []
           setSessionId(openSession.id)
           setIndex(Math.min(SESSION_LENGTH, attempts.length))
@@ -160,7 +161,7 @@ export default function CurriculumDailySession() {
             .slice(0, 9)
 
           const { data: sessionData, error: sessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').insert({ player_id: id, mode: 'daily', phase: 'warmup' }).select('id').single())
-          if (sessionError) { setLoadError('No se pudo crear la sesión: ' + sessionError.message); setLoading(false); return }
+          if (sessionError) { setLoadError(userFacingError(sessionError, 'No se pudo crear la misión.')); setLoading(false); return }
           setSessionId(sessionData.id)
         }
       }
@@ -172,7 +173,7 @@ export default function CurriculumDailySession() {
         return await skillsQuery
       }
       const { data: skillRows, error: skillsError } = await retryJwtFuture(loadSkills)
-      if (skillsError) { setLoadError(skillsError.message); setLoading(false); return }
+      if (skillsError) { setLoadError(userFacingError(skillsError, 'No se pudo cargar el currículo.')); setLoading(false); return }
       if (!skillRows || skillRows.length === 0) { setLoadError(forcedSkillId ? `No encuentro la habilidad ${forcedSkillId}.` : 'No encuentro habilidades activas para el repaso de matemáticas.'); setLoading(false); return }
 
       const typedSkillRows = skillRows as SkillRow[]
@@ -188,7 +189,7 @@ export default function CurriculumDailySession() {
       }
 
       const { data: stateRows, error: stateError } = await retryJwtFuture(async () => await supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id))
-      if (stateError) { setLoadError('No se pudo cargar el progreso adaptativo: ' + stateError.message); setLoading(false); return }
+      if (stateError) { setLoadError(userFacingError(stateError, 'No se pudo cargar el progreso adaptativo.')); setLoading(false); return }
       const stateMap: Record<string, SkillState> = {}
       ;(stateRows ?? []).forEach((s: any) => { stateMap[s.skill_id] = s })
       setSkills(typedSkillRows)
@@ -322,7 +323,7 @@ export default function CurriculumDailySession() {
       return
     }
     const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: sessionId, p_diagnostic_tags: question.tags }))
-    if (error) { setFeedback('Error: ' + error.message); answerLocked.current = false; setAnswered(false); return }
+    if (error) { setFeedback(userFacingError(error, 'No se pudo guardar la respuesta. Inténtalo de nuevo.')); answerLocked.current = false; setAnswered(false); return }
     const result = data as { xp_awarded:number; mastery:number; confidence:number; difficulty:number; priority?:number }
     setXp((value) => value + Number(result.xp_awarded))
     if (ok) setCorrect((value) => value + 1)

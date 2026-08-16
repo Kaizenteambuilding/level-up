@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { userFacingError } from '@/lib/userFacingError'
 
 type Player = {
   id: string
@@ -162,7 +163,7 @@ export default function Parent() {
           .maybeSingle()
 
         if (error) {
-          setMessage(error.message)
+          setMessage(userFacingError(error, 'No se pudo cargar el jugador seleccionado.'))
           setLoading(false)
           return
         }
@@ -177,7 +178,7 @@ export default function Parent() {
           .order('alias', { ascending: true })
 
         if (error) {
-          setMessage(error.message)
+          setMessage(userFacingError(error, 'No se pudieron cargar los jugadores.'))
           setLoading(false)
           return
         }

@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { userFacingError } from '@/lib/userFacingError'
 import { useRouter } from 'next/navigation'
 
 type Player = {
@@ -52,7 +53,7 @@ export default function PlayerSetup() {
       .maybeSingle()
 
     if (profileError) {
-      setMessage(profileError.message)
+      setMessage(userFacingError(profileError, 'No se pudo cargar la configuración familiar.'))
       setLoading(false)
       return
     }
@@ -66,7 +67,7 @@ export default function PlayerSetup() {
         .order('alias')
 
       if (error) {
-        setMessage(error.message)
+        setMessage(userFacingError(error, 'No se pudieron cargar los jugadores.'))
         setLoading(false)
         return
       }
@@ -109,7 +110,7 @@ export default function PlayerSetup() {
     setSaving(false)
 
     if (error) {
-      setMessage(error.message)
+      setMessage(userFacingError(error, 'No se pudo crear la familia.'))
       return
     }
 
@@ -164,7 +165,7 @@ export default function PlayerSetup() {
     setSaving(false)
 
     if (error || !createdPlayer) {
-      setMessage(error?.message ?? 'No se pudo crear el jugador.')
+      setMessage(userFacingError(error, 'No se pudo crear el jugador.'))
       return
     }
 
@@ -192,7 +193,7 @@ export default function PlayerSetup() {
     setSaving(false)
 
     if (error) {
-      setMessage(error.message)
+      setMessage(userFacingError(error, 'No se pudo cerrar la sesión.'))
       return
     }
 
