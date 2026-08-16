@@ -154,15 +154,10 @@ export function generateFirstEvaluationQuestion(
     Math.floor(r() * (b - a + 1)) + a
 
   const d = Math.max(1, Math.min(5, difficulty))
-  const keyAliases: Record<string, string> = {
-    integers_order: 'integers_compare',
-    integers_mixed: 'integers_combined',
-    algebra_translate: 'algebra_expression',
-    like_terms: 'algebra_like_terms',
-    equation_multi_step: 'equation_two_step',
-    quadrilaterals: 'quadrilateral_types',
-  }
-  const key = keyAliases[skill.generator_key] ?? skill.generator_key
+  // Every supported generator key has its own branch below. Keeping the
+  // database key unchanged ensures that its specific difficulty progression
+  // is reachable instead of being redirected to a more generic generator.
+  const key = skill.generator_key
 
   // =========================
   // =========================
