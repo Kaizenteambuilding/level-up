@@ -131,6 +131,7 @@ export default function Parent() {
   const [streak, setStreak] = useState(0)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
+  const [dataWarnings, setDataWarnings] = useState<string[]>([])
 
   useEffect(() => {
     async function load() {
@@ -194,8 +195,10 @@ export default function Parent() {
       }
 
       const playerId = selectedPlayer.id
+      const warnings: string[] = []
       setPlayer(selectedPlayer)
       setMessage('')
+      setDataWarnings([])
 
       const { data: activityData, error: activityError } = await supabase
         .from('study_sessions')
@@ -206,7 +209,9 @@ export default function Parent() {
         .order('started_at', { ascending: false })
         .limit(1000)
 
-      if (!activityError) {
+      if (activityError) {
+        warnings.push('No se pudieron cargar el tiempo, los días de entrenamiento y la racha.')
+      } else {
         const summary = activitySummary((activityData ?? []) as ActivitySession[])
         setTodayMinutes(summary.todayMinutes)
         setTrainingDays(summary.totalTrainingDays)
@@ -222,14 +227,18 @@ export default function Parent() {
         .order('started_at', { ascending: false })
         .limit(7)
 
-      if (!sessionsError && sessionRows && sessionRows.length > 0) {
+      if (sessionsError) {
+        warnings.push('No se pudieron cargar las sesiones recientes.')
+      } else if (sessionRows && sessionRows.length > 0) {
         const sessionIds = sessionRows.map((session: any) => session.id)
         const { data: attemptsData, error: attemptsError } = await supabase
           .from('attempts')
           .select('session_id,correct')
           .in('session_id', sessionIds)
 
-        if (!attemptsError) {
+        if (attemptsError) {
+          warnings.push('No se pudieron cargar los aciertos de las sesiones recientes.')
+        } else {
           const counters = new Map<string, { attempts: number; correct: number }>()
           ;(attemptsData ?? []).forEach((attempt: any) => {
             const current = counters.get(attempt.session_id) ?? { attempts: 0, correct: 0 }
@@ -267,7 +276,11 @@ export default function Parent() {
         `)
         .eq('player_id', playerId)
 
-      if (!skillError) setSkills((skillData ?? []) as unknown as SkillState[])
+      if (skillError) {
+        warnings.push('No se pudieron cargar las habilidades adaptativas.')
+      } else {
+        setSkills((skillData ?? []) as unknown as SkillState[])
+      }
 
       const { data: evidenceData, error: evidenceError } = await supabase
         .from('attempts')
@@ -275,7 +288,9 @@ export default function Parent() {
         .eq('player_id', playerId)
         .limit(5000)
 
-      if (!evidenceError) {
+      if (evidenceError) {
+        warnings.push('No se pudo cargar la evidencia necesaria para ponderar el dominio.')
+      } else {
         const counts: Record<string, number> = {}
         ;(evidenceData ?? []).forEach((attempt: any) => {
           const skillId = String(attempt.skill_id ?? '')
@@ -285,6 +300,7 @@ export default function Parent() {
         setSkillAttemptCounts(counts)
       }
 
+      setDataWarnings(warnings)
       setLoading(false)
     }
 
@@ -364,7 +380,7 @@ export default function Parent() {
           <div className="metric"><b>Nivel {player.level}</b><p className="muted">{player.xp} XP totales</p></div>
           <div className="metric"><b>🔥 {streak}</b><p className="muted">días de racha actual</p></div>
           <div className="metric"><b>{trainingDays}</b><p className="muted">días con entrenamiento completado</p></div>
-          <div className="metric"><b>{averageMastery}%</b><p className="muted">dominio medio ponderado por práctica</p></div>
+          <div className="metric"><b>{averageMastery}%</b><p className="muted">{totalEvidence > 0 ? 'dominio medio ponderado por práctica' : 'dominio medio · sin práctica registrada'}</p></div>
           <div className="metric"><b>{skills.length}</b><p className="muted">habilidades evaluadas</p></div>
           <div className="metric">
             <b>{todayMinutes}/{target} min</b><p className="muted">entrenados hoy · objetivo diario</p>
@@ -372,6 +388,17 @@ export default function Parent() {
           </div>
         </div>
       </section>
+
+      {dataWarnings.length > 0 && (
+        <section className="card">
+          <span className="tag">⚠️ DATOS PARCIALES</span>
+          <h2>No se ha podido actualizar todo el panel</h2>
+          <p className="muted">Los datos visibles pueden estar incompletos. No interpretes un cero o un bloque vacío como falta de progreso.</p>
+          <ul className="muted">
+            {dataWarnings.map((warning) => <li key={warning}>{warning}</li>)}
+          </ul>
+        </section>
+      )}
 
       <section className="card">
         <span className="tag">🧭 LECTURA PEDAGÓGICA</span>
