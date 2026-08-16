@@ -117,6 +117,7 @@ export default function PlayerDashboard() {
   const [streak, setStreak] = useState(0)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
+  const [dataWarnings, setDataWarnings] = useState<string[]>([])
 
   async function load() {
     const supabase = createSupabaseBrowserClient()
@@ -189,8 +190,10 @@ export default function PlayerDashboard() {
       localStorage.setItem('levelup_player_id', currentPlayer.id)
     }
 
+    const warnings: string[] = []
     setPlayer(currentPlayer)
     setMessage('')
+    setDataWarnings([])
 
     const resumeSince = new Date(Date.now() - RESUME_WINDOW_MS).toISOString()
     const { data: openSession, error: openSessionError } = await supabase
@@ -206,6 +209,7 @@ export default function PlayerDashboard() {
       .maybeSingle()
 
     if (openSessionError) {
+      warnings.push('No se pudo comprobar si hay una misión guardada.')
       setOpenMissionProgress(null)
       setOpenMissionProgressUnknown(false)
     } else if (openSession) {
@@ -215,6 +219,7 @@ export default function PlayerDashboard() {
         .eq('session_id', openSession.id)
 
       if (countError || count === null) {
+        warnings.push('No se pudo cargar el avance exacto de la misión guardada.')
         setOpenMissionProgress(null)
         setOpenMissionProgressUnknown(true)
       } else {
@@ -235,14 +240,16 @@ export default function PlayerDashboard() {
       .order('started_at', { ascending: false })
       .limit(1000)
 
-    if (!activityError) {
+    if (activityError) {
+      warnings.push('No se pudieron cargar el tiempo, los días de entrenamiento y la racha.')
+    } else {
       const summary = activitySummary((activityData ?? []) as ActivitySession[])
       setTodayMinutes(summary.todayMinutes)
       setTrainingDays(summary.totalTrainingDays)
       setStreak(summary.streak)
     }
 
-    const { data: sessionData } = await supabase
+    const { data: sessionData, error: sessionError } = await supabase
       .from('study_sessions')
       .select('id,started_at,ended_at,completed,xp_earned')
       .eq('player_id', currentPlayer.id)
@@ -251,15 +258,21 @@ export default function PlayerDashboard() {
       .limit(1)
       .maybeSingle()
 
-    if (sessionData) {
+    if (sessionError) {
+      warnings.push('No se pudo cargar la última misión completada.')
+    } else if (sessionData) {
       setLastSession(sessionData as LastSession)
 
-      const { data: attemptsData } = await supabase
+      const { data: attemptsData, error: attemptsError } = await supabase
         .from('attempts')
         .select('correct')
         .eq('session_id', sessionData.id)
 
-      const attempts = attemptsData ?? []
+      if (attemptsError) {
+        warnings.push('No se pudieron cargar los resultados de la última misión.')
+      }
+
+      const attempts = attemptsError ? [] : attemptsData ?? []
 
       setSessionAttempts(attempts.length)
       setSessionCorrect(
@@ -267,20 +280,26 @@ export default function PlayerDashboard() {
       )
     }
 
-    const { data: stateData } = await supabase
+    const { data: stateData, error: stateError } = await supabase
       .from('player_skill_state')
       .select('skill_id,mastery,confidence,difficulty,priority')
       .eq('player_id', currentPlayer.id)
       .order('priority', { ascending: false })
       .limit(3)
 
-    if (stateData && stateData.length > 0) {
+    if (stateError) {
+      warnings.push('No se pudieron cargar las recomendaciones adaptativas.')
+    } else if (stateData && stateData.length > 0) {
       const skillIds = stateData.map((state: any) => state.skill_id)
 
-      const { data: skillData } = await supabase
+      const { data: skillData, error: skillError } = await supabase
         .from('skills')
         .select('id,name')
         .in('id', skillIds)
+
+      if (skillError) {
+        warnings.push('No se pudieron cargar los nombres de las habilidades recomendadas.')
+      }
 
       const skillNames = new Map(
         (skillData ?? []).map((skill: any) => [skill.id, skill.name])
@@ -294,6 +313,7 @@ export default function PlayerDashboard() {
       )
     }
 
+    setDataWarnings(warnings)
     setLoading(false)
   }
 
@@ -392,6 +412,17 @@ export default function PlayerDashboard() {
           </Link>
         </div>
       </section>
+
+      {dataWarnings.length > 0 && (
+        <section className="card">
+          <span className="tag">⚠️ DATOS PARCIALES</span>
+          <h2>No se ha podido actualizar todo el dashboard</h2>
+          <p className="muted">Los datos visibles pueden estar incompletos. No interpretes un cero o un bloque vacío como falta de progreso.</p>
+          <ul className="muted">
+            {dataWarnings.map((warning) => <li key={warning}>{warning}</li>)}
+          </ul>
+        </section>
+      )}
 
       <section className="card">
         <span className="tag">📊 ÚLTIMA MISIÓN</span>
