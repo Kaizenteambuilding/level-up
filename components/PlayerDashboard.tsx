@@ -37,6 +37,7 @@ type PrioritySkill = {
   name: string
 }
 
+const ACTIVE_CURRICULUM_UNITS = ['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13','M14','M15']
 const SESSION_LENGTH = 10
 const RESUME_WINDOW_MS = 24 * 60 * 60 * 1000
 
@@ -282,33 +283,30 @@ export default function PlayerDashboard() {
 
     const { data: stateData, error: stateError } = await supabase
       .from('player_skill_state')
-      .select('skill_id,mastery,confidence,difficulty,priority')
+      .select(`
+        skill_id,
+        mastery,
+        confidence,
+        difficulty,
+        priority,
+        skills!inner (
+          name,
+          unit_id
+        )
+      `)
       .eq('player_id', currentPlayer.id)
+      .eq('skills.active', true)
+      .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
       .order('priority', { ascending: false })
       .limit(3)
 
     if (stateError) {
       warnings.push('No se pudieron cargar las recomendaciones adaptativas.')
     } else if (stateData && stateData.length > 0) {
-      const skillIds = stateData.map((state: any) => state.skill_id)
-
-      const { data: skillData, error: skillError } = await supabase
-        .from('skills')
-        .select('id,name')
-        .in('id', skillIds)
-
-      if (skillError) {
-        warnings.push('No se pudieron cargar los nombres de las habilidades recomendadas.')
-      }
-
-      const skillNames = new Map(
-        (skillData ?? []).map((skill: any) => [skill.id, skill.name])
-      )
-
       setPrioritySkills(
         stateData.map((state: any) => ({
           ...state,
-          name: skillNames.get(state.skill_id) ?? state.skill_id,
+          name: state.skills?.name ?? state.skill_id,
         }))
       )
     }

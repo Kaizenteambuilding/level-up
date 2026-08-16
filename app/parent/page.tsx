@@ -38,6 +38,8 @@ type RecentSession = ActivitySession & {
   attempts: number
 }
 
+const ACTIVE_CURRICULUM_UNITS = ['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13','M14','M15']
+
 function localDayKey(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value)
   const year = date.getFullYear()
@@ -269,12 +271,14 @@ export default function Parent() {
           confidence,
           difficulty,
           priority,
-          skills (
+          skills!inner (
             name,
             unit_id
           )
         `)
         .eq('player_id', playerId)
+        .eq('skills.active', true)
+        .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
 
       if (skillError) {
         warnings.push('No se pudieron cargar las habilidades adaptativas.')
@@ -328,7 +332,11 @@ export default function Parent() {
   )
   const reinforcement = byPriority.slice(0, 3)
   const strongest = [...skills]
-    .filter((skill) => Number(skill.confidence) >= 60)
+    .filter(
+      (skill) =>
+        Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0 &&
+        Number(skill.confidence) >= 60
+    )
     .sort(
       (a, b) => Number(b.mastery) - Number(a.mastery) || Number(b.confidence) - Number(a.confidence)
     )
@@ -347,7 +355,7 @@ export default function Parent() {
             0
           ) / totalEvidence
         )
-      : Math.round(skills.reduce((sum, skill) => sum + Number(skill.mastery), 0) / skills.length)
+      : 0
     : 0
 
   const target = Math.max(1, Number(player.daily_target_minutes) || 35)
