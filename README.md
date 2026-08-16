@@ -14,7 +14,7 @@ El nivel numérico se conserva en la base por compatibilidad, pero no se muestra
 
 ## Desarrollo local
 
-Requisitos: Node.js 20 o posterior.
+Requisitos: Node.js 22 o posterior.
 
 1. Ejecuta `npm install`.
 2. Copia `.env.example` a `.env.local`.
@@ -57,10 +57,14 @@ Migraciones versionadas:
 - `20260816_bound_attempt_payloads.sql`: limita semillas y metadatos diagnósticos para impedir intentos con cargas anómalas.
 - `20260816_complete_data_api_least_privilege.sql`: elimina accesos anónimos a tablas y deja el currículo autenticado en modo de solo lectura.
 - `20260816_expire_abandoned_sessions.sql`: cierra cada hora las misiones abiertas durante más de 24 horas, aunque el jugador no vuelva a entrar.
+- `20260816_secure_future_data_api_defaults.sql`: deja privados por defecto las futuras tablas, secuencias y funciones hasta que una migración conceda acceso explícito.
+- `20260816_revoke_all_future_public_defaults.sql`: completa esa política incluyendo `MAINTAIN` y concesiones directas heredadas de proyectos antiguos.
 
 Los avisos de Supabase sobre las cinco funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `create_levelup_player`, `open_levelup_session`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
 ## Comprobaciones antes de publicar
+
+GitHub Actions ejecuta automáticamente el tipado y la auditoría completa de generadores en cada cambio de `main` y en cada pull request.
 
 - `npm run lint` (`tsc --noEmit`).
 - `npm run build`.
