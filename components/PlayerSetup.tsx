@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -24,6 +24,7 @@ export default function PlayerSetup() {
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const actionLocked = useRef(false)
 
   async function load() {
     const supabase = createSupabaseBrowserClient()
@@ -85,6 +86,7 @@ export default function PlayerSetup() {
   }, [])
 
   async function setupFamily() {
+    if (actionLocked.current) return
     const supabase = createSupabaseBrowserClient()
 
     if (!supabase) return
@@ -94,6 +96,7 @@ export default function PlayerSetup() {
       return
     }
 
+    actionLocked.current = true
     setSaving(true)
     setMessage('')
 
@@ -102,6 +105,7 @@ export default function PlayerSetup() {
       parent_name: parentName.trim(),
     })
 
+    actionLocked.current = false
     setSaving(false)
 
     if (error) {
@@ -115,6 +119,7 @@ export default function PlayerSetup() {
 
   async function createPlayer(e: FormEvent) {
     e.preventDefault()
+    if (actionLocked.current) return
 
     const supabase = createSupabaseBrowserClient()
 
@@ -125,6 +130,7 @@ export default function PlayerSetup() {
       return
     }
 
+    actionLocked.current = true
     setSaving(true)
     setMessage('')
 
@@ -134,6 +140,7 @@ export default function PlayerSetup() {
       .single()
 
     if (profileError || !profile?.family_id) {
+      actionLocked.current = false
       setSaving(false)
       setMessage('Primero configura la familia.')
       return
@@ -153,6 +160,7 @@ export default function PlayerSetup() {
       .select('id')
       .single()
 
+    actionLocked.current = false
     setSaving(false)
 
     if (error || !createdPlayer) {
@@ -173,11 +181,14 @@ export default function PlayerSetup() {
   }
 
   async function signOut() {
+    if (actionLocked.current) return
     const supabase = createSupabaseBrowserClient()
     if (!supabase) return
 
+    actionLocked.current = true
     setSaving(true)
     const { error } = await supabase.auth.signOut()
+    actionLocked.current = false
     setSaving(false)
 
     if (error) {
