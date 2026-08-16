@@ -464,7 +464,7 @@ export default function PlayerDashboard() {
                   Dominio {skill.mastery}% · dificultad {skill.difficulty}/5
                 </p>
 
-                <div className="bar">
+                <div className="bar" role="progressbar" aria-label={`Dominio de ${skill.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={skill.mastery}>
                   <i style={{ width: `${skill.mastery}%` }} />
                 </div>
               </div>
@@ -499,7 +499,7 @@ export default function PlayerDashboard() {
           <div className="metric">
             <b>{todayMinutes}/{target} min</b>
             <p className="muted">entrenados hoy · objetivo diario</p>
-            <div className="bar">
+            <div className="bar" role="progressbar" aria-label="Progreso del objetivo diario" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dailyProgress}>
               <i style={{ width: `${dailyProgress}%` }} />
             </div>
           </div>

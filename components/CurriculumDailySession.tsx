@@ -339,7 +339,7 @@ export default function CurriculumDailySession() {
   }
 
   if (loading) return <section className="card"><p className="muted">Cargando Curriculum Engine...</p></section>
-  if (loadError) return <section className="card"><span className="tag">ERROR DE CARGA</span><h1>No se puede preparar la misión</h1><p className="muted">{loadError}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
+  if (loadError) return <section className="card" role="alert"><span className="tag">ERROR DE CARGA</span><h1>No se puede preparar la misión</h1><p className="muted">{loadError}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
   if (!playerId) return <section className="card"><h1>Sin jugador</h1><Link href="/player" className="btn primary">IR A JUGADOR</Link></section>
 
   if (!testMode && index >= SESSION_LENGTH) {
@@ -350,7 +350,7 @@ export default function CurriculumDailySession() {
           <div style={{ fontSize:70 }}>💾</div>
           <span className="tag">GUARDANDO RESULTADOS</span>
           <h1>{closing ? 'Cerrando la misión...' : 'La misión está pendiente de guardar'}</h1>
-          <p className="muted">{closeError || 'Estamos confirmando XP, minutos y progreso antes de volver al jugador.'}</p>
+          <p className="muted" role={closeError ? 'alert' : 'status'} aria-live="polite">{closeError || 'Estamos confirmando XP, minutos y progreso antes de volver al jugador.'}</p>
           {!closing && closeError && <button className="btn primary" onClick={() => { closeStarted.current = false; setCloseError(''); setIndex(SESSION_LENGTH - 1); setTimeout(() => setIndex(SESSION_LENGTH), 0) }}>REINTENTAR GUARDADO</button>}
         </section>
       )
@@ -374,14 +374,14 @@ export default function CurriculumDailySession() {
       <span className="tag">{testMode ? `🧪 MODO PRUEBA · ${question.skillId}` : 'REPASO DE MATEMÁTICAS · CURRICULUM ENGINE'}</span>
       <h1>{testMode ? 'Prueba de habilidad' : `Reto ${index + 1} de ${SESSION_LENGTH}`}</h1>
       <p className="muted">{testMode ? 'Esta pantalla fuerza una habilidad concreta para poder validar su generador.' : 'LEVEL UP selecciona habilidades según el dominio real del jugador.'}</p>
-      {!testMode && <div className="bar"><i style={{ width:`${Math.round((index/SESSION_LENGTH)*100)}%` }} /></div>}
+      {!testMode && <div className="bar" role="progressbar" aria-label="Progreso de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={index}><i style={{ width:`${Math.round((index/SESSION_LENGTH)*100)}%` }} /></div>}
     </section>
     <section className="card">
       <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
       {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>🎯 REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
       <p style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
       <div className="answers">{question.options.map((option,i)=><button key={i} className="answer" disabled={answered} onClick={()=>submit(i)}>{String.fromCharCode(65+i)} · {option}</button>)}</div>
-      {feedback && <><div className="metric" style={{ marginTop:16 }}><b>{feedback}</b></div><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button className="btn primary" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
+      {feedback && <><div className="metric" style={{ marginTop:16 }} role="status" aria-live="polite"><b>{feedback}</b></div><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button className="btn primary" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
     </section>
     <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testMode ? testAttempts : index+(answered?1:0)}</b><p className="muted">aciertos</p></div></div></section>
   </>

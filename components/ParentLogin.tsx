@@ -233,7 +233,7 @@ export default function ParentLogin() {
         </div>
       </form>
 
-      {message && <p className="muted">{message}</p>}
+      {message && <p className="muted" role="alert">{message}</p>}
     </section>
   )
 }

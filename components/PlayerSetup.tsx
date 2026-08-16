@@ -257,7 +257,7 @@ export default function PlayerSetup() {
           </div>
         </form>
 
-        {message && <p className="muted">{message}</p>}
+        {message && <p className="muted" role="status" aria-live="polite">{message}</p>}
       </section>
     )
   }
@@ -300,7 +300,7 @@ export default function PlayerSetup() {
           </button>
         </form>
 
-        {message && <p className="muted">{message}</p>}
+        {message && <p className="muted" role="status" aria-live="polite">{message}</p>}
       </section>
 
       <section className="card">

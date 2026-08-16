@@ -393,7 +393,7 @@ export default function Parent() {
           <div className="metric"><b>{skills.length}</b><p className="muted">habilidades evaluadas</p></div>
           <div className="metric">
             <b>{todayMinutes}/{target} min</b><p className="muted">entrenados hoy · objetivo diario</p>
-            <div className="bar"><i style={{ width: `${dailyProgress}%` }} /></div>
+            <div className="bar" role="progressbar" aria-label="Progreso del objetivo diario" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dailyProgress}><i style={{ width: `${dailyProgress}%` }} /></div>
           </div>
         </div>
       </section>
@@ -486,7 +486,7 @@ export default function Parent() {
           <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
             <b>{skill.skills?.name ?? skill.skill_id}</b>
             <p className="muted">Prioridad {Math.round(skill.priority)}/100 · dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}% · dificultad {skill.difficulty}/5</p>
-            <div className="bar"><i style={{ width: `${Math.round(skill.mastery)}%` }} /></div>
+            <div className="bar" role="progressbar" aria-label={`Dominio de ${skill.skills?.name ?? skill.skill_id}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(skill.mastery)}><i style={{ width: `${Math.round(skill.mastery)}%` }} /></div>
           </div>
         ))}
       </section>
@@ -505,7 +505,7 @@ export default function Parent() {
       <section className="card">
         <h2>Objetivo diario</h2>
         <p className="muted">Hoy lleva {todayMinutes} de {target} minutos de entrenamiento.</p>
-        <div className="bar" style={{ marginBottom: 16 }}><i style={{ width: `${dailyProgress}%` }} /></div>
+        <div className="bar" role="progressbar" aria-label="Progreso del objetivo diario" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dailyProgress} style={{ marginBottom: 16 }}><i style={{ width: `${dailyProgress}%` }} /></div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <Link href="/player" className="btn primary">🎮 VOLVER A JUGAR</Link>
           <Link href="/parent/setup" className="btn dark">👥 CAMBIAR JUGADOR</Link>
