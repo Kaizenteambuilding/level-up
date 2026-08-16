@@ -7,8 +7,17 @@ import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 import {
   fetchCompletedActivity,
-  fetchSkillAttemptCounts,
+  fetchCompletedSkillEvidence,
 } from '@/lib/progressQueries'
+import {
+  emergingSkills,
+  evidenceCount,
+  reinforcementSkills,
+  skillAccuracy,
+  strongestSkills,
+  weeklyRecommendation,
+  weightedMastery,
+} from '@/lib/parentInsights'
 
 type Player = {
   id: string
@@ -130,7 +139,11 @@ export default function Parent() {
   const router = useRouter()
   const [player, setPlayer] = useState<Player | null>(null)
   const [skills, setSkills] = useState<SkillState[]>([])
-  const [skillAttemptCounts, setSkillAttemptCounts] = useState<Record<string, number>>({})
+  const [skillEvidence, setSkillEvidence] = useState({
+    attempts: {} as Record<string, number>,
+    correct: {} as Record<string, number>,
+  })
+  const [activeSkillCount, setActiveSkillCount] = useState(0)
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [trainingDays, setTrainingDays] = useState(0)
@@ -217,6 +230,7 @@ export default function Parent() {
         { data: sessionRows, error: sessionsError },
         { data: skillData, error: skillError },
         { data: evidenceData, error: evidenceError },
+        { count: curriculumSkillCount, error: curriculumCountError },
       ] = await Promise.all([
         fetchCompletedActivity(supabase, playerId),
         supabase
@@ -244,7 +258,12 @@ export default function Parent() {
           .eq('player_id', playerId)
           .eq('skills.active', true)
           .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS),
-        fetchSkillAttemptCounts(supabase, playerId),
+        fetchCompletedSkillEvidence(supabase, playerId),
+        supabase
+          .from('skills')
+          .select('id', { count: 'exact', head: true })
+          .eq('active', true)
+          .in('unit_id', ACTIVE_CURRICULUM_UNITS),
       ])
 
       if (activityError) {
@@ -299,7 +318,13 @@ export default function Parent() {
       if (evidenceError) {
         warnings.push('No se pudo cargar la evidencia necesaria para ponderar el dominio.')
       } else {
-        setSkillAttemptCounts(evidenceData ?? {})
+        setSkillEvidence(evidenceData ?? { attempts: {}, correct: {} })
+      }
+
+      if (curriculumCountError || curriculumSkillCount === null) {
+        warnings.push('No se pudo cargar el tamaño total del currículo activo.')
+      } else {
+        setActiveSkillCount(curriculumSkillCount)
       }
 
       setDataWarnings(warnings)
@@ -328,46 +353,12 @@ export default function Parent() {
     )
   }
 
-  const byPriority = [...skills].sort(
-    (a, b) => Number(b.priority) - Number(a.priority) || Number(a.mastery) - Number(b.mastery)
-  )
-  const strongest = [...skills]
-    .filter(
-      (skill) =>
-        Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0 &&
-        Number(skill.mastery) >= 70 &&
-        Number(skill.confidence) >= 60
-    )
-    .sort(
-      (a, b) => Number(b.mastery) - Number(a.mastery) || Number(b.confidence) - Number(a.confidence)
-    )
-    .slice(0, 3)
-  const strongestIds = new Set(strongest.map((skill) => skill.skill_id))
-  const reinforcement = byPriority
-    .filter(
-      (skill) =>
-        !strongestIds.has(skill.skill_id) &&
-        (Number(skillAttemptCounts[skill.skill_id] ?? 0) === 0 ||
-          Number(skill.mastery) < 70 ||
-          Number(skill.confidence) < 60)
-    )
-    .slice(0, 3)
-
-  const totalEvidence = skills.reduce(
-    (sum, skill) => sum + Number(skillAttemptCounts[skill.skill_id] ?? 0),
-    0
-  )
-  const averageMastery = skills.length > 0
-    ? totalEvidence > 0
-      ? Math.round(
-          skills.reduce(
-            (sum, skill) =>
-              sum + Number(skill.mastery) * Number(skillAttemptCounts[skill.skill_id] ?? 0),
-            0
-          ) / totalEvidence
-        )
-      : 0
-    : 0
+  const strongest = strongestSkills(skills, skillEvidence)
+  const reinforcement = reinforcementSkills(skills, skillEvidence)
+  const emerging = emergingSkills(skills, skillEvidence)
+  const masterySummary = weightedMastery(skills, skillEvidence)
+  const totalEvidence = masterySummary.evidence
+  const averageMastery = masterySummary.value
 
   const target = Math.max(1, Number(player.daily_target_minutes) || 35)
   const dailyProgress = Math.min(100, Math.round((todayMinutes / target) * 100))
@@ -382,18 +373,26 @@ export default function Parent() {
   const recentXp = recentBlock.reduce((sum, session) => sum + Number(session.xp_earned ?? 0), 0)
 
   const evaluatedSkills = skills.filter(
-    (skill) => Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0
+    (skill) => evidenceCount(skill, skillEvidence) > 0
   ).length
   const attention = reinforcement[0]
   const consolidating = [...skills]
     .filter(
       (skill) =>
-        Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0 &&
+        evidenceCount(skill, skillEvidence) >= 2 &&
         skill.mastery >= 55 &&
         skill.mastery < 80
     )
     .sort((a, b) => b.mastery - a.mastery)[0]
   const secure = strongest[0]
+  const recommendation = weeklyRecommendation({
+    completedSessions: recentSessions.length,
+    evaluatedSkills,
+    totalSkills: activeSkillCount || ACTIVE_CURRICULUM_UNITS.length,
+    recentAccuracy,
+    accuracyDelta,
+    focusName: attention ? skillName(attention) : undefined,
+  })
 
   return (
     <main className="shell">
@@ -406,7 +405,7 @@ export default function Parent() {
           <div className="metric"><b>🔥 {streak}</b><p className="muted">días de racha actual</p></div>
           <div className="metric"><b>{trainingDays}</b><p className="muted">días con entrenamiento completado</p></div>
           <div className="metric"><b>{averageMastery}%</b><p className="muted">{totalEvidence > 0 ? 'dominio medio ponderado por práctica' : 'dominio medio · sin práctica registrada'}</p></div>
-          <div className="metric"><b>{evaluatedSkills}</b><p className="muted">habilidades con práctica registrada</p></div>
+          <div className="metric"><b>{evaluatedSkills}/{activeSkillCount || '—'}</b><p className="muted">habilidades con práctica válida del currículo activo</p></div>
           <div className="metric">
             <b>{todayMinutes}/{target} min</b><p className="muted">entrenados hoy · objetivo diario</p>
             <div className="bar" role="progressbar" aria-label="Progreso del objetivo diario" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dailyProgress}><i style={{ width: `${dailyProgress}%` }} /></div>
@@ -429,6 +428,13 @@ export default function Parent() {
       )}
 
       <section className="card">
+        <span className="tag">📌 RECOMENDACIÓN PARA ESTA SEMANA</span>
+        <h2>{recommendation.title}</h2>
+        <p className="muted">{recommendation.detail}</p>
+        <p className="muted" style={{ marginBottom: 0 }}>Esta orientación usa únicamente misiones completadas; se actualizará automáticamente al acumular nueva evidencia.</p>
+      </section>
+
+      <section className="card">
         <span className="tag">🧭 LECTURA PEDAGÓGICA</span>
         <h2>Qué está ocurriendo con las habilidades</h2>
         {skills.length === 0 ? (
@@ -439,9 +445,7 @@ export default function Parent() {
               <div className="metric">
                 <b>🎯 Próximo foco de práctica · {skillName(attention)}</b>
                 <p className="muted" style={{ marginBottom: 0 }}>
-                  {Number(skillAttemptCounts[attention.skill_id] ?? 0) === 0
-                    ? `Todavía no tiene práctica registrada · dificultad inicial ${attention.difficulty}/5. El motor la incluye para ampliar la cobertura curricular.`
-                    : `Dominio ${Math.round(attention.mastery)}% · confianza ${Math.round(attention.confidence)}% · dificultad ${attention.difficulty}/5. Es una de las señales de mayor necesidad actual y el motor la favorece sin perder variedad.`}
+                  Dominio {Math.round(attention.mastery)}% · confianza {Math.round(attention.confidence)}% · {evidenceCount(attention, skillEvidence)} respuestas válidas · precisión {skillAccuracy(attention, skillEvidence)}%. Es una de las señales de mayor necesidad actual y el motor la favorece sin perder variedad.
                 </p>
               </div>
             ) : (
@@ -510,14 +514,23 @@ export default function Parent() {
       <section className="card">
         <span className="tag">🎯 PRÓXIMOS FOCOS</span>
         <h2>Lo que el motor propone practicar</h2>
-        {reinforcement.length === 0 ? <p className="muted">No hay ahora mismo ninguna habilidad que necesite práctica prioritaria.</p> : reinforcement.map((skill) => (
+        {reinforcement.length === 0 ? <p className="muted">No hay todavía evidencia suficiente para señalar una necesidad prioritaria, o las habilidades practicadas ya superan los umbrales actuales.</p> : reinforcement.map((skill) => (
           <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
             <b>{skill.skills?.name ?? skill.skill_id}</b>
-            <p className="muted">{Number(skillAttemptCounts[skill.skill_id] ?? 0) === 0 ? 'Sin práctica registrada todavía' : `Prioridad ${Math.round(skill.priority)}/100 · dominio ${Math.round(skill.mastery)}% · confianza ${Math.round(skill.confidence)}%`} · dificultad {skill.difficulty}/5</p>
+            <p className="muted">Prioridad {Math.round(skill.priority)}/100 · dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}% · precisión {skillAccuracy(skill, skillEvidence)}% en {evidenceCount(skill, skillEvidence)} respuestas válidas · dificultad {skill.difficulty}/5</p>
             <div className="bar" role="progressbar" aria-label={`Dominio de ${skill.skills?.name ?? skill.skill_id}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(skill.mastery)}><i style={{ width: `${Math.round(skill.mastery)}%` }} /></div>
           </div>
         ))}
       </section>
+
+      {emerging.length > 0 && (
+        <section className="card">
+          <span className="tag">🌱 EVIDENCIA INICIAL</span>
+          <h2>Habilidades todavía sin diagnóstico fiable</h2>
+          <p className="muted">Estas habilidades solo tienen una respuesta dentro de una misión completada. El panel no las presenta aún como fortaleza ni como dificultad.</p>
+          <p className="muted" style={{ marginBottom: 0 }}>{emerging.slice(0, 5).map(skillName).join(' · ')}{emerging.length > 5 ? ` · y ${emerging.length - 5} más` : ''}</p>
+        </section>
+      )}
 
       <section className="card">
         <span className="tag">🏆 PUNTOS FUERTES</span>
@@ -525,7 +538,7 @@ export default function Parent() {
         {strongest.length === 0 ? <p className="muted">Todavía no hay suficiente confianza acumulada para señalar puntos fuertes.</p> : strongest.map((skill) => (
           <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
             <b>{skill.skills?.name ?? skill.skill_id}</b>
-            <p className="muted">Dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}%</p>
+            <p className="muted">Dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}% · precisión {skillAccuracy(skill, skillEvidence)}% en {evidenceCount(skill, skillEvidence)} respuestas válidas</p>
           </div>
         ))}
       </section>

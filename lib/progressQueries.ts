@@ -35,28 +35,47 @@ export async function fetchCompletedActivity(
   }
 }
 
-export async function fetchSkillAttemptCounts(
+export type CompletedSkillEvidence = {
+  attempts: Record<string, number>
+  correct: Record<string, number>
+}
+
+export async function fetchCompletedSkillEvidence(
   supabase: SupabaseClient,
   playerId: string
 ) {
-  const counts: Record<string, number> = {}
+  const evidence: CompletedSkillEvidence = { attempts: {}, correct: {} }
 
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabase
       .from('attempts')
-      .select('id,skill_id')
+      .select(`
+        id,
+        skill_id,
+        correct,
+        study_sessions!inner (
+          id
+        )
+      `)
       .eq('player_id', playerId)
+      .eq('study_sessions.completed', true)
+      .eq('study_sessions.phase', 'done')
+      .not('study_sessions.ended_at', 'is', null)
       .order('id', { ascending: true })
       .range(from, from + PAGE_SIZE - 1)
 
     if (error) return { data: null, error }
 
     const page = data ?? []
-    page.forEach((attempt: { skill_id: string | null }) => {
+    page.forEach((attempt: { skill_id: string | null; correct: boolean | null }) => {
       const skillId = String(attempt.skill_id ?? '')
-      if (skillId) counts[skillId] = (counts[skillId] ?? 0) + 1
+      if (!skillId) return
+      evidence.attempts[skillId] = (evidence.attempts[skillId] ?? 0) + 1
+      if (attempt.correct === true) {
+        evidence.correct[skillId] = (evidence.correct[skillId] ?? 0) + 1
+      }
     })
 
-    if (page.length < PAGE_SIZE) return { data: counts, error: null }
+    if (page.length < PAGE_SIZE) return { data: evidence, error: null }
   }
 }

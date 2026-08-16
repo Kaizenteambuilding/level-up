@@ -41,6 +41,9 @@ jobs:
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
+      - name: Audit parent insight thresholds
+        run: npm run audit:parent-insights
+
       - name: Build production application
         run: npm run build
 

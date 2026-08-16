@@ -12,7 +12,8 @@
     "lint": "tsc --noEmit",
     "audit:questions": "node scripts/audit-question-generators.cjs",
     "audit:question-quality": "node scripts/audit-question-quality.cjs",
-    "audit:adaptive-engine": "node scripts/audit-adaptive-engine.cjs"
+    "audit:adaptive-engine": "node scripts/audit-adaptive-engine.cjs",
+    "audit:parent-insights": "node scripts/audit-parent-insights.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
