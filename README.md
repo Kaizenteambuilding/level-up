@@ -41,6 +41,7 @@ Migraciones versionadas:
 - `20260816_server_control_session_completion.sql`: mueve el cierre de misión a una RPC atómica y retira las escrituras directas de XP y sesiones.
 - `20260816_mark_unverified_legacy_sessions.sql`: conserva pero aparta de las métricas las sesiones históricas que no tienen intentos verificables.
 - `20260816_prevent_duplicate_session_attempts.sql`: impide respuestas duplicadas y aplica invariantes a todos los intentos nuevos.
+- `20260816_require_family_setup_rpc.sql`: impide crear o reasignar relaciones familiares directamente y obliga a utilizar la RPC atómica de alta.
 
 Los avisos de Supabase sobre las tres funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
