@@ -3734,7 +3734,7 @@ if (key === 'fraction_equivalent') {
       String(den),
       [
         String(eqDen),
-        String(den * k),
+        String(den + k),
         String(Math.max(1, den - 1)),
       ],
       `${eqNum}/${eqDen} se obtiene multiplicando ${num}/${den} por ${k}/${k}. El denominador buscado es ${den}.`,
@@ -3870,10 +3870,41 @@ if (key === 'fraction_compare') {
   }
 
   if (d === 4) {
-    const den1 = ri(5, 12)
-    const den2 = ri(5, 12)
-    const num1 = ri(1, den1 - 1)
-    const num2 = ri(1, den2 - 1)
+    const rationalKey = (num: number, den: number) => {
+      let a = Math.abs(num)
+      let b = Math.abs(den)
+      while (b !== 0) {
+        const next = a % b
+        a = b
+        b = next
+      }
+      return `${num / a}/${den / a}`
+    }
+
+    let den1 = 3
+    let den2 = 4
+    let num1 = 1
+    let num2 = 3
+
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const candidateDen1 = ri(5, 12)
+      const candidateDen2 = ri(5, 12)
+      const candidateNum1 = ri(1, candidateDen1 - 1)
+      const candidateNum2 = ri(1, candidateDen2 - 1)
+      const keys = new Set([
+        rationalKey(candidateNum1, candidateDen1),
+        rationalKey(candidateNum2, candidateDen2),
+        '1/2',
+      ])
+
+      if (keys.size === 3) {
+        den1 = candidateDen1
+        den2 = candidateDen2
+        num1 = candidateNum1
+        num2 = candidateNum2
+        break
+      }
+    }
 
     const fractions = [
       { text: `${num1}/${den1}`, value: num1 / den1 },
@@ -3898,15 +3929,38 @@ if (key === 'fraction_compare') {
     )
   }
 
-  const den1 = ri(7, 15)
-  const den2 = ri(7, 15)
-  const den3 = ri(7, 15)
+  const rationalKey = (num: number, den: number) => {
+    let a = Math.abs(num)
+    let b = Math.abs(den)
+    while (b !== 0) {
+      const next = a % b
+      a = b
+      b = next
+    }
+    return `${num / a}/${den / a}`
+  }
 
-  const fractions = [
-    { n: ri(1, den1 - 1), d: den1 },
-    { n: ri(1, den2 - 1), d: den2 },
-    { n: ri(1, den3 - 1), d: den3 },
+  let fractions = [
+    { n: 1, d: 4 },
+    { n: 1, d: 2 },
+    { n: 3, d: 4 },
   ]
+
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const den1 = ri(7, 15)
+    const den2 = ri(7, 15)
+    const den3 = ri(7, 15)
+    const candidates = [
+      { n: ri(1, den1 - 1), d: den1 },
+      { n: ri(1, den2 - 1), d: den2 },
+      { n: ri(1, den3 - 1), d: den3 },
+    ]
+
+    if (new Set(candidates.map((fraction) => rationalKey(fraction.n, fraction.d))).size === 3) {
+      fractions = candidates
+      break
+    }
+  }
 
   const sorted = [...fractions].sort(
     (x, y) => x.n / x.d - y.n / y.d
