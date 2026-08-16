@@ -18,6 +18,11 @@ import {
   weeklyRecommendation,
   weightedMastery,
 } from '@/lib/parentInsights'
+import {
+  buildUnitInsights,
+  CurriculumSkill,
+  unitStatusLabel,
+} from '@/lib/curriculumInsights'
 
 type Player = {
   id: string
@@ -144,6 +149,8 @@ export default function Parent() {
     correct: {} as Record<string, number>,
   })
   const [activeSkillCount, setActiveSkillCount] = useState(0)
+  const [curriculumSkills, setCurriculumSkills] = useState<CurriculumSkill[]>([])
+  const [unitNames, setUnitNames] = useState<Record<string, string>>({})
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [trainingDays, setTrainingDays] = useState(0)
@@ -230,7 +237,8 @@ export default function Parent() {
         { data: sessionRows, error: sessionsError },
         { data: skillData, error: skillError },
         { data: evidenceData, error: evidenceError },
-        { count: curriculumSkillCount, error: curriculumCountError },
+        { data: curriculumSkillData, error: curriculumSkillError },
+        { data: unitData, error: unitError },
       ] = await Promise.all([
         fetchCompletedActivity(supabase, playerId),
         supabase
@@ -261,9 +269,14 @@ export default function Parent() {
         fetchCompletedSkillEvidence(supabase, playerId),
         supabase
           .from('skills')
-          .select('id', { count: 'exact', head: true })
+          .select('id,name,unit_id')
           .eq('active', true)
           .in('unit_id', ACTIVE_CURRICULUM_UNITS),
+        supabase
+          .from('curriculum_units')
+          .select('id,name')
+          .in('id', ACTIVE_CURRICULUM_UNITS)
+          .order('sort_order', { ascending: true }),
       ])
 
       if (activityError) {
@@ -321,10 +334,20 @@ export default function Parent() {
         setSkillEvidence(evidenceData ?? { attempts: {}, correct: {} })
       }
 
-      if (curriculumCountError || curriculumSkillCount === null) {
+      if (curriculumSkillError) {
         warnings.push('No se pudo cargar el tamaño total del currículo activo.')
       } else {
-        setActiveSkillCount(curriculumSkillCount)
+        const rows = (curriculumSkillData ?? []) as CurriculumSkill[]
+        setCurriculumSkills(rows)
+        setActiveSkillCount(rows.length)
+      }
+
+      if (unitError) {
+        warnings.push('No se pudieron cargar los nombres de las unidades curriculares.')
+      } else {
+        setUnitNames(
+          Object.fromEntries((unitData ?? []).map((unit: any) => [unit.id, unit.name]))
+        )
       }
 
       setDataWarnings(warnings)
@@ -392,6 +415,13 @@ export default function Parent() {
     recentAccuracy,
     accuracyDelta,
     focusName: attention ? skillName(attention) : undefined,
+  })
+  const unitInsights = buildUnitInsights({
+    curriculumSkills,
+    states: skills,
+    evidence: skillEvidence,
+    unitNames,
+    unitOrder: ACTIVE_CURRICULUM_UNITS,
   })
 
   return (
@@ -492,6 +522,30 @@ export default function Parent() {
             <div className="metric"><b>+{recentXp} XP</b><p className="muted">ganados en las últimas {recentBlock.length} sesiones</p></div>
           </div>
         )}
+      </section>
+
+      <section className="card">
+        <span className="tag">🗺️ MAPA DEL CURRÍCULO</span>
+        <h2>Cobertura por unidades</h2>
+        <p className="muted">Cada unidad separa cobertura, precisión y dominio. “Sin práctica” no significa dificultad: solo indica que todavía no existe evidencia completada.</p>
+        <div style={{ display: 'grid', gap: 10 }}>
+          {unitInsights.map((unit) => (
+            <details className="metric curriculum-unit" key={unit.unitId}>
+              <summary>
+                <b>{unit.unitId} · {unit.unitName}</b>
+                <span className={`unit-status ${unit.status}`}>{unitStatusLabel(unit.status)}</span>
+              </summary>
+              <div className="grid two" style={{ marginTop: 12 }}>
+                <div><b>{unit.practicedSkills}/{unit.totalSkills}</b><p className="muted">habilidades practicadas</p></div>
+                <div><b>{unit.accuracy === null ? '—' : `${unit.accuracy}%`}</b><p className="muted">precisión en {unit.attempts} respuestas</p></div>
+              </div>
+              <div className="bar" role="progressbar" aria-label={`Cobertura de ${unit.unitName}`} aria-valuemin={0} aria-valuemax={unit.totalSkills || 1} aria-valuenow={unit.practicedSkills}>
+                <i style={{ width: `${unit.totalSkills ? Math.round((unit.practicedSkills / unit.totalSkills) * 100) : 0}%` }} />
+              </div>
+              <p className="muted">{unit.averageMastery === null ? 'Dominio: todavía sin evidencia suficiente.' : `Dominio medio ponderado: ${unit.averageMastery}%.`}</p>
+            </details>
+          ))}
+        </div>
       </section>
 
       <section className="card">

@@ -47,6 +47,9 @@ jobs:
       - name: Audit mission recap evidence
         run: npm run audit:mission-recap
 
+      - name: Audit curriculum unit insights
+        run: npm run audit:curriculum-insights
+
       - name: Audit v1 release readiness
         run: npm run audit:release
 

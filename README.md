@@ -50,6 +50,8 @@ El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 
 
 `npm run audit:mission-recap` comprueba que el cierre de cada misión separa correctamente lo que conviene volver a practicar de lo bien resuelto, sin mezclar ambos grupos.
 
+`npm run audit:curriculum-insights` valida la clasificación por unidad curricular y evita interpretar una unidad sin práctica o con evidencia inicial como una dificultad consolidada.
+
 `database/schema.sql` y `database/seed.sql` se conservan únicamente como marcadores históricos y no deben ejecutarse. El esquema inicial antiguo dejó de representar la base real. Antes de crear un Supabase nuevo hace falta versionar un baseline completo de la base actual.
 
 Migraciones versionadas:

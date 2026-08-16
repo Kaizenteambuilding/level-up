@@ -15,8 +15,9 @@
     "audit:adaptive-engine": "node scripts/audit-adaptive-engine.cjs",
     "audit:parent-insights": "node scripts/audit-parent-insights.cjs",
     "audit:mission-recap": "node scripts/audit-mission-recap.cjs",
+    "audit:curriculum-insights": "node scripts/audit-curriculum-insights.cjs",
     "audit:release": "node scripts/audit-release-readiness.cjs",
-    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:release && npm run build"
+    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:release && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
