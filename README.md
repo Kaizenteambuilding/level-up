@@ -2,6 +2,8 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
+Versión familiar estable: **v1.0.0**.
+
 Producción: https://level-up-a544.vercel.app
 
 ## Recorrido funcional
@@ -42,6 +44,10 @@ El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 
 
 `npm run audit:question-quality` vuelve a recorrer 113.750 preguntas y exige determinismo, diversidad mínima de enunciados y familias, etiquetas diagnósticas válidas, textos acotados y un reparto no sesgado de la respuesta correcta entre las cuatro posiciones.
 
+`npm run audit:adaptive-engine` simula 4.800 respuestas de cuatro perfiles durante 480 misiones y comprueba cobertura, antirrepetición, dificultad y prioridad adaptativa.
+
+`npm run audit:parent-insights` valida que el panel no declare fortalezas ni dificultades sin evidencia completada suficiente. `npm run audit:release` comprueba que versión, endpoint de salud y documentación operativa permanecen coordinados.
+
 `database/schema.sql` y `database/seed.sql` se conservan únicamente como marcadores históricos y no deben ejecutarse. El esquema inicial antiguo dejó de representar la base real. Antes de crear un Supabase nuevo hace falta versionar un baseline completo de la base actual.
 
 Migraciones versionadas:
@@ -71,6 +77,8 @@ Los avisos de Supabase sobre las cinco funciones públicas `SECURITY DEFINER` so
 ## Comprobaciones antes de publicar
 
 GitHub Actions ejecuta automáticamente el tipado y la auditoría completa de generadores en cada cambio de `main` y en cada pull request.
+
+`npm run verify` agrupa la verificación local completa. El procedimiento de publicación, salud, incidencias, copias y recuperación está en [`OPERATIONS.md`](OPERATIONS.md).
 
 - `npm run lint` (`tsc --noEmit`).
 - `npm run audit:questions` y `npm run audit:question-quality`.

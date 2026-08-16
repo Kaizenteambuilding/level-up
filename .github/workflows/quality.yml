@@ -44,6 +44,9 @@ jobs:
       - name: Audit parent insight thresholds
         run: npm run audit:parent-insights
 
+      - name: Audit v1 release readiness
+        run: npm run audit:release
+
       - name: Build production application
         run: npm run build
 

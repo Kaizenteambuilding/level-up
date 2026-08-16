@@ -1,6 +1,6 @@
 {
   "name": "level-up",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -13,7 +13,9 @@
     "audit:questions": "node scripts/audit-question-generators.cjs",
     "audit:question-quality": "node scripts/audit-question-quality.cjs",
     "audit:adaptive-engine": "node scripts/audit-adaptive-engine.cjs",
-    "audit:parent-insights": "node scripts/audit-parent-insights.cjs"
+    "audit:parent-insights": "node scripts/audit-parent-insights.cjs",
+    "audit:release": "node scripts/audit-release-readiness.cjs",
+    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:release && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",
