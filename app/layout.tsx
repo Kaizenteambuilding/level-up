@@ -19,14 +19,7 @@ export default function RootLayout({
             LEVEL <span>UP</span>
           </Link>
 
-          <nav
-            style={{
-              display: 'flex',
-              gap: 14,
-              alignItems: 'center',
-              fontWeight: 800,
-            }}
-          >
+          <nav className="main-nav" aria-label="Navegación principal">
             <Link href="/player">
               🎮 Jugar
             </Link>
