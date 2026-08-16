@@ -71,6 +71,7 @@ export default function CurriculumDailySession() {
   const [closeError, setCloseError] = useState('')
   const closeStarted = useRef(false)
   const answerLocked = useRef(false)
+  const nextLocked = useRef(false)
   const questionStarted = useRef(Date.now())
   const recentTemplates = useRef<string[]>([])
   const recentFamilies = useRef<string[]>([])
@@ -279,6 +280,7 @@ export default function CurriculumDailySession() {
       recentSkillIds.current = [skill.id, ...recentSkillIds.current.filter((id) => id !== skill.id)].slice(0, 5)
       recentUnitIds.current = [skill.unit_id, ...recentUnitIds.current.filter((id) => id !== skill.unit_id)].slice(0, 4)
     }
+    nextLocked.current = false
     setQuestion(nextQuestion); setAnswered(false); setFeedback(''); questionStarted.current = Date.now()
   }, [loading, index, seed, skills.length, forcedSkillId, testMode])
 
@@ -361,6 +363,8 @@ export default function CurriculumDailySession() {
   }
 
   function next() {
+    if (nextLocked.current) return
+    nextLocked.current = true
     answerLocked.current = false
     setSeed((s) => (Math.imul(s, 1664525) + 1013904223) >>> 0)
     if (testMode) { setAnswered(false); setFeedback(''); questionStarted.current = Date.now(); return }
