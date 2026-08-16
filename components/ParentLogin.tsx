@@ -55,7 +55,7 @@ export default function ParentLogin() {
 
       if (players?.length === 1) {
         localStorage.setItem('levelup_player_id', players[0].id)
-        router.replace('/player')
+        router.replace('/world')
       } else {
         localStorage.removeItem('levelup_player_id')
         router.replace('/parent/setup')
@@ -106,7 +106,7 @@ export default function ParentLogin() {
 
     if (players?.length === 1) {
       localStorage.setItem('levelup_player_id', players[0].id)
-      router.push('/player')
+      router.push('/world')
     } else {
       router.push('/parent/setup')
     }

@@ -466,7 +466,7 @@ export default function CurriculumDailySession() {
             </div>
           )}
         </div>
-        <Link href="/player" className="btn primary">CONTINUAR AVENTURA</Link>
+        <Link href="/world" className="btn primary">VOLVER AL MUNDO</Link>
       </section>
     )
   }

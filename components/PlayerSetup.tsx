@@ -170,7 +170,7 @@ export default function PlayerSetup() {
 
   function selectPlayer(player: Player) {
     localStorage.setItem('levelup_player_id', player.id)
-    router.push('/player')
+    router.push('/world')
     router.refresh()
   }
 

@@ -27,13 +27,13 @@ export default function RootLayout({
           SALTAR AL CONTENIDO
         </a>
         <header className="top">
-          <Link href="/player" className="logo">
+          <Link href="/world" className="logo">
             LEVEL <span>UP</span>
           </Link>
 
           <nav className="main-nav" aria-label="Navegación principal">
-            <Link href="/player">
-              <span aria-hidden="true">🎮</span> Jugar
+            <Link href="/world">
+              <span aria-hidden="true">🗺️</span> Mundo
             </Link>
 
             <Link href="/parent">

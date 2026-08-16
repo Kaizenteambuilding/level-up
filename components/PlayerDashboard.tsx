@@ -394,6 +394,10 @@ export default function PlayerDashboard() {
         )}
 
         <div className="action-row" style={{ marginTop: 14 }}>
+          <Link href="/world" className="btn dark">
+            🗺️ VOLVER AL MUNDO
+          </Link>
+
           <Link
             href="/mission"
             className="btn primary"

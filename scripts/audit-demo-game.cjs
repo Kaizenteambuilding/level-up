@@ -1,0 +1,34 @@
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const ts = require('typescript')
+const vm = require('node:vm')
+
+const source = fs.readFileSync('lib/demoGame.ts', 'utf8')
+const compiled = ts.transpileModule(source, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText
+const moduleBox = { exports: {} }
+vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports })
+const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem } = moduleBox.exports
+
+assert.equal(normalizeDemoState(null).coins, 450)
+assert.equal(normalizeDemoState({}).coins, 450)
+assert.equal(normalizeDemoState({ coins: -50, owned: ['robot', 'fake', 'robot'], equipped: { companion: 'robot', head: 'robot' } }).coins, 0)
+const safe = normalizeDemoState({ coins: 12000, owned: ['robot', 'robot'], equipped: { companion: 'robot', head: 'robot' } })
+assert.equal(safe.coins, 9999)
+assert.deepEqual(Array.from(safe.owned), ['robot'])
+assert.equal(safe.equipped.companion, 'robot')
+assert.equal(safe.equipped.head, undefined)
+
+const bought = buyDemoItem(INITIAL_DEMO_STATE, 'robot')
+assert.equal(bought.coins, 290)
+assert.ok(bought.owned.includes('robot'))
+assert.equal(bought.equipped.companion, 'robot')
+assert.equal(buyDemoItem(bought, 'robot'), bought)
+assert.equal(buyDemoItem({ ...INITIAL_DEMO_STATE, coins: 10 }, 'robot').coins, 10)
+assert.equal(equipDemoItem(INITIAL_DEMO_STATE, 'robot'), INITIAL_DEMO_STATE)
+const withFox = buyDemoItem(bought, 'fox')
+assert.equal(withFox.equipped.companion, 'fox')
+assert.equal(equipDemoItem(withFox, 'robot').equipped.companion, 'robot')
+
+console.log('Demo game economy audit passed.')
