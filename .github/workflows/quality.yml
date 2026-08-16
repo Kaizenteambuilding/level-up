@@ -35,3 +35,8 @@ jobs:
       - name: Audit question generators
         run: npm run audit:questions
 
+      - name: Build production application
+        run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high

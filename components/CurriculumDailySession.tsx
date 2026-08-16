@@ -60,6 +60,7 @@ export default function CurriculumDailySession() {
   const [seed, setSeed] = useState(() => Date.now())
   const [index, setIndex] = useState(0)
   const [answered, setAnswered] = useState(false)
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null)
   const [feedback, setFeedback] = useState('')
   const [xp, setXp] = useState(0)
   const [correct, setCorrect] = useState(0)
@@ -281,7 +282,7 @@ export default function CurriculumDailySession() {
       recentUnitIds.current = [skill.unit_id, ...recentUnitIds.current.filter((id) => id !== skill.unit_id)].slice(0, 4)
     }
     nextLocked.current = false
-    setQuestion(nextQuestion); setAnswered(false); setFeedback(''); questionStarted.current = Date.now()
+    setQuestion(nextQuestion); setAnswered(false); setSelectedOptionIndex(null); setFeedback(''); questionStarted.current = Date.now()
   }, [loading, index, seed, skills.length, forcedSkillId, testMode])
 
   useEffect(() => {
@@ -316,6 +317,7 @@ export default function CurriculumDailySession() {
     ) return
     answerLocked.current = true
     setAnswered(true)
+    setSelectedOptionIndex(optionIndex)
     const ok = optionIndex === question.answerIndex
     // Match the server-side bound while allowing a mission left open in a tab
     // to continue normally after a long pause.
@@ -334,6 +336,7 @@ export default function CurriculumDailySession() {
     if (!sessionId) {
       answerLocked.current = false
       setAnswered(false)
+      setSelectedOptionIndex(null)
       return
     }
     const activeSessionId = sessionId
@@ -343,6 +346,7 @@ export default function CurriculumDailySession() {
       setFeedback('No se pudo conectar. Inténtalo de nuevo.')
       answerLocked.current = false
       setAnswered(false)
+      setSelectedOptionIndex(null)
       return
     }
     const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: activeSessionId, p_diagnostic_tags: question.tags }))
@@ -366,6 +370,7 @@ export default function CurriculumDailySession() {
       setFeedback(userFacingError(error, 'No se pudo guardar la respuesta. Inténtalo de nuevo.'))
       answerLocked.current = false
       setAnswered(false)
+      setSelectedOptionIndex(null)
       return
     }
     const result = data as { xp_awarded:number; mastery:number; confidence:number; difficulty:number; priority?:number }
@@ -426,7 +431,12 @@ export default function CurriculumDailySession() {
       <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
       {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>🎯 REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
       <p style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
-      <div className="answers">{question.options.map((option,i)=><button key={i} className="answer" disabled={answered} onClick={()=>submit(i)}>{String.fromCharCode(65+i)} · {option}</button>)}</div>
+      <div className="answers">{question.options.map((option,i) => {
+        const isCorrectOption = answered && i === question.answerIndex
+        const isSelectedWrong = answered && i === selectedOptionIndex && !isCorrectOption
+        const resultLabel = isCorrectOption ? ' · ✓ Correcta' : isSelectedWrong ? ' · ✕ Tu respuesta' : ''
+        return <button key={i} className={`answer${isCorrectOption ? ' correct' : ''}${isSelectedWrong ? ' incorrect' : ''}`} disabled={answered} onClick={()=>submit(i)} aria-label={`${String.fromCharCode(65+i)}. ${option}${resultLabel}`}>{String.fromCharCode(65+i)} · {option}{resultLabel}</button>
+      })}</div>
       {feedback && <><div className="metric" style={{ marginTop:16 }} role="status" aria-live="polite"><b>{feedback}</b></div><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button className="btn primary" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
     </section>
     <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testMode ? testAttempts : index+(answered?1:0)}</b><p className="muted">aciertos</p></div></div></section>
