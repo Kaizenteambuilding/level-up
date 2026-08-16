@@ -9,7 +9,6 @@ import { userFacingError } from '@/lib/userFacingError'
 type Player = {
   id: string
   alias: string
-  level: number
   xp: number
   daily_target_minutes: number
 }
@@ -158,7 +157,7 @@ export default function Parent() {
       if (savedPlayerId) {
         const { data: savedPlayer, error } = await supabase
           .from('players')
-          .select('id,alias,level,xp,daily_target_minutes')
+          .select('id,alias,xp,daily_target_minutes')
           .eq('id', savedPlayerId)
           .maybeSingle()
 
@@ -174,7 +173,7 @@ export default function Parent() {
       if (!selectedPlayer) {
         const { data, error } = await supabase
           .from('players')
-          .select('id,alias,level,xp,daily_target_minutes')
+          .select('id,alias,xp,daily_target_minutes')
           .order('alias', { ascending: true })
 
         if (error) {
@@ -386,7 +385,7 @@ export default function Parent() {
         <h1>{player.alias}</h1>
         <p className="muted">Resumen actualizado directamente desde Supabase.</p>
         <div className="grid two">
-          <div className="metric"><b>Nivel {player.level}</b><p className="muted">{player.xp} XP totales</p></div>
+          <div className="metric"><b>{player.xp} XP</b><p className="muted">progreso acumulado</p></div>
           <div className="metric"><b>🔥 {streak}</b><p className="muted">días de racha actual</p></div>
           <div className="metric"><b>{trainingDays}</b><p className="muted">días con entrenamiento completado</p></div>
           <div className="metric"><b>{averageMastery}%</b><p className="muted">{totalEvidence > 0 ? 'dominio medio ponderado por práctica' : 'dominio medio · sin práctica registrada'}</p></div>

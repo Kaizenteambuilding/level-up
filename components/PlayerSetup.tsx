@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation'
 type Player = {
   id: string
   alias: string
-  level: number
   xp: number
   streak_days: number
   daily_target_minutes: number
@@ -63,7 +62,7 @@ export default function PlayerSetup() {
 
       const { data, error } = await supabase
         .from('players')
-        .select('id,alias,level,xp,streak_days,daily_target_minutes')
+        .select('id,alias,xp,streak_days,daily_target_minutes')
         .order('alias')
 
       if (error) {
@@ -314,7 +313,7 @@ export default function PlayerSetup() {
             <div className="metric" key={p.id} style={{ marginBottom: 10 }}>
               <b>{p.alias}</b>
               <p className="muted">
-                Nivel {p.level} · {p.xp} XP · objetivo {p.daily_target_minutes} min
+                {p.xp} XP · objetivo {p.daily_target_minutes} min
               </p>
               <button className="btn primary" onClick={() => selectPlayer(p)}>
                 JUGAR COMO {p.alias.toUpperCase()}

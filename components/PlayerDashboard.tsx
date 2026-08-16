@@ -9,7 +9,6 @@ import { userFacingError } from '@/lib/userFacingError'
 type Player = {
   id: string
   alias: string
-  level: number
   xp: number
   coins: number
   daily_target_minutes: number
@@ -146,7 +145,7 @@ export default function PlayerDashboard() {
     if (savedPlayerId) {
       const { data: savedPlayer, error: savedPlayerError } = await supabase
         .from('players')
-        .select('id,alias,level,xp,coins,daily_target_minutes')
+        .select('id,alias,xp,coins,daily_target_minutes')
         .eq('id', savedPlayerId)
         .maybeSingle()
 
@@ -166,7 +165,7 @@ export default function PlayerDashboard() {
     if (!currentPlayer) {
       const { data: availablePlayers, error: playersError } = await supabase
         .from('players')
-        .select('id,alias,level,xp,coins,daily_target_minutes')
+        .select('id,alias,xp,coins,daily_target_minutes')
         .order('alias', { ascending: true })
 
       if (playersError) {
@@ -365,7 +364,7 @@ export default function PlayerDashboard() {
         <h1>{player.alias}</h1>
 
         <p className="muted">
-          Nivel {player.level} · {player.xp} XP · 🔥 {streak} días de racha
+          {player.xp} XP · 🔥 {streak} días de racha
         </p>
 
         {hasOpenMission && (
@@ -482,8 +481,8 @@ export default function PlayerDashboard() {
 
         <div className="grid two">
           <div className="metric">
-            <b>Nivel {player.level}</b>
-            <p className="muted">{player.xp} XP totales</p>
+            <b>{player.xp} XP</b>
+            <p className="muted">progreso acumulado</p>
           </div>
 
           <div className="metric">
