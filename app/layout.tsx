@@ -14,6 +14,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
+        <a className="skip-link" href="#main-content">
+          SALTAR AL CONTENIDO
+        </a>
         <header className="top">
           <Link href="/player" className="logo">
             LEVEL <span>UP</span>
@@ -30,7 +33,9 @@ export default function RootLayout({
           </nav>
         </header>
 
-        {children}
+        <div id="main-content" tabIndex={-1}>
+          {children}
+        </div>
       </body>
     </html>
   )

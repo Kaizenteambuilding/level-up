@@ -78,12 +78,22 @@ export default function CurriculumDailySession() {
   const recentFamilies = useRef<string[]>([])
   const recentSkillIds = useRef<string[]>([])
   const recentUnitIds = useRef<string[]>([])
+  const questionPrompt = useRef<HTMLParagraphElement>(null)
+  const nextButton = useRef<HTMLButtonElement>(null)
 
   function questionTemplate(prompt: string) {
     return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?\/\d+(?:[.,]\d+)?/g, '#/#').replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim()
   }
 
   const testMode = Boolean(forcedSkillId)
+
+  useEffect(() => {
+    if (question) questionPrompt.current?.focus()
+  }, [question])
+
+  useEffect(() => {
+    if (feedback && answered) nextButton.current?.focus()
+  }, [answered, feedback])
 
   useEffect(() => {
     if (!queryReady) return
@@ -420,7 +430,7 @@ export default function CurriculumDailySession() {
           <span className="tag">GUARDANDO RESULTADOS</span>
           <h1>{closing ? 'Cerrando la misión...' : 'La misión está pendiente de guardar'}</h1>
           <p className="muted" role={closeError ? 'alert' : 'status'} aria-live="polite">{closeError || 'Estamos confirmando XP, minutos y progreso antes de volver al jugador.'}</p>
-          {!closing && closeError && <button className="btn primary" onClick={() => { closeStarted.current = false; setCloseError(''); setIndex(SESSION_LENGTH - 1); setTimeout(() => setIndex(SESSION_LENGTH), 0) }}>REINTENTAR GUARDADO</button>}
+          {!closing && closeError && <button className="btn primary" type="button" onClick={() => { closeStarted.current = false; setCloseError(''); setIndex(SESSION_LENGTH - 1); setTimeout(() => setIndex(SESSION_LENGTH), 0) }}>REINTENTAR GUARDADO</button>}
         </section>
       )
     }
@@ -448,14 +458,16 @@ export default function CurriculumDailySession() {
     <section className="card">
       <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
       {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>🎯 REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
-      <p style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
+      <p ref={questionPrompt} tabIndex={-1} style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
       <div className="answers">{question.options.map((option,i) => {
         const isCorrectOption = answered && i === question.answerIndex
         const isSelectedWrong = answered && i === selectedOptionIndex && !isCorrectOption
         const resultLabel = isCorrectOption ? ' · ✓ Correcta' : isSelectedWrong ? ' · ✕ Tu respuesta' : ''
-        return <button key={i} className={`answer${isCorrectOption ? ' correct' : ''}${isSelectedWrong ? ' incorrect' : ''}`} disabled={answered} onClick={()=>submit(i)} aria-label={`${String.fromCharCode(65+i)}. ${option}${resultLabel}`}>{String.fromCharCode(65+i)} · {option}{resultLabel}</button>
+        return <button key={i} className={`answer${isCorrectOption ? ' correct' : ''}${isSelectedWrong ? ' incorrect' : ''}`} type="button" disabled={answered} onClick={()=>submit(i)} aria-label={`${String.fromCharCode(65+i)}. ${option}${resultLabel}`}>{String.fromCharCode(65+i)} · {option}{resultLabel}</button>
       })}</div>
-      {feedback && <><div className="metric" style={{ marginTop:16 }} role="status" aria-live="polite"><b>{feedback}</b></div><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button className="btn primary" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
+      {answered && !feedback && <div className="metric" style={{ marginTop:16 }} role="status" aria-live="polite"><b>Guardando respuesta...</b></div>}
+      {feedback && <div className="metric" style={{ marginTop:16 }} role={answered ? 'status' : 'alert'} aria-live="polite"><b>{feedback}</b></div>}
+      {answered && feedback && <><div className="metric" style={{ marginTop:10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom:0 }}>{question.solution}</p></div><button ref={nextButton} className="btn primary" type="button" style={{ marginTop:14 }} onClick={next}>{testMode?'GENERAR OTRA DE ESTA HABILIDAD':index+1===SESSION_LENGTH?'TERMINAR SESIÓN':'SIGUIENTE RETO'}</button></>}
     </section>
     <section className="card"><div className="grid two"><div className="metric"><b>{xp} XP</b><p className="muted">ganados en esta pantalla</p></div><div className="metric"><b>{correct}/{testMode ? testAttempts : index+(answered?1:0)}</b><p className="muted">aciertos</p></div></div></section>
   </>

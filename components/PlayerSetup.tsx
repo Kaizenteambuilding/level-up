@@ -309,7 +309,7 @@ export default function PlayerSetup() {
               <p className="muted">
                 {p.xp} XP · objetivo {p.daily_target_minutes} min
               </p>
-              <button className="btn primary" onClick={() => selectPlayer(p)}>
+              <button className="btn primary" type="button" onClick={() => selectPlayer(p)}>
                 JUGAR COMO {p.alias.toUpperCase()}
               </button>
             </div>
@@ -318,6 +318,7 @@ export default function PlayerSetup() {
 
         <button
           className="btn dark"
+          type="button"
           disabled={saving}
           onClick={signOut}
           style={{ marginTop: 12 }}
