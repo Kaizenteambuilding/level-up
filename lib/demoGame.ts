@@ -13,6 +13,7 @@ export type DemoGameState = {
   equipped: Partial<Record<DemoItem['slot'], string>>
   rewardedSessions: string[]
   baseTheme: DemoBaseTheme
+  visitedThemes: DemoBaseTheme[]
 }
 
 export type DemoBaseTheme = 'space' | 'forest' | 'arcade'
@@ -32,6 +33,7 @@ export const INITIAL_DEMO_STATE: DemoGameState = {
   equipped: {},
   rewardedSessions: [],
   baseTheme: 'space',
+  visitedThemes: [],
 }
 
 export function demoStorageKey(playerId: string) {
@@ -61,6 +63,9 @@ export function normalizeDemoState(value: unknown): DemoGameState {
       ? Array.from(new Set(candidate.rewardedSessions.filter((id): id is string => typeof id === 'string' && id.length > 0))).slice(-100)
       : [],
     baseTheme: candidate.baseTheme === 'forest' || candidate.baseTheme === 'arcade' ? candidate.baseTheme : 'space',
+    visitedThemes: Array.isArray(candidate.visitedThemes)
+      ? Array.from(new Set(candidate.visitedThemes.filter((theme): theme is DemoBaseTheme => theme === 'space' || theme === 'forest' || theme === 'arcade')))
+      : [],
   }
 }
 
@@ -96,7 +101,33 @@ export function equipDemoItem(state: DemoGameState, itemId: string) {
 
 export function setDemoBaseTheme(state: DemoGameState, theme: string): DemoGameState {
   if (theme !== 'space' && theme !== 'forest' && theme !== 'arcade') return state
-  return { ...state, baseTheme: theme }
+  return {
+    ...state,
+    baseTheme: theme,
+    visitedThemes: state.visitedThemes.includes(theme) ? state.visitedThemes : [...state.visitedThemes, theme],
+  }
+}
+
+export type DemoAchievement = {
+  id: string
+  name: string
+  description: string
+  icon: string
+  unlocked: boolean
+  progress: number
+  target: number
+}
+
+export function demoAchievements(state: DemoGameState): DemoAchievement[] {
+  const equippedSlots = Object.keys(state.equipped).length
+  return [
+    { id: 'first-mission', name: 'Energía restaurada', description: 'Completa una misión de Ciudad Matemática.', icon: '⚡', unlocked: state.rewardedSessions.length >= 1, progress: Math.min(1, state.rewardedSessions.length), target: 1 },
+    { id: 'three-missions', name: 'Constancia matemática', description: 'Completa tres misiones diferentes.', icon: '🏙️', unlocked: state.rewardedSessions.length >= 3, progress: Math.min(3, state.rewardedSessions.length), target: 3 },
+    { id: 'first-item', name: 'Primer hallazgo', description: 'Consigue tu primer objeto en la tienda.', icon: '🎁', unlocked: state.owned.length >= 1, progress: Math.min(1, state.owned.length), target: 1 },
+    { id: 'collector', name: 'Coleccionista', description: 'Reúne tres objetos cosméticos.', icon: '🎒', unlocked: state.owned.length >= 3, progress: Math.min(3, state.owned.length), target: 3 },
+    { id: 'full-loadout', name: 'Explorador equipado', description: 'Equipa cabeza, compañero y estela.', icon: '🧑‍🚀', unlocked: equippedSlots >= 3, progress: Math.min(3, equippedSlots), target: 3 },
+    { id: 'decorator', name: 'Diseñador de refugios', description: 'Prueba los tres ambientes del refugio.', icon: '🚀', unlocked: state.visitedThemes.length >= 3, progress: Math.min(3, state.visitedThemes.length), target: 3 },
+  ]
 }
 
 export function equippedDemoItems(state: DemoGameState) {

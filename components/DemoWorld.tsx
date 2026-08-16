@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { demoAchievements } from '@/lib/demoGame'
 
 const lockedZones = [
   { name: 'Biblioteca de Lengua', icon: '📚', className: 'language-zone' },
@@ -14,6 +15,8 @@ export default function DemoWorld() {
   const { player, game, loading, error } = useDemoGamePlayer()
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir el mundo</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
+  const achievements = demoAchievements(game)
+  const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
 
   return (
     <>
@@ -60,6 +63,11 @@ export default function DemoWorld() {
             <p>Viste el avatar, abre la mochila y personaliza tu base.</p>
           </Link>
         </div>
+      </section>
+      <section className="card world-journal">
+        <div><span className="tag">📖 BITÁCORA</span><h2>Logros del Explorador</h2><p className="muted">{unlockedAchievements} de {achievements.length} logros desbloqueados · {game.rewardedSessions.length} misiones recompensadas</p></div>
+        <div className="journal-badges" aria-label="Vista previa de logros">{achievements.slice(0, 3).map((achievement) => <span key={achievement.id} className={achievement.unlocked ? 'unlocked' : ''} title={achievement.name}>{achievement.unlocked ? achievement.icon : '🔒'}</span>)}</div>
+        <Link href="/achievements" className="btn dark">VER BITÁCORA</Link>
       </section>
       <nav className="game-dock" aria-label="Navegación del mundo">
         <Link href="/world" aria-current="page">🗺️ <span>MAPA</span></Link>
