@@ -37,8 +37,12 @@ Migraciones versionadas:
 - `20260816_optimize_rls_and_foreign_keys.sql`: optimiza RLS, completa `WITH CHECK` e indexa claves foráneas.
 - `20260816_preserve_player_level_in_attempt_rpc.sql`: elimina la fórmula no validada de 500 XP por nivel y endurece la RPC de intentos.
 - `20260816_harden_setup_parent_family_rpc.sql`: valida el alta familiar, limita permisos y aísla el `search_path`.
+- `20260816_validate_attempt_rpc_inputs.sql`: valida currículo, sesión, contenido y tiempos, y evita que el navegador decida la dificultad o el XP.
+- `20260816_server_control_session_completion.sql`: mueve el cierre de misión a una RPC atómica y retira las escrituras directas de XP y sesiones.
+- `20260816_mark_unverified_legacy_sessions.sql`: conserva pero aparta de las métricas las sesiones históricas que no tienen intentos verificables.
+- `20260816_prevent_duplicate_session_attempts.sql`: impide respuestas duplicadas y aplica invariantes a todos los intentos nuevos.
 
-Los avisos de Supabase sobre las dos funciones `SECURITY DEFINER` son intencionados: solo puede ejecutarlas `authenticated` y ambas verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
+Los avisos de Supabase sobre las tres funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
 ## Comprobaciones antes de publicar
 

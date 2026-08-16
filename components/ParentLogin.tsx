@@ -122,6 +122,11 @@ export default function ParentLogin() {
       return
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setMessage('Escribe un correo electrónico válido.')
+      return
+    }
+
     if (password.length < 8) {
       setMessage('Para crear una cuenta, usa una contraseña de al menos 8 caracteres.')
       return
