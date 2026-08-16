@@ -9,7 +9,7 @@ export default function NotFound() {
         <p className="muted">
           El enlace puede estar incompleto o pertenecer a una versión anterior de Level Up.
         </p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="action-row">
           <Link href="/player" className="btn primary">
             IR AL JUGADOR
           </Link>

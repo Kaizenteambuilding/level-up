@@ -11,7 +11,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
             <p className="muted">
               Los datos ya guardados no se han perdido. Intenta cargar Level Up de nuevo.
             </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div className="action-row">
               <button className="btn primary" type="button" onClick={reset}>
                 REINTENTAR
               </button>

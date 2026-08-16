@@ -335,7 +335,7 @@ export default function Parent() {
   }, [router])
 
   if (loading) {
-    return <main className="shell"><section className="card"><p className="muted">Cargando progreso real...</p></section></main>
+    return <main className="shell"><section className="card loading-card" role="status" aria-live="polite"><div><div className="loading-dot" aria-hidden="true" /><p className="muted">Cargando progreso real…</p></div></section></main>
   }
 
   if (!player) {
@@ -344,7 +344,7 @@ export default function Parent() {
         <section className="card">
           <h1>Panel padre</h1>
           <p className="muted">{message}</p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="action-row">
             <button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button>
             <Link href="/parent/setup" className="btn dark">IR A JUGADORES</Link>
           </div>
@@ -547,7 +547,7 @@ export default function Parent() {
         <h2>Objetivo diario</h2>
         <p className="muted">Hoy lleva {todayMinutes} de {target} minutos de entrenamiento.</p>
         <div className="bar" role="progressbar" aria-label="Progreso del objetivo diario" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dailyProgress} style={{ marginBottom: 16 }}><i style={{ width: `${dailyProgress}%` }} /></div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="action-row">
           <Link href="/player" className="btn primary">🎮 VOLVER A JUGAR</Link>
           <Link href="/parent/setup" className="btn dark">👥 CAMBIAR JUGADOR</Link>
         </div>

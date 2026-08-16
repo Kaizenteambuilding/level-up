@@ -197,8 +197,8 @@ export default function PlayerSetup() {
 
   if (loading) {
     return (
-      <section className="card">
-        <p className="muted">Cargando familia...</p>
+      <section className="card loading-card" role="status" aria-live="polite">
+        <div><div className="loading-dot" aria-hidden="true" /><p className="muted">Cargando familia…</p></div>
       </section>
     )
   }
@@ -211,7 +211,7 @@ export default function PlayerSetup() {
         <p className="muted">Solo se hace una vez.</p>
 
         <form onSubmit={(event) => { event.preventDefault(); setupFamily() }}>
-          <label>
+          <label className="form-field">
             Tu nombre
             <input
               value={parentName}
@@ -219,22 +219,20 @@ export default function PlayerSetup() {
               autoComplete="name"
               required
               maxLength={80}
-              style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
             />
           </label>
 
-          <label>
+          <label className="form-field">
             Nombre de la familia
             <input
               value={familyName}
               onChange={(e) => setFamilyName(e.target.value)}
               required
               maxLength={80}
-              style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
             />
           </label>
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="action-row">
             <button className="btn primary" disabled={saving} type="submit">
               {saving ? 'CREANDO...' : 'CREAR FAMILIA'}
             </button>
@@ -262,18 +260,17 @@ export default function PlayerSetup() {
         <h1>Crea el jugador</h1>
 
         <form onSubmit={createPlayer}>
-          <label>
+          <label className="form-field">
             Nombre o alias del jugador
             <input
               value={alias}
               onChange={(e) => setAlias(e.target.value)}
               required
               maxLength={40}
-              style={{ width: '100%', padding: 12, margin: '6px 0 14px' }}
             />
           </label>
 
-          <label>
+          <label className="form-field">
             Objetivo diario: <b>{minutes} minutos</b>
             <input
               type="range"
@@ -282,18 +279,15 @@ export default function PlayerSetup() {
               step="5"
               value={minutes}
               onChange={(e) => setMinutes(Number(e.target.value))}
-              style={{ width: '100%' }}
             />
           </label>
-
-          <br />
 
           <button className="btn primary" disabled={saving} type="submit">
             {saving ? 'GUARDANDO...' : 'GUARDAR JUGADOR'}
           </button>
         </form>
 
-        {message && <p className="muted" role="status" aria-live="polite">{message}</p>}
+        {message && <p className="muted status" role="status" aria-live="polite">{message}</p>}
       </section>
 
       <section className="card">

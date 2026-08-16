@@ -12,6 +12,7 @@ export default function ParentLogin() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [checkingSession, setCheckingSession] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
   const authLocked = useRef(false)
 
   function authMessage(error: { code?: string; message: string }) {
@@ -163,8 +164,8 @@ export default function ParentLogin() {
 
   if (checkingSession) {
     return (
-      <section className="card">
-        <p className="muted">Comprobando sesión...</p>
+      <section className="card loading-card" role="status" aria-live="polite">
+        <div><div className="loading-dot" aria-hidden="true" /><p className="muted">Comprobando sesión…</p></div>
       </section>
     )
   }
@@ -179,7 +180,7 @@ export default function ParentLogin() {
       </p>
 
       <form onSubmit={signIn}>
-        <label>
+        <label className="form-field">
           Email
           <input
             value={email}
@@ -187,38 +188,30 @@ export default function ParentLogin() {
             type="email"
             autoComplete="email"
             required
-            style={{
-              width: '100%',
-              padding: 12,
-              marginTop: 6,
-              marginBottom: 14,
-            }}
           />
         </label>
 
-        <label>
+        <label className="form-field">
           Contraseña
           <input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             required
             minLength={6}
-            style={{
-              width: '100%',
-              padding: 12,
-              marginTop: 6,
-              marginBottom: 14,
-            }}
           />
         </label>
 
-        <p className="muted" style={{ marginTop: -8 }}>
+        <button className="btn dark" type="button" aria-pressed={showPassword} onClick={() => setShowPassword((value) => !value)} style={{ marginBottom: 14 }}>
+          {showPassword ? 'OCULTAR CONTRASEÑA' : 'MOSTRAR CONTRASEÑA'}
+        </button>
+
+        <p className="muted form-help">
           Para crear una cuenta nueva, usa al menos 8 caracteres.
         </p>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="action-row">
           <button
             className="btn primary"
             disabled={loading}
@@ -238,7 +231,7 @@ export default function ParentLogin() {
         </div>
       </form>
 
-      {message && <p className="muted" role="alert">{message}</p>}
+      {message && <p className="muted status" role="alert">{message}</p>}
     </section>
   )
 }

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
-import { fetchCompletedActivity } from '@/lib/progressQueries'
+import { fetchCompletedActivity, fetchCompletedSkillEvidence } from '@/lib/progressQueries'
 
 type Player = {
   id: string
@@ -246,6 +246,7 @@ export default function PlayerDashboard() {
       { data: activityData, error: activityError },
       { data: sessionData, error: sessionError },
       { data: stateData, error: stateError },
+      { data: skillEvidenceData, error: skillEvidenceError },
     ] = await Promise.all([
       fetchCompletedActivity(supabase, currentPlayer.id),
       supabase
@@ -275,6 +276,7 @@ export default function PlayerDashboard() {
         .eq('skills.active', true)
         .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
         .order('priority', { ascending: false }),
+      fetchCompletedSkillEvidence(supabase, currentPlayer.id),
     ])
 
     if (activityError) {
@@ -308,13 +310,15 @@ export default function PlayerDashboard() {
       )
     }
 
-    if (stateError) {
+    if (stateError || skillEvidenceError) {
       warnings.push('No se pudieron cargar las recomendaciones adaptativas.')
     } else if (stateData && stateData.length > 0) {
+      const completedCounts = skillEvidenceData?.attempts ?? {}
       setPrioritySkills(
         stateData
           .filter((state: any) =>
-            !state.last_practiced_at || Number(state.mastery) < 70 || Number(state.confidence) < 60
+            Number(completedCounts[state.skill_id] ?? 0) >= 2 &&
+            (Number(state.mastery) < 70 || Number(state.confidence) < 60)
           )
           .slice(0, 3)
           .map((state: any) => ({
@@ -334,8 +338,8 @@ export default function PlayerDashboard() {
 
   if (loading) {
     return (
-      <section className="card">
-        <p className="muted">Cargando partida...</p>
+      <section className="card loading-card" role="status" aria-live="polite">
+        <div><div className="loading-dot" aria-hidden="true" /><p className="muted">Cargando partida…</p></div>
       </section>
     )
   }
@@ -346,7 +350,7 @@ export default function PlayerDashboard() {
         <h1>Primero crea un jugador</h1>
         <p className="muted">{message}</p>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="action-row">
           <button className="btn primary" type="button" onClick={load}>
             REINTENTAR
           </button>
@@ -369,14 +373,7 @@ export default function PlayerDashboard() {
 
   return (
     <>
-      <section
-        className="card"
-        style={{
-          minHeight: 420,
-          display: 'grid',
-          alignContent: 'center',
-        }}
-      >
+      <section className="card hero">
         <span className="tag">🎮 PARTIDA DE HOY</span>
 
         <h1>{player.alias}</h1>
@@ -396,14 +393,7 @@ export default function PlayerDashboard() {
           </div>
         )}
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 10,
-            flexWrap: 'wrap',
-            marginTop: 14,
-          }}
-        >
+        <div className="action-row" style={{ marginTop: 14 }}>
           <Link
             href="/mission"
             className="btn primary"

@@ -11,7 +11,7 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
         <p className="muted">
           Tu progreso guardado sigue a salvo. Puedes reintentar o volver al jugador.
         </p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="action-row">
           <button className="btn primary" type="button" onClick={reset}>
             REINTENTAR
           </button>

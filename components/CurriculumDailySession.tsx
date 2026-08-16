@@ -386,7 +386,7 @@ export default function CurriculumDailySession() {
     setIndex((i) => i + 1)
   }
 
-  if (loading) return <section className="card"><p className="muted">Cargando Curriculum Engine...</p></section>
+  if (loading) return <section className="card loading-card" role="status" aria-live="polite"><div><div className="loading-dot" aria-hidden="true" /><p className="muted">Preparando la misión…</p></div></section>
   if (loadError) return <section className="card" role="alert"><span className="tag">ERROR DE CARGA</span><h1>No se puede preparar la misión</h1><p className="muted">{loadError}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
   if (!playerId) return <section className="card"><h1>Sin jugador</h1><Link href="/player" className="btn primary">IR A JUGADOR</Link></section>
 

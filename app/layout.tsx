@@ -33,11 +33,11 @@ export default function RootLayout({
 
           <nav className="main-nav" aria-label="Navegación principal">
             <Link href="/player">
-              🎮 Jugar
+              <span aria-hidden="true">🎮</span> Jugar
             </Link>
 
             <Link href="/parent">
-              👨‍👦 Panel padre
+              <span aria-hidden="true">👨‍👦</span> <span className="nav-label-parent">Panel padre</span><span className="nav-label-short">Panel</span>
             </Link>
           </nav>
         </header>

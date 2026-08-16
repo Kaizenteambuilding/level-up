@@ -3,16 +3,13 @@ import Link from 'next/link'
 export default function Home() {
   return (
     <main className="shell">
-      <section
-        className="card"
-        style={{ minHeight: 480, display: 'grid', alignContent: 'center' }}
-      >
+      <section className="card hero">
         <span className="tag">LEVEL UP · 1º ESO</span>
         <h1>Entrena matemáticas con progreso adaptativo.</h1>
         <p className="muted">
           Inicia sesión para continuar con el jugador seleccionado, completar la misión diaria y consultar el progreso real.
         </p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div className="action-row">
           <Link className="btn primary" href="/login">
             ENTRAR
           </Link>
