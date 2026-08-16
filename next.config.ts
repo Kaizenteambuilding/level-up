@@ -3,7 +3,19 @@ import type { NextConfig } from 'next'
 const securityHeaders = [
   {
     key: 'Content-Security-Policy',
-    value: "base-uri 'self'; frame-ancestors 'none'; object-src 'none'",
+    value: [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "object-src 'none'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      'upgrade-insecure-requests',
+    ].join('; '),
   },
   {
     key: 'Permissions-Policy',
@@ -28,6 +40,14 @@ const securityHeaders = [
   {
     key: 'Cross-Origin-Opener-Policy',
     value: 'same-origin',
+  },
+  {
+    key: 'Cross-Origin-Resource-Policy',
+    value: 'same-origin',
+  },
+  {
+    key: 'Origin-Agent-Cluster',
+    value: '?1',
   },
   {
     key: 'X-DNS-Prefetch-Control',

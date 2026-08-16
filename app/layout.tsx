@@ -4,6 +4,15 @@ import Link from 'next/link'
 export const metadata = {
   title: 'LEVEL UP',
   description: 'Entrenador gamificado de 1º ESO',
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
+export const viewport = {
+  colorScheme: 'dark',
+  themeColor: '#071321',
 }
 
 export default function RootLayout({

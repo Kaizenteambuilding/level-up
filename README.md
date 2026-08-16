@@ -24,6 +24,8 @@ Requisitos: Node.js 22 o posterior.
 
 La clave pública de Supabase puede utilizarse en el navegador. Nunca añadas una clave `service_role` a una variable `NEXT_PUBLIC_*`.
 
+La aplicación envía CSP, HSTS, políticas de permisos y aislamiento de origen desde `next.config.ts`, y solicita a los buscadores que no indexen las pantallas familiares.
+
 ## Base de datos
 
 La base de producción ya está configurada. Los cambios nuevos deben añadirse como migraciones revisables en `database/migrations/` y aplicarse mediante el flujo de migraciones de Supabase.
