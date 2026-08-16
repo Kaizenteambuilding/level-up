@@ -326,7 +326,6 @@ export default function Parent() {
   const byPriority = [...skills].sort(
     (a, b) => Number(b.priority) - Number(a.priority) || Number(a.mastery) - Number(b.mastery)
   )
-  const reinforcement = byPriority.slice(0, 3)
   const strongest = [...skills]
     .filter(
       (skill) =>
@@ -336,6 +335,16 @@ export default function Parent() {
     )
     .sort(
       (a, b) => Number(b.mastery) - Number(a.mastery) || Number(b.confidence) - Number(a.confidence)
+    )
+    .slice(0, 3)
+  const strongestIds = new Set(strongest.map((skill) => skill.skill_id))
+  const reinforcement = byPriority
+    .filter(
+      (skill) =>
+        !strongestIds.has(skill.skill_id) &&
+        (Number(skillAttemptCounts[skill.skill_id] ?? 0) === 0 ||
+          Number(skill.mastery) < 70 ||
+          Number(skill.confidence) < 60)
     )
     .slice(0, 3)
 
@@ -367,13 +376,19 @@ export default function Parent() {
   const recentMinutes = recentBlock.reduce((sum, session) => sum + sessionMinutes(session), 0)
   const recentXp = recentBlock.reduce((sum, session) => sum + Number(session.xp_earned ?? 0), 0)
 
-  const attention = byPriority.find((skill) => skill.mastery < 60 || skill.confidence < 60) ?? byPriority[0]
+  const evaluatedSkills = skills.filter(
+    (skill) => Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0
+  ).length
+  const attention = reinforcement[0]
   const consolidating = [...skills]
-    .filter((skill) => skill.mastery >= 55 && skill.mastery < 80)
+    .filter(
+      (skill) =>
+        Number(skillAttemptCounts[skill.skill_id] ?? 0) > 0 &&
+        skill.mastery >= 55 &&
+        skill.mastery < 80
+    )
     .sort((a, b) => b.mastery - a.mastery)[0]
-  const secure = [...skills]
-    .filter((skill) => skill.mastery >= 80 && skill.confidence >= 70)
-    .sort((a, b) => b.mastery - a.mastery)[0]
+  const secure = strongest[0]
 
   return (
     <main className="shell">
@@ -386,7 +401,7 @@ export default function Parent() {
           <div className="metric"><b>🔥 {streak}</b><p className="muted">días de racha actual</p></div>
           <div className="metric"><b>{trainingDays}</b><p className="muted">días con entrenamiento completado</p></div>
           <div className="metric"><b>{averageMastery}%</b><p className="muted">{totalEvidence > 0 ? 'dominio medio ponderado por práctica' : 'dominio medio · sin práctica registrada'}</p></div>
-          <div className="metric"><b>{skills.length}</b><p className="muted">habilidades evaluadas</p></div>
+          <div className="metric"><b>{evaluatedSkills}</b><p className="muted">habilidades con práctica registrada</p></div>
           <div className="metric">
             <b>{todayMinutes}/{target} min</b><p className="muted">entrenados hoy · objetivo diario</p>
             <div className="bar" role="progressbar" aria-label="Progreso del objetivo diario" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dailyProgress}><i style={{ width: `${dailyProgress}%` }} /></div>
@@ -415,12 +430,21 @@ export default function Parent() {
           <p className="muted">Todavía no hay suficiente información para hacer una lectura pedagógica.</p>
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
-            <div className="metric">
-              <b>🎯 Prioridad principal de refuerzo · {skillName(attention)}</b>
-              <p className="muted" style={{ marginBottom: 0 }}>
-                Dominio {Math.round(attention?.mastery ?? 0)}% · confianza {Math.round(attention?.confidence ?? 0)}% · dificultad {attention?.difficulty ?? 1}/5. Es una de las señales de mayor necesidad actual y el motor la favorece junto con otras habilidades que necesitan práctica, sin perder variedad ni cobertura.
-              </p>
-            </div>
+            {attention ? (
+              <div className="metric">
+                <b>🎯 Próximo foco de práctica · {skillName(attention)}</b>
+                <p className="muted" style={{ marginBottom: 0 }}>
+                  {Number(skillAttemptCounts[attention.skill_id] ?? 0) === 0
+                    ? `Todavía no tiene práctica registrada · dificultad inicial ${attention.difficulty}/5. El motor la incluye para ampliar la cobertura curricular.`
+                    : `Dominio ${Math.round(attention.mastery)}% · confianza ${Math.round(attention.confidence)}% · dificultad ${attention.difficulty}/5. Es una de las señales de mayor necesidad actual y el motor la favorece sin perder variedad.`}
+                </p>
+              </div>
+            ) : (
+              <div className="metric">
+                <b>✅ Sin refuerzo prioritario ahora mismo</b>
+                <p className="muted" style={{ marginBottom: 0 }}>Las habilidades practicadas cumplen los umbrales actuales de dominio y confianza.</p>
+              </div>
+            )}
 
             {consolidating && (
               <div className="metric">
@@ -479,12 +503,12 @@ export default function Parent() {
       </section>
 
       <section className="card">
-        <span className="tag">🎯 PRIORIDAD DE REFUERZO</span>
-        <h2>Lo que el motor considera más urgente</h2>
-        {reinforcement.length === 0 ? <p className="muted">Todavía no hay suficiente información.</p> : reinforcement.map((skill) => (
+        <span className="tag">🎯 PRÓXIMOS FOCOS</span>
+        <h2>Lo que el motor propone practicar</h2>
+        {reinforcement.length === 0 ? <p className="muted">No hay ahora mismo ninguna habilidad que necesite práctica prioritaria.</p> : reinforcement.map((skill) => (
           <div key={skill.skill_id} className="metric" style={{ marginBottom: 10 }}>
             <b>{skill.skills?.name ?? skill.skill_id}</b>
-            <p className="muted">Prioridad {Math.round(skill.priority)}/100 · dominio {Math.round(skill.mastery)}% · confianza {Math.round(skill.confidence)}% · dificultad {skill.difficulty}/5</p>
+            <p className="muted">{Number(skillAttemptCounts[skill.skill_id] ?? 0) === 0 ? 'Sin práctica registrada todavía' : `Prioridad ${Math.round(skill.priority)}/100 · dominio ${Math.round(skill.mastery)}% · confianza ${Math.round(skill.confidence)}%`} · dificultad {skill.difficulty}/5</p>
             <div className="bar" role="progressbar" aria-label={`Dominio de ${skill.skills?.name ?? skill.skill_id}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(skill.mastery)}><i style={{ width: `${Math.round(skill.mastery)}%` }} /></div>
           </div>
         ))}

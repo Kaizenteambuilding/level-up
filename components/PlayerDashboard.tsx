@@ -35,6 +35,7 @@ type PrioritySkill = {
   confidence: number
   difficulty: number
   priority: number
+  last_practiced_at: string | null
   name: string
 }
 
@@ -257,6 +258,7 @@ export default function PlayerDashboard() {
           confidence,
           difficulty,
           priority,
+          last_practiced_at,
           skills!inner (
             name,
             unit_id
@@ -265,8 +267,7 @@ export default function PlayerDashboard() {
         .eq('player_id', currentPlayer.id)
         .eq('skills.active', true)
         .in('skills.unit_id', ACTIVE_CURRICULUM_UNITS)
-        .order('priority', { ascending: false })
-        .limit(3),
+        .order('priority', { ascending: false }),
     ])
 
     if (activityError) {
@@ -304,10 +305,15 @@ export default function PlayerDashboard() {
       warnings.push('No se pudieron cargar las recomendaciones adaptativas.')
     } else if (stateData && stateData.length > 0) {
       setPrioritySkills(
-        stateData.map((state: any) => ({
-          ...state,
-          name: state.skills?.name ?? state.skill_id,
-        }))
+        stateData
+          .filter((state: any) =>
+            !state.last_practiced_at || Number(state.mastery) < 70 || Number(state.confidence) < 60
+          )
+          .slice(0, 3)
+          .map((state: any) => ({
+            ...state,
+            name: state.skills?.name ?? state.skill_id,
+          }))
       )
     }
 
@@ -459,7 +465,7 @@ export default function PlayerDashboard() {
       <section className="card">
         <span className="tag">🎯 ENTRENAMIENTO ADAPTATIVO</span>
 
-        <h2>LEVEL UP recomienda reforzar</h2>
+        <h2>LEVEL UP propone practicar</h2>
 
         {prioritySkills.length > 0 ? (
           <div style={{ display: 'grid', gap: 10 }}>
@@ -468,7 +474,9 @@ export default function PlayerDashboard() {
                 <b>{skill.name}</b>
 
                 <p className="muted">
-                  Dominio {skill.mastery}% · dificultad {skill.difficulty}/5
+                  {skill.last_practiced_at
+                    ? `Dominio ${skill.mastery}% · dificultad ${skill.difficulty}/5`
+                    : `Habilidad nueva · dificultad inicial ${skill.difficulty}/5`}
                 </p>
 
                 <div className="bar" role="progressbar" aria-label={`Dominio de ${skill.name}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={skill.mastery}>
@@ -479,7 +487,7 @@ export default function PlayerDashboard() {
           </div>
         ) : (
           <p className="muted">
-            Todavía no hay suficientes datos para recomendar habilidades.
+            No hay ahora mismo ninguna habilidad que necesite práctica prioritaria.
           </p>
         )}
       </section>
