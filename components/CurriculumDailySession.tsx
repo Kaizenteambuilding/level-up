@@ -172,7 +172,7 @@ export default function CurriculumDailySession() {
       }
       const { data: skillRows, error: skillsError } = await retryJwtFuture(loadSkills)
       if (skillsError) { setLoadError(skillsError.message); setLoading(false); return }
-      if (!skillRows || skillRows.length === 0) { setLoadError(forcedSkillId ? `No encuentro la habilidad ${forcedSkillId}.` : 'No encuentro habilidades activas para la 1ª evaluación.'); setLoading(false); return }
+      if (!skillRows || skillRows.length === 0) { setLoadError(forcedSkillId ? `No encuentro la habilidad ${forcedSkillId}.` : 'No encuentro habilidades activas para el repaso de matemáticas.'); setLoading(false); return }
 
       const typedSkillRows = skillRows as SkillRow[]
       if (!forcedSkillId && recentSkillIds.current.length > 0) {
@@ -357,7 +357,7 @@ export default function CurriculumDailySession() {
 
   return <>
     <section className="card">
-      <span className="tag">{testMode ? `🧪 MODO PRUEBA · ${question.skillId}` : '1ª EVALUACIÓN · CURRICULUM ENGINE'}</span>
+      <span className="tag">{testMode ? `🧪 MODO PRUEBA · ${question.skillId}` : 'REPASO DE MATEMÁTICAS · CURRICULUM ENGINE'}</span>
       <h1>{testMode ? 'Prueba de habilidad' : `Reto ${index + 1} de ${SESSION_LENGTH}`}</h1>
       <p className="muted">{testMode ? 'Esta pantalla fuerza una habilidad concreta para poder validar su generador.' : 'LEVEL UP selecciona habilidades según el dominio real del jugador.'}</p>
       {!testMode && <div className="bar"><i style={{ width:`${Math.round((index/SESSION_LENGTH)*100)}%` }} /></div>}
