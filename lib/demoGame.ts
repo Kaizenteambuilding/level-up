@@ -11,6 +11,7 @@ export type DemoGameState = {
   coins: number
   owned: string[]
   equipped: Partial<Record<DemoItem['slot'], string>>
+  rewardedSessions: string[]
 }
 
 export const DEMO_ITEMS: DemoItem[] = [
@@ -26,6 +27,7 @@ export const INITIAL_DEMO_STATE: DemoGameState = {
   coins: 450,
   owned: [],
   equipped: {},
+  rewardedSessions: [],
 }
 
 export function demoStorageKey(playerId: string) {
@@ -51,6 +53,22 @@ export function normalizeDemoState(value: unknown): DemoGameState {
       : INITIAL_DEMO_STATE.coins,
     owned,
     equipped,
+    rewardedSessions: Array.isArray(candidate.rewardedSessions)
+      ? Array.from(new Set(candidate.rewardedSessions.filter((id): id is string => typeof id === 'string' && id.length > 0))).slice(-100)
+      : [],
+  }
+}
+
+export function awardDemoMission(state: DemoGameState, sessionId: string, correct: number) {
+  if (!sessionId || state.rewardedSessions.includes(sessionId)) return { state, reward: 0 }
+  const reward = 40 + Math.max(0, Math.min(10, Math.floor(correct))) * 5
+  return {
+    reward,
+    state: {
+      ...state,
+      coins: Math.min(9999, state.coins + reward),
+      rewardedSessions: [...state.rewardedSessions, sessionId].slice(-100),
+    },
   }
 }
 

@@ -35,7 +35,7 @@ export default function DemoWorld() {
             <h2>Ciudad Matemática</h2>
             <p>Misiones adaptativas, progreso real y recompensas académicas.</p>
             <div className="action-row">
-              <Link href="/mission" className="btn primary">▶ MISIÓN DIARIA</Link>
+              <Link href="/mission/briefing" className="btn primary">▶ MISIÓN DIARIA</Link>
               <Link href="/player" className="btn dark">VER PROGRESO</Link>
             </div>
           </article>
@@ -57,7 +57,7 @@ export default function DemoWorld() {
       </section>
       <nav className="game-dock" aria-label="Navegación del mundo">
         <Link href="/world" aria-current="page">🗺️ <span>MAPA</span></Link>
-        <Link href="/mission">📋 <span>MISIÓN</span></Link>
+        <Link href="/mission/briefing">📋 <span>MISIÓN</span></Link>
         <Link href="/shop#inventory">🎒 <span>MOCHILA</span></Link>
         <Link href="/shop">🛒 <span>TIENDA</span></Link>
       </nav>

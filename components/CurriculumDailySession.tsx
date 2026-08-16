@@ -9,6 +9,7 @@ import {
 } from '@/lib/firstEvaluationGenerators'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { buildMissionRecap, MissionSkillResult } from '@/lib/missionRecap'
+import { awardDemoMission, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
 import { userFacingError } from '@/lib/userFacingError'
 
 type SkillRow = {
@@ -72,6 +73,7 @@ export default function CurriculumDailySession() {
   const [loadError, setLoadError] = useState('')
   const [closing, setClosing] = useState(false)
   const [sessionClosed, setSessionClosed] = useState(false)
+  const [demoCoinsAwarded, setDemoCoinsAwarded] = useState(0)
   const [closeError, setCloseError] = useState('')
   const closeStarted = useRef(false)
   const answerLocked = useRef(false)
@@ -295,6 +297,16 @@ export default function CurriculumDailySession() {
       const result = data as { completed?: boolean; attempts?: number; xp_earned?: number }
       if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) { setCloseError('No se pudo confirmar el cierre completo de la sesión.'); setClosing(false); closeStarted.current = false; return }
       setXp(Number(result.xp_earned ?? 0))
+      try {
+        const key = demoStorageKey(playerId)
+        const saved = localStorage.getItem(key)
+        const currentGame = saved ? normalizeDemoState(JSON.parse(saved)) : normalizeDemoState(null)
+        const award = awardDemoMission(currentGame, sessionId, correct)
+        if (award.reward > 0) localStorage.setItem(key, JSON.stringify(award.state))
+        setDemoCoinsAwarded(award.reward)
+      } catch {
+        setDemoCoinsAwarded(0)
+      }
       setSessionClosed(true)
       setClosing(false)
     })()
@@ -451,6 +463,7 @@ export default function CurriculumDailySession() {
         <span className="tag">CURRICULUM ENGINE</span>
         <h1>Sesión completada</h1>
         <p className="muted">{SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP</p>
+        {demoCoinsAwarded > 0 && <p className="mission-reward">🪙 +{demoCoinsAwarded} monedas demo</p>}
         <p className="muted">Resultados guardados. La próxima sesión utilizará esta evidencia para ajustar la práctica.</p>
         <div style={{ display: 'grid', gap: 10, margin: '20px 0', textAlign: 'left' }}>
           {recap.review.length > 0 && (
@@ -466,7 +479,10 @@ export default function CurriculumDailySession() {
             </div>
           )}
         </div>
-        <Link href="/world" className="btn primary">VOLVER AL MUNDO</Link>
+        <div className="action-row" style={{ justifyContent: 'center' }}>
+          <Link href="/world" className="btn primary">VOLVER AL MUNDO</Link>
+          <Link href="/shop" className="btn dark">VISITAR LA TIENDA</Link>
+        </div>
       </section>
     )
   }

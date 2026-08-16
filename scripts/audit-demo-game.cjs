@@ -9,7 +9,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText
 const moduleBox = { exports: {} }
 vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports })
-const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem } = moduleBox.exports
+const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission } = moduleBox.exports
 
 assert.equal(normalizeDemoState(null).coins, 450)
 assert.equal(normalizeDemoState({}).coins, 450)
@@ -30,5 +30,12 @@ assert.equal(equipDemoItem(INITIAL_DEMO_STATE, 'robot'), INITIAL_DEMO_STATE)
 const withFox = buyDemoItem(bought, 'fox')
 assert.equal(withFox.equipped.companion, 'fox')
 assert.equal(equipDemoItem(withFox, 'robot').equipped.companion, 'robot')
+const missionAward = awardDemoMission(INITIAL_DEMO_STATE, 'session-1', 8)
+assert.equal(missionAward.reward, 80)
+assert.equal(missionAward.state.coins, 530)
+assert.deepEqual(Array.from(missionAward.state.rewardedSessions), ['session-1'])
+const duplicateAward = awardDemoMission(missionAward.state, 'session-1', 10)
+assert.equal(duplicateAward.reward, 0)
+assert.equal(duplicateAward.state, missionAward.state)
 
 console.log('Demo game economy audit passed.')
