@@ -10,7 +10,8 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "audit:questions": "node scripts/audit-question-generators.cjs"
+    "audit:questions": "node scripts/audit-question-generators.cjs",
+    "audit:question-quality": "node scripts/audit-question-quality.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",

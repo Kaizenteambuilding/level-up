@@ -35,6 +35,9 @@ jobs:
       - name: Audit question generators
         run: npm run audit:questions
 
+      - name: Audit pedagogical question quality
+        run: npm run audit:question-quality
+
       - name: Build production application
         run: npm run build
 

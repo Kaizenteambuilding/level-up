@@ -36,6 +36,8 @@ El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 
 
 `npm run audit:questions` genera 113.750 preguntas deterministas y falla si detecta generadores de reserva, opciones repetidas o de relleno, respuestas inválidas o valores numéricos rotos.
 
+`npm run audit:question-quality` vuelve a recorrer 113.750 preguntas y exige determinismo, diversidad mínima de enunciados y familias, etiquetas diagnósticas válidas, textos acotados y un reparto no sesgado de la respuesta correcta entre las cuatro posiciones.
+
 `database/schema.sql` y `database/seed.sql` se conservan únicamente como marcadores históricos y no deben ejecutarse. El esquema inicial antiguo dejó de representar la base real. Antes de crear un Supabase nuevo hace falta versionar un baseline completo de la base actual.
 
 Migraciones versionadas:
@@ -67,6 +69,7 @@ Los avisos de Supabase sobre las cinco funciones públicas `SECURITY DEFINER` so
 GitHub Actions ejecuta automáticamente el tipado y la auditoría completa de generadores en cada cambio de `main` y en cada pull request.
 
 - `npm run lint` (`tsc --noEmit`).
+- `npm run audit:questions` y `npm run audit:question-quality`.
 - `npm run build`.
 - `npm audit`.
 - Recorrido autenticado completo de 10 preguntas.
