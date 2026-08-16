@@ -128,6 +128,35 @@ export default function CurriculumDailySession() {
             })
             .slice(0, 9)
         } else {
+          const { data: recentAttempts } = await retryJwtFuture(async () =>
+            await supabase
+              .from('attempts')
+              .select('skill_id,prompt_snapshot,diagnostic_tags')
+              .eq('player_id', id)
+              .order('created_at', { ascending: false })
+              .limit(20)
+          )
+
+          const rememberedAttempts = recentAttempts ?? []
+          recentTemplates.current = Array.from(
+            new Set(
+              rememberedAttempts
+                .map((attempt: any) => questionTemplate(String(attempt.prompt_snapshot ?? '')))
+                .filter(Boolean)
+            )
+          ).slice(0, 10)
+          recentFamilies.current = rememberedAttempts
+            .flatMap((attempt: any) => {
+              const tags = Array.isArray(attempt.diagnostic_tags)
+                ? attempt.diagnostic_tags
+                : []
+              return tags
+                .filter((tag: unknown) => typeof tag === 'string' && tag.startsWith('family:'))
+                .map((tag: string) => `${attempt.skill_id}:${tag}`)
+            })
+            .filter((family: string, index: number, families: string[]) => families.indexOf(family) === index)
+            .slice(0, 9)
+
           const { data: sessionData, error: sessionError } = await retryJwtFuture(async () => await supabase.from('study_sessions').insert({ player_id: id, mode: 'daily', phase: 'warmup' }).select('id').single())
           if (sessionError) { setLoadError('No se pudo crear la sesión: ' + sessionError.message); setLoading(false); return }
           setSessionId(sessionData.id)
