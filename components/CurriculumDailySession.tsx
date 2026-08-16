@@ -351,17 +351,35 @@ export default function CurriculumDailySession() {
     }
     const { data, error } = await retryJwtFuture(async () => await supabase.rpc('submit_levelup_attempt', { p_player_id: playerId, p_skill_id: question.skillId, p_correct: ok, p_response_ms: responseMs, p_difficulty: question.difficulty, p_seed: question.seed, p_prompt: question.prompt, p_session_id: activeSessionId, p_diagnostic_tags: question.tags }))
     if (error) {
-      if (error.code === '23505' && activeSessionId) {
-        const { data: recordedAttempt } = await supabase
-          .from('attempts')
-          .select('correct,xp_awarded')
-          .eq('session_id', activeSessionId)
-          .eq('question_seed', question.seed)
-          .maybeSingle()
+      // The RPC may have committed before a network response was lost, or a
+      // second tab may have advanced the same session. Reconcile from the
+      // persisted attempts before presenting a retry that could never succeed.
+      const { data: persistedAttempts, error: recoveryError } = await supabase
+        .from('attempts')
+        .select('question_seed,correct,xp_awarded')
+        .eq('session_id', activeSessionId)
+        .order('created_at', { ascending: true })
+        .order('id', { ascending: true })
 
-        if (recordedAttempt) {
-          setXp((value) => value + Number(recordedAttempt.xp_awarded ?? 0))
-          if (recordedAttempt.correct === true) setCorrect((value) => value + 1)
+      if (!recoveryError && persistedAttempts) {
+        const persistedCorrect = persistedAttempts.filter((attempt) => attempt.correct === true).length
+        const persistedXp = persistedAttempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0)
+        const currentWasRecorded = persistedAttempts.some(
+          (attempt) => Number(attempt.question_seed) === question.seed
+        )
+
+        if (persistedAttempts.length >= SESSION_LENGTH) {
+          setCorrect(persistedCorrect)
+          setXp(persistedXp)
+          setSelectedOptionIndex(null)
+          setIndex(SESSION_LENGTH)
+          return
+        }
+
+        if (currentWasRecorded) {
+          setCorrect(persistedCorrect)
+          setXp(persistedXp)
+          setSelectedOptionIndex(null)
           setFeedback('✓ Esta respuesta ya estaba guardada · avance recuperado')
           return
         }
