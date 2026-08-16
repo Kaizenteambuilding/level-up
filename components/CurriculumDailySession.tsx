@@ -306,7 +306,12 @@ export default function CurriculumDailySession() {
     answerLocked.current = true
     setAnswered(true)
     const ok = optionIndex === question.answerIndex
-    const responseMs = Math.max(1, Date.now() - questionStarted.current)
+    // Match the server-side bound while allowing a mission left open in a tab
+    // to continue normally after a long pause.
+    const responseMs = Math.min(
+      3_600_000,
+      Math.max(1, Date.now() - questionStarted.current)
+    )
 
     if (testMode) {
       setTestAttempts((value) => value + 1)
