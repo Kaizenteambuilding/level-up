@@ -14,9 +14,18 @@ export type DemoGameState = {
   rewardedSessions: string[]
   baseTheme: DemoBaseTheme
   visitedThemes: DemoBaseTheme[]
+  avatarId: DemoAvatarId
 }
 
 export type DemoBaseTheme = 'space' | 'forest' | 'arcade'
+export type DemoAvatarId = 'astronaut' | 'ninja' | 'mage' | 'scientist'
+
+export const DEMO_AVATARS = [
+  { id: 'astronaut', name: 'Explorador espacial', icon: '🧑‍🚀', description: 'Listo para descubrir nuevos mundos.' },
+  { id: 'ninja', name: 'Ninja del conocimiento', icon: '🥷', description: 'Precisión y concentración en cada reto.' },
+  { id: 'mage', name: 'Mago de los números', icon: '🧙‍♂️', description: 'Convierte problemas en soluciones.' },
+  { id: 'scientist', name: 'Científico inventor', icon: '🧑‍🔬', description: 'Experimenta, aprende y mejora.' },
+] as const
 
 export const DEMO_ITEMS: DemoItem[] = [
   { id: 'headphones', name: 'Auriculares neón', description: 'Para explorar con ritmo.', icon: '🎧', price: 90, slot: 'head' },
@@ -34,6 +43,7 @@ export const INITIAL_DEMO_STATE: DemoGameState = {
   rewardedSessions: [],
   baseTheme: 'space',
   visitedThemes: [],
+  avatarId: 'astronaut',
 }
 
 export function demoStorageKey(playerId: string) {
@@ -66,6 +76,7 @@ export function normalizeDemoState(value: unknown): DemoGameState {
     visitedThemes: Array.isArray(candidate.visitedThemes)
       ? Array.from(new Set(candidate.visitedThemes.filter((theme): theme is DemoBaseTheme => theme === 'space' || theme === 'forest' || theme === 'arcade')))
       : [],
+    avatarId: candidate.avatarId === 'ninja' || candidate.avatarId === 'mage' || candidate.avatarId === 'scientist' ? candidate.avatarId : 'astronaut',
   }
 }
 
@@ -106,6 +117,15 @@ export function setDemoBaseTheme(state: DemoGameState, theme: string): DemoGameS
     baseTheme: theme,
     visitedThemes: state.visitedThemes.includes(theme) ? state.visitedThemes : [...state.visitedThemes, theme],
   }
+}
+
+export function setDemoAvatar(state: DemoGameState, avatarId: string): DemoGameState {
+  if (!DEMO_AVATARS.some((avatar) => avatar.id === avatarId)) return state
+  return { ...state, avatarId: avatarId as DemoAvatarId }
+}
+
+export function demoAvatarById(avatarId: string) {
+  return DEMO_AVATARS.find((avatar) => avatar.id === avatarId) ?? DEMO_AVATARS[0]
 }
 
 export type DemoAchievement = {

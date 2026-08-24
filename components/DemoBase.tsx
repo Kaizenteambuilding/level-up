@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { DEMO_ITEMS, equipDemoItem, equippedDemoItems, setDemoBaseTheme } from '@/lib/demoGame'
+import { DEMO_AVATARS, DEMO_ITEMS, demoAvatarById, equipDemoItem, equippedDemoItems, setDemoAvatar, setDemoBaseTheme } from '@/lib/demoGame'
 import { DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 const THEMES = [
@@ -21,6 +21,7 @@ export default function DemoBase() {
   const head = equipped.find((item) => item.slot === 'head')
   const companion = equipped.find((item) => item.slot === 'companion')
   const trail = equipped.find((item) => item.slot === 'trail')
+  const avatar = demoAvatarById(game.avatarId)
 
   function chooseTheme(theme: string) {
     saveGame(setDemoBaseTheme(game, theme))
@@ -33,6 +34,12 @@ export default function DemoBase() {
     setMessage(`${item?.name} equipado.`)
   }
 
+  function chooseAvatar(avatarId: string) {
+    const selected = DEMO_AVATARS.find((entry) => entry.id === avatarId)
+    saveGame(setDemoAvatar(game, avatarId))
+    setMessage(`${selected?.name} seleccionado.`)
+  }
+
   return (
     <>
       <section className={`player-base theme-${game.baseTheme}`}>
@@ -41,7 +48,7 @@ export default function DemoBase() {
         <div className="base-room">
           <div className="base-avatar" aria-label={`Avatar equipado de ${player.alias}`}>
             {head && <span className="base-head" aria-label={head.name}>{head.icon}</span>}
-            <span className="base-character" aria-hidden="true">🧑‍🚀</span>
+            <span className="base-character" aria-hidden="true">{avatar.icon}</span>
             {companion && <span className="base-companion" aria-label={companion.name}>{companion.icon}</span>}
             {trail && <span className="base-trail" aria-label={trail.name}>{trail.icon} ✦ ✧</span>}
             <b>{player.alias}</b>
@@ -52,6 +59,7 @@ export default function DemoBase() {
 
       {message && <p className="status" role="status" aria-live="polite">{message}</p>}
       <section className="card base-customizer">
+        <div className="avatar-customizer"><span className="tag">PROTAGONISTA</span><h2>Elige tu explorador</h2><div className="avatar-picker">{DEMO_AVATARS.map((entry) => <button key={entry.id} type="button" className={game.avatarId === entry.id ? 'selected' : ''} onClick={() => chooseAvatar(entry.id)} aria-pressed={game.avatarId === entry.id}><span>{entry.icon}</span><b>{entry.name}</b><small>{entry.description}</small></button>)}</div></div>
         <div><span className="tag">AMBIENTE</span><h2>Personaliza tu refugio</h2><div className="theme-picker">{THEMES.map((theme) => <button key={theme.id} type="button" className={`theme-button${game.baseTheme === theme.id ? ' selected' : ''}`} onClick={() => chooseTheme(theme.id)} aria-pressed={game.baseTheme === theme.id}><span>{theme.icon}</span>{theme.name}</button>)}</div></div>
         <div><span className="tag">🎒 MOCHILA</span><h2>Elige tu equipo</h2>{game.owned.length ? <div className="base-inventory">{game.owned.map((id) => { const item = DEMO_ITEMS.find((entry) => entry.id === id); if (!item) return null; const active = equipped.some((entry) => entry.id === item.id); return <button key={item.id} type="button" onClick={() => equip(item.id)} className={active ? 'selected' : ''} aria-pressed={active}><span>{item.icon}</span><small>{item.name}</small></button> })}</div> : <><p className="muted">Tu mochila está vacía. Visita la tienda para elegir equipo.</p><Link href="/shop" className="btn primary">IR A LA TIENDA</Link></>}</div>
       </section>

@@ -9,7 +9,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText
 const moduleBox = { exports: {} }
 vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports })
-const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission, setDemoBaseTheme, demoAchievements } = moduleBox.exports
+const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission, setDemoBaseTheme, demoAchievements, setDemoAvatar, demoAvatarById } = moduleBox.exports
 
 assert.equal(normalizeDemoState(null).coins, 450)
 assert.equal(normalizeDemoState({}).coins, 450)
@@ -44,5 +44,9 @@ const themed = setDemoBaseTheme(setDemoBaseTheme(setDemoBaseTheme(INITIAL_DEMO_S
 assert.equal(themed.visitedThemes.length, 3)
 assert.equal(demoAchievements(themed).find((item) => item.id === 'decorator').unlocked, true)
 assert.equal(demoAchievements(missionAward.state).find((item) => item.id === 'first-mission').unlocked, true)
+assert.equal(setDemoAvatar(INITIAL_DEMO_STATE, 'ninja').avatarId, 'ninja')
+assert.equal(setDemoAvatar(INITIAL_DEMO_STATE, 'invalid'), INITIAL_DEMO_STATE)
+assert.equal(normalizeDemoState({ coins: 1, avatarId: 'invalid' }).avatarId, 'astronaut')
+assert.equal(demoAvatarById('scientist').icon, '🧑‍🔬')
 
 console.log('Demo game economy audit passed.')

@@ -9,7 +9,7 @@ import {
 } from '@/lib/firstEvaluationGenerators'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { buildMissionRecap, MissionSkillResult } from '@/lib/missionRecap'
-import { awardDemoMission, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
+import { awardDemoMission, demoAvatarById, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
 import { userFacingError } from '@/lib/userFacingError'
 
 type SkillRow = {
@@ -74,6 +74,7 @@ export default function CurriculumDailySession() {
   const [closing, setClosing] = useState(false)
   const [sessionClosed, setSessionClosed] = useState(false)
   const [demoCoinsAwarded, setDemoCoinsAwarded] = useState(0)
+  const [missionAvatar, setMissionAvatar] = useState('🧑‍🚀')
   const [closeError, setCloseError] = useState('')
   const closeStarted = useRef(false)
   const answerLocked = useRef(false)
@@ -106,6 +107,12 @@ export default function CurriculumDailySession() {
       const id = localStorage.getItem('levelup_player_id')
       setPlayerId(id)
       if (!id) { setLoading(false); return }
+      try {
+        const savedGame = localStorage.getItem(demoStorageKey(id))
+        if (savedGame) setMissionAvatar(demoAvatarById(normalizeDemoState(JSON.parse(savedGame)).avatarId).icon)
+      } catch {
+        setMissionAvatar('🧑‍🚀')
+      }
       const supabase = createSupabaseBrowserClient()
       if (!supabase) { setLoadError('Supabase no está configurado.'); setLoading(false); return }
 
@@ -503,6 +510,7 @@ export default function CurriculumDailySession() {
     </section>
     <div className="mission-stage">
       {!testMode && <aside className="mission-core" aria-label="Estado del núcleo">
+        <span className="mission-avatar" aria-label="Tu avatar">{missionAvatar}</span>
         <span className="core-city" aria-hidden="true">🏙️</span>
         <div className="core-orb" aria-hidden="true" style={{ '--mission-charge': `${Math.max(8, Math.round((index / SESSION_LENGTH) * 100))}%` } as React.CSSProperties}>⚡</div>
         <b>Núcleo {Math.round((index / SESSION_LENGTH) * 100)}%</b>

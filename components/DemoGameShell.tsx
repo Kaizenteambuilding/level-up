@@ -8,6 +8,7 @@ import {
   DemoGameState,
   INITIAL_DEMO_STATE,
   demoStorageKey,
+  demoAvatarById,
   equippedDemoItems,
   normalizeDemoState,
 } from '@/lib/demoGame'
@@ -69,9 +70,10 @@ export function DemoLoading() {
 
 export function DemoAvatar({ player, game }: { player: DemoPlayer; game: DemoGameState }) {
   const equipped = equippedDemoItems(game)
+  const avatar = demoAvatarById(game.avatarId)
   return (
     <div className="game-avatar" aria-label={`Avatar de ${player.alias}`}>
-      <span className="avatar-face" aria-hidden="true">🧑‍🚀</span>
+      <span className="avatar-face" aria-hidden="true">{avatar.icon}</span>
       <span className="avatar-name">{player.alias}</span>
       <span className="avatar-items" aria-label="Objetos equipados">{equipped.map((item) => item.icon).join(' ')}</span>
     </div>
