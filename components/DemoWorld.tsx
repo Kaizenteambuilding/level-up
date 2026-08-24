@@ -21,11 +21,16 @@ export default function DemoWorld() {
   if (!player.onboardingCompleted) return <section className="onboarding-gate card"><div className="nova-orb" aria-hidden="true">🤖</div><span className="tag">NOVA · MENSAJE NUEVO</span><h1>Tu mundo está listo</h1><p className="muted">Antes de explorar, elige tu personaje y completa una misión guiada. Tu progreso actual se conserva.</p><Link href="/onboarding" className="btn primary">COMENZAR AVENTURA</Link></section>
   const achievements = demoAchievements(game)
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
-  const guide = demoGuideStep(game, player.level)
+  const cadence = missionCadence(game)
+  const defaultGuide = demoGuideStep(game, player.level)
+  const guide = cadence.status === 'done-today' && (defaultGuide.href === '/mission/briefing' || defaultGuide.href === '/mission')
+    ? player.level >= 2
+      ? { id: 'post-mission-shop', title: 'Misión cumplida. Disfruta la recompensa', message: 'El entrenamiento de hoy ya está guardado. Puedes usar tus monedas, revisar tus logros o explorar sin repetir la misión diaria.', href: '/shop', action: 'VER RECOMPENSAS', icon: '🎁' }
+      : { id: 'post-mission-journal', title: 'Misión cumplida por hoy', message: 'El entrenamiento de hoy ya está guardado. Revisa tu progreso y vuelve mañana para seguir ganando experiencia.', href: '/achievements', action: 'VER MI PROGRESO', icon: '🏆' }
+    : defaultGuide
   const nextUnlock = nextGameUnlock(player.level)
   const weeklyQuests = buildWeeklyQuests(game)
   const completedWeeklyQuests = weeklyQuests.filter((quest) => quest.completed).length
-  const cadence = missionCadence(game)
   const cadenceHref = cadence.status === 'done-today' ? '/math-city' : '/mission/briefing'
 
   async function toggleSoundPreference() {

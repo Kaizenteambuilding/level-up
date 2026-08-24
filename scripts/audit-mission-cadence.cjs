@@ -14,6 +14,9 @@ assert(cadence.includes("status: 'done-today'"), 'mission cadence must recognize
 assert(cadence.includes("status: 'returning'"), 'mission cadence must recognize a later-day return')
 assert(world.includes("import { missionCadence } from '@/lib/missionCadence'"), 'world must consume mission cadence')
 assert(world.includes("cadence.status === 'done-today' ? '/math-city' : '/mission/briefing'"), 'world must not invite a second daily mission after completion')
+assert(world.includes("cadence.status === 'done-today' && (defaultGuide.href === '/mission/briefing' || defaultGuide.href === '/mission')"), 'NOVA must replace mission-oriented guidance after the daily mission is complete')
+assert(world.includes("href: '/shop', action: 'VER RECOMPENSAS'"), 'eligible players should be guided toward their earned rewards after the daily mission')
+assert(world.includes("href: '/achievements', action: 'VER MI PROGRESO'"), 'players without the shop should still receive a non-mission post-completion objective')
 assert(briefing.includes("const doneToday = cadence.status === 'done-today' && !hasProgress && !onboarding"), 'briefing must preserve resumable/onboarding missions while enforcing daily cadence')
 assert(briefing.includes('La próxima misión diaria se habilita en un nuevo día'), 'briefing must explain when the next daily mission becomes available')
 
