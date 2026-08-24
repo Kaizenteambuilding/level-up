@@ -9,6 +9,7 @@ import { playDemoSound } from '@/lib/demoSound'
 import { WORLD_ZONES } from '@/lib/worldZones'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { buildWeeklyQuests } from '@/lib/weeklyQuests'
+import { missionCadence } from '@/lib/missionCadence'
 import { reportProductEvent } from '@/lib/productTelemetry'
 
 export default function DemoWorld() {
@@ -24,6 +25,8 @@ export default function DemoWorld() {
   const nextUnlock = nextGameUnlock(player.level)
   const weeklyQuests = buildWeeklyQuests(game)
   const completedWeeklyQuests = weeklyQuests.filter((quest) => quest.completed).length
+  const cadence = missionCadence(game)
+  const cadenceHref = cadence.status === 'done-today' ? '/math-city' : '/mission/briefing'
 
   async function toggleSoundPreference() {
     if (!player) return
@@ -57,11 +60,11 @@ export default function DemoWorld() {
         <div className="world-map">
           <article className="world-zone math-zone unlocked">
             <span className="zone-icon" aria-hidden="true">🏙️</span>
-            <span className="zone-state">ZONA ACTIVA</span>
+            <span className="zone-state">{cadence.status === 'done-today' ? '✓ MISIÓN DE HOY COMPLETADA' : cadence.status === 'returning' ? 'NUEVA MISIÓN DISPONIBLE' : 'ZONA ACTIVA'}</span>
             <h2>Ciudad Matemática</h2>
-            <p>Misiones adaptativas, progreso real y recompensas académicas.</p>
+            <p>{cadence.message}</p>
             <div className="action-row">
-              <Link href="/mission/briefing" className="btn primary">▶ MISIÓN DIARIA</Link>
+              <Link href={cadenceHref} className="btn primary">▶ {cadence.action}</Link>
               <Link href="/math-city" className="btn dark">EXPLORAR CIUDAD</Link>
               <Link href="/player" className="btn dark">VER PROGRESO</Link>
             </div>
