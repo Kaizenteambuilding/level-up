@@ -9,7 +9,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText
 const moduleBox = { exports: {} }
 vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports })
-const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission, setDemoBaseTheme, demoAchievements, setDemoAvatar, demoAvatarById, toggleDemoSound } = moduleBox.exports
+const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission, setDemoBaseTheme, demoAchievements, setDemoAvatar, demoAvatarById, toggleDemoSound, demoGuideStep } = moduleBox.exports
 
 assert.equal(normalizeDemoState(null).coins, 450)
 assert.equal(normalizeDemoState({}).coins, 450)
@@ -55,5 +55,9 @@ assert.equal(demoAvatarById('scientist').icon, '🧑‍🔬')
 assert.equal(INITIAL_DEMO_STATE.soundEnabled, false)
 assert.equal(toggleDemoSound(INITIAL_DEMO_STATE).soundEnabled, true)
 assert.equal(normalizeDemoState({ coins: 1, soundEnabled: 'yes' }).soundEnabled, false)
+assert.equal(demoGuideStep(INITIAL_DEMO_STATE).id, 'first-mission')
+assert.equal(demoGuideStep(missionAward.state).id, 'first-item')
+const equippedState = ['headphones', 'robot', 'sparkles'].reduce((state, itemId) => buyDemoItem(state, itemId), missionAward.state)
+assert.equal(demoGuideStep(equippedState).id, 'themes')
 
 console.log('Demo game economy audit passed.')

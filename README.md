@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.10.0**. La demo jugable incorpora mapa global, Ciudad Matemática explorable con evidencia académica real, protagonistas seleccionables, tienda, Refugio, logros, historial de expediciones y sonidos opcionales de interacción y misión. La economía, personalización, logros, sonido e historial jugable se guardan solo en el navegador y permanecen separados del XP y los datos pedagógicos.
+Versión actual: **v1.11.0**. La demo jugable incorpora mapa global, Ciudad Matemática explorable con evidencia académica real, guía de objetivos contextual, protagonistas seleccionables, tienda, Refugio, logros, historial y sonidos opcionales. La economía, personalización, logros, sonido e historial jugable se guardan solo en el navegador y permanecen separados del XP y los datos pedagógicos.
 
 Producción: https://level-up-a544.vercel.app
 

@@ -190,6 +190,19 @@ export function demoAchievements(state: DemoGameState): DemoAchievement[] {
   ]
 }
 
+export type DemoGuideStep = { id: string; title: string; message: string; href: string; action: string; icon: string }
+
+export function demoGuideStep(state: DemoGameState): DemoGuideStep {
+  if (state.rewardedSessions.length === 0) return { id: 'first-mission', title: 'La ciudad necesita energía', message: 'Completa tu primera misión adaptativa para activar el núcleo y ganar monedas.', href: '/mission/briefing', action: 'ABRIR PRIMERA MISIÓN', icon: '⚡' }
+  if (state.owned.length === 0) return { id: 'first-item', title: 'Tienes una recompensa esperándote', message: 'Ya hay monedas en tu cartera. Elige tu primer objeto en la Tienda del Explorador.', href: '/shop', action: 'VISITAR LA TIENDA', icon: '🎁' }
+  if (Object.keys(state.equipped).length < 3) return { id: 'full-loadout', title: 'Completa tu equipamiento', message: 'Consigue y combina un objeto de cabeza, un compañero y una estela.', href: '/shop', action: 'BUSCAR EQUIPO', icon: '🎒' }
+  if (state.visitedThemes.length < 3) return { id: 'themes', title: 'Haz tuyo el refugio', message: 'Prueba los ambientes del refugio y descubre cuál encaja mejor con tu explorador.', href: '/base', action: 'PERSONALIZAR REFUGIO', icon: '🚀' }
+  if (state.rewardedSessions.length < 3) return { id: 'three-missions', title: 'La constancia abre caminos', message: `Has completado ${state.rewardedSessions.length} de 3 expediciones para el siguiente logro.`, href: '/mission/briefing', action: 'CONTINUAR AVENTURA', icon: '🏙️' }
+  const pending = demoAchievements(state).find((achievement) => !achievement.unlocked)
+  if (pending) return { id: pending.id, title: `Siguiente logro: ${pending.name}`, message: pending.description, href: '/achievements', action: 'VER BITÁCORA', icon: pending.icon }
+  return { id: 'complete', title: 'Explorador de élite', message: 'Has completado todos los objetivos actuales. Sigue entrenando mientras se preparan nuevas zonas.', href: '/math-city', action: 'EXPLORAR LA CIUDAD', icon: '🏆' }
+}
+
 export function equippedDemoItems(state: DemoGameState) {
   return Object.values(state.equipped)
     .map((id) => DEMO_ITEMS.find((item) => item.id === id))

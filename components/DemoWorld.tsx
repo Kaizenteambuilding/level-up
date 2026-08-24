@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
-import { demoAchievements, toggleDemoSound } from '@/lib/demoGame'
+import { demoAchievements, demoGuideStep, toggleDemoSound } from '@/lib/demoGame'
 import { playDemoSound } from '@/lib/demoSound'
 
 const lockedZones = [
@@ -18,6 +18,7 @@ export default function DemoWorld() {
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir el mundo</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
   const achievements = demoAchievements(game)
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
+  const guide = demoGuideStep(game)
 
   return (
     <>
@@ -65,6 +66,11 @@ export default function DemoWorld() {
             <p>Viste el avatar, abre la mochila y personaliza tu base.</p>
           </Link>
         </div>
+      </section>
+      <section className="world-guide">
+        <div className="guide-character" aria-hidden="true">🤖</div>
+        <div><span className="tag">NOVA · GUÍA DE EXPLORACIÓN</span><h2>{guide.icon} {guide.title}</h2><p>{guide.message}</p></div>
+        <Link href={guide.href} className="btn primary">{guide.action}</Link>
       </section>
       <section className="card world-journal">
         <div><span className="tag">📖 BITÁCORA</span><h2>Logros del Explorador</h2><p className="muted">{unlockedAchievements} de {achievements.length} logros desbloqueados · {game.rewardedSessions.length} misiones recompensadas</p></div>
