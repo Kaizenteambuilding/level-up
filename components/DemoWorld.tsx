@@ -39,6 +39,7 @@ export default function DemoWorld() {
             <p>Misiones adaptativas, progreso real y recompensas académicas.</p>
             <div className="action-row">
               <Link href="/mission/briefing" className="btn primary">▶ MISIÓN DIARIA</Link>
+              <Link href="/math-city" className="btn dark">EXPLORAR CIUDAD</Link>
               <Link href="/player" className="btn dark">VER PROGRESO</Link>
             </div>
           </article>
