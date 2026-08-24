@@ -5,13 +5,6 @@ function localDayKey(value: string | Date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
 
-function previousDay(value: Date) {
-  const copy = new Date(value)
-  copy.setHours(12, 0, 0, 0)
-  copy.setDate(copy.getDate() - 1)
-  return copy
-}
-
 export type ReturnLoop = {
   completedToday: boolean
   streak: number
@@ -19,23 +12,15 @@ export type ReturnLoop = {
   message: string
 }
 
-export function buildReturnLoop(history: DemoMissionRecord[], now = new Date()): ReturnLoop {
+export function buildReturnLoop(history: DemoMissionRecord[], authoritativeStreak = 0, now = new Date()): ReturnLoop {
   const days = new Set(
     history
       .filter((mission) => !Number.isNaN(Date.parse(mission.completedAt)))
       .map((mission) => localDayKey(mission.completedAt))
   )
 
-  const today = new Date(now)
-  today.setHours(12, 0, 0, 0)
-  const completedToday = days.has(localDayKey(today))
-
-  let cursor = completedToday ? today : previousDay(today)
-  let streak = 0
-  while (days.has(localDayKey(cursor))) {
-    streak += 1
-    cursor = previousDay(cursor)
-  }
+  const completedToday = days.has(localDayKey(now))
+  const streak = Math.max(0, Math.floor(Number(authoritativeStreak) || 0))
 
   if (completedToday) {
     return {
