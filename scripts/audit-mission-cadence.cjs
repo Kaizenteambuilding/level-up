@@ -8,7 +8,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
 
-assert(cadence.includes("status: 'first' | 'done-today' | 'returning'"), 'mission cadence must expose the three daily states')
+assert(cadence.includes("status: 'ready' | 'done-today' | 'returning'"), 'mission cadence must expose the three daily states')
 assert(cadence.includes('game.missionHistory'), 'mission cadence must derive from persisted mission history')
 assert(cadence.includes("status: 'done-today'"), 'mission cadence must recognize a mission completed today')
 assert(cadence.includes("status: 'returning'"), 'mission cadence must recognize a later-day return')
