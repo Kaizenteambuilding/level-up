@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.16.0**. LEVEL UP incorpora un mundo ampliado: las futuras zonas de Lengua, Inglés, Ciencias y Creatividad ya pueden explorarse como vistas previas, cada una con identidad, narrativa y tres distritos. Se distinguen claramente del motor operativo de Matemáticas y no conceden progreso hasta contar con contenido curricular validado. Se mantienen el onboarding de NOVA y toda la progresión persistente.
+Versión actual: **v1.17.0**. Ciudad Matemática incorpora una campaña de seis distritos alimentada exclusivamente por intentos completados: exploración, cobertura y precisión determinan visualmente qué territorios están sin explorar, activos o estabilizados. NOVA señala el siguiente objetivo sin modificar la selección adaptativa de preguntas. El mundo ampliado, onboarding y progresión persistente siguen operativos.
 
 Producción: https://level-up-a544.vercel.app
 
