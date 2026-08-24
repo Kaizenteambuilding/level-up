@@ -29,10 +29,15 @@ export default function DemoWorld() {
           <DemoHud player={player} game={game} onToggleSound={() => { const next = toggleDemoSound(game); saveGame(next); playDemoSound(next.soundEnabled, 'select') }} />
         </div>
         <div className="world-heading">
-          <span className="tag">DEMO JUGABLE · V1.2</span>
+          <span className="tag">DEMO JUGABLE · V1.11</span>
           <h1 id="world-title">Mundo de {player.alias}</h1>
           <p>Elige un destino. Matemáticas ya está conectado al motor real.</p>
         </div>
+        <section className="world-guide" aria-label="Siguiente objetivo recomendado">
+          <div className="guide-character" aria-hidden="true">🤖</div>
+          <div><span className="tag">NOVA · GUÍA DE EXPLORACIÓN</span><h2>{guide.icon} {guide.title}</h2><p>{guide.message}</p></div>
+          <Link href={guide.href} className="btn primary">{guide.action}</Link>
+        </section>
         <div className="world-map">
           <article className="world-zone math-zone unlocked">
             <span className="zone-icon" aria-hidden="true">🏙️</span>
@@ -66,11 +71,6 @@ export default function DemoWorld() {
             <p>Viste el avatar, abre la mochila y personaliza tu base.</p>
           </Link>
         </div>
-      </section>
-      <section className="world-guide">
-        <div className="guide-character" aria-hidden="true">🤖</div>
-        <div><span className="tag">NOVA · GUÍA DE EXPLORACIÓN</span><h2>{guide.icon} {guide.title}</h2><p>{guide.message}</p></div>
-        <Link href={guide.href} className="btn primary">{guide.action}</Link>
       </section>
       <section className="card world-journal">
         <div><span className="tag">📖 BITÁCORA</span><h2>Logros del Explorador</h2><p className="muted">{unlockedAchievements} de {achievements.length} logros desbloqueados · {game.rewardedSessions.length} misiones recompensadas</p></div>
