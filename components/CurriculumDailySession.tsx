@@ -92,6 +92,7 @@ export default function CurriculumDailySession() {
   const recentFamilies = useRef<string[]>([])
   const recentSkillIds = useRef<string[]>([])
   const recentUnitIds = useRef<string[]>([])
+  const sessionUnitCounts = useRef<Record<string, number>>({})
   const questionPrompt = useRef<HTMLParagraphElement>(null)
   const nextButton = useRef<HTMLButtonElement>(null)
 
@@ -280,6 +281,7 @@ export default function CurriculumDailySession() {
       states,
       focusUnitIds,
       reviewUnitIds,
+      sessionUnitCounts: sessionUnitCounts.current,
       recentSkillIds: recentSkillIds.current,
       recentUnitIds: recentUnitIds.current,
       seed,
@@ -313,6 +315,7 @@ export default function CurriculumDailySession() {
     if (!testMode) {
       recentSkillIds.current = [skill.id, ...recentSkillIds.current.filter((id) => id !== skill.id)].slice(0, 5)
       recentUnitIds.current = [skill.unit_id, ...recentUnitIds.current.filter((id) => id !== skill.unit_id)].slice(0, 4)
+      sessionUnitCounts.current[skill.unit_id] = (sessionUnitCounts.current[skill.unit_id] ?? 0) + 1
     }
     nextLocked.current = false
     setQuestion(nextQuestion); setAnswered(false); setSelectedOptionIndex(null); setFeedback(''); questionStarted.current = Date.now()
@@ -554,7 +557,7 @@ export default function CurriculumDailySession() {
       </aside>}
     <section className="card mission-question">
       <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
-      {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>{focusUnitIds.includes(skills.find((skill) => skill.id === question.skillId)?.unit_id ?? '') ? '📚 CONTENIDO ACTUAL' : '🔁 REPASO ANTERIOR'} · REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
+      {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>{(() => { const state=states[question.skillId]; if (!state) return '🧭 DIAGNÓSTICO DE ENTRADA'; return focusUnitIds.includes(skills.find((skill) => skill.id === question.skillId)?.unit_id ?? '') ? '📚 CONTENIDO ACTUAL · REFUERZO PERSONALIZADO' : '🔁 REPASO ANTERIOR · REFUERZO PERSONALIZADO' })()}</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. La respuesta servirá para situar tu punto de partida sin penalizarte ni asumir un nivel previo.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
       <p ref={questionPrompt} tabIndex={-1} style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
       <div className="answers">{question.options.map((option,i) => {
         const isCorrectOption = answered && i === question.answerIndex

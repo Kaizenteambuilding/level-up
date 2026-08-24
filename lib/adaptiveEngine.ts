@@ -16,6 +16,7 @@ export type AdaptiveSelectionInput<T extends AdaptiveSkill> = {
   states: Record<string, AdaptiveSkillState | undefined>
   focusUnitIds?: string[]
   reviewUnitIds?: string[]
+  sessionUnitCounts?: Record<string, number>
   recentSkillIds: string[]
   recentUnitIds: string[]
   seed: number
@@ -48,6 +49,7 @@ export function chooseAdaptiveSkill<T extends AdaptiveSkill>({
   states,
   focusUnitIds = [],
   reviewUnitIds = [],
+  sessionUnitCounts = {},
   recentSkillIds,
   recentUnitIds,
   seed,
@@ -113,8 +115,14 @@ export function chooseAdaptiveSkill<T extends AdaptiveSkill>({
   // deliberately revisits earlier content. Adaptation still decides the skill
   // and difficulty inside each pedagogically valid pool.
   if (focusUnitIds.length && mode <= 6) {
+    const leastPracticedCount = Math.min(
+      ...focusUnitIds.map((unitId) => sessionUnitCounts[unitId] ?? 0)
+    )
+    const leastPracticedUnits = focusUnitIds.filter(
+      (unitId) => (sessionUnitCounts[unitId] ?? 0) === leastPracticedCount
+    )
     const focus = scored
-      .filter((item) => focusUnitIds.includes(item.skill.unit_id))
+      .filter((item) => leastPracticedUnits.includes(item.skill.unit_id))
       .sort(byNeed)
       .slice(0, 6)
       .map((item) => item.skill)

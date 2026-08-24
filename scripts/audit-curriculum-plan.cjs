@@ -38,18 +38,22 @@ if (manual.focusUnitIds.join(',') !== 'M07') failures.push('manual_focus')
 
 const skills = plan.MATH_CURRICULUM_UNITS.map((unit_id, index) => ({ id: `S${index + 1}`, unit_id }))
 const pickedUnits = []
+const sessionUnitCounts = {}
 for (let index = 0; index < 10; index += 1) {
   const picked = chooseAdaptiveSkill({
     skills: skills.slice(0, 10), states: {}, recentSkillIds: [], recentUnitIds: [],
     focusUnitIds: ['M06', 'M07', 'M08', 'M09', 'M10'],
     reviewUnitIds: ['M01', 'M02', 'M03', 'M04', 'M05'],
+    sessionUnitCounts,
     seed: 12345, questionIndex: index, nowMs: Date.UTC(2026, 9, 10),
   })
   pickedUnits.push(picked?.unit_id)
+  if (picked?.unit_id) sessionUnitCounts[picked.unit_id] = (sessionUnitCounts[picked.unit_id] ?? 0) + 1
 }
 if (pickedUnits.slice(0, 7).some((unit) => !['M06', 'M07', 'M08', 'M09', 'M10'].includes(unit))) failures.push('focus_ratio')
 if (!['M01', 'M02', 'M03', 'M04', 'M05'].includes(pickedUnits[7])) failures.push('review_slot')
 if (pickedUnits.some((unit) => Number(unit?.slice(1)) > 10)) failures.push('locked_content')
+if (new Set(pickedUnits.slice(0, 5)).size !== 5) failures.push('diagnostic_unit_coverage')
 
 console.log(JSON.stringify({ dateCases, automatic, manual, pickedUnits, failures }, null, 2))
 if (failures.length) process.exitCode = 1

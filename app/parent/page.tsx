@@ -505,6 +505,15 @@ export default function Parent() {
     unitNames,
     unitOrder: ACTIVE_CURRICULUM_UNITS,
   })
+  const effectivePlan = effectiveCurriculumPlan(player.id, curriculumPlan)
+  const visibleFocusUnits = planMode === 'manual' ? planFocusUnits : effectivePlan.focusUnitIds
+  const calibratedFocusUnits = visibleFocusUnits.filter((unitId) => {
+    const skillIds = curriculumSkills.filter((skill) => skill.unit_id === unitId).map((skill) => skill.id)
+    return skillIds.reduce((sum, skillId) => sum + Number(skillEvidence.attempts[skillId] ?? 0), 0) >= 2
+  }).length
+  const calibrationProgress = visibleFocusUnits.length
+    ? Math.round((calibratedFocusUnits / visibleFocusUnits.length) * 100)
+    : 0
 
   return (
     <main className="shell">
@@ -568,8 +577,8 @@ export default function Parent() {
 
         {planMode === 'automatic' ? (
           <div className="metric curriculum-plan-summary">
-            <b>{termLabel(effectiveCurriculumPlan(player.id, curriculumPlan).currentTerm)}</b>
-            <p className="muted">Foco automático: {effectiveCurriculumPlan(player.id, curriculumPlan).focusUnitIds.map((id) => unitNames[id] ?? id).join(' · ')}</p>
+            <b>{termLabel(effectivePlan.currentTerm)}</b>
+            <p className="muted">Foco automático: {effectivePlan.focusUnitIds.map((id) => unitNames[id] ?? id).join(' · ')}</p>
             <small className="muted">Puedes cambiar a “Ritmo real del colegio” si el centro lleva otro orden.</small>
           </div>
         ) : (
@@ -592,6 +601,12 @@ export default function Parent() {
             </div>
           </>
         )}
+
+        <div className="metric curriculum-plan-summary">
+          <b>🧭 Punto de partida · {calibratedFocusUnits}/{visibleFocusUnits.length || '—'} unidades calibradas</b>
+          <p className="muted">Una unidad se considera calibrada cuando ya hay al menos dos respuestas guardadas en misiones completadas. No se interpreta una respuesta aislada como nivel definitivo.</p>
+          <div className="bar" role="progressbar" aria-label="Calibración del contenido actual" aria-valuemin={0} aria-valuemax={100} aria-valuenow={calibrationProgress}><i style={{ width: `${calibrationProgress}%` }} /></div>
+        </div>
 
         <div className="action-row curriculum-plan-actions">
           <button className="btn primary" type="button" disabled={savingPlan} onClick={saveCurriculumPlan}>

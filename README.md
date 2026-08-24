@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.13.0**. El motor incorpora programación curricular por trimestre: limita el contenido disponible, prioriza las unidades actuales y conserva repasos controlados de periodos anteriores. El panel padre permite seguir un calendario automático o indicar el ritmo real del colegio. La dificultad adaptativa, el dominio académico y el nivel de juego permanecen separados.
+Versión actual: **v1.13.1**. El motor incorpora programación curricular por trimestre y calibración de entrada: limita el contenido disponible, recorre de forma equilibrada las unidades actuales, identifica habilidades nuevas sin asumir un nivel previo y conserva repasos controlados de periodos anteriores. El panel padre muestra el avance del punto de partida y permite seguir un calendario automático o indicar el ritmo real del colegio. La dificultad adaptativa, el dominio académico y el nivel de juego permanecen separados.
 
 Producción: https://level-up-a544.vercel.app
 
