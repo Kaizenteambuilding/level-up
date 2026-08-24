@@ -6,6 +6,7 @@ import { demoAchievements, demoGuideStep, toggleDemoSound } from '@/lib/demoGame
 import { nextGameUnlock } from '@/lib/gameProgression'
 import { playDemoSound } from '@/lib/demoSound'
 import { WORLD_ZONES } from '@/lib/worldZones'
+import { createSupabaseBrowserClient } from '@/lib/supabase'
 
 export default function DemoWorld() {
   const { player, game, saveGame, loading, error } = useDemoGamePlayer()
@@ -17,13 +18,24 @@ export default function DemoWorld() {
   const guide = demoGuideStep(game, player.level)
   const nextUnlock = nextGameUnlock(player.level)
 
+  async function toggleSoundPreference() {
+    if (!player) return
+    const next = toggleDemoSound(game)
+    const supabase = createSupabaseBrowserClient()
+    if (!supabase) return
+    const { error: preferenceError } = await supabase.rpc('set_levelup_game_preferences', { p_player_id: player.id, p_sound_enabled: next.soundEnabled })
+    if (preferenceError) return
+    saveGame(next)
+    playDemoSound(next.soundEnabled, 'select')
+  }
+
   return (
     <>
       <section className="game-world" aria-labelledby="world-title">
         <div className="world-sky" aria-hidden="true" />
         <div className="world-topbar">
           <DemoAvatar player={player} game={game} />
-          <DemoHud player={player} game={game} onToggleSound={() => { const next = toggleDemoSound(game); saveGame(next); playDemoSound(next.soundEnabled, 'select') }} />
+          <DemoHud player={player} game={game} onToggleSound={toggleSoundPreference} />
         </div>
         <div className="world-heading">
           <span className="tag">MUNDO PERSISTENTE</span>

@@ -76,6 +76,8 @@ export function useDemoGamePlayer() {
         const serverGame = normalizeDemoState({
           ...localGame,
           avatarId: typeof avatar.avatar_id === 'string' ? avatar.avatar_id : localGame.avatarId,
+          baseTheme: typeof avatar.base_theme === 'string' ? avatar.base_theme : localGame.baseTheme,
+          soundEnabled: typeof avatar.sound_enabled === 'boolean' ? avatar.sound_enabled : localGame.soundEnabled,
           coins: Number(selected.coins ?? 0),
           owned: rows.map((item) => item.item_id),
           equipped: Object.fromEntries(rows.filter((item) => item.equipped).map((item) => [item.slot, item.item_id])),

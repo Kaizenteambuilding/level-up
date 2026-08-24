@@ -29,9 +29,15 @@ export default function DemoBase() {
   const trail = equipped.find((item) => item.slot === 'trail')
   const avatar = demoAvatarById(game.avatarId)
 
-  function chooseTheme(theme: string) {
+  async function chooseTheme(theme: string) {
     const selected = THEMES.find((entry) => entry.id === theme)
-    if (!selected || playerLevel < selected.minimumLevel) return
+    if (!selected || playerLevel < selected.minimumLevel || savingItemId) return
+    const supabase = createSupabaseBrowserClient()
+    if (!supabase) { setMessage('No se pudo conectar con LEVEL UP.'); return }
+    setSavingItemId(`theme:${theme}`)
+    const { error: themeError } = await supabase.rpc('set_levelup_game_preferences', { p_player_id: playerId, p_base_theme: theme })
+    setSavingItemId(null)
+    if (themeError) { setMessage(userFacingError(themeError, 'No se pudo guardar el ambiente.')); return }
     saveGame(setDemoBaseTheme(game, theme))
     playDemoSound(game.soundEnabled, 'select')
     setMessage('Ambiente del refugio actualizado.')
@@ -90,7 +96,7 @@ export default function DemoBase() {
         <div><span className="tag">🎒 MOCHILA</span><h2>Elige tu equipo</h2>{game.owned.length ? <div className="base-inventory">{game.owned.map((id) => { const item = DEMO_ITEMS.find((entry) => entry.id === id); if (!item) return null; const active = equipped.some((entry) => entry.id === item.id); return <button key={item.id} type="button" disabled={savingItemId !== null} onClick={() => equip(item.id)} className={active ? 'selected' : ''} aria-pressed={active}><span>{item.icon}</span><small>{savingItemId === item.id ? 'Equipando…' : item.name}</small></button> })}</div> : <><p className="muted">Tu mochila está vacía. Visita la tienda para elegir equipo.</p><Link href="/shop" className="btn primary">IR A LA TIENDA</Link></>}</div>
       </section>
       <DemoGameDock active="base" />
-      <p className="demo-notice">El personaje, inventario y equipo se guardan en la cuenta. El ambiente y el sonido son preferencias de este navegador.</p>
+      <p className="demo-notice">El personaje, ambiente, inventario y equipo se guardan en la cuenta y se recuperan en otros dispositivos.</p>
     </>
   )
 }

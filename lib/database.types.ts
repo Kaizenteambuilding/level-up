@@ -460,6 +460,7 @@ export type Database = {
       }
       open_levelup_session: { Args: { p_player_id: string }; Returns: Json }
       set_levelup_avatar: { Args: { p_avatar_id: string; p_player_id: string }; Returns: Json }
+      set_levelup_game_preferences: { Args: { p_base_theme?: string; p_player_id: string; p_sound_enabled?: boolean }; Returns: Json }
       set_player_curriculum_plan: {
         Args: {
           p_academic_year_start: number

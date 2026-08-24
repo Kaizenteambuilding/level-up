@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.18.0**. La Bitácora del Explorador reconstruye desde la cuenta las últimas expediciones completas con sus aciertos reales, XP y monedas, manteniendo los datos correctos después de recargar o cambiar de dispositivo. La campaña de Ciudad Matemática, el mundo ampliado, onboarding y progresión persistente siguen operativos.
+Versión actual: **v1.19.0**. Las preferencias de juego importantes ya viajan con la cuenta: personaje, ambiente del refugio y sonido se recuperan al cambiar de navegador o dispositivo mediante una RPC protegida. Se mantienen la Bitácora sincronizada, campaña de Ciudad Matemática, mundo ampliado, onboarding y progresión persistente.
 
 Producción: https://level-up-a544.vercel.app
 
