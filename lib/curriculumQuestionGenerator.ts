@@ -3,6 +3,7 @@ import {
   type GeneratedQuestion,
 } from './firstEvaluationGenerators'
 import { generateLanguageSubjectQuestion } from './languageSubjectGenerators'
+import { generateKnowledgeSubjectQuestion } from './knowledgeSubjectGenerators'
 
 type SkillMeta = {
   id: string
@@ -11,11 +12,7 @@ type SkillMeta = {
   unit_id?: string
 }
 
-/**
- * Single entry point for curriculum questions.
- * Mathematics keeps the proven production generator. New subjects are added
- * behind this dispatcher and can be activated independently after audits.
- */
+/** Single audited entry point for all curriculum questions. */
 export function generateCurriculumQuestion(
   skill: SkillMeta,
   difficulty: number,
@@ -24,11 +21,13 @@ export function generateCurriculumQuestion(
   if (skill.id.startsWith('M')) {
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
   }
-
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
     const question = generateLanguageSubjectQuestion(skill, difficulty, seed)
     if (question) return question
   }
-
+  if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
+    const question = generateKnowledgeSubjectQuestion(skill, difficulty, seed)
+    if (question) return question
+  }
   throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
 }
