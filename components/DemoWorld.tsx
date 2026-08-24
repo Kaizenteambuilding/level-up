@@ -23,7 +23,7 @@ export default function DemoWorld() {
   const achievements = demoAchievements(game)
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
   const cadence = missionCadence(game)
-  const returnLoop = buildReturnLoop(game.missionHistory)
+  const returnLoop = buildReturnLoop(game.missionHistory, player.streakDays)
   const defaultGuide = demoGuideStep(game, player.level)
   const guide = cadence.status === 'done-today' && (defaultGuide.href === '/mission/briefing' || defaultGuide.href === '/mission')
     ? player.level >= 2 && game.coins > 0
