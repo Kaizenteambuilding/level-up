@@ -24,8 +24,8 @@ export default function DemoWorld() {
   const cadence = missionCadence(game)
   const defaultGuide = demoGuideStep(game, player.level)
   const guide = cadence.status === 'done-today' && (defaultGuide.href === '/mission/briefing' || defaultGuide.href === '/mission')
-    ? player.level >= 2
-      ? { id: 'post-mission-shop', title: 'Misión cumplida. Disfruta la recompensa', message: 'El entrenamiento de hoy ya está guardado. Puedes usar tus monedas, revisar tus logros o explorar sin repetir la misión diaria.', href: '/shop', action: 'VER RECOMPENSAS', icon: '🎁' }
+    ? player.level >= 2 && game.coins > 0
+      ? { id: 'post-mission-shop', title: 'Misión cumplida. Disfruta la recompensa', message: `El entrenamiento de hoy ya está guardado. Tienes ${game.coins} monedas para personalizar tu aventura sin repetir la misión diaria.`, href: '/shop', action: 'USAR MIS MONEDAS', icon: '🎁' }
       : { id: 'post-mission-journal', title: 'Misión cumplida por hoy', message: 'El entrenamiento de hoy ya está guardado. Revisa tu progreso y vuelve mañana para seguir ganando experiencia.', href: '/achievements', action: 'VER MI PROGRESO', icon: '🏆' }
     : defaultGuide
   const nextUnlock = nextGameUnlock(player.level)
