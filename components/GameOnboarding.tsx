@@ -1,20 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { DEMO_AVATARS, setDemoAvatar } from '@/lib/demoGame'
 import { userFacingError } from '@/lib/userFacingError'
 import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { reportProductEvent } from '@/lib/productTelemetry'
 
 type Step = 'welcome' | 'avatar' | 'world' | 'reward'
 
 export default function GameOnboarding() {
-  const { player, game, saveGame, loading, error } = useDemoGamePlayer()
+  const { player, game, saveGame, loading, error } = useDemoGamePlayer({ allowIncompleteOnboarding: true })
   const [step, setStep] = useState<Step>('welcome')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const openedReported = useRef(false)
   useEffect(() => { const value = new URLSearchParams(window.location.search).get('step'); if (value === 'avatar' || value === 'world' || value === 'reward') setStep(value) }, [])
+  useEffect(() => { if (player && !openedReported.current) { openedReported.current = true; void reportProductEvent(player.id, 'onboarding_opened', '/onboarding') } }, [player])
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo iniciar la aventura</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
 
@@ -26,7 +29,7 @@ export default function GameOnboarding() {
     const { error: saveError } = await supabase.rpc('set_levelup_avatar', { p_player_id: player.id, p_avatar_id: avatarId })
     setSaving(false)
     if (saveError) { setMessage(userFacingError(saveError, 'No se pudo guardar el personaje.')); return }
-    saveGame(setDemoAvatar(game, avatarId)); setStep('world')
+    saveGame(setDemoAvatar(game, avatarId)); setStep('world'); void reportProductEvent(player.id, 'onboarding_avatar_saved', '/onboarding')
   }
 
   async function finishOnboarding() {
@@ -37,6 +40,7 @@ export default function GameOnboarding() {
     const { error: finishError } = await supabase.rpc('complete_levelup_onboarding', { p_player_id: player.id })
     setSaving(false)
     if (finishError) { setMessage('NOVA aún no encuentra una misión terminada desde que elegiste personaje. Completa los 10 retos para abrir el mundo.'); return }
+    await reportProductEvent(player.id, 'onboarding_completed', '/onboarding')
     window.location.assign('/world')
   }
 

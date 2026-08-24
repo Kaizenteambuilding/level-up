@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.21.0**. El HUD muestra una racha real de días con misiones completas y la Bitácora utiliza el contador total de expediciones del servidor. Ambos valores se calculan únicamente con sesiones cerradas y verificadas, en horario de Madrid, y se conservan entre dispositivos. Se mantienen los encargos semanales, preferencias, campaña y progresión persistente.
+Versión actual: **v1.22.0**. El recorrido infantil impide saltarse el onboarding mediante rutas directas, incorpora una prueba adulta reproducible y registra eventos técnicos mínimos para detectar abandono y errores. La telemetría no admite respuestas, enunciados, texto libre ni metadatos arbitrarios y elimina registros de más de 180 días. Se mantienen rachas, encargos, campaña y progresión persistente.
 
 Producción: https://level-up-a544.vercel.app
 

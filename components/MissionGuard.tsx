@@ -69,7 +69,7 @@ export default function MissionGuard() {
 
       const { data: player, error: playerError } = await supabase
         .from('players')
-        .select('id')
+        .select('id,avatar')
         .eq('id', playerId)
         .maybeSingle()
 
@@ -86,6 +86,10 @@ export default function MissionGuard() {
         router.replace('/parent/setup')
         return
       }
+
+      const avatar = player.avatar && typeof player.avatar === 'object' && !Array.isArray(player.avatar) ? player.avatar as Record<string, unknown> : {}
+      const onboardingMode = new URLSearchParams(window.location.search).get('onboarding') === '1'
+      if (avatar.onboarding_completed !== true && !onboardingMode) { router.replace('/onboarding'); return }
 
       setReady(true)
     }

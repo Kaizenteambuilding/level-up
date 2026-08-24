@@ -1,8 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect } from 'react'
+import { reportProductEvent } from '@/lib/productTelemetry'
 
 export default function ErrorPage({ reset }: { reset: () => void }) {
+  useEffect(() => { void reportProductEvent(localStorage.getItem('levelup_player_id'), 'client_error', window.location.pathname) }, [])
   return (
     <main className="shell">
       <section className="card" role="alert">

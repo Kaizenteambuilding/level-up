@@ -294,6 +294,12 @@ export type Database = {
           },
         ]
       }
+      product_events: {
+        Row: { created_at: string; event_name: string; id: number; parent_id: string; player_id: string; route: string }
+        Insert: { created_at?: string; event_name: string; id?: never; parent_id: string; player_id: string; route: string }
+        Update: { created_at?: string; event_name?: string; id?: never; parent_id?: string; player_id?: string; route?: string }
+        Relationships: []
+      }
       players: {
         Row: {
           alias: string
@@ -447,6 +453,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      report_levelup_product_event: { Args: { p_event_name: string; p_player_id: string; p_route: string }; Returns: undefined }
       get_levelup_game_summary: { Args: { p_player_id: string }; Returns: Json }
       complete_levelup_onboarding: { Args: { p_player_id: string }; Returns: Json }
       complete_levelup_session: {

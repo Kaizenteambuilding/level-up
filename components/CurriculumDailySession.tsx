@@ -12,6 +12,7 @@ import { buildMissionRecap, MissionSkillResult } from '@/lib/missionRecap'
 import { awardDemoMission, demoAvatarById, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
 import { playDemoSound } from '@/lib/demoSound'
 import { userFacingError } from '@/lib/userFacingError'
+import { reportProductEvent } from '@/lib/productTelemetry'
 import {
   CurriculumPlan,
   effectiveCurriculumPlan,
@@ -141,6 +142,7 @@ export default function CurriculumDailySession() {
         const openedSessionId = String((openedSession as { session_id?: string } | null)?.session_id ?? '')
         if (!openedSessionId) { setLoadError('No se pudo confirmar la misión abierta.'); setLoading(false); return }
         setSessionId(openedSessionId)
+        void reportProductEvent(id, 'mission_started', onboardingMode ? '/mission?onboarding=1' : '/mission')
 
         const { data: previousAttempts, error: attemptsError } = await retryJwtFuture(async () =>
           await supabase
@@ -357,6 +359,7 @@ export default function CurriculumDailySession() {
         setDemoCoinsAwarded(0)
       }
       setSessionClosed(true)
+      void reportProductEvent(playerId, 'mission_completed', onboardingMode ? '/mission?onboarding=1' : '/mission')
       setClosing(false)
     })()
   }, [index, sessionId, playerId, testMode])

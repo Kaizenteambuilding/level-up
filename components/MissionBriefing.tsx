@@ -7,7 +7,7 @@ import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } fro
 export default function MissionBriefing() {
   const [onboarding, setOnboarding] = useState(false)
   useEffect(() => setOnboarding(new URLSearchParams(window.location.search).get('onboarding') === '1'), [])
-  const { player, game, loading, error } = useDemoGamePlayer()
+  const { player, game, loading, error } = useDemoGamePlayer({ allowIncompleteOnboarding: true })
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo preparar la misión</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
 

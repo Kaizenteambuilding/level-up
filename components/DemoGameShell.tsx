@@ -17,7 +17,7 @@ import { gameRank, levelProgress } from '@/lib/gameProgression'
 
 export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean; streakDays: number; totalMissions: number }
 
-export function useDemoGamePlayer() {
+export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean } = {}) {
   const router = useRouter()
   const [player, setPlayer] = useState<DemoPlayer | null>(null)
   const [game, setGame] = useState<DemoGameState>(INITIAL_DEMO_STATE)
@@ -62,6 +62,7 @@ export function useDemoGamePlayer() {
         streakDays: Number((summary as { streak_days?: number } | null)?.streak_days ?? 0),
         totalMissions: Number((summary as { total_missions?: number } | null)?.total_missions ?? 0),
       }
+      if (!selected.onboardingCompleted && !options.allowIncompleteOnboarding) { router.replace('/onboarding'); return }
       setPlayer(selected)
       try {
         const saved = localStorage.getItem(demoStorageKey(selected.id))
@@ -101,7 +102,7 @@ export function useDemoGamePlayer() {
       }
       setLoading(false)
     })()
-  }, [router])
+  }, [router, options.allowIncompleteOnboarding])
 
   function saveGame(next: DemoGameState) {
     if (!player) return
