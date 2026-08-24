@@ -12,6 +12,7 @@ import { buildWeeklyQuests } from '@/lib/weeklyQuests'
 import { missionCadence } from '@/lib/missionCadence'
 import { reportProductEvent } from '@/lib/productTelemetry'
 import { buildReturnLoop } from '@/lib/returnLoop'
+import { buildDailyReturnSummary } from '@/lib/dailyReturnSummary'
 
 export default function DemoWorld() {
   const { player, game, saveGame, loading, error } = useDemoGamePlayer()
@@ -24,6 +25,7 @@ export default function DemoWorld() {
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
   const cadence = missionCadence(game)
   const returnLoop = buildReturnLoop(game.missionHistory, player.streakDays)
+  const dailySummary = buildDailyReturnSummary(game, returnLoop.completedToday, player.streakDays)
   const defaultGuide = demoGuideStep(game, player.level)
   const guide = cadence.status === 'done-today' && (defaultGuide.href === '/mission/briefing' || defaultGuide.href === '/mission')
     ? player.level >= 2 && game.coins > 0
@@ -58,6 +60,7 @@ export default function DemoWorld() {
         <div className="world-topbar"><DemoAvatar player={player} game={game} /><DemoHud player={player} game={game} onToggleSound={toggleSoundPreference} /></div>
         <div className="world-heading"><span className="tag">MUNDO PERSISTENTE</span><h1 id="world-title">Mundo de {player.alias}</h1><p>Elige un destino. Matemáticas ya está conectado al motor real.</p></div>
         <section className="world-guide" aria-label="Siguiente objetivo recomendado"><div className="guide-character" aria-hidden="true">🤖</div><div><span className="tag">NOVA · GUÍA DE EXPLORACIÓN</span><h2>{guide.icon} {guide.title}</h2><p>{guide.message}</p></div><Link href={guide.href} className="btn primary">{guide.action}</Link></section>
+        <section className="card" aria-label="Resumen de regreso"><span className="tag">🧭 TU ÚLTIMO AVANCE</span><h2>{dailySummary.title}</h2><p><b>{dailySummary.detail}</b></p><p className="muted">{dailySummary.next}</p></section>
         <section className="card" aria-label="Racha diaria"><span className="tag">🔥 EXPEDICIÓN DIARIA</span><h2>{returnLoop.title}</h2><p className="muted">{returnLoop.message}</p>{!returnLoop.completedToday && <Link href="/mission/briefing" className="btn primary">HACER MISIÓN DE HOY</Link>}</section>
         <div className="world-map">
           <article className="world-zone math-zone unlocked"><span className="zone-icon" aria-hidden="true">🏙️</span><span className="zone-state">{cadence.status === 'done-today' ? '✓ MISIÓN DE HOY COMPLETADA' : cadence.status === 'returning' ? 'NUEVA MISIÓN DISPONIBLE' : 'ZONA ACTIVA'}</span><h2>Ciudad Matemática</h2><p>{cadence.message}</p><div className="action-row"><Link href={cadenceHref} className="btn primary">▶ {cadence.action}</Link><Link href="/math-city" className="btn dark">EXPLORAR CIUDAD</Link><Link href="/player" className="btn dark">VER PROGRESO</Link></div></article>
