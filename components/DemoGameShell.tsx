@@ -17,7 +17,7 @@ import { gameRank, levelProgress } from '@/lib/gameProgression'
 
 export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean; streakDays: number; totalMissions: number }
 
-export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean } = {}) {
+export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean | 'onboarding-query' } = {}) {
   const router = useRouter()
   const [player, setPlayer] = useState<DemoPlayer | null>(null)
   const [game, setGame] = useState<DemoGameState>(INITIAL_DEMO_STATE)
@@ -62,7 +62,11 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
         streakDays: Number((summary as { streak_days?: number } | null)?.streak_days ?? 0),
         totalMissions: Number((summary as { total_missions?: number } | null)?.total_missions ?? missions?.length ?? 0),
       }
-      if (!selected.onboardingCompleted && !options.allowIncompleteOnboarding) { router.replace('/onboarding'); return }
+      const onboardingQuery = new URLSearchParams(window.location.search).get('onboarding') === '1'
+      const onboardingStarted = typeof avatar.onboarding_started_at === 'string'
+      const incompleteAllowed = options.allowIncompleteOnboarding === true
+        || (options.allowIncompleteOnboarding === 'onboarding-query' && onboardingQuery && onboardingStarted)
+      if (!selected.onboardingCompleted && !incompleteAllowed) { router.replace('/onboarding'); return }
       setPlayer(selected)
       try {
         const saved = localStorage.getItem(demoStorageKey(selected.id))

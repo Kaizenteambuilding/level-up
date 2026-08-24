@@ -8,6 +8,7 @@ const telemetry = fs.readFileSync('database/migrations/20260824101316_add_privac
 assert.ok(shell.includes("router.replace('/onboarding')"), 'Game routes do not enforce onboarding')
 assert.ok(onboarding.includes('allowIncompleteOnboarding: true'), 'Onboarding cannot bypass its own guard')
 assert.ok(missionGuard.includes("get('onboarding') === '1'"), 'Calibration mission has no explicit exception')
+assert.ok(missionGuard.includes("typeof avatar.onboarding_started_at === 'string'"), 'Calibration exception is not bound to an initiated onboarding')
 assert.ok(missionGuard.includes("router.replace('/onboarding')"), 'Direct mission route bypasses onboarding')
 assert.ok(completion.includes('ss.ended_at >= v_started_at'), 'Historical missions can complete onboarding')
 assert.ok(telemetry.includes('180 days'), 'Telemetry has no retention bound')

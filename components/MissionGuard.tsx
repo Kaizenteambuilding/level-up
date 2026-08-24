@@ -89,7 +89,8 @@ export default function MissionGuard() {
 
       const avatar = player.avatar && typeof player.avatar === 'object' && !Array.isArray(player.avatar) ? player.avatar as Record<string, unknown> : {}
       const onboardingMode = new URLSearchParams(window.location.search).get('onboarding') === '1'
-      if (avatar.onboarding_completed !== true && !onboardingMode) { router.replace('/onboarding'); return }
+      const onboardingStarted = typeof avatar.onboarding_started_at === 'string'
+      if (avatar.onboarding_completed !== true && (!onboardingMode || !onboardingStarted)) { router.replace('/onboarding'); return }
 
       setReady(true)
     }
