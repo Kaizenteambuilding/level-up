@@ -38,6 +38,15 @@ jobs:
       - name: Audit pedagogical question quality
         run: npm run audit:question-quality
 
+      - name: Audit multi-subject curriculum
+        run: npm run audit:multi-subject-curriculum
+
+      - name: Audit Spanish and English generators
+        run: npm run audit:language-generators
+
+      - name: Audit Geography History and Biology generators
+        run: npm run audit:knowledge-generators
+
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
@@ -49,6 +58,9 @@ jobs:
 
       - name: Audit curriculum unit insights
         run: npm run audit:curriculum-insights
+
+      - name: Audit curriculum planning
+        run: npm run audit:curriculum-plan
 
       - name: Audit v1 release readiness
         run: npm run audit:release
