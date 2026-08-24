@@ -23,6 +23,16 @@ import {
   CurriculumSkill,
   unitStatusLabel,
 } from '@/lib/curriculumInsights'
+import {
+  CurriculumPacingMode,
+  CurriculumPlan,
+  CurriculumTerm,
+  effectiveCurriculumPlan,
+  MATH_CURRICULUM_UNITS,
+  schoolYearStart,
+  termLabel,
+  unitsForTerm,
+} from '@/lib/curriculumPlan'
 
 type Player = {
   id: string
@@ -56,7 +66,7 @@ type RecentSession = ActivitySession & {
   attempts: number
 }
 
-const ACTIVE_CURRICULUM_UNITS = ['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13','M14','M15']
+const ACTIVE_CURRICULUM_UNITS = [...MATH_CURRICULUM_UNITS]
 
 function localDayKey(value: string | Date) {
   const date = value instanceof Date ? value : new Date(value)
@@ -158,6 +168,12 @@ export default function Parent() {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   const [dataWarnings, setDataWarnings] = useState<string[]>([])
+  const [curriculumPlan, setCurriculumPlan] = useState<CurriculumPlan | null>(null)
+  const [planMode, setPlanMode] = useState<CurriculumPacingMode>('automatic')
+  const [planTerm, setPlanTerm] = useState<CurriculumTerm>(1)
+  const [planFocusUnits, setPlanFocusUnits] = useState<string[]>([])
+  const [savingPlan, setSavingPlan] = useState(false)
+  const [planMessage, setPlanMessage] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -239,6 +255,7 @@ export default function Parent() {
         { data: evidenceData, error: evidenceError },
         { data: curriculumSkillData, error: curriculumSkillError },
         { data: unitData, error: unitError },
+        { data: planData, error: planError },
       ] = await Promise.all([
         fetchCompletedActivity(supabase, playerId),
         supabase
@@ -277,6 +294,12 @@ export default function Parent() {
           .select('id,name')
           .in('id', ACTIVE_CURRICULUM_UNITS)
           .order('sort_order', { ascending: true }),
+        supabase
+          .from('player_curriculum_plans')
+          .select('player_id,subject_id,academic_year_start,pacing_mode,current_term,focus_unit_ids,updated_at')
+          .eq('player_id', playerId)
+          .eq('subject_id', 'math')
+          .maybeSingle(),
       ])
 
       if (activityError) {
@@ -350,12 +373,71 @@ export default function Parent() {
         )
       }
 
+      if (planError) {
+        warnings.push('No se pudo cargar la programación por trimestre.')
+      } else {
+        const storedPlan = planData as CurriculumPlan | null
+        const effective = effectiveCurriculumPlan(playerId, storedPlan)
+        setCurriculumPlan(storedPlan)
+        setPlanMode(storedPlan?.pacing_mode ?? 'automatic')
+        setPlanTerm(effective.currentTerm)
+        setPlanFocusUnits(effective.focusUnitIds)
+      }
+
       setDataWarnings(warnings)
       setLoading(false)
     }
 
     load()
   }, [router])
+
+  async function saveCurriculumPlan() {
+    if (!player || savingPlan) return
+    const supabase = createSupabaseBrowserClient()
+    if (!supabase) return
+    if (planMode === 'manual' && planFocusUnits.length === 0) {
+      setPlanMessage('Selecciona al menos una unidad que Mati esté trabajando ahora.')
+      return
+    }
+
+    setSavingPlan(true)
+    setPlanMessage('')
+    const yearStart = curriculumPlan?.academic_year_start ?? schoolYearStart()
+    const focus = planMode === 'manual' ? planFocusUnits : []
+    const { data, error } = await supabase.rpc('set_player_curriculum_plan', {
+      p_player_id: player.id,
+      p_subject_id: 'math',
+      p_academic_year_start: yearStart,
+      p_pacing_mode: planMode,
+      p_current_term: planTerm,
+      p_focus_unit_ids: focus,
+    })
+    setSavingPlan(false)
+
+    if (error) {
+      setPlanMessage(userFacingError(error, 'No se pudo guardar el ritmo del curso.'))
+      return
+    }
+    const saved = data as unknown as CurriculumPlan
+    setCurriculumPlan(saved)
+    const effective = effectiveCurriculumPlan(player.id, saved)
+    setPlanTerm(effective.currentTerm)
+    setPlanFocusUnits(effective.focusUnitIds)
+    setPlanMessage('Plan guardado. Las próximas preguntas respetarán este ritmo.')
+  }
+
+  function changePlanTerm(term: CurriculumTerm) {
+    setPlanTerm(term)
+    setPlanFocusUnits(unitsForTerm(term))
+    setPlanMessage('')
+  }
+
+  function toggleFocusUnit(unitId: string) {
+    setPlanFocusUnits((current) => current.includes(unitId)
+      ? current.filter((id) => id !== unitId)
+      : [...current, unitId].sort())
+    setPlanMessage('')
+  }
 
   if (loading) {
     return <main className="shell"><section className="card loading-card" role="status" aria-live="polite"><div><div className="loading-dot" aria-hidden="true" /><p className="muted">Cargando progreso real…</p></div></section></main>
@@ -456,6 +538,68 @@ export default function Parent() {
           </button>
         </section>
       )}
+
+      <section className="card">
+        <span className="tag">📚 RITMO DEL CURSO</span>
+        <h2>Qué contenidos puede practicar ahora</h2>
+        <p className="muted">El dominio decide la dificultad; este plan decide qué parte del currículo corresponde al momento escolar.</p>
+
+        <fieldset className="curriculum-plan-options">
+          <legend>Cómo avanza el temario</legend>
+          <label className={planMode === 'automatic' ? 'selected' : ''}>
+            <input
+              type="radio"
+              name="pacing-mode"
+              checked={planMode === 'automatic'}
+              onChange={() => { setPlanMode('automatic'); setPlanMessage('') }}
+            />
+            <span><b>Automático</b><small>LEVEL UP sigue el trimestre estimado según la fecha.</small></span>
+          </label>
+          <label className={planMode === 'manual' ? 'selected' : ''}>
+            <input
+              type="radio"
+              name="pacing-mode"
+              checked={planMode === 'manual'}
+              onChange={() => { setPlanMode('manual'); setPlanFocusUnits(unitsForTerm(planTerm)); setPlanMessage('') }}
+            />
+            <span><b>Ritmo real del colegio</b><small>Tú eliges trimestre y unidades actuales.</small></span>
+          </label>
+        </fieldset>
+
+        {planMode === 'automatic' ? (
+          <div className="metric curriculum-plan-summary">
+            <b>{termLabel(effectiveCurriculumPlan(player.id, curriculumPlan).currentTerm)}</b>
+            <p className="muted">Foco automático: {effectiveCurriculumPlan(player.id, curriculumPlan).focusUnitIds.map((id) => unitNames[id] ?? id).join(' · ')}</p>
+            <small className="muted">Puedes cambiar a “Ritmo real del colegio” si el centro lleva otro orden.</small>
+          </div>
+        ) : (
+          <>
+            <div className="curriculum-term-picker" role="group" aria-label="Trimestre actual">
+              {([1, 2, 3] as CurriculumTerm[]).map((term) => (
+                <button key={term} type="button" className={planTerm === term ? 'selected' : ''} onClick={() => changePlanTerm(term)}>
+                  {termLabel(term)}
+                </button>
+              ))}
+            </div>
+            <p className="muted">Marca lo que está viendo ahora. Las unidades de trimestres anteriores quedan disponibles solo para repaso.</p>
+            <div className="curriculum-focus-grid">
+              {unitsForTerm(planTerm).map((unitId) => (
+                <label key={unitId} className={planFocusUnits.includes(unitId) ? 'selected' : ''}>
+                  <input type="checkbox" checked={planFocusUnits.includes(unitId)} onChange={() => toggleFocusUnit(unitId)} />
+                  <span><b>{unitId}</b><small>{unitNames[unitId] ?? 'Unidad curricular'}</small></span>
+                </label>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="action-row curriculum-plan-actions">
+          <button className="btn primary" type="button" disabled={savingPlan} onClick={saveCurriculumPlan}>
+            {savingPlan ? 'GUARDANDO…' : 'GUARDAR RITMO DEL CURSO'}
+          </button>
+        </div>
+        {planMessage && <p className="muted" role="status">{planMessage}</p>}
+      </section>
 
       <section className="card">
         <span className="tag">📌 RECOMENDACIÓN PARA ESTA SEMANA</span>

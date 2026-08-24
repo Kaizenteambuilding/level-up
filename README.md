@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.12.0**. La demo jugable incorpora navegación persistente y unificada entre mapa, Ciudad Matemática, briefing, Refugio, tienda y bitácora, además de guía contextual, protagonistas, logros, historial y sonidos opcionales. La economía y personalización continúan separadas de los datos pedagógicos.
+Versión actual: **v1.13.0**. El motor incorpora programación curricular por trimestre: limita el contenido disponible, prioriza las unidades actuales y conserva repasos controlados de periodos anteriores. El panel padre permite seguir un calendario automático o indicar el ritmo real del colegio. La dificultad adaptativa, el dominio académico y el nivel de juego permanecen separados.
 
 Producción: https://level-up-a544.vercel.app
 
@@ -52,6 +52,8 @@ El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 
 
 `npm run audit:curriculum-insights` valida la clasificación por unidad curricular y evita interpretar una unidad sin práctica o con evidencia inicial como una dificultad consolidada.
 
+`npm run audit:curriculum-plan` comprueba el cambio automático de trimestre, el bloqueo de contenido futuro, el foco manual y el reparto entre contenido actual y repaso anterior.
+
 `database/schema.sql` y `database/seed.sql` se conservan únicamente como marcadores históricos y no deben ejecutarse. El esquema inicial antiguo dejó de representar la base real. Antes de crear un Supabase nuevo hace falta versionar un baseline completo de la base actual.
 
 Migraciones versionadas:
@@ -75,8 +77,9 @@ Migraciones versionadas:
 - `20260816_expire_abandoned_sessions.sql`: cierra cada hora las misiones abiertas durante más de 24 horas, aunque el jugador no vuelva a entrar.
 - `20260816_secure_future_data_api_defaults.sql`: deja privados por defecto las futuras tablas, secuencias y funciones hasta que una migración conceda acceso explícito.
 - `20260816_revoke_all_future_public_defaults.sql`: completa esa política incluyendo `MAINTAIN` y concesiones directas heredadas de proyectos antiguos.
+- `20260824_add_player_curriculum_plans.sql`: añade planes por jugador y materia, control familiar protegido por RPC y selección curricular limitada por trimestre.
 
-Los avisos de Supabase sobre las cinco funciones públicas `SECURITY DEFINER` son intencionados: `setup_parent_family`, `create_levelup_player`, `open_levelup_session`, `submit_levelup_attempt` y `complete_levelup_session` solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
+Los avisos de Supabase sobre las funciones públicas `SECURITY DEFINER` son intencionados: las operaciones de familia, jugador, misión y planificación curricular solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
 ## Comprobaciones antes de publicar
 

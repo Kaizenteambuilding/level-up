@@ -105,6 +105,44 @@ export type Database = {
         }
         Relationships: []
       }
+      player_curriculum_plans: {
+        Row: {
+          academic_year_start: number
+          current_term: number
+          focus_unit_ids: string[]
+          pacing_mode: string
+          player_id: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year_start: number
+          current_term?: number
+          focus_unit_ids?: string[]
+          pacing_mode?: string
+          player_id: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year_start?: number
+          current_term?: number
+          focus_unit_ids?: string[]
+          pacing_mode?: string
+          player_id?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_curriculum_plans_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exams: {
         Row: {
           created_at: string | null
@@ -394,6 +432,17 @@ export type Database = {
         Returns: Json
       }
       open_levelup_session: { Args: { p_player_id: string }; Returns: Json }
+      set_player_curriculum_plan: {
+        Args: {
+          p_academic_year_start: number
+          p_current_term: number
+          p_focus_unit_ids?: string[]
+          p_pacing_mode: string
+          p_player_id: string
+          p_subject_id: string
+        }
+        Returns: Json
+      }
       setup_parent_family: {
         Args: { family_name: string; parent_name: string }
         Returns: string
@@ -544,4 +593,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

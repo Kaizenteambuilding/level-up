@@ -14,6 +14,8 @@ export type AdaptiveSkillState = {
 export type AdaptiveSelectionInput<T extends AdaptiveSkill> = {
   skills: T[]
   states: Record<string, AdaptiveSkillState | undefined>
+  focusUnitIds?: string[]
+  reviewUnitIds?: string[]
   recentSkillIds: string[]
   recentUnitIds: string[]
   seed: number
@@ -44,6 +46,8 @@ function skillSalt(skillId: string) {
 export function chooseAdaptiveSkill<T extends AdaptiveSkill>({
   skills,
   states,
+  focusUnitIds = [],
+  reviewUnitIds = [],
   recentSkillIds,
   recentUnitIds,
   seed,
@@ -104,6 +108,27 @@ export function chooseAdaptiveSkill<T extends AdaptiveSkill>({
       ? a.lastPracticed - b.lastPracticed
       : byNeed(a, b)
   const mode = questionIndex % 10
+
+  // With a curriculum plan, seven questions stay on the school focus and one
+  // deliberately revisits earlier content. Adaptation still decides the skill
+  // and difficulty inside each pedagogically valid pool.
+  if (focusUnitIds.length && mode <= 6) {
+    const focus = scored
+      .filter((item) => focusUnitIds.includes(item.skill.unit_id))
+      .sort(byNeed)
+      .slice(0, 6)
+      .map((item) => item.skill)
+    if (focus.length) return pickFrom(focus, 0x31415926) ?? focus[0]
+  }
+
+  if (reviewUnitIds.length && mode === 7) {
+    const review = scored
+      .filter((item) => reviewUnitIds.includes(item.skill.unit_id))
+      .sort(byOldest)
+      .slice(0, 10)
+      .map((item) => item.skill)
+    if (review.length) return pickFrom(review, 0x27182818) ?? review[0]
+  }
 
   if (mode <= 5) {
     return (

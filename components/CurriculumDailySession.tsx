@@ -12,6 +12,11 @@ import { buildMissionRecap, MissionSkillResult } from '@/lib/missionRecap'
 import { awardDemoMission, demoAvatarById, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
 import { playDemoSound } from '@/lib/demoSound'
 import { userFacingError } from '@/lib/userFacingError'
+import {
+  CurriculumPlan,
+  effectiveCurriculumPlan,
+  MATH_CURRICULUM_UNITS,
+} from '@/lib/curriculumPlan'
 
 type SkillRow = {
   id: string
@@ -29,7 +34,6 @@ type SkillState = {
   last_practiced_at?: string | null
 }
 
-const ACTIVE_CURRICULUM_UNITS = ['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13','M14','M15']
 const SESSION_LENGTH = 10
 
 function sleep(ms: number) {
@@ -60,6 +64,8 @@ export default function CurriculumDailySession() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [skills, setSkills] = useState<SkillRow[]>([])
   const [states, setStates] = useState<Record<string, SkillState>>({})
+  const [focusUnitIds, setFocusUnitIds] = useState<string[]>([])
+  const [reviewUnitIds, setReviewUnitIds] = useState<string[]>([])
   const [question, setQuestion] = useState<GeneratedQuestion | null>(null)
   const [seed, setSeed] = useState(() => Date.now())
   const [index, setIndex] = useState(0)
@@ -217,10 +223,27 @@ export default function CurriculumDailySession() {
         }
       }
 
+      let availableUnitIds: string[] = [...MATH_CURRICULUM_UNITS]
+      if (!forcedSkillId) {
+        const { data: storedPlan, error: planError } = await retryJwtFuture(async () =>
+          await supabase
+            .from('player_curriculum_plans')
+            .select('player_id,subject_id,academic_year_start,pacing_mode,current_term,focus_unit_ids,updated_at')
+            .eq('player_id', id)
+            .eq('subject_id', 'math')
+            .maybeSingle()
+        )
+        if (planError) { setLoadError(userFacingError(planError, 'No se pudo cargar el plan curricular.')); setLoading(false); return }
+        const plan = effectiveCurriculumPlan(id, storedPlan as CurriculumPlan | null)
+        availableUnitIds = plan.availableUnitIds
+        setFocusUnitIds(plan.focusUnitIds)
+        setReviewUnitIds(plan.reviewUnitIds)
+      }
+
       const loadSkills = async () => {
         let skillsQuery = supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true)
         if (forcedSkillId) skillsQuery = skillsQuery.eq('id', forcedSkillId)
-        else skillsQuery = skillsQuery.in('unit_id', ACTIVE_CURRICULUM_UNITS)
+        else skillsQuery = skillsQuery.in('unit_id', availableUnitIds)
         return await skillsQuery
       }
       const { data: skillRows, error: skillsError } = await retryJwtFuture(loadSkills)
@@ -255,6 +278,8 @@ export default function CurriculumDailySession() {
     return chooseAdaptiveSkill({
       skills,
       states,
+      focusUnitIds,
+      reviewUnitIds,
       recentSkillIds: recentSkillIds.current,
       recentUnitIds: recentUnitIds.current,
       seed,
@@ -529,7 +554,7 @@ export default function CurriculumDailySession() {
       </aside>}
     <section className="card mission-question">
       <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
-      {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>🎯 REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
+      {!testMode && <div className="metric" style={{ marginTop:14, marginBottom:18 }}><b>{focusUnitIds.includes(skills.find((skill) => skill.id === question.skillId)?.unit_id ?? '') ? '📚 CONTENIDO ACTUAL' : '🔁 REPASO ANTERIOR'} · REFUERZO PERSONALIZADO</b><p className="muted" style={{ marginBottom:0 }}>{(() => { const state=states[question.skillId]; if(!state)return 'Esta habilidad es nueva. LEVEL UP la incluye para conocer tu punto de partida.'; const mastery=state.mastery; if(mastery<50)return `Esta habilidad tiene ${mastery}% de dominio. LEVEL UP la ha priorizado para reforzarla.`; if(mastery<75)return `Tienes ${mastery}% de dominio. Vamos a consolidar esta habilidad.`; return `Tienes ${mastery}% de dominio. Este reto ayudará a mantenerla fuerte.` })()}</p></div>}
       <p ref={questionPrompt} tabIndex={-1} style={{ fontSize:24, fontWeight:900 }}>{question.prompt}</p>
       <div className="answers">{question.options.map((option,i) => {
         const isCorrectOption = answered && i === question.answerIndex
