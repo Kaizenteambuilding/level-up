@@ -47,6 +47,9 @@ jobs:
       - name: Audit Geography History and Biology generators
         run: npm run audit:knowledge-generators
 
+      - name: Audit multi-subject question diversity
+        run: npm run audit:multi-subject-diversity
+
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
