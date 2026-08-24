@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { DEMO_AVATARS, DEMO_ITEMS, demoAvatarById, equipDemoItem, equippedDemoItems, setDemoAvatar, setDemoBaseTheme } from '@/lib/demoGame'
 import { DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { playDemoSound } from '@/lib/demoSound'
 
 const THEMES = [
   { id: 'space', name: 'Estación orbital', icon: '🪐' },
@@ -25,18 +26,21 @@ export default function DemoBase() {
 
   function chooseTheme(theme: string) {
     saveGame(setDemoBaseTheme(game, theme))
+    playDemoSound(game.soundEnabled, 'select')
     setMessage('Ambiente del refugio actualizado.')
   }
 
   function equip(itemId: string) {
     const item = DEMO_ITEMS.find((entry) => entry.id === itemId)
     saveGame(equipDemoItem(game, itemId))
+    playDemoSound(game.soundEnabled, 'select')
     setMessage(`${item?.name} equipado.`)
   }
 
   function chooseAvatar(avatarId: string) {
     const selected = DEMO_AVATARS.find((entry) => entry.id === avatarId)
     saveGame(setDemoAvatar(game, avatarId))
+    playDemoSound(game.soundEnabled, 'select')
     setMessage(`${selected?.name} seleccionado.`)
   }
 

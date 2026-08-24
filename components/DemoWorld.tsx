@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
-import { demoAchievements } from '@/lib/demoGame'
+import { demoAchievements, toggleDemoSound } from '@/lib/demoGame'
+import { playDemoSound } from '@/lib/demoSound'
 
 const lockedZones = [
   { name: 'Biblioteca de Lengua', icon: '📚', className: 'language-zone' },
@@ -12,7 +13,7 @@ const lockedZones = [
 ]
 
 export default function DemoWorld() {
-  const { player, game, loading, error } = useDemoGamePlayer()
+  const { player, game, saveGame, loading, error } = useDemoGamePlayer()
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir el mundo</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
   const achievements = demoAchievements(game)
@@ -24,7 +25,7 @@ export default function DemoWorld() {
         <div className="world-sky" aria-hidden="true" />
         <div className="world-topbar">
           <DemoAvatar player={player} game={game} />
-          <DemoHud player={player} game={game} />
+          <DemoHud player={player} game={game} onToggleSound={() => { const next = toggleDemoSound(game); saveGame(next); playDemoSound(next.soundEnabled, 'select') }} />
         </div>
         <div className="world-heading">
           <span className="tag">DEMO JUGABLE · V1.2</span>

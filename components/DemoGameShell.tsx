@@ -80,11 +80,12 @@ export function DemoAvatar({ player, game }: { player: DemoPlayer; game: DemoGam
   )
 }
 
-export function DemoHud({ player, game }: { player: DemoPlayer; game: DemoGameState }) {
+export function DemoHud({ player, game, onToggleSound }: { player: DemoPlayer; game: DemoGameState; onToggleSound?: () => void }) {
   return (
     <div className="game-hud">
       <div><span aria-hidden="true">⭐</span><b>{player.xp.toLocaleString('es-ES')} XP</b></div>
       <div><span aria-hidden="true">🪙</span><b>{game.coins}</b><small> monedas demo</small></div>
+      {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={game.soundEnabled} aria-label={game.soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos'}>{game.soundEnabled ? '🔊' : '🔇'} <small>{game.soundEnabled ? 'sonido' : 'sin sonido'}</small></button>}
     </div>
   )
 }

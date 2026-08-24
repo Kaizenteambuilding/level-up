@@ -16,6 +16,7 @@ export type DemoGameState = {
   visitedThemes: DemoBaseTheme[]
   avatarId: DemoAvatarId
   missionHistory: DemoMissionRecord[]
+  soundEnabled: boolean
 }
 
 export type DemoMissionRecord = {
@@ -54,6 +55,7 @@ export const INITIAL_DEMO_STATE: DemoGameState = {
   visitedThemes: [],
   avatarId: 'astronaut',
   missionHistory: [],
+  soundEnabled: false,
 }
 
 export function demoStorageKey(playerId: string) {
@@ -101,6 +103,7 @@ export function normalizeDemoState(value: unknown): DemoGameState {
           }]
         }).slice(-20)
       : [],
+    soundEnabled: candidate.soundEnabled === true,
   }
 }
 
@@ -159,6 +162,10 @@ export function setDemoAvatar(state: DemoGameState, avatarId: string): DemoGameS
 
 export function demoAvatarById(avatarId: string) {
   return DEMO_AVATARS.find((avatar) => avatar.id === avatarId) ?? DEMO_AVATARS[0]
+}
+
+export function toggleDemoSound(state: DemoGameState): DemoGameState {
+  return { ...state, soundEnabled: !state.soundEnabled }
 }
 
 export type DemoAchievement = {

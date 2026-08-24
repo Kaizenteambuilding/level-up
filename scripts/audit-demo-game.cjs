@@ -9,7 +9,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText
 const moduleBox = { exports: {} }
 vm.runInNewContext(compiled, { module: moduleBox, exports: moduleBox.exports })
-const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission, setDemoBaseTheme, demoAchievements, setDemoAvatar, demoAvatarById } = moduleBox.exports
+const { INITIAL_DEMO_STATE, normalizeDemoState, buyDemoItem, equipDemoItem, awardDemoMission, setDemoBaseTheme, demoAchievements, setDemoAvatar, demoAvatarById, toggleDemoSound } = moduleBox.exports
 
 assert.equal(normalizeDemoState(null).coins, 450)
 assert.equal(normalizeDemoState({}).coins, 450)
@@ -52,5 +52,8 @@ assert.equal(setDemoAvatar(INITIAL_DEMO_STATE, 'ninja').avatarId, 'ninja')
 assert.equal(setDemoAvatar(INITIAL_DEMO_STATE, 'invalid'), INITIAL_DEMO_STATE)
 assert.equal(normalizeDemoState({ coins: 1, avatarId: 'invalid' }).avatarId, 'astronaut')
 assert.equal(demoAvatarById('scientist').icon, '🧑‍🔬')
+assert.equal(INITIAL_DEMO_STATE.soundEnabled, false)
+assert.equal(toggleDemoSound(INITIAL_DEMO_STATE).soundEnabled, true)
+assert.equal(normalizeDemoState({ coins: 1, soundEnabled: 'yes' }).soundEnabled, false)
 
 console.log('Demo game economy audit passed.')

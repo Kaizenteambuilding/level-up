@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { buyDemoItem, DEMO_ITEMS, equipDemoItem, equippedDemoItems } from '@/lib/demoGame'
 import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { playDemoSound } from '@/lib/demoSound'
 
 export default function DemoShop() {
   const { player, game, saveGame, loading, error } = useDemoGamePlayer()
@@ -17,11 +18,13 @@ export default function DemoShop() {
     const next = buyDemoItem(game, itemId)
     if (next === game) { setMessage(item && game.coins < item.price ? 'No quedan suficientes monedas demo.' : 'Ese objeto ya está en tu mochila.'); return }
     saveGame(next)
+    playDemoSound(game.soundEnabled, 'reward')
     setMessage(`${item?.name} añadido y equipado.`)
   }
   function equip(itemId: string) {
     const item = DEMO_ITEMS.find((entry) => entry.id === itemId)
     saveGame(equipDemoItem(game, itemId))
+    playDemoSound(game.soundEnabled, 'select')
     setMessage(`${item?.name} equipado.`)
   }
 

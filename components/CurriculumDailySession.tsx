@@ -10,6 +10,7 @@ import {
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { buildMissionRecap, MissionSkillResult } from '@/lib/missionRecap'
 import { awardDemoMission, demoAvatarById, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
+import { playDemoSound } from '@/lib/demoSound'
 import { userFacingError } from '@/lib/userFacingError'
 
 type SkillRow = {
@@ -75,6 +76,7 @@ export default function CurriculumDailySession() {
   const [sessionClosed, setSessionClosed] = useState(false)
   const [demoCoinsAwarded, setDemoCoinsAwarded] = useState(0)
   const [missionAvatar, setMissionAvatar] = useState('🧑‍🚀')
+  const [missionSound, setMissionSound] = useState(false)
   const [closeError, setCloseError] = useState('')
   const closeStarted = useRef(false)
   const answerLocked = useRef(false)
@@ -109,7 +111,11 @@ export default function CurriculumDailySession() {
       if (!id) { setLoading(false); return }
       try {
         const savedGame = localStorage.getItem(demoStorageKey(id))
-        if (savedGame) setMissionAvatar(demoAvatarById(normalizeDemoState(JSON.parse(savedGame)).avatarId).icon)
+        if (savedGame) {
+          const demoGame = normalizeDemoState(JSON.parse(savedGame))
+          setMissionAvatar(demoAvatarById(demoGame.avatarId).icon)
+          setMissionSound(demoGame.soundEnabled)
+        }
       } catch {
         setMissionAvatar('🧑‍🚀')
       }
@@ -309,7 +315,10 @@ export default function CurriculumDailySession() {
         const saved = localStorage.getItem(key)
         const currentGame = saved ? normalizeDemoState(JSON.parse(saved)) : normalizeDemoState(null)
         const award = awardDemoMission(currentGame, sessionId, correct, Number(result.xp_earned ?? 0))
-        if (award.reward > 0) localStorage.setItem(key, JSON.stringify(award.state))
+        if (award.reward > 0) {
+          localStorage.setItem(key, JSON.stringify(award.state))
+          playDemoSound(currentGame.soundEnabled, 'reward')
+        }
         setDemoCoinsAwarded(award.reward)
       } catch {
         setDemoCoinsAwarded(0)
@@ -331,6 +340,7 @@ export default function CurriculumDailySession() {
     setAnswered(true)
     setSelectedOptionIndex(optionIndex)
     const ok = optionIndex === question.answerIndex
+    playDemoSound(missionSound, ok ? 'correct' : 'incorrect')
     // Match the server-side bound while allowing a mission left open in a tab
     // to continue normally after a long pause.
     const responseMs = Math.min(
