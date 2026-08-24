@@ -447,6 +447,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_levelup_game_summary: { Args: { p_player_id: string }; Returns: Json }
       complete_levelup_onboarding: { Args: { p_player_id: string }; Returns: Json }
       complete_levelup_session: {
         Args: { p_session_id: string }

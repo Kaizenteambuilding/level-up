@@ -90,7 +90,7 @@ export default function DemoWorld() {
         <p className="demo-notice">Los encargos organizan la aventura, pero no añaden XP ni modifican el análisis académico.</p>
       </section>
       <section className="card world-journal">
-        <div><span className="tag">📖 BITÁCORA</span><h2>Logros del Explorador</h2><p className="muted">{unlockedAchievements} de {achievements.length} logros desbloqueados · {game.rewardedSessions.length} misiones recompensadas</p></div>
+        <div><span className="tag">📖 BITÁCORA</span><h2>Logros del Explorador</h2><p className="muted">{unlockedAchievements} de {achievements.length} logros desbloqueados · {player.totalMissions} misiones completadas · 🔥 {player.streakDays} días</p></div>
         <div className="journal-badges" aria-label="Vista previa de logros">{achievements.slice(0, 3).map((achievement) => <span key={achievement.id} className={achievement.unlocked ? 'unlocked' : ''} title={achievement.name}>{achievement.unlocked ? achievement.icon : '🔒'}</span>)}</div>
         <Link href="/achievements" className="btn dark">VER BITÁCORA</Link>
       </section>

@@ -15,7 +15,7 @@ import {
 } from '@/lib/demoGame'
 import { gameRank, levelProgress } from '@/lib/gameProgression'
 
-export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean }
+export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean; streakDays: number; totalMissions: number }
 
 export function useDemoGamePlayer() {
   const router = useRouter()
@@ -38,10 +38,12 @@ export function useDemoGamePlayer() {
         { data, error: playerError },
         { data: inventory, error: inventoryError },
         { data: missions, error: missionsError },
+        { data: summary, error: summaryError },
       ] = await Promise.all([
         supabase.from('players').select('id,alias,xp,level,coins,avatar').eq('id', playerId).maybeSingle(),
         supabase.from('player_inventory').select('item_id,slot,equipped').eq('player_id', playerId),
         supabase.from('study_sessions').select('id,ended_at,xp_earned,coins_earned').eq('player_id', playerId).eq('completed', true).eq('phase', 'done').order('ended_at', { ascending: false }).limit(20),
+        supabase.rpc('get_levelup_game_summary', { p_player_id: playerId }),
       ])
       if (playerError || !data) {
         localStorage.removeItem('levelup_player_id')
@@ -57,12 +59,14 @@ export function useDemoGamePlayer() {
         level: Number(data.level ?? 1),
         coins: Number(data.coins ?? 0),
         onboardingCompleted: avatar.onboarding_completed === true,
+        streakDays: Number((summary as { streak_days?: number } | null)?.streak_days ?? 0),
+        totalMissions: Number((summary as { total_missions?: number } | null)?.total_missions ?? 0),
       }
       setPlayer(selected)
       try {
         const saved = localStorage.getItem(demoStorageKey(selected.id))
         const localGame = saved ? normalizeDemoState(JSON.parse(saved)) : INITIAL_DEMO_STATE
-        if (inventoryError || missionsError) throw inventoryError ?? missionsError
+        if (inventoryError || missionsError || summaryError) throw inventoryError ?? missionsError ?? summaryError
         const missionIds = (missions ?? []).map((mission) => mission.id)
         const { data: missionAttempts, error: attemptsError } = missionIds.length
           ? await supabase.from('attempts').select('session_id,correct').in('session_id', missionIds)
@@ -131,6 +135,7 @@ export function DemoHud({ player, game, onToggleSound }: { player: DemoPlayer; g
       <div title={`${progress.current}/${progress.required || 0} XP hacia el siguiente nivel`}><span aria-hidden="true">⭐</span><b>Nivel {progress.level}</b><small> · {gameRank(progress.level)}</small></div>
       <div><span aria-hidden="true">⚡</span><b>{player.xp.toLocaleString('es-ES')} XP</b></div>
       <div><span aria-hidden="true">🪙</span><b>{game.coins}</b><small> monedas</small></div>
+      <div title="Días consecutivos con al menos una misión completa"><span aria-hidden="true">🔥</span><b>{player.streakDays}</b><small> días</small></div>
       {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={game.soundEnabled} aria-label={game.soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos'}>{game.soundEnabled ? '🔊' : '🔇'} <small>{game.soundEnabled ? 'sonido' : 'sin sonido'}</small></button>}
     </div>
   )
