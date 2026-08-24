@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { DEMO_AVATARS, DEMO_ITEMS, demoAvatarById, equipDemoItem, equippedDemoItems, setDemoAvatar, setDemoBaseTheme } from '@/lib/demoGame'
-import { DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { playDemoSound } from '@/lib/demoSound'
 
 const THEMES = [
@@ -67,7 +67,7 @@ export default function DemoBase() {
         <div><span className="tag">AMBIENTE</span><h2>Personaliza tu refugio</h2><div className="theme-picker">{THEMES.map((theme) => <button key={theme.id} type="button" className={`theme-button${game.baseTheme === theme.id ? ' selected' : ''}`} onClick={() => chooseTheme(theme.id)} aria-pressed={game.baseTheme === theme.id}><span>{theme.icon}</span>{theme.name}</button>)}</div></div>
         <div><span className="tag">🎒 MOCHILA</span><h2>Elige tu equipo</h2>{game.owned.length ? <div className="base-inventory">{game.owned.map((id) => { const item = DEMO_ITEMS.find((entry) => entry.id === id); if (!item) return null; const active = equipped.some((entry) => entry.id === item.id); return <button key={item.id} type="button" onClick={() => equip(item.id)} className={active ? 'selected' : ''} aria-pressed={active}><span>{item.icon}</span><small>{item.name}</small></button> })}</div> : <><p className="muted">Tu mochila está vacía. Visita la tienda para elegir equipo.</p><Link href="/shop" className="btn primary">IR A LA TIENDA</Link></>}</div>
       </section>
-      <nav className="game-dock" aria-label="Navegación del mundo"><Link href="/world">🗺️ <span>MAPA</span></Link><Link href="/mission/briefing">📋 <span>MISIÓN</span></Link><Link href="/base" aria-current="page">🚀 <span>REFUGIO</span></Link><Link href="/shop">🛒 <span>TIENDA</span></Link></nav>
+      <DemoGameDock active="base" />
       <p className="demo-notice">La personalización del refugio pertenece a la demo y se guarda en este navegador.</p>
     </>
   )

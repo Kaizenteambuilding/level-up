@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { buyDemoItem, DEMO_ITEMS, equipDemoItem, equippedDemoItems } from '@/lib/demoGame'
-import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { playDemoSound } from '@/lib/demoSound'
 
 export default function DemoShop() {
@@ -56,6 +56,7 @@ export default function DemoShop() {
         {game.owned.length ? <p className="inventory-icons">{game.owned.map((id) => DEMO_ITEMS.find((item) => item.id === id)?.icon).join(' ')}</p> : <p className="muted">Todavía no has elegido ningún objeto.</p>}
         <div className="action-row"><Link href="/base" className="btn primary">VER EN EL REFUGIO</Link><Link href="/world" className="btn dark">← VOLVER AL MAPA</Link></div>
       </section>
+      <DemoGameDock active="shop" />
       <p className="demo-notice">Las 450 monedas son parte de la demo y se guardan únicamente en este navegador.</p>
     </>
   )

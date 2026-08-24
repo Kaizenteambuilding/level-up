@@ -1,6 +1,6 @@
 {
   "name": "level-up",
-  "version": "1.11.1",
+  "version": "1.12.0",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -17,8 +17,9 @@
     "audit:mission-recap": "node scripts/audit-mission-recap.cjs",
     "audit:curriculum-insights": "node scripts/audit-curriculum-insights.cjs",
     "audit:demo-game": "node scripts/audit-demo-game.cjs",
+    "audit:demo-navigation": "node scripts/audit-demo-navigation.cjs",
     "audit:release": "node scripts/audit-release-readiness.cjs",
-    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:demo-game && npm run audit:release && npm run build"
+    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:demo-game && npm run audit:demo-navigation && npm run audit:release && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",

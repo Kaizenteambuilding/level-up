@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { fetchCompletedSkillEvidence } from '@/lib/progressQueries'
-import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 type SkillRow = { id: string; name: string; unit_id: string }
 
@@ -68,5 +68,6 @@ export default function MathCity() {
       </article>)}
     </section>
     <section className="card city-explanation"><span className="tag">CÓMO FUNCIONA</span><h2>Una misión puede recorrer varios distritos</h2><p className="muted">LEVEL UP decide qué habilidades practicar utilizando el dominio y la evidencia real de Mati. El mapa permite entender dónde está cada contenido, pero no fuerza una ruta artificial ni altera la adaptación.</p><Link href="/mission/briefing" className="btn primary">ENTRAR EN MISIÓN</Link></section>
+    <DemoGameDock active="world" />
   </>
 }

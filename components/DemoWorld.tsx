@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { demoAchievements, demoGuideStep, toggleDemoSound } from '@/lib/demoGame'
 import { playDemoSound } from '@/lib/demoSound'
 
@@ -77,12 +77,7 @@ export default function DemoWorld() {
         <div className="journal-badges" aria-label="Vista previa de logros">{achievements.slice(0, 3).map((achievement) => <span key={achievement.id} className={achievement.unlocked ? 'unlocked' : ''} title={achievement.name}>{achievement.unlocked ? achievement.icon : '🔒'}</span>)}</div>
         <Link href="/achievements" className="btn dark">VER BITÁCORA</Link>
       </section>
-      <nav className="game-dock" aria-label="Navegación del mundo">
-        <Link href="/world" aria-current="page">🗺️ <span>MAPA</span></Link>
-        <Link href="/mission/briefing">📋 <span>MISIÓN</span></Link>
-        <Link href="/base">🚀 <span>REFUGIO</span></Link>
-        <Link href="/shop">🛒 <span>TIENDA</span></Link>
-      </nav>
+      <DemoGameDock active="world" />
       <p className="demo-notice">Demo visual: las compras se guardan solo en este navegador y no modifican XP ni datos académicos.</p>
     </>
   )

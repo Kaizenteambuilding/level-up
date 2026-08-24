@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 import {
@@ -87,5 +88,16 @@ export function DemoHud({ player, game, onToggleSound }: { player: DemoPlayer; g
       <div><span aria-hidden="true">🪙</span><b>{game.coins}</b><small> monedas demo</small></div>
       {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={game.soundEnabled} aria-label={game.soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos'}>{game.soundEnabled ? '🔊' : '🔇'} <small>{game.soundEnabled ? 'sonido' : 'sin sonido'}</small></button>}
     </div>
+  )
+}
+
+export function DemoGameDock({ active }: { active?: 'world' | 'mission' | 'base' | 'shop' }) {
+  return (
+    <nav className="game-dock" aria-label="Navegación del juego">
+      <Link href="/world" aria-current={active === 'world' ? 'page' : undefined}>🗺️ <span>MAPA</span></Link>
+      <Link href="/mission/briefing" aria-current={active === 'mission' ? 'page' : undefined}>📋 <span>MISIÓN</span></Link>
+      <Link href="/base" aria-current={active === 'base' ? 'page' : undefined}>🚀 <span>REFUGIO</span></Link>
+      <Link href="/shop" aria-current={active === 'shop' ? 'page' : undefined}>🛒 <span>TIENDA</span></Link>
+    </nav>
   )
 }

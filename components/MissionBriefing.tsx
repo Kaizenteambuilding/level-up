@@ -1,14 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 export default function MissionBriefing() {
   const { player, game, loading, error } = useDemoGamePlayer()
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo preparar la misión</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
 
-  return (
+  return (<>
     <section className="mission-briefing">
       <div className="briefing-visual" aria-hidden="true"><span>🏙️</span><i>➗</i><i>📐</i><i>⅗</i></div>
       <div className="briefing-content">
@@ -28,5 +28,6 @@ export default function MissionBriefing() {
         <p className="demo-notice">La misión y el XP son reales. La recompensa en monedas pertenece todavía a la demo jugable.</p>
       </div>
     </section>
-  )
+    <DemoGameDock active="mission" />
+  </>)
 }

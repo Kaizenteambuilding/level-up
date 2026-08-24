@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { demoAchievements } from '@/lib/demoGame'
-import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 export default function DemoAchievements() {
   const { player, game, loading, error } = useDemoGamePlayer()
@@ -39,6 +39,7 @@ export default function DemoAchievements() {
         })}</div> : <div className="empty-expedition"><span aria-hidden="true">🗺️</span><div><b>La siguiente misión abrirá el historial</b><p className="muted">Al completarla aparecerán aquí sus aciertos, XP y recompensa.</p></div><Link href="/mission/briefing" className="btn primary">EMPEZAR EXPEDICIÓN</Link></div>}
       </section>
       <div className="action-row"><Link href="/world" className="btn primary">← VOLVER AL MAPA</Link><Link href="/mission/briefing" className="btn dark">IR A LA MISIÓN</Link></div>
+      <DemoGameDock />
       <p className="demo-notice">Estos logros son parte de la demo y no modifican el informe académico.</p>
     </>
   )
