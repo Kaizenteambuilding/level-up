@@ -5,13 +5,7 @@ import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } fro
 import { demoAchievements, demoGuideStep, toggleDemoSound } from '@/lib/demoGame'
 import { nextGameUnlock } from '@/lib/gameProgression'
 import { playDemoSound } from '@/lib/demoSound'
-
-const lockedZones = [
-  { name: 'Biblioteca de Lengua', icon: '📚', className: 'language-zone' },
-  { name: 'Puerto de Inglés', icon: '🌍', className: 'english-zone' },
-  { name: 'Laboratorio de Ciencias', icon: '🔬', className: 'science-zone' },
-  { name: 'Taller creativo', icon: '🎨', className: 'creative-zone' },
-]
+import { WORLD_ZONES } from '@/lib/worldZones'
 
 export default function DemoWorld() {
   const { player, game, saveGame, loading, error } = useDemoGamePlayer()
@@ -53,13 +47,13 @@ export default function DemoWorld() {
               <Link href="/player" className="btn dark">VER PROGRESO</Link>
             </div>
           </article>
-          {lockedZones.map((zone) => (
-            <article className={`world-zone locked ${zone.className}`} key={zone.name} aria-disabled="true">
+          {WORLD_ZONES.map((zone) => (
+            <Link href={`/zone/${zone.id}`} className={`world-zone preview-zone ${zone.className}`} key={zone.name}>
               <span className="zone-icon" aria-hidden="true">{zone.icon}</span>
-              <span className="zone-state">🔒 PRÓXIMAMENTE</span>
+              <span className="zone-state">👁 VISTA PREVIA</span>
               <h2>{zone.name}</h2>
-              <p>Territorio visible para una futura expansión.</p>
-            </article>
+              <p>{zone.tagline}. Explora cómo será esta futura aventura.</p>
+            </Link>
           ))}
           {player.level >= 2 ? <Link href="/shop" className="world-zone shop-zone unlocked">
             <span className="zone-icon" aria-hidden="true">🏪</span><span className="zone-state">ABIERTO · NIVEL 2</span><h2>Tienda del Explorador</h2><p>Consigue objetos con las monedas ganadas en misiones reales.</p>
