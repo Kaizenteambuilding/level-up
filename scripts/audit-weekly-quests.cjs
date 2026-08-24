@@ -6,5 +6,8 @@ assert.ok(quests.includes('(start.getDay() + 6) % 7'), 'Weekly cycle does not st
 assert.ok(quests.includes("id: 'missions'") && quests.includes("id: 'coins'") && quests.includes("id: 'equipment'"), 'Weekly quest set is incomplete')
 assert.ok(quests.includes('mission.completedAt') && quests.includes('mission.reward'), 'Weekly activity is not based on persisted missions')
 assert.ok(world.includes('buildWeeklyQuests(game)'), 'World does not calculate weekly quests')
+assert.ok(world.includes('weeklyQuestAction(quest.id)'), 'Incomplete weekly quests do not expose contextual actions')
+assert.ok(world.includes("cadence.status === 'done-today'"), 'Weekly actions do not respect daily mission cadence')
+assert.ok(world.includes("questId === 'equipment'"), 'Equipment quest does not route independently from missions')
 assert.ok(world.includes('no añaden XP ni modifican el análisis académico'), 'Quest boundaries are not explained')
 console.log('Weekly quests audit passed.')
