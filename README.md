@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.19.0**. Las preferencias de juego importantes ya viajan con la cuenta: personaje, ambiente del refugio y sonido se recuperan al cambiar de navegador o dispositivo mediante una RPC protegida. Se mantienen la Bitácora sincronizada, campaña de Ciudad Matemática, mundo ampliado, onboarding y progresión persistente.
+Versión actual: **v1.20.0**. El mapa incorpora encargos semanales de NOVA basados en expediciones, monedas de misión y equipamiento reales. Los objetivos se reinician cada lunes y organizan la aventura sin conceder progreso duplicado ni modificar el análisis académico. Se mantienen las preferencias de cuenta, Bitácora sincronizada, campaña, onboarding y progresión persistente.
 
 Producción: https://level-up-a544.vercel.app
 

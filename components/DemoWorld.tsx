@@ -7,6 +7,7 @@ import { nextGameUnlock } from '@/lib/gameProgression'
 import { playDemoSound } from '@/lib/demoSound'
 import { WORLD_ZONES } from '@/lib/worldZones'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { buildWeeklyQuests } from '@/lib/weeklyQuests'
 
 export default function DemoWorld() {
   const { player, game, saveGame, loading, error } = useDemoGamePlayer()
@@ -17,6 +18,8 @@ export default function DemoWorld() {
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
   const guide = demoGuideStep(game, player.level)
   const nextUnlock = nextGameUnlock(player.level)
+  const weeklyQuests = buildWeeklyQuests(game)
+  const completedWeeklyQuests = weeklyQuests.filter((quest) => quest.completed).length
 
   async function toggleSoundPreference() {
     if (!player) return
@@ -81,6 +84,11 @@ export default function DemoWorld() {
         </div>
       </section>
       {nextUnlock && <section className="card"><span className="tag">🔓 PRÓXIMO DESBLOQUEO</span><h2>{nextUnlock.icon} {nextUnlock.label}</h2><p className="muted">Se abrirá al alcanzar el nivel {nextUnlock.level}. El nivel del personaje depende solo de XP de juego, no del dominio académico.</p></section>}
+      <section className="weekly-quests card" aria-labelledby="weekly-quests-title">
+        <div className="weekly-quests-heading"><div><span className="tag">🤖 ENCARGOS DE NOVA · ESTA SEMANA</span><h2 id="weekly-quests-title">Mantén viva la expedición</h2><p className="muted">{completedWeeklyQuests} de {weeklyQuests.length} encargos completados. Se actualizan con la actividad guardada en tu cuenta.</p></div><span className="weekly-total">{completedWeeklyQuests}/{weeklyQuests.length}</span></div>
+        <div className="weekly-quest-grid">{weeklyQuests.map((quest) => { const percent = Math.round((quest.progress / quest.target) * 100); return <article key={quest.id} className={quest.completed ? 'completed' : ''}><span className="weekly-quest-icon" aria-hidden="true">{quest.completed ? '✅' : quest.icon}</span><div><b>{quest.title}</b><p>{quest.detail}</p><div className="bar" role="progressbar" aria-label={quest.title} aria-valuemin={0} aria-valuemax={quest.target} aria-valuenow={quest.progress}><i style={{ width: `${percent}%` }} /></div><small>{quest.progress}/{quest.target}</small></div></article> })}</div>
+        <p className="demo-notice">Los encargos organizan la aventura, pero no añaden XP ni modifican el análisis académico.</p>
+      </section>
       <section className="card world-journal">
         <div><span className="tag">📖 BITÁCORA</span><h2>Logros del Explorador</h2><p className="muted">{unlockedAchievements} de {achievements.length} logros desbloqueados · {game.rewardedSessions.length} misiones recompensadas</p></div>
         <div className="journal-badges" aria-label="Vista previa de logros">{achievements.slice(0, 3).map((achievement) => <span key={achievement.id} className={achievement.unlocked ? 'unlocked' : ''} title={achievement.name}>{achievement.unlocked ? achievement.icon : '🔒'}</span>)}</div>
