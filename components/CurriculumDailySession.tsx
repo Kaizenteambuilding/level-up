@@ -490,7 +490,7 @@ export default function CurriculumDailySession() {
   }
 
   if (loading) return <section className="card loading-card" role="status" aria-live="polite"><div><div className="loading-dot" aria-hidden="true" /><p className="muted">Preparando la misión…</p></div></section>
-  if (loadError) return <section className="card" role="alert"><span className="tag">ERROR DE CARGA</span><h1>No se puede preparar la misión</h1><p className="muted">{loadError}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
+  if (loadError) return <section className="card" role="alert" aria-live="assertive"><span className="tag">ERROR DE CARGA</span><h1>No se puede preparar la misión</h1><p className="muted">{loadError}</p><p className="muted">Tu progreso ya guardado sigue a salvo.</p><div className="action-row"><button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button><Link href="/player" className="btn dark">VOLVER AL JUGADOR</Link></div></section>
   if (!playerId) return <section className="card"><h1>Sin jugador</h1><Link href="/player" className="btn primary">IR A JUGADOR</Link></section>
 
   if (!testMode && index >= SESSION_LENGTH) {

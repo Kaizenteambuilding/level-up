@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { DEMO_AVATARS, setDemoAvatar } from '@/lib/demoGame'
 import { userFacingError } from '@/lib/userFacingError'
-import { DemoAvatar, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { reportProductEvent } from '@/lib/productTelemetry'
 
 type Step = 'welcome' | 'avatar' | 'world' | 'reward'
@@ -19,7 +19,7 @@ export default function GameOnboarding() {
   useEffect(() => { const value = new URLSearchParams(window.location.search).get('step'); if (value === 'avatar' || value === 'world' || value === 'reward') setStep(value) }, [])
   useEffect(() => { if (player && !openedReported.current) { openedReported.current = true; void reportProductEvent(player.id, 'onboarding_opened', '/onboarding') } }, [player])
   if (loading) return <DemoLoading />
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo iniciar la aventura</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo iniciar la aventura" message={error} backHref="/player" backLabel="VOLVER AL JUGADOR" />
 
   async function chooseAvatar(avatarId: string) {
     if (!player || saving) return

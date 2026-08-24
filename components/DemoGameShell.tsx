@@ -127,7 +127,20 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
 }
 
 export function DemoLoading() {
-  return <section className="card loading-card" role="status"><div><div className="loading-dot" aria-hidden="true" /><p className="muted">Abriendo el mundo…</p></div></section>
+  return <section className="card loading-card" role="status" aria-live="polite"><div><div className="loading-dot" aria-hidden="true" /><p className="muted">Abriendo el mundo…</p></div></section>
+}
+
+export function DemoGameError({ title, message, backHref, backLabel }: { title: string; message?: string; backHref: string; backLabel: string }) {
+  return <section className="card" role="alert" aria-live="assertive">
+    <span className="tag">CONEXIÓN INTERRUMPIDA</span>
+    <h1>{title}</h1>
+    <p className="muted">{message || 'No se pudo cargar el jugador seleccionado.'}</p>
+    <p className="muted">Tu progreso ya guardado sigue a salvo.</p>
+    <div className="action-row">
+      <button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button>
+      <Link href={backHref} className="btn dark">{backLabel}</Link>
+    </div>
+  </section>
 }
 
 export function DemoAvatar({ player, game }: { player: DemoPlayer; game: DemoGameState }) {

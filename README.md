@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.23.0**. Supabase dispone de un baseline reproducible sin datos familiares: incluye tablas, restricciones, índices, RLS, RPC, triggers, permisos, limpieza horaria y catálogos. El historial real conserva sus 26 timestamps únicos y las auditorías impiden divergencias. Se mantiene la recuperación segura del onboarding, la telemetría privada, las rachas, los encargos, la campaña y la progresión persistente.
+Versión actual: **v1.23.1**. Todas las rutas del mundo y la carga de misiones ofrecen ahora recuperación consistente ante fallos transitorios: anuncian el error de forma accesible, permiten reintentar y explican que el progreso guardado sigue a salvo. Supabase mantiene su baseline reproducible, historial ordenado, RLS y catálogos versionados.
 
 Producción: https://level-up-a544.vercel.app
 

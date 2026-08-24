@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { DEMO_AVATARS, DEMO_ITEMS, demoAvatarById, equippedDemoItems, setDemoAvatar, setDemoBaseTheme } from '@/lib/demoGame'
-import { DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { playDemoSound } from '@/lib/demoSound'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { userFacingError } from '@/lib/userFacingError'
@@ -19,7 +19,7 @@ export default function DemoBase() {
   const [message, setMessage] = useState('')
   const [savingItemId, setSavingItemId] = useState<string | null>(null)
   if (loading) return <DemoLoading />
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir el refugio</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo abrir el refugio" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
 
   const playerId = player.id
   const playerLevel = player.level

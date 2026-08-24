@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { demoAchievements } from '@/lib/demoGame'
-import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 export default function DemoAchievements() {
   const { player, game, loading, error } = useDemoGamePlayer()
   if (loading) return <DemoLoading />
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir la bitácora</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo abrir la bitácora" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
   const achievements = demoAchievements(game)
   const unlocked = achievements.filter((achievement) => achievement.unlocked).length
 

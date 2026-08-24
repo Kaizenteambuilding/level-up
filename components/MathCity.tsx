@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { fetchCompletedSkillEvidence } from '@/lib/progressQueries'
-import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { buildMathCampaign, nextCampaignDistrict } from '@/lib/mathCampaign'
 
 type SkillRow = { id: string; name: string; unit_id: string }
@@ -55,7 +55,7 @@ export default function MathCity() {
   const securedDistricts = campaign.filter((district) => district.status === 'secured').length
 
   if (loading) return <DemoLoading />
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir Ciudad Matemática</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo abrir Ciudad Matemática" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
 
   return <>
     <section className="math-city-hero">

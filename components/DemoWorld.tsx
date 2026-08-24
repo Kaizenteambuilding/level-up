@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
-import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { demoAchievements, demoGuideStep, toggleDemoSound } from '@/lib/demoGame'
 import { nextGameUnlock } from '@/lib/gameProgression'
 import { playDemoSound } from '@/lib/demoSound'
@@ -16,7 +16,7 @@ export default function DemoWorld() {
   const openedReported = useRef(false)
   useEffect(() => { if (player && !openedReported.current) { openedReported.current = true; void reportProductEvent(player.id, 'world_opened', '/world') } }, [player])
   if (loading) return <DemoLoading />
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir el mundo</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo abrir el mundo" message={error} backHref="/player" backLabel="VOLVER AL JUGADOR" />
   if (!player.onboardingCompleted) return <section className="onboarding-gate card"><div className="nova-orb" aria-hidden="true">🤖</div><span className="tag">NOVA · MENSAJE NUEVO</span><h1>Tu mundo está listo</h1><p className="muted">Antes de explorar, elige tu personaje y completa una misión guiada. Tu progreso actual se conserva.</p><Link href="/onboarding" className="btn primary">COMENZAR AVENTURA</Link></section>
   const achievements = demoAchievements(game)
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length

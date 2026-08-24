@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { worldZoneById } from '@/lib/worldZones'
 
 export default function ZonePreview() {
@@ -11,7 +11,7 @@ export default function ZonePreview() {
   const zone = worldZoneById(params.zone)
   if (loading) return <DemoLoading />
   if (!zone) return <section className="card"><h1>Zona desconocida</h1><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir la zona</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo abrir la zona" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
   return <><section className={`zone-preview ${zone.className}`}>
     <header className="zone-preview-top"><DemoAvatar player={player} game={game} /><DemoHud player={player} game={game} /></header>
     <div className="zone-preview-hero"><span className="zone-preview-icon" aria-hidden="true">{zone.icon}</span><span className="tag">VISTA PREVIA · ZONA EN CONSTRUCCIÓN</span><h1>{zone.name}</h1><h2>{zone.tagline}</h2><p>{zone.description}</p></div>

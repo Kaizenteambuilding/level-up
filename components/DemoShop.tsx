@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { DEMO_ITEMS, equippedDemoItems } from '@/lib/demoGame'
-import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 import { playDemoSound } from '@/lib/demoSound'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { userFacingError } from '@/lib/userFacingError'
@@ -13,7 +13,7 @@ export default function DemoShop() {
   const [message, setMessage] = useState('')
   const [savingItemId, setSavingItemId] = useState<string | null>(null)
   if (loading) return <DemoLoading />
-  if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir la tienda</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
+  if (!player || error) return <DemoGameError title="No se pudo abrir la tienda" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
 
   const playerId = player.id
   const equipped = new Set(equippedDemoItems(game).map((item) => item.id))
