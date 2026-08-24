@@ -14,7 +14,7 @@ export default function DemoAchievements() {
   return (
     <>
       <section className="card achievements-header">
-        <div><span className="tag">📖 BITÁCORA DEL EXPLORADOR</span><h1>Proezas de {player.alias}</h1><p className="muted">Los logros registran lo que haces en la demo jugable.</p></div>
+        <div><span className="tag">📖 BITÁCORA DEL EXPLORADOR</span><h1>Proezas de {player.alias}</h1><p className="muted">Los logros registran las misiones y acciones de tu aventura.</p></div>
         <DemoAvatar player={player} game={game} />
         <DemoHud player={player} game={game} />
         <div className="achievement-total"><b>{unlocked}/{achievements.length}</b><span>desbloqueados</span></div>
@@ -32,7 +32,7 @@ export default function DemoAchievements() {
         })}
       </section>
       <section className="card expedition-log">
-        <div><span className="tag">🧭 HISTORIAL DE EXPEDICIONES</span><h2>Últimas misiones</h2><p className="muted">Registro local de las misiones completadas desde esta versión.</p></div>
+        <div><span className="tag">🧭 HISTORIAL DE EXPEDICIONES</span><h2>Últimas misiones</h2><p className="muted">Registro sincronizado de las últimas misiones completadas.</p></div>
         {game.missionHistory.length ? <div className="expedition-list">{[...game.missionHistory].reverse().map((record, index) => {
           const date = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(record.completedAt))
           return <article key={record.sessionId}><span className="expedition-number">#{game.missionHistory.length - index}</span><div><b>Ciudad Matemática</b><small>{date}</small></div><strong>{record.correct}/10</strong><span>⭐ +{record.xp} XP</span><span>🪙 +{record.reward}</span></article>
@@ -40,7 +40,7 @@ export default function DemoAchievements() {
       </section>
       <div className="action-row"><Link href="/world" className="btn primary">← VOLVER AL MAPA</Link><Link href="/mission/briefing" className="btn dark">IR A LA MISIÓN</Link></div>
       <DemoGameDock />
-      <p className="demo-notice">Estos logros son parte de la demo y no modifican el informe académico.</p>
+      <p className="demo-notice">La bitácora utiliza misiones guardadas en la cuenta. Los logros sirven para el juego y no modifican el informe académico.</p>
     </>
   )
 }

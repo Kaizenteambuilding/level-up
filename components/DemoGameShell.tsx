@@ -63,6 +63,15 @@ export function useDemoGamePlayer() {
         const saved = localStorage.getItem(demoStorageKey(selected.id))
         const localGame = saved ? normalizeDemoState(JSON.parse(saved)) : INITIAL_DEMO_STATE
         if (inventoryError || missionsError) throw inventoryError ?? missionsError
+        const missionIds = (missions ?? []).map((mission) => mission.id)
+        const { data: missionAttempts, error: attemptsError } = missionIds.length
+          ? await supabase.from('attempts').select('session_id,correct').in('session_id', missionIds)
+          : { data: [], error: null }
+        if (attemptsError) throw attemptsError
+        const correctBySession = (missionAttempts ?? []).reduce<Record<string, number>>((summary, attempt) => {
+          if (attempt.correct === true && attempt.session_id) summary[attempt.session_id] = (summary[attempt.session_id] ?? 0) + 1
+          return summary
+        }, {})
         const rows = inventory ?? []
         const serverGame = normalizeDemoState({
           ...localGame,
@@ -74,7 +83,7 @@ export function useDemoGamePlayer() {
           missionHistory: (missions ?? []).map((mission) => ({
             sessionId: mission.id,
             completedAt: mission.ended_at ?? new Date().toISOString(),
-            correct: 0,
+            correct: correctBySession[mission.id] ?? 0,
             xp: Number(mission.xp_earned ?? 0),
             reward: Number(mission.coins_earned ?? 0),
           })).reverse(),

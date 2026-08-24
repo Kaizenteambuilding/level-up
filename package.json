@@ -1,6 +1,6 @@
 {
   "name": "level-up",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -23,8 +23,9 @@
     "audit:onboarding": "node scripts/audit-onboarding.cjs",
     "audit:world-zones": "node scripts/audit-world-zones.cjs",
     "audit:math-campaign": "node scripts/audit-math-campaign.cjs",
+    "audit:expedition-history": "node scripts/audit-expedition-history.cjs",
     "audit:release": "node scripts/audit-release-readiness.cjs",
-    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:curriculum-plan && npm run audit:demo-game && npm run audit:game-progression && npm run audit:demo-navigation && npm run audit:onboarding && npm run audit:world-zones && npm run audit:math-campaign && npm run audit:release && npm run build"
+    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:curriculum-plan && npm run audit:demo-game && npm run audit:game-progression && npm run audit:demo-navigation && npm run audit:onboarding && npm run audit:world-zones && npm run audit:math-campaign && npm run audit:expedition-history && npm run audit:release && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",

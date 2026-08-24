@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.17.0**. Ciudad Matemática incorpora una campaña de seis distritos alimentada exclusivamente por intentos completados: exploración, cobertura y precisión determinan visualmente qué territorios están sin explorar, activos o estabilizados. NOVA señala el siguiente objetivo sin modificar la selección adaptativa de preguntas. El mundo ampliado, onboarding y progresión persistente siguen operativos.
+Versión actual: **v1.18.0**. La Bitácora del Explorador reconstruye desde la cuenta las últimas expediciones completas con sus aciertos reales, XP y monedas, manteniendo los datos correctos después de recargar o cambiar de dispositivo. La campaña de Ciudad Matemática, el mundo ampliado, onboarding y progresión persistente siguen operativos.
 
 Producción: https://level-up-a544.vercel.app
 
