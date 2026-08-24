@@ -105,6 +105,21 @@ export type Database = {
         }
         Relationships: []
       }
+      game_items: {
+        Row: { active: boolean; id: string; minimum_level: number; name: string; price: number; slot: string }
+        Insert: { active?: boolean; id: string; minimum_level?: number; name: string; price: number; slot: string }
+        Update: { active?: boolean; id?: string; minimum_level?: number; name?: string; price?: number; slot?: string }
+        Relationships: []
+      }
+      player_inventory: {
+        Row: { acquired_at: string; equipped: boolean; item_id: string; player_id: string; slot: string }
+        Insert: { acquired_at?: string; equipped?: boolean; item_id: string; player_id: string; slot: string }
+        Update: { acquired_at?: string; equipped?: boolean; item_id?: string; player_id?: string; slot?: string }
+        Relationships: [
+          { foreignKeyName: "player_inventory_item_id_fkey"; columns: ["item_id"]; isOneToOne: false; referencedRelation: "game_items"; referencedColumns: ["id"] },
+          { foreignKeyName: "player_inventory_player_id_fkey"; columns: ["player_id"]; isOneToOne: false; referencedRelation: "players"; referencedColumns: ["id"] },
+        ]
+      }
       player_curriculum_plans: {
         Row: {
           academic_year_start: number
@@ -368,11 +383,14 @@ export type Database = {
       study_sessions: {
         Row: {
           actual_minutes: number | null
+          coins_earned: number
           completed: boolean | null
           completed_at: string | null
           ended_at: string | null
           generated_plan: Json | null
           id: string
+          level_after: number | null
+          level_before: number | null
           mode: string | null
           phase: string | null
           planned_minutes: number | null
@@ -382,11 +400,14 @@ export type Database = {
         }
         Insert: {
           actual_minutes?: number | null
+          coins_earned?: number
           completed?: boolean | null
           completed_at?: string | null
           ended_at?: string | null
           generated_plan?: Json | null
           id?: string
+          level_after?: number | null
+          level_before?: number | null
           mode?: string | null
           phase?: string | null
           planned_minutes?: number | null
@@ -396,11 +417,14 @@ export type Database = {
         }
         Update: {
           actual_minutes?: number | null
+          coins_earned?: number
           completed?: boolean | null
           completed_at?: string | null
           ended_at?: string | null
           generated_plan?: Json | null
           id?: string
+          level_after?: number | null
+          level_before?: number | null
           mode?: string | null
           phase?: string | null
           planned_minutes?: number | null
@@ -427,6 +451,8 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: Json
       }
+      equip_levelup_item: { Args: { p_item_id: string; p_player_id: string }; Returns: Json }
+      purchase_levelup_item: { Args: { p_item_id: string; p_player_id: string }; Returns: Json }
       create_levelup_player: {
         Args: { p_alias: string; p_daily_target_minutes?: number }
         Returns: Json

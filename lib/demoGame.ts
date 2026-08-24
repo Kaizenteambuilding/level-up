@@ -4,6 +4,7 @@ export type DemoItem = {
   description: string
   icon: string
   price: number
+  minimumLevel: number
   slot: 'head' | 'companion' | 'trail'
 }
 
@@ -38,16 +39,16 @@ export const DEMO_AVATARS = [
 ] as const
 
 export const DEMO_ITEMS: DemoItem[] = [
-  { id: 'headphones', name: 'Auriculares neón', description: 'Para explorar con ritmo.', icon: '🎧', price: 90, slot: 'head' },
-  { id: 'wizard-hat', name: 'Sombrero de sabio', description: 'Un clásico para grandes retos.', icon: '🧙', price: 120, slot: 'head' },
-  { id: 'robot', name: 'Compañero robot', description: 'Te acompaña por todo el mapa.', icon: '🤖', price: 160, slot: 'companion' },
-  { id: 'fox', name: 'Zorro explorador', description: 'Especialista en encontrar caminos.', icon: '🦊', price: 140, slot: 'companion' },
-  { id: 'sparkles', name: 'Estela estelar', description: 'Deja un rastro brillante al avanzar.', icon: '✨', price: 75, slot: 'trail' },
-  { id: 'fire', name: 'Estela de energía', description: 'Para misiones especialmente intensas.', icon: '🔥', price: 110, slot: 'trail' },
+  { id: 'headphones', name: 'Auriculares neón', description: 'Para explorar con ritmo.', icon: '🎧', price: 90, minimumLevel: 2, slot: 'head' },
+  { id: 'wizard-hat', name: 'Sombrero de sabio', description: 'Un clásico para grandes retos.', icon: '🧙', price: 120, minimumLevel: 3, slot: 'head' },
+  { id: 'robot', name: 'Compañero robot', description: 'Te acompaña por todo el mapa.', icon: '🤖', price: 160, minimumLevel: 4, slot: 'companion' },
+  { id: 'fox', name: 'Zorro explorador', description: 'Especialista en encontrar caminos.', icon: '🦊', price: 140, minimumLevel: 3, slot: 'companion' },
+  { id: 'sparkles', name: 'Estela estelar', description: 'Deja un rastro brillante al avanzar.', icon: '✨', price: 75, minimumLevel: 2, slot: 'trail' },
+  { id: 'fire', name: 'Estela de energía', description: 'Para misiones especialmente intensas.', icon: '🔥', price: 110, minimumLevel: 4, slot: 'trail' },
 ]
 
 export const INITIAL_DEMO_STATE: DemoGameState = {
-  coins: 450,
+  coins: 0,
   owned: [],
   equipped: {},
   rewardedSessions: [],
@@ -192,8 +193,9 @@ export function demoAchievements(state: DemoGameState): DemoAchievement[] {
 
 export type DemoGuideStep = { id: string; title: string; message: string; href: string; action: string; icon: string }
 
-export function demoGuideStep(state: DemoGameState): DemoGuideStep {
+export function demoGuideStep(state: DemoGameState, level = 1): DemoGuideStep {
   if (state.rewardedSessions.length === 0) return { id: 'first-mission', title: 'La ciudad necesita energía', message: 'Completa tu primera misión adaptativa para activar el núcleo y ganar monedas.', href: '/mission/briefing', action: 'ABRIR PRIMERA MISIÓN', icon: '⚡' }
+  if (level < 2) return { id: 'reach-level-2', title: 'La tienda se está preparando', message: 'Alcanza el nivel 2 con nuevas misiones para desbloquear la Tienda del Explorador.', href: '/mission/briefing', action: 'GANAR EXPERIENCIA', icon: '⭐' }
   if (state.owned.length === 0) return { id: 'first-item', title: 'Tienes una recompensa esperándote', message: 'Ya hay monedas en tu cartera. Elige tu primer objeto en la Tienda del Explorador.', href: '/shop', action: 'VISITAR LA TIENDA', icon: '🎁' }
   if (Object.keys(state.equipped).length < 3) return { id: 'full-loadout', title: 'Completa tu equipamiento', message: 'Consigue y combina un objeto de cabeza, un compañero y una estela.', href: '/shop', action: 'BUSCAR EQUIPO', icon: '🎒' }
   if (state.visitedThemes.length < 3) return { id: 'themes', title: 'Haz tuyo el refugio', message: 'Prueba los ambientes del refugio y descubre cuál encaja mejor con tu explorador.', href: '/base', action: 'PERSONALIZAR REFUGIO', icon: '🚀' }

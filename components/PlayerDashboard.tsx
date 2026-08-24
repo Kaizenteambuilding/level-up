@@ -6,12 +6,14 @@ import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 import { fetchCompletedActivity, fetchCompletedSkillEvidence } from '@/lib/progressQueries'
+import { gameRank, levelProgress } from '@/lib/gameProgression'
 
 type Player = {
   id: string
   alias: string
   xp: number
   coins: number
+  level: number
   daily_target_minutes: number
 }
 
@@ -155,7 +157,7 @@ export default function PlayerDashboard() {
     if (savedPlayerId) {
       const { data: savedPlayer, error: savedPlayerError } = await supabase
         .from('players')
-        .select('id,alias,xp,coins,daily_target_minutes')
+        .select('id,alias,xp,coins,level,daily_target_minutes')
         .eq('id', savedPlayerId)
         .maybeSingle()
 
@@ -175,7 +177,7 @@ export default function PlayerDashboard() {
     if (!currentPlayer) {
       const { data: availablePlayers, error: playersError } = await supabase
         .from('players')
-        .select('id,alias,xp,coins,daily_target_minutes')
+        .select('id,alias,xp,coins,level,daily_target_minutes')
         .order('alias', { ascending: true })
 
       if (playersError) {
@@ -370,6 +372,7 @@ export default function PlayerDashboard() {
   const target = Math.max(1, Number(player.daily_target_minutes) || 35)
   const dailyProgress = Math.min(100, Math.round((todayMinutes / target) * 100))
   const hasOpenMission = openMissionProgress !== null || openMissionProgressUnknown
+  const gameLevel = levelProgress(player.xp, player.level)
 
   return (
     <>
@@ -379,7 +382,7 @@ export default function PlayerDashboard() {
         <h1>{player.alias}</h1>
 
         <p className="muted">
-          {player.xp} XP · 🔥 {streak} días de racha
+          Nivel {gameLevel.level} · {gameRank(gameLevel.level)} · {player.xp} XP · 🪙 {player.coins} · 🔥 {streak} días de racha
         </p>
 
         {hasOpenMission && (
@@ -498,8 +501,9 @@ export default function PlayerDashboard() {
 
         <div className="grid two">
           <div className="metric">
-            <b>{player.xp} XP</b>
-            <p className="muted">progreso acumulado</p>
+            <b>Nivel {gameLevel.level} · {gameLevel.percent}%</b>
+            <p className="muted">{gameLevel.required ? `${gameLevel.current}/${gameLevel.required} XP hacia el siguiente nivel` : 'nivel máximo alcanzado'}</p>
+            <div className="bar" role="progressbar" aria-label="Progreso del nivel del personaje" aria-valuemin={0} aria-valuemax={100} aria-valuenow={gameLevel.percent}><i style={{ width: `${gameLevel.percent}%` }} /></div>
           </div>
 
           <div className="metric">

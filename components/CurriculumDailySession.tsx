@@ -81,6 +81,7 @@ export default function CurriculumDailySession() {
   const [closing, setClosing] = useState(false)
   const [sessionClosed, setSessionClosed] = useState(false)
   const [demoCoinsAwarded, setDemoCoinsAwarded] = useState(0)
+  const [newGameLevel, setNewGameLevel] = useState<number | null>(null)
   const [missionAvatar, setMissionAvatar] = useState('🧑‍🚀')
   const [missionSound, setMissionSound] = useState(false)
   const [closeError, setCloseError] = useState('')
@@ -335,19 +336,21 @@ export default function CurriculumDailySession() {
         })
       )
       if (error) { setCloseError(userFacingError(error, 'No se pudo guardar el cierre de la sesión.')); setClosing(false); closeStarted.current = false; return }
-      const result = data as { completed?: boolean; attempts?: number; xp_earned?: number }
+      const result = data as { completed?: boolean; attempts?: number; xp_earned?: number; coins_earned?: number; coins?: number; level_before?: number; level_after?: number }
       if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) { setCloseError('No se pudo confirmar el cierre completo de la sesión.'); setClosing(false); closeStarted.current = false; return }
       setXp(Number(result.xp_earned ?? 0))
+      if (Number(result.level_after ?? 0) > Number(result.level_before ?? 0)) setNewGameLevel(Number(result.level_after))
       try {
         const key = demoStorageKey(playerId)
         const saved = localStorage.getItem(key)
         const currentGame = saved ? normalizeDemoState(JSON.parse(saved)) : normalizeDemoState(null)
         const award = awardDemoMission(currentGame, sessionId, correct, Number(result.xp_earned ?? 0))
-        if (award.reward > 0) {
-          localStorage.setItem(key, JSON.stringify(award.state))
+        const serverReward = Number(result.coins_earned ?? award.reward)
+        if (serverReward > 0) {
+          localStorage.setItem(key, JSON.stringify({ ...award.state, coins: Number(result.coins ?? award.state.coins) }))
           playDemoSound(currentGame.soundEnabled, 'reward')
         }
-        setDemoCoinsAwarded(award.reward)
+        setDemoCoinsAwarded(serverReward)
       } catch {
         setDemoCoinsAwarded(0)
       }
@@ -508,7 +511,8 @@ export default function CurriculumDailySession() {
         <span className="tag">CURRICULUM ENGINE</span>
         <h1>Sesión completada</h1>
         <p className="muted">{SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP</p>
-        {demoCoinsAwarded > 0 && <p className="mission-reward">🪙 +{demoCoinsAwarded} monedas demo</p>}
+        {demoCoinsAwarded > 0 && <p className="mission-reward">🪙 +{demoCoinsAwarded} monedas</p>}
+        {newGameLevel && <div className="metric" style={{ margin: '14px auto', maxWidth: 520 }}><b>⭐ ¡NIVEL {newGameLevel} DESBLOQUEADO!</b><p className="muted" style={{ marginBottom: 0 }}>Tu nivel de explorador ha subido. Revisa el mapa para descubrir nuevos accesos.</p></div>}
         <p className="muted">Resultados guardados. La próxima sesión utilizará esta evidencia para ajustar la práctica.</p>
         <div style={{ display: 'grid', gap: 10, margin: '20px 0', textAlign: 'left' }}>
           {recap.review.length > 0 && (

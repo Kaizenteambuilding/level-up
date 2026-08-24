@@ -60,6 +60,22 @@ begin
   ) then
     raise exception 'Mission XP differs from the sum of its attempts';
   end if;
+
+  if exists (
+    select 1 from public.study_sessions
+    where coins_earned < 0 or coins_earned > 100
+      or (level_before is not null and level_after < level_before)
+  ) then
+    raise exception 'A mission contains invalid game rewards';
+  end if;
+
+  if exists (
+    select 1 from public.player_inventory pi
+    join public.game_items gi on gi.id = pi.item_id
+    where pi.slot <> gi.slot
+  ) then
+    raise exception 'An inventory item has an inconsistent slot';
+  end if;
 end
 $health$;
 

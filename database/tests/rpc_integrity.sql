@@ -36,6 +36,9 @@ declare
   v_attempt_xp integer;
   v_player_xp integer;
   v_session_xp integer;
+  v_player_coins integer;
+  v_player_level integer;
+  v_expected_coins integer;
   i integer;
 begin
   select pp.family_id
@@ -78,6 +81,17 @@ begin
   end;
   if not v_rejected then
     raise exception 'Direct attempt insertion was accepted';
+  end if;
+
+  v_rejected := false;
+  begin
+    insert into public.player_inventory(player_id, item_id, slot, equipped)
+    values (gen_random_uuid(), 'headphones', 'head', true);
+  exception when insufficient_privilege then
+    v_rejected := true;
+  end;
+  if not v_rejected then
+    raise exception 'Direct inventory insertion was accepted';
   end if;
 
   v_rejected := false;
@@ -225,14 +239,16 @@ begin
   end if;
 
   v_result := public.complete_levelup_session(v_session_id);
+  v_expected_coins := 40 + (v_result ->> 'correct')::integer * 5;
   if coalesce((v_result ->> 'completed')::boolean, false) is not true
     or (v_result ->> 'attempts')::integer <> 10
     or (v_result ->> 'xp_earned')::integer <> v_attempt_xp
+    or (v_result ->> 'coins_earned')::integer <> v_expected_coins
   then
     raise exception 'Mission completion returned invalid totals';
   end if;
 
-  select p.xp into v_player_xp
+  select p.xp, p.coins, p.level into v_player_xp, v_player_coins, v_player_level
   from public.players p
   where p.id = v_player_id;
 
@@ -240,13 +256,16 @@ begin
   from public.study_sessions s
   where s.id = v_session_id;
 
-  if v_player_xp <> v_attempt_xp or v_session_xp <> v_attempt_xp then
-    raise exception 'XP is inconsistent between attempts, player and session';
+  if v_player_xp <> v_attempt_xp or v_session_xp <> v_attempt_xp
+    or v_player_coins <> v_expected_coins or v_player_level <> 1
+  then
+    raise exception 'Game progression is inconsistent between attempts, player and session';
   end if;
 
   v_result := public.complete_levelup_session(v_session_id);
   if coalesce((v_result ->> 'completed')::boolean, false) is not true
     or (v_result ->> 'attempts')::integer <> 10
+    or (v_result ->> 'coins')::integer <> v_expected_coins
   then
     raise exception 'Mission completion is not idempotent';
   end if;
