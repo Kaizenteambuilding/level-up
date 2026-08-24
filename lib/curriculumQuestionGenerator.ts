@@ -3,7 +3,7 @@ import {
   type GeneratedQuestion,
 } from './firstEvaluationGenerators'
 import { generateLanguageSubjectQuestion } from './languageSubjectGenerators'
-import { generateKnowledgeSubjectQuestion } from './knowledgeSubjectGenerators'
+import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 
 type SkillMeta = {
   id: string
@@ -26,8 +26,7 @@ export function generateCurriculumQuestion(
     if (question) return question
   }
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
-    const question = generateKnowledgeSubjectQuestion(skill, difficulty, seed)
-    if (question) return question
+    return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
   }
   throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
 }
