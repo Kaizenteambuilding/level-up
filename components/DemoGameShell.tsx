@@ -15,7 +15,7 @@ import {
 } from '@/lib/demoGame'
 import { gameRank, levelProgress } from '@/lib/gameProgression'
 
-export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean; streakDays: number; totalMissions: number }
+export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean; onboardingStarted: boolean; onboardingMissionCompleted: boolean; streakDays: number; totalMissions: number }
 
 export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean | 'onboarding-query' } = {}) {
   const router = useRouter()
@@ -52,6 +52,12 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
         return
       }
       const avatar = data.avatar && typeof data.avatar === 'object' && !Array.isArray(data.avatar) ? data.avatar as Record<string, unknown> : {}
+      const onboardingStartedAt = typeof avatar.onboarding_started_at === 'string' ? Date.parse(avatar.onboarding_started_at) : Number.NaN
+      const onboardingStarted = Number.isFinite(onboardingStartedAt)
+      const onboardingMissionCompleted = onboardingStarted && !missionsError && (missions ?? []).some((mission) => {
+        const endedAt = mission.ended_at ? Date.parse(mission.ended_at) : Number.NaN
+        return Number.isFinite(endedAt) && endedAt >= onboardingStartedAt
+      })
       const selected: DemoPlayer = {
         id: data.id,
         alias: data.alias,
@@ -59,11 +65,12 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
         level: Number(data.level ?? 1),
         coins: Number(data.coins ?? 0),
         onboardingCompleted: avatar.onboarding_completed === true,
+        onboardingStarted,
+        onboardingMissionCompleted,
         streakDays: Number((summary as { streak_days?: number } | null)?.streak_days ?? 0),
         totalMissions: Number((summary as { total_missions?: number } | null)?.total_missions ?? missions?.length ?? 0),
       }
       const onboardingQuery = new URLSearchParams(window.location.search).get('onboarding') === '1'
-      const onboardingStarted = typeof avatar.onboarding_started_at === 'string'
       const incompleteAllowed = options.allowIncompleteOnboarding === true
         || (options.allowIncompleteOnboarding === 'onboarding-query' && onboardingQuery && onboardingStarted)
       if (!selected.onboardingCompleted && !incompleteAllowed) { router.replace('/onboarding'); return }

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { DEMO_AVATARS, setDemoAvatar } from '@/lib/demoGame'
 import { userFacingError } from '@/lib/userFacingError'
@@ -11,15 +12,24 @@ import { reportProductEvent } from '@/lib/productTelemetry'
 type Step = 'welcome' | 'avatar' | 'world' | 'reward'
 
 export default function GameOnboarding() {
+  const router = useRouter()
   const { player, game, saveGame, loading, error } = useDemoGamePlayer({ allowIncompleteOnboarding: true })
   const [step, setStep] = useState<Step>('welcome')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const openedReported = useRef(false)
-  useEffect(() => { const value = new URLSearchParams(window.location.search).get('step'); if (value === 'avatar' || value === 'world' || value === 'reward') setStep(value) }, [])
+  useEffect(() => {
+    if (!player) return
+    if (player.onboardingCompleted) { router.replace('/world'); return }
+    const requested = new URLSearchParams(window.location.search).get('step')
+    if (requested === 'avatar') setStep('avatar')
+    else if (requested === 'world') setStep(player.onboardingStarted ? 'world' : 'avatar')
+    else if (requested === 'reward') setStep(player.onboardingMissionCompleted ? 'reward' : player.onboardingStarted ? 'world' : 'avatar')
+  }, [player, router])
   useEffect(() => { if (player && !openedReported.current) { openedReported.current = true; void reportProductEvent(player.id, 'onboarding_opened', '/onboarding') } }, [player])
   if (loading) return <DemoLoading />
   if (!player || error) return <DemoGameError title="No se pudo iniciar la aventura" message={error} backHref="/player" backLabel="VOLVER AL JUGADOR" />
+  if (player.onboardingCompleted) return <DemoLoading />
 
   async function chooseAvatar(avatarId: string) {
     if (!player || saving) return

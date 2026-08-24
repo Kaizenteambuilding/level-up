@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.23.2**. Las excepciones de la misión guiada quedan ligadas a un onboarding realmente iniciado: añadir manualmente `?onboarding=1` ya no permite saltarse la selección de personaje ni el recorrido inicial. Las rutas mantienen recuperación accesible ante fallos, y Supabase conserva su baseline reproducible, RLS y catálogos versionados.
+Versión actual: **v1.23.3**. Cada pantalla del onboarding se valida contra el estado real: la recompensa solo aparece después de una misión completada tras elegir personaje, los pasos no se pueden adelantar manipulando `step` y un jugador ya incorporado vuelve directamente al mundo. Las rutas mantienen recuperación accesible y Supabase conserva su baseline reproducible.
 
 Producción: https://level-up-a544.vercel.app
 
