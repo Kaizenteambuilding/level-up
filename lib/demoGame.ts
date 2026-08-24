@@ -15,6 +15,15 @@ export type DemoGameState = {
   baseTheme: DemoBaseTheme
   visitedThemes: DemoBaseTheme[]
   avatarId: DemoAvatarId
+  missionHistory: DemoMissionRecord[]
+}
+
+export type DemoMissionRecord = {
+  sessionId: string
+  completedAt: string
+  correct: number
+  xp: number
+  reward: number
 }
 
 export type DemoBaseTheme = 'space' | 'forest' | 'arcade'
@@ -44,6 +53,7 @@ export const INITIAL_DEMO_STATE: DemoGameState = {
   baseTheme: 'space',
   visitedThemes: [],
   avatarId: 'astronaut',
+  missionHistory: [],
 }
 
 export function demoStorageKey(playerId: string) {
@@ -77,18 +87,41 @@ export function normalizeDemoState(value: unknown): DemoGameState {
       ? Array.from(new Set(candidate.visitedThemes.filter((theme): theme is DemoBaseTheme => theme === 'space' || theme === 'forest' || theme === 'arcade')))
       : [],
     avatarId: candidate.avatarId === 'ninja' || candidate.avatarId === 'mage' || candidate.avatarId === 'scientist' ? candidate.avatarId : 'astronaut',
+    missionHistory: Array.isArray(candidate.missionHistory)
+      ? candidate.missionHistory.flatMap((entry) => {
+          if (!entry || typeof entry !== 'object') return []
+          const record = entry as Partial<DemoMissionRecord>
+          if (typeof record.sessionId !== 'string' || !record.sessionId || typeof record.completedAt !== 'string' || Number.isNaN(Date.parse(record.completedAt))) return []
+          return [{
+            sessionId: record.sessionId,
+            completedAt: record.completedAt,
+            correct: Math.max(0, Math.min(10, Math.floor(Number(record.correct) || 0))),
+            xp: Math.max(0, Math.min(9999, Math.floor(Number(record.xp) || 0))),
+            reward: Math.max(0, Math.min(90, Math.floor(Number(record.reward) || 0))),
+          }]
+        }).slice(-20)
+      : [],
   }
 }
 
-export function awardDemoMission(state: DemoGameState, sessionId: string, correct: number) {
+export function awardDemoMission(state: DemoGameState, sessionId: string, correct: number, xp = 0, completedAt = new Date().toISOString()) {
   if (!sessionId || state.rewardedSessions.includes(sessionId)) return { state, reward: 0 }
-  const reward = 40 + Math.max(0, Math.min(10, Math.floor(correct))) * 5
+  const safeCorrect = Math.max(0, Math.min(10, Math.floor(correct)))
+  const reward = 40 + safeCorrect * 5
+  const record: DemoMissionRecord = {
+    sessionId,
+    completedAt: Number.isNaN(Date.parse(completedAt)) ? new Date().toISOString() : completedAt,
+    correct: safeCorrect,
+    xp: Number.isFinite(xp) ? Math.max(0, Math.min(9999, Math.floor(xp))) : 0,
+    reward,
+  }
   return {
     reward,
     state: {
       ...state,
       coins: Math.min(9999, state.coins + reward),
       rewardedSessions: [...state.rewardedSessions, sessionId].slice(-100),
+      missionHistory: [...state.missionHistory, record].slice(-20),
     },
   }
 }

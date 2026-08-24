@@ -308,7 +308,7 @@ export default function CurriculumDailySession() {
         const key = demoStorageKey(playerId)
         const saved = localStorage.getItem(key)
         const currentGame = saved ? normalizeDemoState(JSON.parse(saved)) : normalizeDemoState(null)
-        const award = awardDemoMission(currentGame, sessionId, correct)
+        const award = awardDemoMission(currentGame, sessionId, correct, Number(result.xp_earned ?? 0))
         if (award.reward > 0) localStorage.setItem(key, JSON.stringify(award.state))
         setDemoCoinsAwarded(award.reward)
       } catch {

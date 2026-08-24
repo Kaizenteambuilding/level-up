@@ -31,6 +31,13 @@ export default function DemoAchievements() {
           </article>
         })}
       </section>
+      <section className="card expedition-log">
+        <div><span className="tag">🧭 HISTORIAL DE EXPEDICIONES</span><h2>Últimas misiones</h2><p className="muted">Registro local de las misiones completadas desde esta versión.</p></div>
+        {game.missionHistory.length ? <div className="expedition-list">{[...game.missionHistory].reverse().map((record, index) => {
+          const date = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(record.completedAt))
+          return <article key={record.sessionId}><span className="expedition-number">#{game.missionHistory.length - index}</span><div><b>Ciudad Matemática</b><small>{date}</small></div><strong>{record.correct}/10</strong><span>⭐ +{record.xp} XP</span><span>🪙 +{record.reward}</span></article>
+        })}</div> : <div className="empty-expedition"><span aria-hidden="true">🗺️</span><div><b>La siguiente misión abrirá el historial</b><p className="muted">Al completarla aparecerán aquí sus aciertos, XP y recompensa.</p></div><Link href="/mission/briefing" className="btn primary">EMPEZAR EXPEDICIÓN</Link></div>}
+      </section>
       <div className="action-row"><Link href="/world" className="btn primary">← VOLVER AL MAPA</Link><Link href="/mission/briefing" className="btn dark">IR A LA MISIÓN</Link></div>
       <p className="demo-notice">Estos logros son parte de la demo y no modifican el informe académico.</p>
     </>
