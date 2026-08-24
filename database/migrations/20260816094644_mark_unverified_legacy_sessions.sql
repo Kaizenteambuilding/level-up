@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816094644 · mark_unverified_legacy_sessions
+
 update public.study_sessions ss
 set phase = 'legacy_unverified'
 where ss.completed = true
@@ -6,3 +9,4 @@ where ss.completed = true
     from public.attempts a
     where a.session_id = ss.id
   );
+

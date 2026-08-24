@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260824080031 · persist_game_progression
+
 -- Server-authoritative game progression. Academic mastery remains independent.
 alter table public.study_sessions
   add column if not exists coins_earned integer not null default 0
@@ -214,3 +217,4 @@ $function$;
 
 revoke execute on function public.complete_levelup_session(uuid) from public, anon;
 grant execute on function public.complete_levelup_session(uuid) to authenticated;
+

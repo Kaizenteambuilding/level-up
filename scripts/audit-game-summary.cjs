@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const migration = fs.readFileSync('database/migrations/20260824_add_game_summary_rpc.sql', 'utf8')
+const migration = fs.readFileSync('database/migrations/20260824095609_add_game_summary_rpc.sql', 'utf8')
 const shell = fs.readFileSync('components/DemoGameShell.tsx', 'utf8')
 assert.ok(migration.includes("completed = true and ss.phase = 'done'"), 'Summary includes incomplete missions')
 assert.ok(migration.includes("at time zone 'Europe/Madrid'"), 'Streak has no explicit family timezone')

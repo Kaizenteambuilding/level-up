@@ -6,7 +6,7 @@ const briefing = fs.readFileSync('components/MissionBriefing.tsx', 'utf8')
 const mission = fs.readFileSync('components/CurriculumDailySession.tsx', 'utf8')
 const shell = fs.readFileSync('components/DemoGameShell.tsx', 'utf8')
 const world = fs.readFileSync('components/DemoWorld.tsx', 'utf8')
-const migration = fs.readFileSync('database/migrations/20260824_add_account_onboarding.sql', 'utf8')
+const migration = fs.readFileSync('database/migrations/20260824082216_add_account_onboarding.sql', 'utf8')
 
 for (const step of ['welcome', 'avatar', 'world', 'reward']) assert.ok(onboarding.includes(step), `Missing onboarding step ${step}`)
 assert.ok(onboarding.includes("rpc('set_levelup_avatar'"), 'Avatar is not persisted by RPC')

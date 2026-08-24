@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const migration = fs.readFileSync('database/migrations/20260824_persist_game_preferences.sql', 'utf8')
+const migration = fs.readFileSync('database/migrations/20260824093331_persist_game_preferences.sql', 'utf8')
 const shell = fs.readFileSync('components/DemoGameShell.tsx', 'utf8')
 const base = fs.readFileSync('components/DemoBase.tsx', 'utf8')
 const world = fs.readFileSync('components/DemoWorld.tsx', 'utf8')

@@ -1,5 +1,6 @@
--- Signed-out pages do not read application tables. Authentication itself uses
--- the Auth API, so the anonymous Data API role needs no table privileges.
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816104452 · complete_data_api_least_privilege
+
 revoke all privileges
 on table
   public.attempts,
@@ -13,10 +14,9 @@ on table
   public.study_sessions
 from anon;
 
--- Curriculum is read-only for the application. Exams are not part of the
--- current product and remain completely unavailable through the Data API.
 revoke insert, update, delete, truncate, references, trigger
 on table public.curriculum_units, public.skills
 from authenticated;
 
 revoke all privileges on table public.exams from authenticated;
+

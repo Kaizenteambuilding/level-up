@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260824093331 · persist_game_preferences
+
 create or replace function public.set_levelup_game_preferences(p_player_id uuid, p_base_theme text default null, p_sound_enabled boolean default null)
 returns jsonb language plpgsql security definer set search_path = ''
 as $function$
@@ -16,3 +19,4 @@ end;
 $function$;
 revoke execute on function public.set_levelup_game_preferences(uuid, text, boolean) from public, anon;
 grant execute on function public.set_levelup_game_preferences(uuid, text, boolean) to authenticated;
+

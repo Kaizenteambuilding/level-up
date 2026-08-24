@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816095058 · prevent_duplicate_session_attempts
+
 create unique index if not exists attempts_session_question_seed_unique
   on public.attempts(session_id, question_seed)
   where session_id is not null;
@@ -30,3 +33,4 @@ alter table public.attempts
       and char_length(prompt_snapshot) <= 2000
       and coalesce(xp_awarded, 0) >= 0
     ) not valid;
+

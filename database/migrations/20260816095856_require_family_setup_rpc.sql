@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816095856 · require_family_setup_rpc
+
 -- Family ownership must only be established by setup_parent_family(), which
 -- creates the family and its parent profile atomically for auth.uid().
 drop policy if exists "parent can create family"
@@ -10,3 +13,4 @@ drop policy if exists "parent can insert own profile"
 -- to another family. No current product flow requires direct profile updates.
 drop policy if exists "parent can update own profile"
   on public.parent_profiles;
+

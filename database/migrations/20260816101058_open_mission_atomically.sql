@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816101058 · open_mission_atomically
+
 create or replace function public.open_levelup_session(
   p_player_id uuid
 )
@@ -74,3 +77,4 @@ grant execute on function public.open_levelup_session(uuid)
 
 drop policy if exists "parent can create clean family sessions"
   on public.study_sessions;
+

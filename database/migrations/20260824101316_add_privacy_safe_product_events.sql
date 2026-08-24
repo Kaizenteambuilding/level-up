@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260824101316 · add_privacy_safe_product_events
+
 create table if not exists public.product_events (
   id bigint generated always as identity primary key,
   parent_id uuid not null references auth.users(id) on delete cascade,
@@ -28,3 +31,4 @@ end;
 $function$;
 revoke execute on function public.report_levelup_product_event(uuid, text, text) from public, anon;
 grant execute on function public.report_levelup_product_event(uuid, text, text) to authenticated;
+

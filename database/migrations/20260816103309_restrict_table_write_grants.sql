@@ -1,5 +1,6 @@
--- RLS remains the tenant boundary, but tables maintained by protected RPCs do
--- not also need generic Data API write privileges.
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816103309 · restrict_table_write_grants
+
 revoke insert, update, delete, truncate, references, trigger
 on table
   public.attempts,
@@ -9,8 +10,7 @@ on table
   public.parent_profiles
 from anon, authenticated;
 
--- Player creation is still an intentional client flow protected by its INSERT
--- policy. Progress fields remain server-controlled.
 revoke update, delete, truncate, references, trigger
 on table public.players
 from anon, authenticated;
+

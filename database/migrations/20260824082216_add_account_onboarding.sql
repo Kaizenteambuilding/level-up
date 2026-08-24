@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260824082216 · add_account_onboarding
+
 -- Account-wide onboarding state, updated only through ownership-checked RPCs.
 create or replace function public.set_levelup_avatar(p_player_id uuid, p_avatar_id text)
 returns jsonb language plpgsql security definer set search_path = ''
@@ -76,3 +79,4 @@ revoke execute on function public.set_levelup_avatar(uuid, text) from public, an
 revoke execute on function public.complete_levelup_onboarding(uuid) from public, anon;
 grant execute on function public.set_levelup_avatar(uuid, text) to authenticated;
 grant execute on function public.complete_levelup_onboarding(uuid) to authenticated;
+

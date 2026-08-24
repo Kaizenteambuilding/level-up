@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816094047 · validate_attempt_rpc_inputs
+
 create or replace function public.submit_levelup_attempt(
   p_player_id uuid,
   p_skill_id text,
@@ -228,3 +231,4 @@ revoke execute on function public.submit_levelup_attempt(
 grant execute on function public.submit_levelup_attempt(
   uuid, text, boolean, integer, integer, bigint, text, uuid, text[]
 ) to authenticated;
+

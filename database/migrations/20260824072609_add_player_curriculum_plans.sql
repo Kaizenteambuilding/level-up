@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260824072609 · add_player_curriculum_plans
+
 -- Calendar-aware curriculum pacing, kept separate from game level and adaptive mastery.
 create table if not exists public.player_curriculum_plans (
   player_id uuid not null references public.players(id) on delete cascade,
@@ -114,3 +117,4 @@ revoke execute on function public.set_player_curriculum_plan(uuid, text, integer
   from public, anon;
 grant execute on function public.set_player_curriculum_plan(uuid, text, integer, text, integer, text[])
   to authenticated;
+

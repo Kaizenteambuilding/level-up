@@ -1,7 +1,8 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816111031 · expire_abandoned_sessions
+
 create extension if not exists pg_cron with schema pg_catalog;
 
--- Keep historical session state truthful even when a player never returns to
--- open another mission. Reusing the job name makes the migration idempotent.
 select cron.schedule(
   'levelup-expire-abandoned-sessions',
   '17 * * * *',
@@ -14,3 +15,4 @@ select cron.schedule(
       and started_at < now() - interval '24 hours';
   $cron$
 );
+

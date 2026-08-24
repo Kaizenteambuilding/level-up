@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816094425 · server_control_session_completion
+
 create or replace function public.complete_levelup_session(
   p_session_id uuid
 )
@@ -150,3 +153,4 @@ with check (
   and daily_target_minutes between 20 and 50
   and char_length(btrim(alias)) between 1 and 40
 );
+

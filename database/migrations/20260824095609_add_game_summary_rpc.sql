@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260824095609 · add_game_summary_rpc
+
 create or replace function public.get_levelup_game_summary(p_player_id uuid)
 returns jsonb language plpgsql security definer set search_path = '' stable
 as $function$
@@ -17,3 +20,4 @@ end;
 $function$;
 revoke execute on function public.get_levelup_game_summary(uuid) from public, anon;
 grant execute on function public.get_levelup_game_summary(uuid) to authenticated;
+

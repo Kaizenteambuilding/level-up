@@ -1,3 +1,6 @@
+-- Recovered from the applied Supabase migration history.
+-- Version: 20260816103723 · create_player_atomically
+
 create or replace function public.create_levelup_player(
   p_alias text,
   p_daily_target_minutes integer default 35
@@ -39,24 +42,10 @@ begin
   end if;
 
   insert into public.players(
-    family_id,
-    alias,
-    daily_target_minutes,
-    level,
-    xp,
-    coins,
-    streak_days,
-    avatar
+    family_id, alias, daily_target_minutes, level, xp, coins, streak_days, avatar
   )
   values(
-    v_family_id,
-    v_alias,
-    p_daily_target_minutes,
-    1,
-    0,
-    0,
-    0,
-    '{}'::jsonb
+    v_family_id, v_alias, p_daily_target_minutes, 1, 0, 0, 0, '{}'::jsonb
   )
   returning id into v_player_id;
 
@@ -76,3 +65,4 @@ grant execute on function public.create_levelup_player(text, integer)
 drop policy if exists "parent can create clean family players"
   on public.players;
 revoke insert on table public.players from anon, authenticated;
+
