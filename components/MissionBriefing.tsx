@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
+import { missionCadence } from '@/lib/missionCadence'
 import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 type OpenMission = { id: string; attempts: number }
@@ -44,28 +45,30 @@ export default function MissionBriefing() {
   if (loading) return <DemoLoading />
   if (!player || error) return <DemoGameError title="No se pudo preparar la misión" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
 
+  const cadence = missionCadence(game)
   const missionProgress = openMission?.attempts ?? 0
   const hasProgress = missionProgress > 0
+  const doneToday = cadence.status === 'done-today' && !hasProgress && !onboarding
 
   return (<>
     <section className="mission-briefing">
       <div className="briefing-visual" aria-hidden="true"><span>🏙️</span><i>➗</i><i>📐</i><i>⅗</i></div>
       <div className="briefing-content">
-        <span className="tag">CIUDAD MATEMÁTICA · {hasProgress ? 'MISIÓN EN CURSO' : 'MISIÓN DIARIA'}</span>
-        <h1>{hasProgress ? 'El núcleo te espera' : 'El núcleo de los números'}</h1>
-        <p>{hasProgress ? `Ya has completado ${missionProgress} de 10 retos. Tu avance está guardado y continuarás exactamente donde lo dejaste.` : 'La ciudad necesita energía. Cada reto correcto activa una parte del núcleo y mejora la recompensa final.'}</p>
+        <span className="tag">CIUDAD MATEMÁTICA · {hasProgress ? 'MISIÓN EN CURSO' : doneToday ? 'MISIÓN DE HOY COMPLETADA' : cadence.status === 'returning' ? 'NUEVA MISIÓN DISPONIBLE' : 'MISIÓN DIARIA'}</span>
+        <h1>{hasProgress ? 'El núcleo te espera' : doneToday ? 'El núcleo está estable' : cadence.status === 'returning' ? 'El núcleo vuelve a llamarte' : 'El núcleo de los números'}</h1>
+        <p>{hasProgress ? `Ya has completado ${missionProgress} de 10 retos. Tu avance está guardado y continuarás exactamente donde lo dejaste.` : doneToday ? cadence.message : cadence.status === 'returning' ? cadence.message : 'La ciudad necesita energía. Cada reto correcto activa una parte del núcleo y mejora la recompensa final.'}</p>
         <div className="briefing-objectives">
-          <div><b>🎯 Objetivo</b><span>{hasProgress ? `${missionProgress}/10 retos completados` : 'Completar 10 retos adaptativos'}</span></div>
+          <div><b>🎯 Objetivo</b><span>{hasProgress ? `${missionProgress}/10 retos completados` : doneToday ? 'Misión diaria completada' : 'Completar 10 retos adaptativos'}</span></div>
           <div><b>⭐ Progreso real</b><span>XP, dominio y currículo</span></div>
-          <div><b>🪙 Recompensa real</b><span>40 base + 5 por acierto</span></div>
+          <div><b>🪙 Recompensa real</b><span>{doneToday ? 'Ya guardada en tu cuenta' : '40 base + 5 por acierto'}</span></div>
         </div>
         {hasProgress && <div className="bar" role="progressbar" aria-label="Progreso de la misión guardada" aria-valuemin={0} aria-valuemax={10} aria-valuenow={missionProgress}><i style={{ width: `${missionProgress * 10}%` }} /></div>}
         <div className="briefing-player"><DemoAvatar player={player} game={game} /><DemoHud player={player} game={game} /></div>
         <div className="action-row">
-          <Link href={onboarding ? '/mission?onboarding=1' : '/mission'} className="btn primary">▶ {hasProgress ? 'CONTINUAR MISIÓN' : 'EMPEZAR MISIÓN'}</Link>
+          {doneToday ? <Link href="/math-city" className="btn primary">▶ EXPLORAR CIUDAD</Link> : <Link href={onboarding ? '/mission?onboarding=1' : '/mission'} className="btn primary">▶ {hasProgress ? 'CONTINUAR MISIÓN' : cadence.action}</Link>}
           <Link href={onboarding ? '/onboarding?step=world' : '/world'} className="btn dark">← {onboarding ? 'VOLVER CON NOVA' : 'VOLVER AL MAPA'}</Link>
         </div>
-        <p className="demo-notice">{hasProgress ? 'No perderás las respuestas ya guardadas. La misión se reanuda automáticamente durante 24 horas.' : 'La misión, el XP y las monedas se guardan de forma segura en la cuenta.'}</p>
+        <p className="demo-notice">{hasProgress ? 'No perderás las respuestas ya guardadas. La misión se reanuda automáticamente durante 24 horas.' : doneToday ? 'La próxima misión diaria se habilita en un nuevo día. Mientras tanto puedes explorar la ciudad, tu base y tus logros.' : 'La misión, el XP y las monedas se guardan de forma segura en la cuenta.'}</p>
       </div>
     </section>
     <DemoGameDock active="mission" />
