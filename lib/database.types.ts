@@ -447,6 +447,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_levelup_onboarding: { Args: { p_player_id: string }; Returns: Json }
       complete_levelup_session: {
         Args: { p_session_id: string }
         Returns: Json
@@ -458,6 +459,7 @@ export type Database = {
         Returns: Json
       }
       open_levelup_session: { Args: { p_player_id: string }; Returns: Json }
+      set_levelup_avatar: { Args: { p_avatar_id: string; p_player_id: string }; Returns: Json }
       set_player_curriculum_plan: {
         Args: {
           p_academic_year_start: number

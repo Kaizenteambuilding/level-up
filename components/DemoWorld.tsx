@@ -17,6 +17,7 @@ export default function DemoWorld() {
   const { player, game, saveGame, loading, error } = useDemoGamePlayer()
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo abrir el mundo</h1><p className="muted">{error}</p><Link href="/player" className="btn primary">VOLVER AL JUGADOR</Link></section>
+  if (!player.onboardingCompleted) return <section className="onboarding-gate card"><div className="nova-orb" aria-hidden="true">🤖</div><span className="tag">NOVA · MENSAJE NUEVO</span><h1>Tu mundo está listo</h1><p className="muted">Antes de explorar, elige tu personaje y completa una misión guiada. Tu progreso actual se conserva.</p><Link href="/onboarding" className="btn primary">COMENZAR AVENTURA</Link></section>
   const achievements = demoAchievements(game)
   const unlockedAchievements = achievements.filter((achievement) => achievement.unlocked).length
   const guide = demoGuideStep(game, player.level)

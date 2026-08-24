@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { DemoAvatar, DemoGameDock, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
 
 export default function MissionBriefing() {
+  const [onboarding, setOnboarding] = useState(false)
+  useEffect(() => setOnboarding(new URLSearchParams(window.location.search).get('onboarding') === '1'), [])
   const { player, game, loading, error } = useDemoGamePlayer()
   if (loading) return <DemoLoading />
   if (!player || error) return <section className="card" role="alert"><h1>No se pudo preparar la misión</h1><p className="muted">{error}</p><Link href="/world" className="btn primary">VOLVER AL MAPA</Link></section>
@@ -18,14 +21,14 @@ export default function MissionBriefing() {
         <div className="briefing-objectives">
           <div><b>🎯 Objetivo</b><span>Completar 10 retos adaptativos</span></div>
           <div><b>⭐ Progreso real</b><span>XP, dominio y currículo</span></div>
-          <div><b>🪙 Recompensa demo</b><span>40 base + 5 por acierto</span></div>
+          <div><b>🪙 Recompensa real</b><span>40 base + 5 por acierto</span></div>
         </div>
         <div className="briefing-player"><DemoAvatar player={player} game={game} /><DemoHud player={player} game={game} /></div>
         <div className="action-row">
-          <Link href="/mission" className="btn primary">▶ EMPEZAR MISIÓN</Link>
-          <Link href="/world" className="btn dark">← VOLVER AL MAPA</Link>
+          <Link href={onboarding ? '/mission?onboarding=1' : '/mission'} className="btn primary">▶ EMPEZAR MISIÓN</Link>
+          <Link href={onboarding ? '/onboarding?step=world' : '/world'} className="btn dark">← {onboarding ? 'VOLVER CON NOVA' : 'VOLVER AL MAPA'}</Link>
         </div>
-        <p className="demo-notice">La misión y el XP son reales. La recompensa en monedas pertenece todavía a la demo jugable.</p>
+        <p className="demo-notice">La misión, el XP y las monedas se guardan de forma segura en la cuenta.</p>
       </div>
     </section>
     <DemoGameDock active="mission" />

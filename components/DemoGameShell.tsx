@@ -15,7 +15,7 @@ import {
 } from '@/lib/demoGame'
 import { gameRank, levelProgress } from '@/lib/gameProgression'
 
-export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number }
+export type DemoPlayer = { id: string; alias: string; xp: number; level: number; coins: number; onboardingCompleted: boolean }
 
 export function useDemoGamePlayer() {
   const router = useRouter()
@@ -39,7 +39,7 @@ export function useDemoGamePlayer() {
         { data: inventory, error: inventoryError },
         { data: missions, error: missionsError },
       ] = await Promise.all([
-        supabase.from('players').select('id,alias,xp,level,coins').eq('id', playerId).maybeSingle(),
+        supabase.from('players').select('id,alias,xp,level,coins,avatar').eq('id', playerId).maybeSingle(),
         supabase.from('player_inventory').select('item_id,slot,equipped').eq('player_id', playerId),
         supabase.from('study_sessions').select('id,ended_at,xp_earned,coins_earned').eq('player_id', playerId).eq('completed', true).eq('phase', 'done').order('ended_at', { ascending: false }).limit(20),
       ])
@@ -49,12 +49,14 @@ export function useDemoGamePlayer() {
         setLoading(false)
         return
       }
+      const avatar = data.avatar && typeof data.avatar === 'object' && !Array.isArray(data.avatar) ? data.avatar as Record<string, unknown> : {}
       const selected: DemoPlayer = {
         id: data.id,
         alias: data.alias,
         xp: Number(data.xp ?? 0),
         level: Number(data.level ?? 1),
         coins: Number(data.coins ?? 0),
+        onboardingCompleted: avatar.onboarding_completed === true,
       }
       setPlayer(selected)
       try {
@@ -64,6 +66,7 @@ export function useDemoGamePlayer() {
         const rows = inventory ?? []
         const serverGame = normalizeDemoState({
           ...localGame,
+          avatarId: typeof avatar.avatar_id === 'string' ? avatar.avatar_id : localGame.avatarId,
           coins: Number(selected.coins ?? 0),
           owned: rows.map((item) => item.item_id),
           equipped: Object.fromEntries(rows.filter((item) => item.equipped).map((item) => [item.slot, item.item_id])),

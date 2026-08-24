@@ -52,8 +52,15 @@ export default function DemoBase() {
     setMessage(`${item?.name} equipado.`)
   }
 
-  function chooseAvatar(avatarId: string) {
+  async function chooseAvatar(avatarId: string) {
     const selected = DEMO_AVATARS.find((entry) => entry.id === avatarId)
+    if (!selected || savingItemId) return
+    const supabase = createSupabaseBrowserClient()
+    if (!supabase) { setMessage('No se pudo conectar con LEVEL UP.'); return }
+    setSavingItemId(`avatar:${avatarId}`)
+    const { error: avatarError } = await supabase.rpc('set_levelup_avatar', { p_player_id: playerId, p_avatar_id: avatarId })
+    setSavingItemId(null)
+    if (avatarError) { setMessage(userFacingError(avatarError, 'No se pudo guardar el personaje.')); return }
     saveGame(setDemoAvatar(game, avatarId))
     playDemoSound(game.soundEnabled, 'select')
     setMessage(`${selected?.name} seleccionado.`)
@@ -83,7 +90,7 @@ export default function DemoBase() {
         <div><span className="tag">🎒 MOCHILA</span><h2>Elige tu equipo</h2>{game.owned.length ? <div className="base-inventory">{game.owned.map((id) => { const item = DEMO_ITEMS.find((entry) => entry.id === id); if (!item) return null; const active = equipped.some((entry) => entry.id === item.id); return <button key={item.id} type="button" disabled={savingItemId !== null} onClick={() => equip(item.id)} className={active ? 'selected' : ''} aria-pressed={active}><span>{item.icon}</span><small>{savingItemId === item.id ? 'Equipando…' : item.name}</small></button> })}</div> : <><p className="muted">Tu mochila está vacía. Visita la tienda para elegir equipo.</p><Link href="/shop" className="btn primary">IR A LA TIENDA</Link></>}</div>
       </section>
       <DemoGameDock active="base" />
-      <p className="demo-notice">El inventario y el equipo se guardan en la cuenta. El personaje, el ambiente y el sonido siguen siendo preferencias de este navegador.</p>
+      <p className="demo-notice">El personaje, inventario y equipo se guardan en la cuenta. El ambiente y el sonido son preferencias de este navegador.</p>
     </>
   )
 }

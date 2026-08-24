@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.14.0**. LEVEL UP incorpora progresión de juego persistente y protegida por el servidor: curva de 50 niveles, monedas únicas por misión, tienda con requisitos de nivel, inventario y equipamiento guardados, y desbloqueos del mundo. El nivel del personaje se calcula exclusivamente desde XP de juego y permanece separado del dominio académico, la dificultad adaptativa y el calendario curricular.
+Versión actual: **v1.15.0**. LEVEL UP incorpora un onboarding jugable guiado por NOVA: presentación del mundo, elección persistente de personaje, explicación del bucle de juego, misión real de calibración y apertura del mapa tras verificar su cierre en el servidor. Se mantienen la progresión persistente, la curva de 50 niveles, monedas, tienda, inventario, equipamiento y desbloqueos.
 
 Producción: https://level-up-a544.vercel.app
 

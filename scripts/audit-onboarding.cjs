@@ -1,0 +1,22 @@
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+
+const onboarding = fs.readFileSync('components/GameOnboarding.tsx', 'utf8')
+const briefing = fs.readFileSync('components/MissionBriefing.tsx', 'utf8')
+const mission = fs.readFileSync('components/CurriculumDailySession.tsx', 'utf8')
+const shell = fs.readFileSync('components/DemoGameShell.tsx', 'utf8')
+const world = fs.readFileSync('components/DemoWorld.tsx', 'utf8')
+const migration = fs.readFileSync('database/migrations/20260824_add_account_onboarding.sql', 'utf8')
+
+for (const step of ['welcome', 'avatar', 'world', 'reward']) assert.ok(onboarding.includes(step), `Missing onboarding step ${step}`)
+assert.ok(onboarding.includes("rpc('set_levelup_avatar'"), 'Avatar is not persisted by RPC')
+assert.ok(onboarding.includes("rpc('complete_levelup_onboarding'"), 'Completion is not persisted by RPC')
+assert.ok(briefing.includes("'/mission?onboarding=1'"), 'Briefing drops onboarding state')
+assert.ok(mission.includes("'/onboarding?step=reward'"), 'Mission does not return to NOVA')
+assert.ok(shell.includes("onboardingCompleted: avatar.onboarding_completed === true"), 'Account state is not loaded')
+assert.ok(world.includes('!player.onboardingCompleted'), 'World does not gate first-time players')
+assert.ok(migration.includes("ss.ended_at >= v_started_at"), 'Completion is not bound to a post-start mission')
+assert.ok(migration.includes('pp.id = auth.uid()'), 'RPCs do not verify family ownership')
+assert.ok(migration.includes('revoke execute'), 'RPC privileges are not restricted')
+
+console.log('Onboarding audit passed.')

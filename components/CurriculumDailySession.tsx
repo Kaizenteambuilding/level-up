@@ -53,10 +53,12 @@ async function retryJwtFuture<T extends { error?: { message?: string } | null }>
 
 export default function CurriculumDailySession() {
   const [forcedSkillId, setForcedSkillId] = useState<string | null>(null)
+  const [onboardingMode, setOnboardingMode] = useState(false)
   const [queryReady, setQueryReady] = useState(false)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     setForcedSkillId(params.get('skill'))
+    setOnboardingMode(params.get('onboarding') === '1')
     setQueryReady(true)
   }, [])
 
@@ -529,8 +531,8 @@ export default function CurriculumDailySession() {
           )}
         </div>
         <div className="action-row" style={{ justifyContent: 'center' }}>
-          <Link href="/world" className="btn primary">VOLVER AL MUNDO</Link>
-          <Link href="/shop" className="btn dark">VISITAR LA TIENDA</Link>
+          <Link href={onboardingMode ? '/onboarding?step=reward' : '/world'} className="btn primary">{onboardingMode ? 'VOLVER CON NOVA' : 'VOLVER AL MUNDO'}</Link>
+          {!onboardingMode && <Link href="/shop" className="btn dark">VISITAR LA TIENDA</Link>}
         </div>
       </section>
     )
@@ -545,7 +547,7 @@ export default function CurriculumDailySession() {
         <h1>{testMode ? 'Prueba de habilidad' : `Reto ${index + 1} de ${SESSION_LENGTH}`}</h1>
         <p className="muted">{testMode ? 'Esta pantalla fuerza una habilidad concreta para poder validar su generador.' : 'Resuelve el reto para activar el siguiente módulo del núcleo.'}</p>
       </div>
-      {!testMode && <Link className="btn dark mission-exit" href="/world">SALIR AL MAPA</Link>}
+      {!testMode && <Link className="btn dark mission-exit" href={onboardingMode ? '/onboarding?step=world' : '/world'}>{onboardingMode ? 'VOLVER CON NOVA' : 'SALIR AL MAPA'}</Link>}
       {!testMode && <div className="energy-track" role="progressbar" aria-label="Energía de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={index}>
         {Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < index ? 'charged' : position === index ? 'active' : ''} aria-hidden="true">{position < index ? '⚡' : position + 1}</span>)}
       </div>}
