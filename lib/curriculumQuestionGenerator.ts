@@ -2,7 +2,7 @@ import {
   generateFirstEvaluationQuestion,
   type GeneratedQuestion,
 } from './firstEvaluationGenerators'
-import { generateLanguageSubjectQuestion } from './languageSubjectGenerators'
+import { generateLanguageQuestionWithCriticalVariants } from './languageCriticalVariants'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 
 type SkillMeta = {
@@ -22,8 +22,7 @@ export function generateCurriculumQuestion(
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
   }
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
-    const question = generateLanguageSubjectQuestion(skill, difficulty, seed)
-    if (question) return question
+    return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
   }
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
     return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
