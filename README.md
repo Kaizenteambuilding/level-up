@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.22.0**. El recorrido infantil impide saltarse el onboarding mediante rutas directas, incorpora una prueba adulta reproducible y registra eventos técnicos mínimos para detectar abandono y errores. La telemetría no admite respuestas, enunciados, texto libre ni metadatos arbitrarios y elimina registros de más de 180 días. Se mantienen rachas, encargos, campaña y progresión persistente.
+Versión actual: **v1.22.1**. El inicio de la aventura ya no queda bloqueado si falla temporalmente una lectura secundaria de inventario, historial o resumen: conserva la última progresión local segura y recupera snapshots dañados. El recorrido infantil mantiene el onboarding obligatorio, la telemetría privada, las rachas, los encargos, la campaña y la progresión persistente.
 
 Producción: https://level-up-a544.vercel.app
 

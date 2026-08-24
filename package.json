@@ -1,6 +1,6 @@
 {
   "name": "level-up",
-  "version": "1.22.0",
+  "version": "1.22.1",
   "private": true,
   "engines": {
     "node": ">=22.0.0"
@@ -28,8 +28,9 @@
     "audit:weekly-quests": "node scripts/audit-weekly-quests.cjs",
     "audit:game-summary": "node scripts/audit-game-summary.cjs",
     "audit:adult-onboarding": "node scripts/audit-adult-onboarding.cjs",
+    "audit:game-sync-resilience": "node scripts/audit-game-sync-resilience.cjs",
     "audit:release": "node scripts/audit-release-readiness.cjs",
-    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:curriculum-plan && npm run audit:demo-game && npm run audit:game-progression && npm run audit:demo-navigation && npm run audit:onboarding && npm run audit:world-zones && npm run audit:math-campaign && npm run audit:expedition-history && npm run audit:game-preferences && npm run audit:weekly-quests && npm run audit:game-summary && npm run audit:adult-onboarding && npm run audit:release && npm run build"
+    "verify": "npm run lint && npm run audit:questions && npm run audit:question-quality && npm run audit:adaptive-engine && npm run audit:parent-insights && npm run audit:mission-recap && npm run audit:curriculum-insights && npm run audit:curriculum-plan && npm run audit:demo-game && npm run audit:game-progression && npm run audit:demo-navigation && npm run audit:onboarding && npm run audit:world-zones && npm run audit:math-campaign && npm run audit:expedition-history && npm run audit:game-preferences && npm run audit:weekly-quests && npm run audit:game-summary && npm run audit:adult-onboarding && npm run audit:game-sync-resilience && npm run audit:release && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.4",

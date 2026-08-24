@@ -38,7 +38,7 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
         { data, error: playerError },
         { data: inventory, error: inventoryError },
         { data: missions, error: missionsError },
-        { data: summary, error: summaryError },
+        { data: summary },
       ] = await Promise.all([
         supabase.from('players').select('id,alias,xp,level,coins,avatar').eq('id', playerId).maybeSingle(),
         supabase.from('player_inventory').select('item_id,slot,equipped').eq('player_id', playerId),
@@ -60,37 +60,40 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
         coins: Number(data.coins ?? 0),
         onboardingCompleted: avatar.onboarding_completed === true,
         streakDays: Number((summary as { streak_days?: number } | null)?.streak_days ?? 0),
-        totalMissions: Number((summary as { total_missions?: number } | null)?.total_missions ?? 0),
+        totalMissions: Number((summary as { total_missions?: number } | null)?.total_missions ?? missions?.length ?? 0),
       }
       if (!selected.onboardingCompleted && !options.allowIncompleteOnboarding) { router.replace('/onboarding'); return }
       setPlayer(selected)
       try {
         const saved = localStorage.getItem(demoStorageKey(selected.id))
         const localGame = saved ? normalizeDemoState(JSON.parse(saved)) : INITIAL_DEMO_STATE
-        if (inventoryError || missionsError || summaryError) throw inventoryError ?? missionsError ?? summaryError
-        const missionIds = (missions ?? []).map((mission) => mission.id)
+        // Inventory, history and HUD summaries enrich the game, but none of them
+        // is required to open the player's world. A transient failure must keep
+        // the last safe local snapshot instead of blocking onboarding.
+        const safeMissions = missionsError ? [] : (missions ?? [])
+        const missionIds = safeMissions.map((mission) => mission.id)
         const { data: missionAttempts, error: attemptsError } = missionIds.length
           ? await supabase.from('attempts').select('session_id,correct').in('session_id', missionIds)
           : { data: [], error: null }
-        if (attemptsError) throw attemptsError
-        const correctBySession = (missionAttempts ?? []).reduce<Record<string, number>>((summary, attempt) => {
+        const correctBySession = (attemptsError ? [] : (missionAttempts ?? [])).reduce<Record<string, number>>((summary, attempt) => {
           if (attempt.correct === true && attempt.session_id) summary[attempt.session_id] = (summary[attempt.session_id] ?? 0) + 1
           return summary
         }, {})
-        const rows = inventory ?? []
+        const rows = inventoryError ? null : (inventory ?? [])
+        const localCorrectBySession = Object.fromEntries(localGame.missionHistory.map((mission) => [mission.sessionId, mission.correct]))
         const serverGame = normalizeDemoState({
           ...localGame,
           avatarId: typeof avatar.avatar_id === 'string' ? avatar.avatar_id : localGame.avatarId,
           baseTheme: typeof avatar.base_theme === 'string' ? avatar.base_theme : localGame.baseTheme,
           soundEnabled: typeof avatar.sound_enabled === 'boolean' ? avatar.sound_enabled : localGame.soundEnabled,
           coins: Number(selected.coins ?? 0),
-          owned: rows.map((item) => item.item_id),
-          equipped: Object.fromEntries(rows.filter((item) => item.equipped).map((item) => [item.slot, item.item_id])),
-          rewardedSessions: (missions ?? []).map((mission) => mission.id),
-          missionHistory: (missions ?? []).map((mission) => ({
+          owned: rows ? rows.map((item) => item.item_id) : localGame.owned,
+          equipped: rows ? Object.fromEntries(rows.filter((item) => item.equipped).map((item) => [item.slot, item.item_id])) : localGame.equipped,
+          rewardedSessions: missionsError ? localGame.rewardedSessions : safeMissions.map((mission) => mission.id),
+          missionHistory: missionsError ? localGame.missionHistory : safeMissions.map((mission) => ({
             sessionId: mission.id,
             completedAt: mission.ended_at ?? new Date().toISOString(),
-            correct: correctBySession[mission.id] ?? 0,
+            correct: correctBySession[mission.id] ?? localCorrectBySession[mission.id] ?? 0,
             xp: Number(mission.xp_earned ?? 0),
             reward: Number(mission.coins_earned ?? 0),
           })).reverse(),
@@ -98,7 +101,17 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
         setGame(serverGame)
         localStorage.setItem(demoStorageKey(selected.id), JSON.stringify(serverGame))
       } catch {
-        setError('No se pudo sincronizar la progresión del juego.')
+        // A corrupt browser snapshot is recoverable. The authoritative player
+        // record has already loaded, so start from a clean game state.
+        const fallbackGame = normalizeDemoState({
+          ...INITIAL_DEMO_STATE,
+          avatarId: typeof avatar.avatar_id === 'string' ? avatar.avatar_id : INITIAL_DEMO_STATE.avatarId,
+          baseTheme: typeof avatar.base_theme === 'string' ? avatar.base_theme : INITIAL_DEMO_STATE.baseTheme,
+          soundEnabled: typeof avatar.sound_enabled === 'boolean' ? avatar.sound_enabled : INITIAL_DEMO_STATE.soundEnabled,
+          coins: selected.coins,
+        })
+        setGame(fallbackGame)
+        localStorage.setItem(demoStorageKey(selected.id), JSON.stringify(fallbackGame))
       }
       setLoading(false)
     })()
