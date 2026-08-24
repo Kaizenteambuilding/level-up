@@ -2,7 +2,7 @@
 
 Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.22.2**. El historial real de Supabase está recuperado y ordenado con sus 26 timestamps únicos, y una auditoría impide que el repositorio vuelva a perder migraciones o a duplicar versiones. Se mantiene la recuperación segura del onboarding, la telemetría privada, las rachas, los encargos, la campaña y la progresión persistente.
+Versión actual: **v1.23.0**. Supabase dispone de un baseline reproducible sin datos familiares: incluye tablas, restricciones, índices, RLS, RPC, triggers, permisos, limpieza horaria y catálogos. El historial real conserva sus 26 timestamps únicos y las auditorías impiden divergencias. Se mantiene la recuperación segura del onboarding, la telemetría privada, las rachas, los encargos, la campaña y la progresión persistente.
 
 Producción: https://level-up-a544.vercel.app
 
@@ -58,7 +58,7 @@ El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 
 
 Las 26 migraciones aplicadas están versionadas en `database/migrations/` con el timestamp real de producción y en su orden exacto. `npm run audit:migrations` impide prefijos duplicados, nombres inválidos o huecos en ese historial.
 
-El historial recuperado comienza después de la creación manual original del proyecto. Antes de poder levantar un Supabase completamente vacío todavía hace falta un baseline fundacional de las tablas iniciales; no debe confundirse el historial ordenado con ese baseline pendiente.
+El historial recuperado comienza después de la creación manual original. `database/baseline/20260824101316_public_schema.sql` captura el estado fundacional completo en ese corte y `database/tests/baseline_parity.sql` lo contrasta con los 13 objetos de tabla, 15 RPC/funciones, políticas y catálogos esperados. La certificación de restauración exige ensayarlo en un proyecto Supabase separado, nunca sobre producción.
 
 Los avisos de Supabase sobre las funciones públicas `SECURITY DEFINER` son intencionados: las operaciones de familia, jugador, misión y planificación curricular solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
 
