@@ -17,10 +17,11 @@ export type CurriculumPlan = {
   updated_at?: string
 }
 
-const TERM_UNITS: Record<CurriculumTerm, string[]> = {
-  1: MATH_CURRICULUM_UNITS.slice(0, 5),
-  2: MATH_CURRICULUM_UNITS.slice(5, 10),
-  3: MATH_CURRICULUM_UNITS.slice(10, 15),
+function termWindow(unitIds: readonly string[], term: CurriculumTerm) {
+  const size = Math.ceil(unitIds.length / 3)
+  const start = (term - 1) * size
+  const end = term === 3 ? unitIds.length : Math.min(unitIds.length, start + size)
+  return { start, end }
 }
 
 export function schoolYearStart(date = new Date()) {
@@ -35,24 +36,35 @@ export function automaticTerm(date = new Date()): CurriculumTerm {
   return 3
 }
 
-export function unitsForTerm(term: CurriculumTerm) {
-  return [...TERM_UNITS[term]]
+export function unitsForTerm(
+  term: CurriculumTerm,
+  unitIds: readonly string[] = MATH_CURRICULUM_UNITS
+) {
+  const { start, end } = termWindow(unitIds, term)
+  return unitIds.slice(start, end) as string[]
 }
 
-export function availableUnitsThroughTerm(term: CurriculumTerm) {
-  return MATH_CURRICULUM_UNITS.slice(0, term * 5) as string[]
+export function availableUnitsThroughTerm(
+  term: CurriculumTerm,
+  unitIds: readonly string[] = MATH_CURRICULUM_UNITS
+) {
+  const { end } = termWindow(unitIds, term)
+  return unitIds.slice(0, end) as string[]
 }
 
 export function effectiveCurriculumPlan(
   playerId: string,
   stored: CurriculumPlan | null | undefined,
-  now = new Date()
+  now = new Date(),
+  subjectId = stored?.subject_id ?? 'math',
+  subjectUnitIds: readonly string[] = MATH_CURRICULUM_UNITS
 ) {
   const term = stored?.pacing_mode === 'manual'
     ? stored.current_term
     : automaticTerm(now)
-  const priorUnitIds = MATH_CURRICULUM_UNITS.slice(0, (term - 1) * 5) as string[]
-  const termUnitIds = unitsForTerm(term)
+  const { start } = termWindow(subjectUnitIds, term)
+  const priorUnitIds = subjectUnitIds.slice(0, start) as string[]
+  const termUnitIds = unitsForTerm(term, subjectUnitIds)
   const requestedFocus = stored?.pacing_mode === 'manual'
     ? stored.focus_unit_ids
     : termUnitIds
@@ -60,10 +72,11 @@ export function effectiveCurriculumPlan(
   const safeFocusUnitIds = focusUnitIds.length ? focusUnitIds : termUnitIds
   const availableUnitIds = stored?.pacing_mode === 'manual'
     ? [...priorUnitIds, ...safeFocusUnitIds]
-    : availableUnitsThroughTerm(term)
+    : availableUnitsThroughTerm(term, subjectUnitIds)
 
   return {
     playerId,
+    subjectId,
     academicYearStart: stored?.academic_year_start ?? schoolYearStart(now),
     pacingMode: stored?.pacing_mode ?? 'automatic' as CurriculumPacingMode,
     currentTerm: term,
