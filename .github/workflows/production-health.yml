@@ -15,18 +15,13 @@ jobs:
     env:
       BASE_URL: https://level-up-a544.vercel.app
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Verify production health endpoint
         run: |
           response="$(curl --fail --silent --show-error --retry 2 --retry-delay 3 --max-time 20 "$BASE_URL/api/health")"
-          node -e '
-            const health = JSON.parse(process.argv[1])
-            const validVersion = typeof health.version === "string" && /^\d+\.\d+\.\d+$/.test(health.version)
-            const validDeployment = typeof health.deployment === "string" && health.deployment.length >= 7
-            if (health.status !== "ok" || health.service !== "level-up" || !validVersion || !validDeployment) {
-              throw new Error(`Unexpected health response: ${process.argv[1]}`)
-            }
-            console.log(`LEVEL UP ${health.version} is healthy (${health.deployment})`)
-          ' "$response"
+          node scripts/verify-production-health.cjs "$response" "$GITHUB_SHA"
 
       - name: Smoke public entry routes
         run: |

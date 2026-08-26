@@ -83,6 +83,12 @@ jobs:
       - name: Audit runtime version
         run: npm run audit:runtime
 
+      - name: Audit production health drift verifier
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          deployment="${GITHUB_SHA:0:7}"
+          node scripts/verify-production-health.cjs "{\"status\":\"ok\",\"service\":\"level-up\",\"version\":\"$version\",\"deployment\":\"$deployment\"}" "$GITHUB_SHA"
+
       - name: Audit v1 release readiness
         run: npm run audit:release
 
