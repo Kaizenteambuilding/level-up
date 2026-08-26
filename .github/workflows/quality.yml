@@ -74,6 +74,9 @@ jobs:
       - name: Audit SECURITY DEFINER hardening
         run: npm run audit:security-definer
 
+      - name: Audit runtime version
+        run: npm run audit:runtime
+
       - name: Audit v1 release readiness
         run: npm run audit:release
 
