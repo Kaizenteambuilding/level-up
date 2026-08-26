@@ -39,6 +39,7 @@ const expectedCanonical = [
   '20260826092000_activate_geography_history_curriculum.sql',
   '20260826093000_activate_biology_geology_curriculum.sql',
   '20260826094000_make_attempt_submit_idempotent.sql',
+  '20260826134908_harden_internal_security_definer_triggers.sql',
 ]
 
 // These are historical source snapshots kept for forensic comparison. They are
