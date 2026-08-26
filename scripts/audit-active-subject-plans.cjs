@@ -16,8 +16,8 @@ if(plans.map(p=>p.subjectId).join(',')!=='math,spanish,english')failures.push('a
 for(const p of plans){if(!p.availableUnitIds.length)failures.push(`${p.subjectId}: no available units`);if(p.availableUnitIds.some(id=>!units.some(u=>u.id===id&&u.subject_id===p.subjectId)))failures.push(`${p.subjectId}: leaked unit from another subject`)}
 const sequence=Array.from({length:6},(_,i)=>rotation.subjectForQuestion(plans,i,0)?.subjectId)
 if(sequence.join(',')!=='math,spanish,english,math,spanish,english')failures.push(`unexpected rotation ${sequence.join(',')}`)
-const manual=[{player_id:'player-1',subject_id:'spanish',academic_year_start:2026,pacing_mode:'manual',current_term:1,focus_unit_ids:['L02']}]
+const manual=[{player_id:'player-1',subject_id:'spanish',academic_year_start:2026,pacing_mode:'manual',current_term:1,focus_unit_ids:['L01']}]
 const manualPlans=active.buildActiveSubjectPlans('player-1',units,manual,now)
 const spanish=manualPlans.find(p=>p.subjectId==='spanish')
-if(!spanish||spanish.focusUnitIds.join(',')!=='L02')failures.push('manual Spanish focus not preserved')
+if(!spanish||spanish.focusUnitIds.join(',')!=='L01')failures.push('manual Spanish focus not preserved inside current term')
 console.log(JSON.stringify({subjects:plans.map(p=>p.subjectId),sequence,failures},null,2));if(failures.length)process.exitCode=1
