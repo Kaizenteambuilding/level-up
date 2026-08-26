@@ -17,12 +17,24 @@ const CurriculumDailySession = dynamic(
   }
 )
 
+const MultiSubjectDailySession = dynamic(
+  () => import('@/components/MultiSubjectDailySession'),
+  {
+    loading: () => (
+      <section className="card" aria-live="polite">
+        <p className="muted">Preparando el motor multiasignatura...</p>
+      </section>
+    ),
+  }
+)
+
 export default function MissionGuard() {
   const router = useRouter()
   const [ready, setReady] = useState(false)
   const [message, setMessage] = useState('Comprobando acceso...')
   const [canRetry, setCanRetry] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
+  const [onboardingMode, setOnboardingMode] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -88,9 +100,10 @@ export default function MissionGuard() {
       }
 
       const avatar = player.avatar && typeof player.avatar === 'object' && !Array.isArray(player.avatar) ? player.avatar as Record<string, unknown> : {}
-      const onboardingMode = new URLSearchParams(window.location.search).get('onboarding') === '1'
+      const isOnboarding = new URLSearchParams(window.location.search).get('onboarding') === '1'
+      setOnboardingMode(isOnboarding)
       const onboardingStarted = typeof avatar.onboarding_started_at === 'string'
-      if (avatar.onboarding_completed !== true && (!onboardingMode || !onboardingStarted)) { router.replace('/onboarding'); return }
+      if (avatar.onboarding_completed !== true && (!isOnboarding || !onboardingStarted)) { router.replace('/onboarding'); return }
 
       setReady(true)
     }
@@ -115,5 +128,5 @@ export default function MissionGuard() {
     )
   }
 
-  return <CurriculumDailySession />
+  return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
