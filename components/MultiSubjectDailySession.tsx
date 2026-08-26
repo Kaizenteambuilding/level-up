@@ -118,7 +118,17 @@ export default function MultiSubjectDailySession() {
   const recentSkillIds = useRef<string[]>([])
   const recentUnitIds = useRef<string[]>([])
   const questionStarted = useRef(Date.now())
+  const questionPrompt = useRef<HTMLParagraphElement>(null)
+  const nextButton = useRef<HTMLButtonElement>(null)
   const sessionSeed = useMemo(() => hashText(sessionId ?? playerId ?? 'level-up'), [sessionId, playerId])
+
+  useEffect(() => {
+    if (question) questionPrompt.current?.focus()
+  }, [question])
+
+  useEffect(() => {
+    if (feedback && answered) nextButton.current?.focus()
+  }, [answered, feedback])
 
   useEffect(() => {
     ;(async () => {
@@ -351,10 +361,10 @@ export default function MultiSubjectDailySession() {
     setIndex((value) => value + 1)
   }
 
-  if (loading) return <section className="card loading-card" role="status"><p className="muted">Preparando misión multiasignatura…</p></section>
-  if (error) return <section className="card" role="alert"><span className="tag">ERROR DE MISIÓN</span><h1>No se puede continuar</h1><p className="muted">{error}</p><div className="action-row"><button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button><Link className="btn dark" href="/world">VOLVER AL MUNDO</Link></div></section>
+  if (loading) return <section className="card loading-card" role="status" aria-live="polite"><p className="muted">Preparando misión multiasignatura…</p></section>
+  if (error) return <section className="card" role="alert" aria-live="assertive"><span className="tag">ERROR DE MISIÓN</span><h1>No se puede continuar</h1><p className="muted">{error}</p><div className="action-row"><button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button><Link className="btn dark" href="/world">VOLVER AL MUNDO</Link></div></section>
   if (index >= SESSION_LENGTH) {
-    if (!completed) return <section className="card"><span className="tag">GUARDANDO RESULTADOS</span><h1>{closing ? 'Cerrando la misión…' : 'Confirmando resultados…'}</h1><p className="muted">Tu progreso se está validando en el servidor.</p></section>
+    if (!completed) return <section className="card" role="status" aria-live="polite"><span className="tag">GUARDANDO RESULTADOS</span><h1>{closing ? 'Cerrando la misión…' : 'Confirmando resultados…'}</h1><p className="muted">Tu progreso se está validando en el servidor.</p></section>
     const accuracy = Math.round((correct / SESSION_LENGTH) * 100)
     const recap = buildMissionRecap(sessionSkillResults, Object.fromEntries(skills.map((skill) => [skill.id, skill.name])))
     return <section className="card" style={{ textAlign: 'center', padding: 45 }}>
@@ -372,7 +382,7 @@ export default function MultiSubjectDailySession() {
       <div className="action-row" style={{ justifyContent: 'center' }}><Link className="btn primary" href="/world">VOLVER AL MUNDO</Link><Link className="btn dark" href="/shop">VISITAR LA TIENDA</Link></div>
     </section>
   }
-  if (!question) return <section className="card"><p className="muted">Preparando el siguiente reto…</p></section>
+  if (!question) return <section className="card" role="status" aria-live="polite"><p className="muted">Preparando el siguiente reto…</p></section>
 
   const subject = subjectDefinition(question.skillId.startsWith('M') ? 'math' : question.skillId.startsWith('L') ? 'spanish' : question.skillId.startsWith('E') ? 'english' : question.skillId.startsWith('G') ? 'geography_history' : 'biology_geology')
   return <div className="mission-console">
@@ -394,14 +404,16 @@ export default function MultiSubjectDailySession() {
       </aside>
       <section className="card mission-question">
         <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
-        <p style={{ fontSize: 24, fontWeight: 900 }}>{question.prompt}</p>
+        <p ref={questionPrompt} tabIndex={-1} style={{ fontSize: 24, fontWeight: 900 }}>{question.prompt}</p>
         <div className="answers">{question.options.map((option, i) => {
           const isCorrect = answered && i === question.answerIndex
           const isWrong = answered && i === selectedOption && !isCorrect
-          return <button key={i} className={`answer${isCorrect ? ' correct' : ''}${isWrong ? ' incorrect' : ''}`} disabled={answered} type="button" onClick={() => submit(i)}>{String.fromCharCode(65 + i)} · {option}</button>
+          const resultLabel = isCorrect ? ' · ✓ Correcta' : isWrong ? ' · ✕ Tu respuesta' : ''
+          return <button key={i} className={`answer${isCorrect ? ' correct' : ''}${isWrong ? ' incorrect' : ''}`} disabled={answered} type="button" onClick={() => submit(i)} aria-label={`${String.fromCharCode(65 + i)}. ${option}${resultLabel}`}>{String.fromCharCode(65 + i)} · {option}{resultLabel}</button>
         })}</div>
-        {feedback && <div className="metric" style={{ marginTop: 16 }}><b>{feedback}</b></div>}
-        {answered && feedback && <><div className="metric" style={{ marginTop: 10 }}><b>💡 Por qué</b><p className="muted">{question.solution}</p></div><button className="btn primary" type="button" style={{ marginTop: 14 }} onClick={next}>{index + 1 === SESSION_LENGTH ? 'TERMINAR SESIÓN' : 'SIGUIENTE RETO'}</button></>}
+        {answered && !feedback && <div className="metric" style={{ marginTop: 16 }} role="status" aria-live="polite"><b>Guardando respuesta…</b></div>}
+        {feedback && <div className="metric" style={{ marginTop: 16 }} role="status" aria-live="polite"><b>{feedback}</b></div>}
+        {answered && feedback && <><div className="metric" style={{ marginTop: 10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom: 0 }}>{question.solution}</p></div><button ref={nextButton} className="btn primary" type="button" style={{ marginTop: 14 }} onClick={next}>{index + 1 === SESSION_LENGTH ? 'TERMINAR SESIÓN' : 'SIGUIENTE RETO'}</button></>}
       </section>
     </div>
   </div>
