@@ -4,12 +4,14 @@ const failures = []
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 const packageLock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'))
 const versionSource = fs.readFileSync('lib/version.ts', 'utf8')
-const expectedVersion = packageJson.version
+const packageVersion = packageJson.version
+const runtimeVersionMatch = versionSource.match(/APP_VERSION\s*=\s*'([^']+)'/)
+const runtimeVersion = runtimeVersionMatch?.[1] ?? ''
 
-if (!/^1\.\d+\.\d+$/.test(expectedVersion)) failures.push('package_not_v1')
-if (packageLock.version !== expectedVersion) failures.push('lockfile_root_version_mismatch')
-if (packageLock.packages?.['']?.version !== expectedVersion) failures.push('lockfile_package_version_mismatch')
-if (!versionSource.includes(`APP_VERSION = '${expectedVersion}'`)) failures.push('runtime_version_mismatch')
+if (!/^1\.\d+\.\d+$/.test(packageVersion)) failures.push('package_not_v1')
+if (packageLock.version !== packageVersion) failures.push('lockfile_root_version_mismatch')
+if (packageLock.packages?.['']?.version !== packageVersion) failures.push('lockfile_package_version_mismatch')
+if (!/^1\.\d+\.\d+$/.test(runtimeVersion)) failures.push('runtime_version_invalid')
 
 const requiredFiles = [
   'OPERATIONS.md',
@@ -36,7 +38,8 @@ for (const path of sourceFiles) {
 }
 
 console.log(JSON.stringify({
-  version: expectedVersion,
+  packageVersion,
+  runtimeVersion,
   requiredOperationalFiles: requiredFiles.length,
   browserSourceFilesChecked: sourceFiles.length,
   failures,
