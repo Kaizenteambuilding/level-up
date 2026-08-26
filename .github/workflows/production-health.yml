@@ -20,8 +20,10 @@ jobs:
           response="$(curl --fail --silent --show-error --retry 2 --retry-delay 3 --max-time 20 "$HEALTH_URL")"
           node -e '
             const health = JSON.parse(process.argv[1])
-            if (health.status !== "ok" || health.service !== "level-up" || health.version !== "1.12.0") {
+            const validVersion = typeof health.version === "string" && /^\d+\.\d+\.\d+$/.test(health.version)
+            const validDeployment = typeof health.deployment === "string" && health.deployment.length >= 7
+            if (health.status !== "ok" || health.service !== "level-up" || !validVersion || !validDeployment) {
               throw new Error(`Unexpected health response: ${process.argv[1]}`)
             }
-            console.log(`LEVEL UP ${health.version} is healthy (${health.deployment ?? "local"})`)
+            console.log(`LEVEL UP ${health.version} is healthy (${health.deployment})`)
           ' "$response"
