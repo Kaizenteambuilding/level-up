@@ -68,6 +68,9 @@ jobs:
       - name: Audit curriculum planning
         run: npm run audit:curriculum-plan
 
+      - name: Audit migration history
+        run: npm run audit:migrations
+
       - name: Audit v1 release readiness
         run: npm run audit:release
 
