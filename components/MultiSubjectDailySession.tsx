@@ -385,20 +385,21 @@ export default function MultiSubjectDailySession() {
   if (!question) return <section className="card" role="status" aria-live="polite"><p className="muted">Preparando el siguiente reto…</p></section>
 
   const subject = subjectDefinition(question.skillId.startsWith('M') ? 'math' : question.skillId.startsWith('L') ? 'spanish' : question.skillId.startsWith('E') ? 'english' : question.skillId.startsWith('G') ? 'geography_history' : 'biology_geology')
+  const savedProgress = Math.min(SESSION_LENGTH, index + Number(answered && feedback))
   return <div className="mission-console">
     <section className="card mission-control">
       <div><span className="tag">{subject?.icon} {subject?.name ?? 'Currículo activo'}</span><h1>Reto {index + 1} de {SESSION_LENGTH}</h1><p className="muted">La misión rota entre las materias activas y adapta la dificultad a tu progreso.</p></div>
       <Link className="btn dark mission-exit" href="/world">SALIR AL MAPA</Link>
-      <div className="energy-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={index}>
-        {Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < index ? 'charged' : position === index ? 'active' : ''} aria-hidden="true">{position < index ? '⚡' : position + 1}</span>)}
+      <div className="energy-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={savedProgress} aria-valuetext={`${savedProgress} de ${SESSION_LENGTH} retos guardados`}>
+        {Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < savedProgress ? 'charged' : position === index ? 'active' : ''} aria-hidden="true">{position < savedProgress ? '⚡' : position + 1}</span>)}
       </div>
     </section>
     <div className="mission-stage">
       <aside className="mission-core" aria-label="Estado de la misión">
         <span className="mission-avatar" aria-label="Tu avatar">{missionAvatar}</span>
         <span className="core-city" aria-hidden="true">🗺️</span>
-        <div className="core-orb" aria-hidden="true" style={{ '--mission-charge': `${Math.max(8, Math.round((index / SESSION_LENGTH) * 100))}%` } as CSSProperties}>⚡</div>
-        <b>Misión {Math.round((index / SESSION_LENGTH) * 100)}%</b>
+        <div className="core-orb" aria-hidden="true" style={{ '--mission-charge': `${Math.max(8, Math.round((savedProgress / SESSION_LENGTH) * 100))}%` } as CSSProperties}>⚡</div>
+        <b>Misión {Math.round((savedProgress / SESSION_LENGTH) * 100)}%</b>
         <span>{correct} aciertos · {xp} XP</span>
         <small>Recompensa estimada: 🪙 {40 + correct * 5}</small>
       </aside>
@@ -412,7 +413,7 @@ export default function MultiSubjectDailySession() {
           return <button key={i} className={`answer${isCorrect ? ' correct' : ''}${isWrong ? ' incorrect' : ''}`} disabled={answered} type="button" onClick={() => submit(i)} aria-label={`${String.fromCharCode(65 + i)}. ${option}${resultLabel}`}>{String.fromCharCode(65 + i)} · {option}{resultLabel}</button>
         })}</div>
         {answered && !feedback && <div className="metric" style={{ marginTop: 16 }} role="status" aria-live="polite"><b>Guardando respuesta…</b></div>}
-        {feedback && <div className="metric" style={{ marginTop: 16 }} role="status" aria-live="polite"><b>{feedback}</b></div>}
+        {feedback && <div className="metric" style={{ marginTop: 16 }} role={answered ? 'status' : 'alert'} aria-live={answered ? 'polite' : 'assertive'}><b>{feedback}</b></div>}
         {answered && feedback && <><div className="metric" style={{ marginTop: 10 }}><b>💡 Por qué</b><p className="muted" style={{ marginBottom: 0 }}>{question.solution}</p></div><button ref={nextButton} className="btn primary" type="button" style={{ marginTop: 14 }} onClick={next}>{index + 1 === SESSION_LENGTH ? 'TERMINAR SESIÓN' : 'SIGUIENTE RETO'}</button></>}
       </section>
     </div>
