@@ -8,6 +8,7 @@ import { buildActiveSubjectPlans } from '@/lib/activeSubjectPlans'
 import { subjectForQuestion, unitsForActiveSubjects, type ActiveSubjectPlan } from '@/lib/dailySubjectRotation'
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
+import { buildMissionRecap, type MissionSkillResult } from '@/lib/missionRecap'
 import { subjectDefinition } from '@/lib/subjects'
 import { userFacingError } from '@/lib/userFacingError'
 import { reportProductEvent } from '@/lib/productTelemetry'
@@ -98,6 +99,7 @@ export default function MultiSubjectDailySession() {
   const [index, setIndex] = useState(0)
   const [correct, setCorrect] = useState(0)
   const [xp, setXp] = useState(0)
+  const [sessionSkillResults, setSessionSkillResults] = useState<Record<string, MissionSkillResult>>({})
   const [answered, setAnswered] = useState(false)
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [feedback, setFeedback] = useState('')
@@ -167,14 +169,23 @@ export default function MultiSubjectDailySession() {
       const counts: Record<string, number> = {}
       const historicalSkillIds: string[] = []
       const historicalUnitIds: string[] = []
+      const recoveredSkillResults: Record<string, MissionSkillResult> = {}
       for (const attempt of attempts) {
         const skillId = String(attempt.skill_id ?? '')
         const unitId = skillToUnit.get(skillId)
+        if (skillId) {
+          const current = recoveredSkillResults[skillId] ?? { attempts: 0, correct: 0 }
+          recoveredSkillResults[skillId] = {
+            attempts: current.attempts + 1,
+            correct: current.correct + Number(attempt.correct === true),
+          }
+        }
         if (!skillId || !unitId) continue
         counts[unitId] = (counts[unitId] ?? 0) + 1
         historicalSkillIds.unshift(skillId)
         historicalUnitIds.unshift(unitId)
       }
+      setSessionSkillResults(recoveredSkillResults)
       sessionUnitCounts.current = counts
       recentSkillIds.current = historicalSkillIds.slice(0, RECENT_SKILL_WINDOW)
       recentUnitIds.current = historicalUnitIds.slice(0, RECENT_UNIT_WINDOW)
@@ -275,6 +286,16 @@ export default function MultiSubjectDailySession() {
     }
     setXp((value) => value + Number(result.xp_awarded ?? 0))
     if (ok) setCorrect((value) => value + 1)
+    setSessionSkillResults((current) => {
+      const previous = current[question.skillId] ?? { attempts: 0, correct: 0 }
+      return {
+        ...current,
+        [question.skillId]: {
+          attempts: previous.attempts + 1,
+          correct: previous.correct + Number(ok),
+        },
+      }
+    })
     setStates((current) => ({
       ...current,
       [question.skillId]: {
@@ -300,7 +321,19 @@ export default function MultiSubjectDailySession() {
   if (index >= SESSION_LENGTH) {
     if (!completed) return <section className="card"><span className="tag">GUARDANDO RESULTADOS</span><h1>{closing ? 'Cerrando la misión…' : 'Confirmando resultados…'}</h1><p className="muted">Tu progreso se está validando en el servidor.</p></section>
     const accuracy = Math.round((correct / SESSION_LENGTH) * 100)
-    return <section className="card" style={{ textAlign: 'center', padding: 45 }}><div style={{ fontSize: 80 }}>🏆</div><span className="tag">MISIÓN COMPLETADA</span><h1>Sesión completada</h1><p className="muted">{SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP</p><Link className="btn primary" href="/world">VOLVER AL MUNDO</Link></section>
+    const recap = buildMissionRecap(sessionSkillResults, Object.fromEntries(skills.map((skill) => [skill.id, skill.name])))
+    return <section className="card" style={{ textAlign: 'center', padding: 45 }}>
+      <div style={{ fontSize: 80 }}>🏆</div>
+      <span className="tag">MISIÓN COMPLETADA</span>
+      <h1>Sesión completada</h1>
+      <p className="muted">{SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP</p>
+      <p className="muted">Resultados guardados. La próxima sesión utilizará esta evidencia para ajustar la práctica.</p>
+      <div style={{ display: 'grid', gap: 10, margin: '20px 0', textAlign: 'left' }}>
+        {recap.review.length > 0 && <div className="metric"><b>🎯 Para volver a practicar</b><p className="muted">{recap.review.map((item) => `${item.label} (${item.correct}/${item.attempts})`).join(' · ')}</p></div>}
+        {recap.resolved.length > 0 && <div className="metric"><b>✨ Bien resuelto hoy</b><p className="muted">{recap.resolved.map((item) => `${item.label} (${item.correct}/${item.attempts})`).join(' · ')}</p></div>}
+      </div>
+      <Link className="btn primary" href="/world">VOLVER AL MUNDO</Link>
+    </section>
   }
   if (!question) return <section className="card"><p className="muted">Preparando el siguiente reto…</p></section>
 
