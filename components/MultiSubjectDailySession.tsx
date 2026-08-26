@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
@@ -9,7 +9,7 @@ import { subjectForQuestion, unitsForActiveSubjects, type ActiveSubjectPlan } fr
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { buildMissionRecap, type MissionSkillResult } from '@/lib/missionRecap'
-import { awardDemoMission, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
+import { awardDemoMission, demoAvatarById, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
 import { playDemoSound } from '@/lib/demoSound'
 import { subjectDefinition } from '@/lib/subjects'
 import { userFacingError } from '@/lib/userFacingError'
@@ -111,6 +111,8 @@ export default function MultiSubjectDailySession() {
   const [closing, setClosing] = useState(false)
   const [coinsAwarded, setCoinsAwarded] = useState(0)
   const [newGameLevel, setNewGameLevel] = useState<number | null>(null)
+  const [missionAvatar, setMissionAvatar] = useState('🧑‍🚀')
+  const [missionSound, setMissionSound] = useState(false)
   const recentTemplates = useRef<string[]>([])
   const sessionUnitCounts = useRef<Record<string, number>>({})
   const recentSkillIds = useRef<string[]>([])
@@ -123,6 +125,16 @@ export default function MultiSubjectDailySession() {
       const id = localStorage.getItem('levelup_player_id')
       setPlayerId(id)
       if (!id) { setError('No hay un jugador seleccionado.'); setLoading(false); return }
+      try {
+        const savedGame = localStorage.getItem(demoStorageKey(id))
+        if (savedGame) {
+          const demoGame = normalizeDemoState(JSON.parse(savedGame))
+          setMissionAvatar(demoAvatarById(demoGame.avatarId).icon)
+          setMissionSound(demoGame.soundEnabled)
+        }
+      } catch {
+        setMissionAvatar('🧑‍🚀')
+      }
       const supabase = createSupabaseBrowserClient()
       if (!supabase) { setError('Supabase no está configurado.'); setLoading(false); return }
 
@@ -279,6 +291,7 @@ export default function MultiSubjectDailySession() {
     setAnswered(true)
     setSelectedOption(optionIndex)
     const ok = optionIndex === question.answerIndex
+    playDemoSound(missionSound, ok ? 'correct' : 'incorrect')
     const responseMs = Math.min(3_600_000, Math.max(1, Date.now() - questionStarted.current))
     const supabase = createSupabaseBrowserClient()
     if (!supabase) { setAnswered(false); setFeedback('No se pudo conectar.'); return }
@@ -363,17 +376,33 @@ export default function MultiSubjectDailySession() {
 
   const subject = subjectDefinition(question.skillId.startsWith('M') ? 'math' : question.skillId.startsWith('L') ? 'spanish' : question.skillId.startsWith('E') ? 'english' : question.skillId.startsWith('G') ? 'geography_history' : 'biology_geology')
   return <div className="mission-console">
-    <section className="card mission-control"><div><span className="tag">{subject?.icon} {subject?.name ?? 'Currículo activo'}</span><h1>Reto {index + 1} de {SESSION_LENGTH}</h1><p className="muted">La misión rota entre las materias activas y adapta la dificultad a tu progreso.</p></div><Link className="btn dark mission-exit" href="/world">SALIR AL MAPA</Link></section>
-    <section className="card mission-question">
-      <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
-      <p style={{ fontSize: 24, fontWeight: 900 }}>{question.prompt}</p>
-      <div className="answers">{question.options.map((option, i) => {
-        const isCorrect = answered && i === question.answerIndex
-        const isWrong = answered && i === selectedOption && !isCorrect
-        return <button key={i} className={`answer${isCorrect ? ' correct' : ''}${isWrong ? ' incorrect' : ''}`} disabled={answered} type="button" onClick={() => submit(i)}>{String.fromCharCode(65 + i)} · {option}</button>
-      })}</div>
-      {feedback && <div className="metric" style={{ marginTop: 16 }}><b>{feedback}</b></div>}
-      {answered && feedback && <><div className="metric" style={{ marginTop: 10 }}><b>💡 Por qué</b><p className="muted">{question.solution}</p></div><button className="btn primary" type="button" style={{ marginTop: 14 }} onClick={next}>{index + 1 === SESSION_LENGTH ? 'TERMINAR SESIÓN' : 'SIGUIENTE RETO'}</button></>}
+    <section className="card mission-control">
+      <div><span className="tag">{subject?.icon} {subject?.name ?? 'Currículo activo'}</span><h1>Reto {index + 1} de {SESSION_LENGTH}</h1><p className="muted">La misión rota entre las materias activas y adapta la dificultad a tu progreso.</p></div>
+      <Link className="btn dark mission-exit" href="/world">SALIR AL MAPA</Link>
+      <div className="energy-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={index}>
+        {Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < index ? 'charged' : position === index ? 'active' : ''} aria-hidden="true">{position < index ? '⚡' : position + 1}</span>)}
+      </div>
     </section>
+    <div className="mission-stage">
+      <aside className="mission-core" aria-label="Estado de la misión">
+        <span className="mission-avatar" aria-label="Tu avatar">{missionAvatar}</span>
+        <span className="core-city" aria-hidden="true">🗺️</span>
+        <div className="core-orb" aria-hidden="true" style={{ '--mission-charge': `${Math.max(8, Math.round((index / SESSION_LENGTH) * 100))}%` } as CSSProperties}>⚡</div>
+        <b>Misión {Math.round((index / SESSION_LENGTH) * 100)}%</b>
+        <span>{correct} aciertos · {xp} XP</span>
+        <small>Recompensa estimada: 🪙 {40 + correct * 5}</small>
+      </aside>
+      <section className="card mission-question">
+        <span className="tag">{question.label} · dificultad {question.difficulty}/5</span>
+        <p style={{ fontSize: 24, fontWeight: 900 }}>{question.prompt}</p>
+        <div className="answers">{question.options.map((option, i) => {
+          const isCorrect = answered && i === question.answerIndex
+          const isWrong = answered && i === selectedOption && !isCorrect
+          return <button key={i} className={`answer${isCorrect ? ' correct' : ''}${isWrong ? ' incorrect' : ''}`} disabled={answered} type="button" onClick={() => submit(i)}>{String.fromCharCode(65 + i)} · {option}</button>
+        })}</div>
+        {feedback && <div className="metric" style={{ marginTop: 16 }}><b>{feedback}</b></div>}
+        {answered && feedback && <><div className="metric" style={{ marginTop: 10 }}><b>💡 Por qué</b><p className="muted">{question.solution}</p></div><button className="btn primary" type="button" style={{ marginTop: 14 }} onClick={next}>{index + 1 === SESSION_LENGTH ? 'TERMINAR SESIÓN' : 'SIGUIENTE RETO'}</button></>}
+      </section>
+    </div>
   </div>
 }
