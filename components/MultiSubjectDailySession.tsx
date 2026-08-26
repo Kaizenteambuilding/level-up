@@ -32,6 +32,8 @@ type StoredPlan = {
 }
 
 const SESSION_LENGTH = 10
+const RECENT_SKILL_WINDOW = 5
+const RECENT_UNIT_WINDOW = 3
 
 function hashText(value: string) {
   let hash = 2166136261
@@ -64,6 +66,9 @@ export default function MultiSubjectDailySession() {
   const [completed, setCompleted] = useState(false)
   const [closing, setClosing] = useState(false)
   const recentTemplates = useRef<string[]>([])
+  const sessionUnitCounts = useRef<Record<string, number>>({})
+  const recentSkillIds = useRef<string[]>([])
+  const recentUnitIds = useRef<string[]>([])
   const questionStarted = useRef(Date.now())
   const sessionSeed = useMemo(() => hashText(sessionId ?? playerId ?? 'level-up'), [sessionId, playerId])
 
@@ -106,13 +111,30 @@ export default function MultiSubjectDailySession() {
         .in('unit_id', unitIds)
       if (skillsError) { setError(userFacingError(skillsError, 'No se pudieron cargar las habilidades activas.')); setLoading(false); return }
       if (!skillRows?.length) { setError('No hay habilidades activas para las materias disponibles.'); setLoading(false); return }
-      setSkills(skillRows as SkillRow[])
+      const loadedSkills = skillRows as SkillRow[]
+      setSkills(loadedSkills)
 
       const stateMap: Record<string, SkillState> = {}
       ;(statesResult.data ?? []).forEach((row: any) => { stateMap[row.skill_id] = row })
       setStates(stateMap)
 
       const attempts = attemptsResult.data ?? []
+      const skillToUnit = new Map(loadedSkills.map((skill) => [skill.id, skill.unit_id]))
+      const counts: Record<string, number> = {}
+      const historicalSkillIds: string[] = []
+      const historicalUnitIds: string[] = []
+      for (const attempt of attempts) {
+        const skillId = String(attempt.skill_id ?? '')
+        const unitId = skillToUnit.get(skillId)
+        if (!skillId || !unitId) continue
+        counts[unitId] = (counts[unitId] ?? 0) + 1
+        historicalSkillIds.unshift(skillId)
+        historicalUnitIds.unshift(unitId)
+      }
+      sessionUnitCounts.current = counts
+      recentSkillIds.current = historicalSkillIds.slice(0, RECENT_SKILL_WINDOW)
+      recentUnitIds.current = historicalUnitIds.slice(0, RECENT_UNIT_WINDOW)
+
       setIndex(Math.min(SESSION_LENGTH, attempts.length))
       setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
       setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
@@ -133,9 +155,9 @@ export default function MultiSubjectDailySession() {
       states,
       focusUnitIds: subjectPlan.focusUnitIds,
       reviewUnitIds: subjectPlan.reviewUnitIds,
-      sessionUnitCounts: {},
-      recentSkillIds: [],
-      recentUnitIds: [],
+      sessionUnitCounts: sessionUnitCounts.current,
+      recentSkillIds: recentSkillIds.current,
+      recentUnitIds: recentUnitIds.current,
       seed: sessionSeed,
       questionIndex: index,
     })
@@ -194,6 +216,15 @@ export default function MultiSubjectDailySession() {
     })
     if (submitError) { setAnswered(false); setSelectedOption(null); setFeedback(userFacingError(submitError, 'No se pudo guardar la respuesta.')); return }
     const result = data as { xp_awarded: number; mastery: number; confidence: number; difficulty: number; priority?: number }
+    const unitId = skills.find((skill) => skill.id === question.skillId)?.unit_id
+    if (unitId) {
+      sessionUnitCounts.current = {
+        ...sessionUnitCounts.current,
+        [unitId]: (sessionUnitCounts.current[unitId] ?? 0) + 1,
+      }
+      recentSkillIds.current = [question.skillId, ...recentSkillIds.current.filter((id) => id !== question.skillId)].slice(0, RECENT_SKILL_WINDOW)
+      recentUnitIds.current = [unitId, ...recentUnitIds.current].slice(0, RECENT_UNIT_WINDOW)
+    }
     setXp((value) => value + Number(result.xp_awarded ?? 0))
     if (ok) setCorrect((value) => value + 1)
     setStates((current) => ({
