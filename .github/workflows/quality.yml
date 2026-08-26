@@ -41,6 +41,9 @@ jobs:
       - name: Audit multi-subject curriculum
         run: npm run audit:multi-subject-curriculum
 
+      - name: Audit active subject plans
+        run: npm run audit:active-subject-plans
+
       - name: Audit Spanish and English generators
         run: npm run audit:language-generators
 
