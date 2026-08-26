@@ -35,6 +35,21 @@ const SESSION_LENGTH = 10
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function retryJwtFuture<T extends { error?: { message?: string } | null }>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let result = await operation()
+  for (let attempt = 1; attempt < attempts; attempt++) {
+    const message = result.error?.message ?? ''
+    if (!message.toLowerCase().includes('jwt issued at future')) break
+    await sleep(700 * attempt)
+    result = await operation()
+  }
+  return result
+}
+
 function hashText(value: string) {
   let hash = 2166136261
   for (let i = 0; i < value.length; i++) {
@@ -80,7 +95,9 @@ export default function MultiSubjectDailySession() {
       const supabase = createSupabaseBrowserClient()
       if (!supabase) { setError('Supabase no está configurado.'); setLoading(false); return }
 
-      const { data: opened, error: openError } = await supabase.rpc('open_levelup_session', { p_player_id: id })
+      const { data: opened, error: openError } = await retryJwtFuture(async () =>
+        await supabase.rpc('open_levelup_session', { p_player_id: id })
+      )
       if (openError) { setError(userFacingError(openError, 'No se pudo abrir la misión.')); setLoading(false); return }
       const openedId = String((opened as { session_id?: string } | null)?.session_id ?? '')
       if (!openedId) { setError('No se pudo confirmar la misión abierta.'); setLoading(false); return }
@@ -88,10 +105,10 @@ export default function MultiSubjectDailySession() {
       void reportProductEvent(id, 'mission_started', '/mission')
 
       const [attemptsResult, unitsResult, plansResult, statesResult] = await Promise.all([
-        supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot').eq('session_id', openedId).order('created_at', { ascending: true }),
-        supabase.from('curriculum_units').select('id,subject_id,sort_order').eq('active', true),
-        supabase.from('player_curriculum_plans').select('player_id,subject_id,academic_year_start,pacing_mode,current_term,focus_unit_ids,updated_at').eq('player_id', id),
-        supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id),
+        retryJwtFuture(async () => await supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot').eq('session_id', openedId).order('created_at', { ascending: true })),
+        retryJwtFuture(async () => await supabase.from('curriculum_units').select('id,subject_id,sort_order').eq('active', true)),
+        retryJwtFuture(async () => await supabase.from('player_curriculum_plans').select('player_id,subject_id,academic_year_start,pacing_mode,current_term,focus_unit_ids,updated_at').eq('player_id', id)),
+        retryJwtFuture(async () => await supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id)),
       ])
 
       if (attemptsResult.error) { setError(userFacingError(attemptsResult.error, 'No se pudo recuperar la misión.')); setLoading(false); return }
@@ -104,11 +121,13 @@ export default function MultiSubjectDailySession() {
       setPlans(activePlans)
 
       const unitIds = unitsForActiveSubjects(activePlans)
-      const { data: skillRows, error: skillsError } = await supabase
-        .from('skills')
-        .select('id,name,generator_key,unit_id')
-        .eq('active', true)
-        .in('unit_id', unitIds)
+      const { data: skillRows, error: skillsError } = await retryJwtFuture(async () =>
+        await supabase
+          .from('skills')
+          .select('id,name,generator_key,unit_id')
+          .eq('active', true)
+          .in('unit_id', unitIds)
+      )
       if (skillsError) { setError(userFacingError(skillsError, 'No se pudieron cargar las habilidades activas.')); setLoading(false); return }
       if (!skillRows?.length) { setError('No hay habilidades activas para las materias disponibles.'); setLoading(false); return }
       const loadedSkills = skillRows as SkillRow[]
@@ -184,7 +203,9 @@ export default function MultiSubjectDailySession() {
     ;(async () => {
       const supabase = createSupabaseBrowserClient()
       if (!supabase) { setError('No se pudo conectar para cerrar la misión.'); setClosing(false); return }
-      const { data, error: closeError } = await supabase.rpc('complete_levelup_session', { p_session_id: sessionId })
+      const { data, error: closeError } = await retryJwtFuture(async () =>
+        await supabase.rpc('complete_levelup_session', { p_session_id: sessionId })
+      )
       if (closeError) { setError(userFacingError(closeError, 'No se pudo cerrar la misión.')); setClosing(false); return }
       const result = data as { completed?: boolean; attempts?: number; xp_earned?: number }
       if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) { setError('El servidor no confirmó el cierre completo de la misión.'); setClosing(false); return }
