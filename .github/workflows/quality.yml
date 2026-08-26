@@ -59,6 +59,9 @@ jobs:
       - name: Audit parent insight thresholds
         run: npm run audit:parent-insights
 
+      - name: Audit multi-subject parent dashboard
+        run: npm run audit:parent-multi-subject
+
       - name: Audit mission recap evidence
         run: npm run audit:mission-recap
 
