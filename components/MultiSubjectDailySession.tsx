@@ -50,6 +50,31 @@ async function retryJwtFuture<T extends { error?: { message?: string } | null }>
   return result
 }
 
+function isTransientSubmitError(error?: { message?: string; code?: string } | null) {
+  const message = (error?.message ?? '').toLowerCase()
+  const code = (error?.code ?? '').toUpperCase()
+  return (
+    message.includes('jwt issued at future') ||
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('network request failed') ||
+    message.includes('load failed') ||
+    message.includes('timeout') ||
+    message.includes('timed out') ||
+    ['PGRST000', 'PGRST001', 'PGRST002', 'PGRST003'].includes(code)
+  )
+}
+
+async function retryIdempotentSubmit<T extends { error?: { message?: string; code?: string } | null }>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let result = await operation()
+  for (let attempt = 1; attempt < attempts; attempt++) {
+    if (!isTransientSubmitError(result.error)) break
+    await sleep(700 * attempt)
+    result = await operation()
+  }
+  return result
+}
+
 function hashText(value: string) {
   let hash = 2166136261
   for (let i = 0; i < value.length; i++) {
@@ -224,19 +249,21 @@ export default function MultiSubjectDailySession() {
     const responseMs = Math.min(3_600_000, Math.max(1, Date.now() - questionStarted.current))
     const supabase = createSupabaseBrowserClient()
     if (!supabase) { setAnswered(false); setFeedback('No se pudo conectar.'); return }
-    const { data, error: submitError } = await supabase.rpc('submit_levelup_attempt', {
-      p_player_id: playerId,
-      p_skill_id: question.skillId,
-      p_correct: ok,
-      p_response_ms: responseMs,
-      p_difficulty: question.difficulty,
-      p_seed: question.seed,
-      p_prompt: question.prompt,
-      p_session_id: sessionId,
-      p_diagnostic_tags: question.tags,
-    })
+    const { data, error: submitError } = await retryIdempotentSubmit(async () =>
+      await supabase.rpc('submit_levelup_attempt', {
+        p_player_id: playerId,
+        p_skill_id: question.skillId,
+        p_correct: ok,
+        p_response_ms: responseMs,
+        p_difficulty: question.difficulty,
+        p_seed: question.seed,
+        p_prompt: question.prompt,
+        p_session_id: sessionId,
+        p_diagnostic_tags: question.tags,
+      })
+    )
     if (submitError) { setAnswered(false); setSelectedOption(null); setFeedback(userFacingError(submitError, 'No se pudo guardar la respuesta.')); return }
-    const result = data as { xp_awarded: number; mastery: number; confidence: number; difficulty: number; priority?: number }
+    const result = data as { xp_awarded: number; mastery: number; confidence: number; difficulty: number; priority?: number; reconciled?: boolean }
     const unitId = skills.find((skill) => skill.id === question.skillId)?.unit_id
     if (unitId) {
       sessionUnitCounts.current = {
