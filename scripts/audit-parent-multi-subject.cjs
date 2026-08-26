@@ -11,7 +11,7 @@ const required = [
   'buildUnitInsights',
   'subjectDefinition',
   "p_subject_id: 'math'",
-  'MATH_CURRICULUM_UNITS',
+  "eq('subject_id', 'math')",
 ]
 
 for (const marker of required) {
