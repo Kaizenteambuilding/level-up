@@ -9,6 +9,8 @@ import { subjectForQuestion, unitsForActiveSubjects, type ActiveSubjectPlan } fr
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { buildMissionRecap, type MissionSkillResult } from '@/lib/missionRecap'
+import { awardDemoMission, demoStorageKey, normalizeDemoState } from '@/lib/demoGame'
+import { playDemoSound } from '@/lib/demoSound'
 import { subjectDefinition } from '@/lib/subjects'
 import { userFacingError } from '@/lib/userFacingError'
 import { reportProductEvent } from '@/lib/productTelemetry'
@@ -107,6 +109,8 @@ export default function MultiSubjectDailySession() {
   const [error, setError] = useState('')
   const [completed, setCompleted] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [coinsAwarded, setCoinsAwarded] = useState(0)
+  const [newGameLevel, setNewGameLevel] = useState<number | null>(null)
   const recentTemplates = useRef<string[]>([])
   const sessionUnitCounts = useRef<Record<string, number>>({})
   const recentSkillIds = useRef<string[]>([])
@@ -243,14 +247,32 @@ export default function MultiSubjectDailySession() {
         await supabase.rpc('complete_levelup_session', { p_session_id: sessionId })
       )
       if (closeError) { setError(userFacingError(closeError, 'No se pudo cerrar la misión.')); setClosing(false); return }
-      const result = data as { completed?: boolean; attempts?: number; xp_earned?: number }
+      const result = data as { completed?: boolean; attempts?: number; xp_earned?: number; coins_earned?: number; coins?: number; level_before?: number; level_after?: number }
       if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) { setError('El servidor no confirmó el cierre completo de la misión.'); setClosing(false); return }
-      setXp(Number(result.xp_earned ?? xp))
+      const earnedXp = Number(result.xp_earned ?? xp)
+      setXp(earnedXp)
+      if (Number(result.level_after ?? 0) > Number(result.level_before ?? 0)) setNewGameLevel(Number(result.level_after))
+      if (playerId) {
+        try {
+          const key = demoStorageKey(playerId)
+          const saved = localStorage.getItem(key)
+          const currentGame = saved ? normalizeDemoState(JSON.parse(saved)) : normalizeDemoState(null)
+          const award = awardDemoMission(currentGame, sessionId, correct, earnedXp)
+          const serverReward = Number(result.coins_earned ?? award.reward)
+          if (serverReward > 0) {
+            localStorage.setItem(key, JSON.stringify({ ...award.state, coins: Number(result.coins ?? award.state.coins) }))
+            playDemoSound(currentGame.soundEnabled, 'reward')
+          }
+          setCoinsAwarded(serverReward)
+        } catch {
+          setCoinsAwarded(0)
+        }
+      }
       setCompleted(true)
       setClosing(false)
       if (playerId) void reportProductEvent(playerId, 'mission_completed', '/mission')
     })()
-  }, [index, sessionId, completed, closing, playerId, xp])
+  }, [index, sessionId, completed, closing, playerId, xp, correct])
 
   async function submit(optionIndex: number) {
     if (answered || !question || !playerId || !sessionId) return
@@ -327,12 +349,14 @@ export default function MultiSubjectDailySession() {
       <span className="tag">MISIÓN COMPLETADA</span>
       <h1>Sesión completada</h1>
       <p className="muted">{SESSION_LENGTH} retos · {accuracy}% precisión · +{xp} XP</p>
+      {coinsAwarded > 0 && <p className="mission-reward">🪙 +{coinsAwarded} monedas</p>}
+      {newGameLevel && <div className="metric" style={{ margin: '14px auto', maxWidth: 520 }}><b>⭐ ¡NIVEL {newGameLevel} DESBLOQUEADO!</b><p className="muted" style={{ marginBottom: 0 }}>Tu nivel de explorador ha subido. Revisa el mapa para descubrir nuevos accesos.</p></div>}
       <p className="muted">Resultados guardados. La próxima sesión utilizará esta evidencia para ajustar la práctica.</p>
       <div style={{ display: 'grid', gap: 10, margin: '20px 0', textAlign: 'left' }}>
         {recap.review.length > 0 && <div className="metric"><b>🎯 Para volver a practicar</b><p className="muted">{recap.review.map((item) => `${item.label} (${item.correct}/${item.attempts})`).join(' · ')}</p></div>}
         {recap.resolved.length > 0 && <div className="metric"><b>✨ Bien resuelto hoy</b><p className="muted">{recap.resolved.map((item) => `${item.label} (${item.correct}/${item.attempts})`).join(' · ')}</p></div>}
       </div>
-      <Link className="btn primary" href="/world">VOLVER AL MUNDO</Link>
+      <div className="action-row" style={{ justifyContent: 'center' }}><Link className="btn primary" href="/world">VOLVER AL MUNDO</Link><Link className="btn dark" href="/shop">VISITAR LA TIENDA</Link></div>
     </section>
   }
   if (!question) return <section className="card"><p className="muted">Preparando el siguiente reto…</p></section>
