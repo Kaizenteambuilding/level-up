@@ -65,6 +65,9 @@ jobs:
       - name: Audit mission recap evidence
         run: npm run audit:mission-recap
 
+      - name: Audit mission feedback semantics
+        run: npm run audit:mission-feedback
+
       - name: Audit curriculum unit insights
         run: npm run audit:curriculum-insights
 
