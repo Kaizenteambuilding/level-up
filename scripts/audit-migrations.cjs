@@ -40,11 +40,9 @@ const expectedCanonical = [
   '20260826093000_activate_biology_geology_curriculum.sql',
   '20260826094000_make_attempt_submit_idempotent.sql',
   '20260826134908_harden_internal_security_definer_triggers.sql',
+  '20260826200500_restore_xp_commit_on_completion.sql',
 ]
 
-// These are historical source snapshots kept for forensic comparison. They are
-// intentionally not canonical Supabase migrations and must never be mistaken
-// for 14-digit migration versions.
 const expectedLegacySnapshots = [
   '20260816_harden_attempts_and_abandon_sessions.sql',
   '20260816_harden_legacy_functions.sql',
@@ -52,10 +50,9 @@ const expectedLegacySnapshots = [
   '20260816_preserve_player_level_in_attempt_rpc.sql',
 ]
 
-// Some migrations were applied to production under Supabase-generated versions
-// that differ from their immutable repository filenames. Recording the mapping
-// here preserves production provenance without renaming already-shipped files.
 const productionVersionByFile = new Map([
+  ['20260824163000_prevent_repeat_daily_missions.sql', '20260824163811'],
+  ['20260824173000_count_distinct_daily_missions.sql', '20260824194807'],
   ['20260824203000_add_inactive_multi_subject_units.sql', '20260825134449'],
   ['20260826081500_stage_multi_subject_skills.sql', '20260826061632'],
   ['20260826081500_generalize_multi_subject_rpcs.sql', '20260826061826'],
@@ -64,6 +61,7 @@ const productionVersionByFile = new Map([
   ['20260826092000_activate_geography_history_curriculum.sql', '20260826080449'],
   ['20260826093000_activate_biology_geology_curriculum.sql', '20260826081136'],
   ['20260826094000_make_attempt_submit_idempotent.sql', '20260826094517'],
+  ['20260826200500_restore_xp_commit_on_completion.sql', '20260826201618'],
 ])
 
 const allSql = fs.readdirSync('database/migrations').filter((name) => name.endsWith('.sql')).sort()
@@ -82,9 +80,6 @@ for (const name of canonical) {
   assert.ok(source.trim().length > 100, `Migration unexpectedly empty: ${name}`)
 }
 
-// The original canonical baseline embedded its version in each SQL file. Keep
-// enforcing that provenance for the immutable baseline without rewriting newer
-// already-applied migrations merely to add comments.
 for (const name of expectedCanonical.slice(0, 26)) {
   const source = fs.readFileSync(`database/migrations/${name}`, 'utf8')
   assert.ok(source.includes(`Version: ${name.slice(0, 14)}`), `Baseline migration provenance missing: ${name}`)
