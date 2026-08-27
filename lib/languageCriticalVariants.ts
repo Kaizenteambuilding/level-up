@@ -1,5 +1,6 @@
 import type { GeneratedQuestion } from './firstEvaluationGenerators'
 import { generateLanguageSubjectQuestion } from './languageSubjectGenerators'
+import { generateExpandedEnglishQuestion } from './englishExpandedGenerators'
 
 type SkillMeta = { id: string; name: string; generator_key: string }
 type Variant = { prompt: string; answer: string; distractors: [string,string,string]; solution: string }
@@ -24,6 +25,7 @@ function rotate<T>(items:T[], shift:number){ return items.slice(shift).concat(it
 export function generateLanguageQuestionWithCriticalVariants(skill:SkillMeta,difficulty:number,seed:number):GeneratedQuestion {
   const variant = VARIANTS[skill.id]
   if (!variant || (seed & 1) === 0) {
+    if (skill.id.startsWith('E')) return generateExpandedEnglishQuestion(skill,difficulty,seed)
     const base = generateLanguageSubjectQuestion(skill,difficulty,seed)
     if (!base) throw new Error(`No language generator for ${skill.id}`)
     return base
