@@ -4,11 +4,13 @@ const failures = []
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'))
 const packageLock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'))
 const versionSource = fs.readFileSync('lib/version.ts', 'utf8')
+const readme = fs.readFileSync('README.md', 'utf8')
 const packageVersion = packageJson.version
 const runtimeVersionMatch = versionSource.match(/APP_VERSION\s*=\s*'([^']+)'/)
 const runtimeVersion = runtimeVersionMatch?.[1] ?? ''
 const packageNodeEngine = packageJson.engines?.node ?? ''
 const lockNodeEngine = packageLock.packages?.['']?.engines?.node ?? ''
+const readmeVersionMarker = `Versión actual: **v${packageVersion}**`
 
 if (!/^1\.\d+\.\d+$/.test(packageVersion)) failures.push('package_not_v1')
 if (packageLock.version !== packageVersion) failures.push('lockfile_root_version_mismatch')
@@ -17,6 +19,7 @@ if (!/^1\.\d+\.\d+$/.test(runtimeVersion)) failures.push('runtime_version_invali
 if (runtimeVersion !== packageVersion) failures.push('runtime_package_version_mismatch')
 if (packageNodeEngine !== '22.x') failures.push('package_node_engine_not_22x')
 if (lockNodeEngine !== packageNodeEngine) failures.push('lockfile_node_engine_mismatch')
+if (!readme.includes(readmeVersionMarker)) failures.push('readme_version_mismatch')
 
 const requiredFiles = [
   'OPERATIONS.md',
@@ -45,6 +48,7 @@ for (const path of sourceFiles) {
 console.log(JSON.stringify({
   packageVersion,
   runtimeVersion,
+  readmeVersionMarker,
   packageNodeEngine,
   lockNodeEngine,
   requiredOperationalFiles: requiredFiles.length,
