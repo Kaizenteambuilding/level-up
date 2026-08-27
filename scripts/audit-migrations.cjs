@@ -43,6 +43,7 @@ const expectedCanonical = [
   '20260826200500_restore_xp_commit_on_completion.sql',
   '20260827053500_open_english_terminal_practice.sql',
   '20260827072500_open_english_conversation_practice.sql',
+  '20260827103500_open_english_listening_practice.sql',
 ]
 
 const expectedLegacySnapshots = [
@@ -79,7 +80,6 @@ for (const name of canonical) {
   assert.match(name, /^\d{14}_[a-z0-9_]+\.sql$/, `Invalid canonical migration filename: ${name}`)
   const source = fs.readFileSync(`database/migrations/${name}`, 'utf8')
   assert.ok(source.trim().length > 100, `Migration unexpectedly empty: ${name}`)
-
   const productionVersion = repositoryToProduction[name]
   if (productionVersion === null) {
     const exception = manifest.notDeployed?.[name]
@@ -88,7 +88,6 @@ for (const name of canonical) {
     assert.ok(exception.supersededBy && canonical.includes(exception.supersededBy), `Undeployed migration must name a canonical superseding migration: ${name}`)
     continue
   }
-
   assert.match(productionVersion, /^\d{14}$/, `Invalid production mapping for ${name}`)
   assert.ok(productionVersionToName.has(productionVersion), `Mapped production version is absent from captured production history: ${name} -> ${productionVersion}`)
   mappedProductionVersions.push(productionVersion)
@@ -96,22 +95,17 @@ for (const name of canonical) {
 
 assert.equal(new Set(mappedProductionVersions).size, mappedProductionVersions.length, 'Repository migrations must not share a production migration version')
 assert.equal(mappedProductionVersions.length, productionEntries.length, 'Captured production history must be fully accounted for by repository mappings')
-for (const [version] of productionEntries) {
-  assert.ok(mappedProductionVersions.includes(version), `Production migration has no repository provenance mapping: ${version}`)
-}
+for (const [version] of productionEntries) assert.ok(mappedProductionVersions.includes(version), `Production migration has no repository provenance mapping: ${version}`)
 
 const undeployedNames = Object.keys(manifest.notDeployed ?? {}).sort()
 const nullMappedNames = canonical.filter((name) => repositoryToProduction[name] === null).sort()
 assert.deepEqual(undeployedNames, nullMappedNames, 'notDeployed exceptions must exactly match null production mappings')
-
 for (const name of expectedCanonical.slice(0, 26)) {
   const source = fs.readFileSync(`database/migrations/${name}`, 'utf8')
   assert.ok(source.includes(`Version: ${name.slice(0, 14)}`), `Baseline migration provenance missing: ${name}`)
 }
-
 for (const name of legacySnapshots) {
   const source = fs.readFileSync(`database/migrations/${name}`, 'utf8')
   assert.ok(source.trim().length > 100, `Legacy migration snapshot unexpectedly empty: ${name}`)
 }
-
 console.log(`Migration history audit passed (${canonical.length} canonical migrations, ${productionEntries.length} production migrations, ${nullMappedNames.length} explicit repository-only exception, ${legacySnapshots.length} legacy snapshots).`)
