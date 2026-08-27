@@ -12,11 +12,31 @@ const SESSION_LENGTH = 10
 const MODE = 'english_terminal'
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
+const NETWORK_TIMEOUT_MS = 12_000
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
 type SkillState = { skill_id: string; mastery: number; confidence: number; difficulty: number; priority: number; last_practiced_at?: string | null }
 type PlanRow = { focus_unit_ids?: string[] | null }
 type PracticeOpenResult = { data: unknown; error: { message?: string } | null }
+
+async function withTimeout<T>(operation: PromiseLike<T>, label: string, timeoutMs = NETWORK_TIMEOUT_MS): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      Promise.resolve(operation),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} agotó el tiempo de espera`)), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
+function errorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return `${fallback} ${error.message}.`
+  return fallback
+}
 
 function hashText(value: string) {
   let hash = 2166136261
@@ -57,78 +77,102 @@ export default function EnglishTerminalSession() {
   const seedBase = useMemo(() => hashText(sessionId ?? playerId ?? MODE), [sessionId, playerId])
 
   useEffect(() => {
+    let active = true
+
     ;(async () => {
-      const id = localStorage.getItem('levelup_player_id')
-      setPlayerId(id)
-      if (!id) { setError('No hay un jugador seleccionado.'); setLoading(false); return }
-      const supabase = createSupabaseBrowserClient()
-      if (!supabase) { setError('Supabase no está configurado.'); setLoading(false); return }
+      try {
+        const id = localStorage.getItem('levelup_player_id')
+        if (!active) return
+        setPlayerId(id)
+        if (!id) throw new Error('No hay un jugador seleccionado')
 
-      const openPractice = supabase.rpc as unknown as (
-        name: 'open_levelup_practice_session',
-        args: { p_player_id: string; p_mode: string },
-      ) => Promise<PracticeOpenResult>
-      const { data: opened, error: openError } = await openPractice('open_levelup_practice_session', { p_player_id: id, p_mode: MODE })
-      if (openError) { setError(userFacingError(openError, 'No se pudo abrir Terminal de palabras.')); setLoading(false); return }
-      const openedId = String((opened as { session_id?: string } | null)?.session_id ?? '')
-      if (!openedId) { setError('No se pudo confirmar la sesión de Inglés.'); setLoading(false); return }
-      setSessionId(openedId)
+        const supabase = createSupabaseBrowserClient()
+        if (!supabase) throw new Error('Supabase no está configurado')
 
-      const [unitsResult, planResult, statesResult, attemptsResult] = await Promise.all([
-        supabase.from('curriculum_units').select('id').eq('subject_id', 'english').eq('active', true).order('sort_order'),
-        supabase.from('player_curriculum_plans').select('focus_unit_ids').eq('player_id', id).eq('subject_id', 'english').maybeSingle(),
-        supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id),
-        supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at', { ascending: true }),
-      ])
-      if (unitsResult.error || !unitsResult.data?.length) { setError('No se pudo cargar el currículo activo de Inglés.'); setLoading(false); return }
-      if (statesResult.error) { setError(userFacingError(statesResult.error, 'No se pudo cargar el progreso de Inglés.')); setLoading(false); return }
-      if (attemptsResult.error) { setError(userFacingError(attemptsResult.error, 'No se pudo recuperar la práctica.')); setLoading(false); return }
+        const openPractice = supabase.rpc as unknown as (
+          name: 'open_levelup_practice_session',
+          args: { p_player_id: string; p_mode: string },
+        ) => PromiseLike<PracticeOpenResult>
 
-      const unitIds = unitsResult.data.map((row) => String(row.id))
-      setAllUnitIds(unitIds)
-      const plan = (planResult.data ?? null) as PlanRow | null
-      const focus = (plan?.focus_unit_ids ?? []).filter((unitId) => unitIds.includes(unitId))
-      setFocusUnitIds(focus.length ? focus : unitIds)
+        const { data: opened, error: openError } = await withTimeout(
+          openPractice('open_levelup_practice_session', { p_player_id: id, p_mode: MODE }),
+          'La apertura de Terminal de palabras',
+        )
+        if (!active) return
+        if (openError) throw new Error(userFacingError(openError, 'No se pudo abrir Terminal de palabras.'))
 
-      const { data: skillRows, error: skillsError } = await supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', unitIds)
-      if (skillsError || !skillRows?.length) { setError('No hay habilidades activas de Inglés disponibles.'); setLoading(false); return }
-      const loadedSkills = skillRows as SkillRow[]
-      setSkills(loadedSkills)
+        const openedId = String((opened as { session_id?: string } | null)?.session_id ?? '')
+        if (!openedId) throw new Error('El servidor no devolvió un identificador de sesión')
+        setSessionId(openedId)
 
-      const stateMap: Record<string, SkillState> = {}
-      ;(statesResult.data ?? []).forEach((row) => {
-        if (!row.skill_id.startsWith('E')) return
-        stateMap[row.skill_id] = {
-          skill_id: row.skill_id,
-          mastery: Number(row.mastery ?? 50),
-          confidence: Number(row.confidence ?? 50),
-          difficulty: Number(row.difficulty ?? 1),
-          priority: Number(row.priority ?? 50),
-          last_practiced_at: row.last_practiced_at,
+        const [unitsResult, planResult, statesResult, attemptsResult] = await Promise.all([
+          withTimeout(supabase.from('curriculum_units').select('id').eq('subject_id', 'english').eq('active', true).order('sort_order'), 'La carga del currículo de Inglés'),
+          withTimeout(supabase.from('player_curriculum_plans').select('focus_unit_ids').eq('player_id', id).eq('subject_id', 'english').maybeSingle(), 'La carga del plan de Inglés'),
+          withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso adaptativo'),
+          withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at', { ascending: true }), 'La recuperación de la práctica'),
+        ])
+        if (!active) return
+
+        if (unitsResult.error || !unitsResult.data?.length) throw new Error('No se pudo cargar el currículo activo de Inglés')
+        if (planResult.error) throw new Error(userFacingError(planResult.error, 'No se pudo cargar el plan de Inglés.'))
+        if (statesResult.error) throw new Error(userFacingError(statesResult.error, 'No se pudo cargar el progreso de Inglés.'))
+        if (attemptsResult.error) throw new Error(userFacingError(attemptsResult.error, 'No se pudo recuperar la práctica.'))
+
+        const unitIds = unitsResult.data.map((row) => String(row.id))
+        setAllUnitIds(unitIds)
+        const plan = (planResult.data ?? null) as PlanRow | null
+        const focus = (plan?.focus_unit_ids ?? []).filter((unitId) => unitIds.includes(unitId))
+        setFocusUnitIds(focus.length ? focus : unitIds)
+
+        const { data: skillRows, error: skillsError } = await withTimeout(
+          supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', unitIds),
+          'La carga de habilidades de Inglés',
+        )
+        if (!active) return
+        if (skillsError || !skillRows?.length) throw new Error('No hay habilidades activas de Inglés disponibles')
+        const loadedSkills = skillRows as SkillRow[]
+        setSkills(loadedSkills)
+
+        const stateMap: Record<string, SkillState> = {}
+        for (const row of statesResult.data ?? []) {
+          if (!row.skill_id.startsWith('E')) continue
+          stateMap[row.skill_id] = {
+            skill_id: row.skill_id,
+            mastery: Number(row.mastery ?? 50),
+            confidence: Number(row.confidence ?? 50),
+            difficulty: Number(row.difficulty ?? 1),
+            priority: Number(row.priority ?? 50),
+            last_practiced_at: row.last_practiced_at,
+          }
         }
-      })
-      setStates(stateMap)
+        setStates(stateMap)
 
-      const skillToUnit = new Map(loadedSkills.map((skill) => [skill.id, skill.unit_id]))
-      const attempts = attemptsResult.data ?? []
-      const counts: Record<string, number> = {}
-      for (const attempt of attempts) {
-        const skillId = String(attempt.skill_id ?? '')
-        const unitId = skillToUnit.get(skillId)
-        if (!unitId) continue
-        counts[unitId] = (counts[unitId] ?? 0) + 1
-        recentSkillIds.current.unshift(skillId)
-        recentUnitIds.current.unshift(unitId)
+        const skillToUnit = new Map(loadedSkills.map((skill) => [skill.id, skill.unit_id]))
+        const attempts = attemptsResult.data ?? []
+        const counts: Record<string, number> = {}
+        for (const attempt of attempts) {
+          const skillId = String(attempt.skill_id ?? '')
+          const unitId = skillToUnit.get(skillId)
+          if (!unitId) continue
+          counts[unitId] = (counts[unitId] ?? 0) + 1
+          recentSkillIds.current.unshift(skillId)
+          recentUnitIds.current.unshift(unitId)
+        }
+        sessionUnitCounts.current = counts
+        recentSkillIds.current = recentSkillIds.current.slice(0, RECENT_SKILL_WINDOW)
+        recentUnitIds.current = recentUnitIds.current.slice(0, RECENT_UNIT_WINDOW)
+        recentTemplates.current = attempts.slice(-10).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))).filter(Boolean)
+        setIndex(Math.min(SESSION_LENGTH, attempts.length))
+        setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
+        setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
+      } catch (cause) {
+        if (active) setError(errorMessage(cause, 'No se pudo abrir Terminal de palabras.'))
+      } finally {
+        if (active) setLoading(false)
       }
-      sessionUnitCounts.current = counts
-      recentSkillIds.current = recentSkillIds.current.slice(0, RECENT_SKILL_WINDOW)
-      recentUnitIds.current = recentUnitIds.current.slice(0, RECENT_UNIT_WINDOW)
-      recentTemplates.current = attempts.slice(-10).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))).filter(Boolean)
-      setIndex(Math.min(SESSION_LENGTH, attempts.length))
-      setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
-      setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
-      setLoading(false)
     })()
+
+    return () => { active = false }
   }, [])
 
   useEffect(() => {
@@ -165,15 +209,23 @@ export default function EnglishTerminalSession() {
     if (!sessionId || index < SESSION_LENGTH || completed || closing) return
     setClosing(true)
     ;(async () => {
-      const supabase = createSupabaseBrowserClient()
-      if (!supabase) { setError('No se pudo conectar para cerrar la práctica.'); setClosing(false); return }
-      const { data, error: closeError } = await supabase.rpc('complete_levelup_session', { p_session_id: sessionId })
-      if (closeError) { setError(userFacingError(closeError, 'No se pudo cerrar Terminal de palabras.')); setClosing(false); return }
-      const result = data as { completed?: boolean; attempts?: number; xp_earned?: number; coins_earned?: number }
-      if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) { setError('El servidor no confirmó los 10 retos de Inglés.'); setClosing(false); return }
-      setXp(Number(result.xp_earned ?? xp))
-      setCompleted(true)
-      setClosing(false)
+      try {
+        const supabase = createSupabaseBrowserClient()
+        if (!supabase) throw new Error('No se pudo conectar para cerrar la práctica')
+        const { data, error: closeError } = await withTimeout(
+          supabase.rpc('complete_levelup_session', { p_session_id: sessionId }),
+          'El cierre de Terminal de palabras',
+        )
+        if (closeError) throw new Error(userFacingError(closeError, 'No se pudo cerrar Terminal de palabras.'))
+        const result = data as { completed?: boolean; attempts?: number; xp_earned?: number }
+        if (!result?.completed || Number(result.attempts) !== SESSION_LENGTH) throw new Error('El servidor no confirmó los 10 retos de Inglés')
+        setXp(Number(result.xp_earned ?? xp))
+        setCompleted(true)
+      } catch (cause) {
+        setError(errorMessage(cause, 'No se pudo cerrar Terminal de palabras.'))
+      } finally {
+        setClosing(false)
+      }
     })()
   }, [index, sessionId, completed, closing, xp])
 
@@ -182,32 +234,41 @@ export default function EnglishTerminalSession() {
     setAnswered(true)
     setSelectedOption(optionIndex)
     const ok = optionIndex === question.answerIndex
-    const supabase = createSupabaseBrowserClient()
-    if (!supabase) { setAnswered(false); setFeedback('No se pudo conectar.'); return }
-    const responseMs = Math.min(3_600_000, Math.max(1, Date.now() - questionStarted.current))
-    const { data, error: submitError } = await supabase.rpc('submit_levelup_attempt', {
-      p_player_id: playerId,
-      p_skill_id: question.skillId,
-      p_correct: ok,
-      p_response_ms: responseMs,
-      p_difficulty: question.difficulty,
-      p_seed: question.seed,
-      p_prompt: question.prompt,
-      p_session_id: sessionId,
-      p_diagnostic_tags: [...question.tags, 'english_terminal'],
-    })
-    if (submitError) { setAnswered(false); setSelectedOption(null); setFeedback(userFacingError(submitError, 'No se pudo guardar la respuesta.')); return }
-    const result = data as { xp_awarded?: number; mastery?: number; confidence?: number; difficulty?: number; priority?: number }
-    const unitId = skills.find((skill) => skill.id === question.skillId)?.unit_id
-    if (unitId) {
-      sessionUnitCounts.current = { ...sessionUnitCounts.current, [unitId]: (sessionUnitCounts.current[unitId] ?? 0) + 1 }
-      recentSkillIds.current = [question.skillId, ...recentSkillIds.current.filter((id) => id !== question.skillId)].slice(0, RECENT_SKILL_WINDOW)
-      recentUnitIds.current = [unitId, ...recentUnitIds.current].slice(0, RECENT_UNIT_WINDOW)
+    try {
+      const supabase = createSupabaseBrowserClient()
+      if (!supabase) throw new Error('No se pudo conectar')
+      const responseMs = Math.min(3_600_000, Math.max(1, Date.now() - questionStarted.current))
+      const { data, error: submitError } = await withTimeout(
+        supabase.rpc('submit_levelup_attempt', {
+          p_player_id: playerId,
+          p_skill_id: question.skillId,
+          p_correct: ok,
+          p_response_ms: responseMs,
+          p_difficulty: question.difficulty,
+          p_seed: question.seed,
+          p_prompt: question.prompt,
+          p_session_id: sessionId,
+          p_diagnostic_tags: [...question.tags, 'english_terminal'],
+        }),
+        'El guardado de la respuesta',
+      )
+      if (submitError) throw new Error(userFacingError(submitError, 'No se pudo guardar la respuesta.'))
+      const result = data as { xp_awarded?: number; mastery?: number; confidence?: number; difficulty?: number; priority?: number }
+      const unitId = skills.find((skill) => skill.id === question.skillId)?.unit_id
+      if (unitId) {
+        sessionUnitCounts.current = { ...sessionUnitCounts.current, [unitId]: (sessionUnitCounts.current[unitId] ?? 0) + 1 }
+        recentSkillIds.current = [question.skillId, ...recentSkillIds.current.filter((id) => id !== question.skillId)].slice(0, RECENT_SKILL_WINDOW)
+        recentUnitIds.current = [unitId, ...recentUnitIds.current].slice(0, RECENT_UNIT_WINDOW)
+      }
+      setStates((current) => ({ ...current, [question.skillId]: { skill_id: question.skillId, mastery: Number(result.mastery ?? 50), confidence: Number(result.confidence ?? 50), difficulty: Number(result.difficulty ?? 1), priority: Number(result.priority ?? 50), last_practiced_at: new Date().toISOString() } }))
+      setXp((value) => value + Number(result.xp_awarded ?? 0))
+      if (ok) setCorrect((value) => value + 1)
+      setFeedback((ok ? '✓ Correcto' : '↻ Incorrecto') + ` · ${Number(result.xp_awarded ?? 0)} XP`)
+    } catch (cause) {
+      setAnswered(false)
+      setSelectedOption(null)
+      setFeedback(errorMessage(cause, 'No se pudo guardar la respuesta.'))
     }
-    setStates((current) => ({ ...current, [question.skillId]: { skill_id: question.skillId, mastery: Number(result.mastery ?? 50), confidence: Number(result.confidence ?? 50), difficulty: Number(result.difficulty ?? 1), priority: Number(result.priority ?? 50), last_practiced_at: new Date().toISOString() } }))
-    setXp((value) => value + Number(result.xp_awarded ?? 0))
-    if (ok) setCorrect((value) => value + 1)
-    setFeedback((ok ? '✓ Correcto' : '↻ Incorrecto') + ` · ${Number(result.xp_awarded ?? 0)} XP`)
   }
 
   function next() {
@@ -216,7 +277,7 @@ export default function EnglishTerminalSession() {
     setIndex((value) => value + 1)
   }
 
-  if (loading) return <section className="card" role="status"><p className="muted">Abriendo Terminal de palabras…</p></section>
+  if (loading) return <section className="card" role="status"><p className="muted">Abriendo Terminal de palabras…</p><p className="muted">Si la red o la sesión no responden, mostraremos un error recuperable en unos segundos.</p></section>
   if (error) return <section className="card" role="alert"><span className="tag">TERMINAL DE PALABRAS</span><h1>No se puede continuar</h1><p className="muted">{error}</p><div className="action-row"><button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button><Link className="btn dark" href="/zone/english">VOLVER AL PUERTO</Link></div></section>
   if (index >= SESSION_LENGTH) {
     if (!completed) return <section className="card" role="status"><h1>{closing ? 'Validando los 10 retos…' : 'Confirmando resultados…'}</h1></section>
