@@ -14,8 +14,9 @@ const EnglishListeningSession = dynamic(() => import('@/components/EnglishListen
 const SpanishReadingSession = dynamic(() => import('@/components/SpanishReadingSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Galería de lectura...</p></section> })
 const SpanishWordsSession = dynamic(() => import('@/components/SpanishWordsSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Taller de palabras...</p></section> })
 const SpanishWritingSession = dynamic(() => import('@/components/SpanishWritingSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Sala de cronistas...</p></section> })
+const SpanishWritingReplay = dynamic(() => import('@/components/SpanishWritingReplay'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando práctica libre de escritura...</p></section> })
 
-type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing'
+type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay'
 
 export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
@@ -59,5 +60,6 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
   if (mode === 'spanish_reading') return <SpanishReadingSession />
   if (mode === 'spanish_words') return <SpanishWordsSession />
   if (mode === 'spanish_writing') return <SpanishWritingSession />
+  if (mode === 'spanish_writing_replay') return <SpanishWritingReplay />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
