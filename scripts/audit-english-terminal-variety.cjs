@@ -17,10 +17,12 @@ const expanded = load('lib/englishExpandedGenerators.ts', {
   './firstEvaluationGenerators': first,
   './languageSubjectGenerators': languageBase,
 })
+const bonus = load('lib/englishBonusVariants.ts', { './firstEvaluationGenerators': first })
 const language = load('lib/languageCriticalVariants.ts', {
   './firstEvaluationGenerators': first,
   './languageSubjectGenerators': languageBase,
   './englishExpandedGenerators': expanded,
+  './englishBonusVariants': bonus,
 })
 
 const failures = []
@@ -28,11 +30,13 @@ let generated = 0
 let minimumUniquePrompts = Infinity
 const seeds = Array.from({ length: 240 }, (_, index) => index + 1)
 const expandedKeys = new Set(expanded.expandedEnglishGeneratorKeys())
+const bonusKeys = new Set(bonus.englishBonusGeneratorKeys())
 
 for (const unit of curricula.SUBJECT_CURRICULA.english) {
   for (const definition of unit.skills) {
     const skill = { id: definition.id, name: definition.name, generator_key: definition.generatorKey }
     if (!expandedKeys.has(definition.generatorKey)) failures.push(`${definition.id}:missing_expanded_bank:${definition.generatorKey}`)
+    if (!bonusKeys.has(definition.generatorKey)) failures.push(`${definition.id}:missing_bonus_variant:${definition.generatorKey}`)
     const prompts = new Set()
     for (const difficulty of [1, 2, 3, 4, 5]) {
       for (const seed of seeds) {
@@ -61,6 +65,7 @@ for (const marker of [
 console.log(JSON.stringify({
   englishSkills: curricula.SUBJECT_CURRICULA.english.flatMap((unit) => unit.skills).length,
   expandedBanks: expandedKeys.size,
+  bonusVariants: bonusKeys.size,
   generated,
   minimumUniquePrompts,
   failures,
