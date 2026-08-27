@@ -16,6 +16,7 @@ const RECENT_UNIT_WINDOW = 3
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
 type SkillState = { skill_id: string; mastery: number; confidence: number; difficulty: number; priority: number; last_practiced_at?: string | null }
 type PlanRow = { focus_unit_ids?: string[] | null }
+type PracticeOpenResult = { data: unknown; error: { message?: string } | null }
 
 function hashText(value: string) {
   let hash = 2166136261
@@ -63,7 +64,11 @@ export default function EnglishTerminalSession() {
       const supabase = createSupabaseBrowserClient()
       if (!supabase) { setError('Supabase no está configurado.'); setLoading(false); return }
 
-      const { data: opened, error: openError } = await supabase.rpc('open_levelup_practice_session', { p_player_id: id, p_mode: MODE })
+      const openPractice = supabase.rpc as unknown as (
+        name: 'open_levelup_practice_session',
+        args: { p_player_id: string; p_mode: string },
+      ) => Promise<PracticeOpenResult>
+      const { data: opened, error: openError } = await openPractice('open_levelup_practice_session', { p_player_id: id, p_mode: MODE })
       if (openError) { setError(userFacingError(openError, 'No se pudo abrir Terminal de palabras.')); setLoading(false); return }
       const openedId = String((opened as { session_id?: string } | null)?.session_id ?? '')
       if (!openedId) { setError('No se pudo confirmar la sesión de Inglés.'); setLoading(false); return }
@@ -91,7 +96,17 @@ export default function EnglishTerminalSession() {
       setSkills(loadedSkills)
 
       const stateMap: Record<string, SkillState> = {}
-      ;(statesResult.data ?? []).forEach((row: SkillState) => { if (row.skill_id.startsWith('E')) stateMap[row.skill_id] = row })
+      ;(statesResult.data ?? []).forEach((row) => {
+        if (!row.skill_id.startsWith('E')) return
+        stateMap[row.skill_id] = {
+          skill_id: row.skill_id,
+          mastery: Number(row.mastery ?? 50),
+          confidence: Number(row.confidence ?? 50),
+          difficulty: Number(row.difficulty ?? 1),
+          priority: Number(row.priority ?? 50),
+          last_practiced_at: row.last_practiced_at,
+        }
+      })
       setStates(stateMap)
 
       const skillToUnit = new Map(loadedSkills.map((skill) => [skill.id, skill.unit_id]))
