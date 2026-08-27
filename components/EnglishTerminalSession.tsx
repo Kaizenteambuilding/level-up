@@ -89,7 +89,8 @@ export default function EnglishTerminalSession() {
         const supabase = createSupabaseBrowserClient()
         if (!supabase) throw new Error('Supabase no está configurado')
 
-        const openPractice = supabase.rpc as unknown as (
+        // Keep SupabaseClient as `this`: extracting rpc as a bare function throws before any network request.
+        const openPractice = supabase.rpc.bind(supabase) as unknown as (
           name: 'open_levelup_practice_session',
           args: { p_player_id: string; p_mode: string },
         ) => PromiseLike<PracticeOpenResult>
