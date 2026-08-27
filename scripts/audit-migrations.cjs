@@ -44,6 +44,7 @@ const expectedCanonical = [
   '20260827053500_open_english_terminal_practice.sql',
   '20260827072500_open_english_conversation_practice.sql',
   '20260827103500_open_english_listening_practice.sql',
+  '20260827124200_open_spanish_reading_practice.sql',
 ]
 
 const expectedLegacySnapshots = [

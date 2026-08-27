@@ -22,6 +22,15 @@ for (const zone of WORLD_ZONES) {
   }
 }
 assert.equal(worldZoneById('unknown'), undefined)
+
+const language = worldZoneById('language')
+assert.equal(language.districts[0].name, 'Galería de lectura')
+assert.equal(language.districts[0].availability, 'playable')
+assert.equal(language.districts[0].href, '/zone/language/reading')
+assert.equal(language.districts[1].availability, 'coming_soon')
+assert.equal(language.districts[2].availability, 'coming_soon')
+assert.equal(language.districts.filter((district) => district.availability === 'playable').length, 1)
+
 const english = worldZoneById('english')
 assert.equal(english.districts[0].name, 'Muelle de escucha')
 assert.equal(english.districts[0].availability, 'playable')
@@ -49,7 +58,13 @@ assert.ok(listening.includes('SpeechSynthesisUtterance'), 'Listening district mu
 assert.ok(listening.includes("'english_listening'"), 'Listening attempts must be identifiable')
 assert.ok(listening.includes('LISTEN: ${item.spoken}'), 'Listening evidence must persist the spoken source')
 assert.ok(listening.includes('complete_levelup_session'), 'Listening district must close through authoritative completion')
+const reading = fs.readFileSync('components/SpanishReadingSession.tsx', 'utf8')
+assert.ok(reading.includes("const MODE = 'spanish_reading'"), 'Spanish reading must use its own bounded practice mode')
+assert.ok(reading.includes('READING_SKILL_IDS'), 'Reading gallery must use a reading-focused skill subset')
+assert.ok(reading.includes("'spanish_reading'"), 'Spanish reading attempts must be identifiable')
+assert.ok(reading.includes('complete_levelup_session'), 'Spanish reading must close through authoritative completion')
 const guard = fs.readFileSync('components/MissionGuard.tsx', 'utf8')
 assert.ok(guard.includes("mode === 'english_conversation'"), 'Mission guard must route conversation mode')
 assert.ok(guard.includes("mode === 'english_listening'"), 'Mission guard must route listening mode')
+assert.ok(guard.includes("mode === 'spanish_reading'"), 'Mission guard must route Spanish reading mode')
 console.log('World zones audit passed.')
