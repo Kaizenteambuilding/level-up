@@ -1,8 +1,8 @@
 # Level Up
 
-Aplicación de repaso adaptativo de matemáticas para Mati, construida con Next.js, TypeScript y Supabase.
+Aplicación de repaso adaptativo y gamificado de 1.º de ESO, construida con Next.js, TypeScript y Supabase.
 
-Versión actual: **v1.23.3**. Cada pantalla del onboarding se valida contra el estado real: la recompensa solo aparece después de una misión completada tras elegir personaje, los pasos no se pueden adelantar manipulando `step` y un jugador ya incorporado vuelve directamente al mundo. Las rutas mantienen recuperación accesible y Supabase conserva su baseline reproducible.
+Versión actual: **v1.24.0**. LEVEL UP trabaja con cinco materias activas —Matemáticas, Lengua Castellana y Literatura, Inglés, Geografía e Historia, y Biología y Geología— y mantiene el progreso, la adaptación y las recompensas sincronizados con el estado real del servidor.
 
 Producción: https://level-up-a544.vercel.app
 
@@ -10,13 +10,13 @@ Producción: https://level-up-a544.vercel.app
 
 `/login` → selección del jugador → `/player` → `/mission` → 10 respuestas persistidas → cierre de sesión → dashboard → `/parent`.
 
-La aplicación incluye autenticación real, separación por familia y jugador, reanudación de misiones, motor adaptativo, memoria antirrepetición, XP, métricas basadas en intentos y panel familiar. El currículo activo contiene 15 unidades y 91 habilidades de matemáticas de 1.º de ESO.
+La aplicación incluye autenticación real, separación por familia y jugador, reanudación de misiones, motor adaptativo multi-materia, memoria antirrepetición, XP, recompensas, métricas basadas en intentos y panel familiar. El currículo activo contiene 91 habilidades de Matemáticas y 24 habilidades en cada una de las otras cuatro materias, para un total de 187 habilidades activas.
 
-El nivel numérico se conserva en la base por compatibilidad, pero no se muestra ni se recalcula: todavía no existe una regla pedagógica aprobada para convertir XP en niveles.
+El XP de una misión se mantiene provisional durante los intentos y se consolida exactamente una vez al completar las 10 respuestas. Los reintentos son idempotentes para evitar dobles recompensas o pérdida de progreso ante respuestas de red ambiguas.
 
 ## Desarrollo local
 
-Requisitos: Node.js 22 o posterior.
+Requisitos: Node.js 22.x.
 
 1. Ejecuta `npm install`.
 2. Copia `.env.example` a `.env.local`.
@@ -38,41 +38,35 @@ La prueba transaccional `database/tests/rpc_integrity.sql` valida el recorrido c
 
 La comprobación de solo lectura `database/tests/production_invariants.sql` detecta sesiones incompletas o duplicadas, intentos sin sesión, misiones cerradas sin diez respuestas y discrepancias de XP sin modificar producción.
 
-El catálogo reproducible `database/catalog/active_curriculum.sql` versiona las 15 unidades y 91 habilidades activas, incluidas sus claves de generador, objetivos, prerrequisitos y errores frecuentes.
+`npm run audit:questions` y las auditorías pedagógicas recorren de forma determinista los generadores activos y fallan ante opciones repetidas o de relleno, respuestas inválidas, falta de diversidad, diagnósticos inconsistentes o sesgos de posición.
 
-`npm run audit:questions` genera 113.750 preguntas deterministas y falla si detecta generadores de reserva, opciones repetidas o de relleno, respuestas inválidas o valores numéricos rotos.
+`npm run audit:adaptive-engine` simula perfiles longitudinales y comprueba cobertura, antirrepetición, dificultad y prioridad adaptativa.
 
-`npm run audit:question-quality` vuelve a recorrer 113.750 preguntas y exige determinismo, diversidad mínima de enunciados y familias, etiquetas diagnósticas válidas, textos acotados y un reparto no sesgado de la respuesta correcta entre las cuatro posiciones.
+`npm run audit:parent-insights` y `npm run audit:parent-multi-subject` validan que el panel familiar cubra todas las materias activas y no declare fortalezas ni dificultades sin evidencia suficiente.
 
-`npm run audit:adaptive-engine` simula 4.800 respuestas de cuatro perfiles durante 480 misiones y comprueba cobertura, antirrepetición, dificultad y prioridad adaptativa.
+`npm run audit:mission-recap` y `npm run audit:mission-feedback` protegen el cierre de misión, el progreso guardado y la semántica accesible de éxito y error.
 
-`npm run audit:parent-insights` valida que el panel no declare fortalezas ni dificultades sin evidencia completada suficiente. `npm run audit:release` comprueba que versión, endpoint de salud y documentación operativa permanecen coordinados.
+`npm run audit:curriculum-plan`, `npm run audit:multi-subject-curriculum` y las auditorías de generadores por materia protegen planificación, activación y diversidad curricular.
 
-`npm run audit:mission-recap` comprueba que el cierre de cada misión separa correctamente lo que conviene volver a practicar de lo bien resuelto, sin mezclar ambos grupos.
+El repositorio contiene 39 migraciones canónicas. La historia de producción capturada en `database/production-migrations.json` contiene 38 migraciones aplicadas y una excepción histórica explícita que nunca se desplegó como migración independiente. `npm run audit:migrations` exige cobertura de procedencia exacta entre repositorio y producción.
 
-`npm run audit:curriculum-insights` valida la clasificación por unidad curricular y evita interpretar una unidad sin práctica o con evidencia inicial como una dificultad consolidada.
+El baseline y las pruebas de integridad permiten contrastar el esquema y las invariantes sin escribir datos permanentes en producción. Cualquier ensayo de restauración debe hacerse en un proyecto Supabase separado, nunca sobre producción.
 
-`npm run audit:curriculum-plan` comprueba el cambio automático de trimestre, el bloqueo de contenido futuro, el foco manual y el reparto entre contenido actual y repaso anterior.
-
-`npm run audit:game-progression` valida los 50 umbrales de nivel, el progreso entre niveles, rangos y desbloqueos. Las pruebas RPC comprueban además que las monedas se conceden una sola vez y que el inventario no admite escrituras directas desde el navegador.
-
-Las 26 migraciones aplicadas están versionadas en `database/migrations/` con el timestamp real de producción y en su orden exacto. `npm run audit:migrations` impide prefijos duplicados, nombres inválidos o huecos en ese historial.
-
-El historial recuperado comienza después de la creación manual original. `database/baseline/20260824101316_public_schema.sql` captura el estado fundacional completo en ese corte y `database/tests/baseline_parity.sql` lo contrasta con los 13 objetos de tabla, 15 RPC/funciones, políticas y catálogos esperados. La certificación de restauración exige ensayarlo en un proyecto Supabase separado, nunca sobre producción.
-
-Los avisos de Supabase sobre las funciones públicas `SECURITY DEFINER` son intencionados: las operaciones de familia, jugador, misión y planificación curricular solo pueden ejecutarlas usuarios autenticados y verifican `auth.uid()` y la pertenencia familiar. La protección contra contraseñas filtradas no está disponible en el plan Free actual.
+Los avisos de Supabase sobre las RPC públicas `SECURITY DEFINER` son intencionados: las operaciones autenticadas revisadas fijan `search_path`, verifican `auth.uid()` y comprueban pertenencia u ownership. La protección contra contraseñas filtradas sigue siendo una configuración de Auth pendiente de activar desde el panel de Supabase.
 
 ## Comprobaciones antes de publicar
 
-GitHub Actions ejecuta automáticamente el tipado y la auditoría completa de generadores en cada cambio de `main` y en cada pull request.
+GitHub Actions ejecuta automáticamente tipado, auditorías funcionales, seguridad, migraciones, versión, build y dependencias en cada cambio de `main` y en cada pull request.
 
 `npm run verify` agrupa la verificación local completa. El procedimiento de publicación, salud, incidencias, copias y recuperación está en [`OPERATIONS.md`](OPERATIONS.md).
 
-- `npm run lint` (`tsc --noEmit`).
-- `npm run audit:questions` y `npm run audit:question-quality`.
-- `npm run build`.
-- `npm audit`.
-- Recorrido autenticado completo de 10 preguntas.
-- Confirmar persistencia de 10 intentos y cierre de la sesión.
+El workflow `Production health` se ejecuta cada seis horas y también puede lanzarse manualmente. Comprueba el endpoint `/api/health`, que la versión y el SHA servido coincidan exactamente con `main`, que `/` y `/login` sigan accesibles y que las cabeceras de seguridad esenciales continúen presentes.
+
+Antes de dar una release por cerrada:
+
+- Ejecutar `npm run verify` y `npm audit --omit=dev --audit-level=high`.
+- Confirmar que Quality está en verde para el SHA exacto que se va a publicar.
+- Confirmar que el deployment de producción de Vercel corresponde al mismo SHA y está `READY`.
+- Confirmar `/api/health` con estado `ok`, versión esperada y prefijo de deployment esperado.
 - Revisar los avisos de seguridad y rendimiento de Supabase después de cualquier DDL.
-- Confirmar el estado del deployment de Vercel asociado al commit.
+- Realizar un recorrido autenticado real de 10 preguntas cuando se disponga de una sesión de usuario de prueba.
