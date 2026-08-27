@@ -41,7 +41,8 @@
     ["20260826134908", "harden_internal_security_definer_triggers"],
     ["20260826201618", "restore_xp_commit_on_completion"],
     ["20260827053702", "open_english_terminal_practice"],
-    ["20260827072537", "open_english_conversation_practice"]
+    ["20260827072537", "open_english_conversation_practice"],
+    ["20260827103502", "open_english_listening_practice"]
   ],
   "repositoryToProduction": {
     "20260816075245_harden_attempts_and_abandon_sessions.sql": "20260816075245",
@@ -84,7 +85,8 @@
     "20260826134908_harden_internal_security_definer_triggers.sql": "20260826134908",
     "20260826200500_restore_xp_commit_on_completion.sql": "20260826201618",
     "20260827053500_open_english_terminal_practice.sql": "20260827053702",
-    "20260827072500_open_english_conversation_practice.sql": "20260827072537"
+    "20260827072500_open_english_conversation_practice.sql": "20260827072537",
+    "20260827103500_open_english_listening_practice.sql": "20260827103502"
   },
   "notDeployed": {
     "20260824164500_commit_xp_on_completion.sql": {

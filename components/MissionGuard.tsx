@@ -10,8 +10,9 @@ const CurriculumDailySession = dynamic(() => import('@/components/CurriculumDail
 const MultiSubjectDailySession = dynamic(() => import('@/components/MultiSubjectDailySession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando el motor multiasignatura...</p></section> })
 const EnglishTerminalSession = dynamic(() => import('@/components/EnglishTerminalSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Terminal de palabras...</p></section> })
 const EnglishConversationSession = dynamic(() => import('@/components/EnglishConversationSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Plaza de conversación...</p></section> })
+const EnglishListeningSession = dynamic(() => import('@/components/EnglishListeningSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Muelle de escucha...</p></section> })
 
-type MissionMode = 'daily' | 'english_terminal' | 'english_conversation'
+type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening'
 
 export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
@@ -51,5 +52,6 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
   if (!ready) return <section className="card"><p className="muted">{message}</p>{canRetry && <button className="btn primary" type="button" onClick={() => setRetryKey((value) => value + 1)}>REINTENTAR</button>}</section>
   if (mode === 'english_terminal') return <EnglishTerminalSession />
   if (mode === 'english_conversation') return <EnglishConversationSession />
+  if (mode === 'english_listening') return <EnglishListeningSession />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
