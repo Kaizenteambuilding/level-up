@@ -28,7 +28,20 @@ const MultiSubjectDailySession = dynamic(
   }
 )
 
-export default function MissionGuard() {
+const EnglishTerminalSession = dynamic(
+  () => import('@/components/EnglishTerminalSession'),
+  {
+    loading: () => (
+      <section className="card" aria-live="polite">
+        <p className="muted">Preparando Terminal de palabras...</p>
+      </section>
+    ),
+  }
+)
+
+type MissionMode = 'daily' | 'english_terminal'
+
+export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
   const [ready, setReady] = useState(false)
   const [message, setMessage] = useState('Comprobando acceso...')
@@ -128,5 +141,6 @@ export default function MissionGuard() {
     )
   }
 
+  if (mode === 'english_terminal') return <EnglishTerminalSession />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
