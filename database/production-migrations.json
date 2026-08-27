@@ -44,7 +44,8 @@
     ["20260827072537", "open_english_conversation_practice"],
     ["20260827103502", "open_english_listening_practice"],
     ["20260827124231", "open_spanish_reading_practice"],
-    ["20260827134312", "open_spanish_words_practice"]
+    ["20260827134312", "open_spanish_words_practice"],
+    ["20260827185743", "open_spanish_writing_practice"]
   ],
   "repositoryToProduction": {
     "20260816075245_harden_attempts_and_abandon_sessions.sql": "20260816075245",
@@ -90,7 +91,8 @@
     "20260827072500_open_english_conversation_practice.sql": "20260827072537",
     "20260827103500_open_english_listening_practice.sql": "20260827103502",
     "20260827124200_open_spanish_reading_practice.sql": "20260827124231",
-    "20260827134300_open_spanish_words_practice.sql": "20260827134312"
+    "20260827134300_open_spanish_words_practice.sql": "20260827134312",
+    "20260827185700_open_spanish_writing_practice.sql": "20260827185743"
   },
   "notDeployed": {
     "20260824164500_commit_xp_on_completion.sql": {
