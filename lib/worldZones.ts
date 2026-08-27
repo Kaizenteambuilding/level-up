@@ -1,11 +1,23 @@
 export type WorldZoneId = 'language' | 'english' | 'science' | 'creative'
-export type WorldZone = { id: WorldZoneId; name: string; icon: string; className: string; tagline: string; description: string; mission: string; districts: { icon: string; name: string; detail: string }[] }
+export type WorldDistrictAvailability = 'coming_soon' | 'playable'
+export type WorldZone = {
+  id: WorldZoneId
+  name: string
+  icon: string
+  className: string
+  tagline: string
+  description: string
+  mission: string
+  districts: { icon: string; name: string; detail: string; availability: WorldDistrictAvailability }[]
+}
+
+const comingSoon = (icon: string, name: string, detail: string) => ({ icon, name, detail, availability: 'coming_soon' as const })
 
 export const WORLD_ZONES: WorldZone[] = [
-  { id: 'language', name: 'Biblioteca de Lengua', icon: '📚', className: 'language-zone', tagline: 'Las historias han perdido sus palabras', description: 'Lectura, vocabulario, gramática y escritura se convertirán en expediciones narrativas.', mission: 'Reconstruir relatos y recuperar los archivos de la Gran Biblioteca.', districts: [{ icon: '🔎', name: 'Galería de lectura', detail: 'Comprensión e inferencias' }, { icon: '🧩', name: 'Taller de palabras', detail: 'Gramática y vocabulario' }, { icon: '✍️', name: 'Sala de cronistas', detail: 'Expresión escrita' }] },
-  { id: 'english', name: 'Puerto de Inglés', icon: '🌍', className: 'english-zone', tagline: 'Cada conversación abre una nueva ruta', description: 'Vocabulario, comprensión y comunicación formarán una aventura de viajes.', mission: 'Conseguir permisos de navegación hablando con personajes de todo el mundo.', districts: [{ icon: '🎧', name: 'Muelle de escucha', detail: 'Comprensión oral' }, { icon: '💬', name: 'Plaza de conversación', detail: 'Uso práctico del idioma' }, { icon: '🧳', name: 'Terminal de palabras', detail: 'Vocabulario y estructuras' }] },
-  { id: 'science', name: 'Laboratorio de Ciencias', icon: '🔬', className: 'science-zone', tagline: 'Investiga antes de sacar conclusiones', description: 'Biología, materia, energía y método científico vivirán en laboratorios interactivos.', mission: 'Resolver anomalías mediante observación, hipótesis y experimentos.', districts: [{ icon: '🧬', name: 'Cúpula de la vida', detail: 'Seres vivos y ecosistemas' }, { icon: '⚗️', name: 'Cámara de materia', detail: 'Sustancias y transformaciones' }, { icon: '🌌', name: 'Observatorio', detail: 'Tierra y universo' }] },
-  { id: 'creative', name: 'Taller Creativo', icon: '🎨', className: 'creative-zone', tagline: 'Las mejores soluciones se construyen', description: 'Arte, tecnología y proyectos unirán creatividad con resolución de problemas.', mission: 'Diseñar artefactos para mejorar el mundo de LEVEL UP.', districts: [{ icon: '🎨', name: 'Estudio visual', detail: 'Diseño y expresión' }, { icon: '🛠️', name: 'Taller de prototipos', detail: 'Tecnología y construcción' }, { icon: '🎵', name: 'Escenario sonoro', detail: 'Ritmo y creación' }] },
+  { id: 'language', name: 'Biblioteca de Lengua', icon: '📚', className: 'language-zone', tagline: 'Las historias han perdido sus palabras', description: 'Lectura, vocabulario, gramática y escritura se convertirán en expediciones narrativas.', mission: 'Reconstruir relatos y recuperar los archivos de la Gran Biblioteca.', districts: [comingSoon('🔎', 'Galería de lectura', 'Comprensión e inferencias'), comingSoon('🧩', 'Taller de palabras', 'Gramática y vocabulario'), comingSoon('✍️', 'Sala de cronistas', 'Expresión escrita')] },
+  { id: 'english', name: 'Puerto de Inglés', icon: '🌍', className: 'english-zone', tagline: 'Cada conversación abre una nueva ruta', description: 'Vocabulario, comprensión y comunicación formarán una aventura de viajes.', mission: 'Conseguir permisos de navegación hablando con personajes de todo el mundo.', districts: [comingSoon('🎧', 'Muelle de escucha', 'Comprensión oral'), comingSoon('💬', 'Plaza de conversación', 'Uso práctico del idioma'), comingSoon('🧳', 'Terminal de palabras', 'Vocabulario y estructuras')] },
+  { id: 'science', name: 'Laboratorio de Ciencias', icon: '🔬', className: 'science-zone', tagline: 'Investiga antes de sacar conclusiones', description: 'Biología, materia, energía y método científico vivirán en laboratorios interactivos.', mission: 'Resolver anomalías mediante observación, hipótesis y experimentos.', districts: [comingSoon('🧬', 'Cúpula de la vida', 'Seres vivos y ecosistemas'), comingSoon('⚗️', 'Cámara de materia', 'Sustancias y transformaciones'), comingSoon('🌌', 'Observatorio', 'Tierra y universo')] },
+  { id: 'creative', name: 'Taller Creativo', icon: '🎨', className: 'creative-zone', tagline: 'Las mejores soluciones se construyen', description: 'Arte, tecnología y proyectos unirán creatividad con resolución de problemas.', mission: 'Diseñar artefactos para mejorar el mundo de LEVEL UP.', districts: [comingSoon('🎨', 'Estudio visual', 'Diseño y expresión'), comingSoon('🛠️', 'Taller de prototipos', 'Tecnología y construcción'), comingSoon('🎵', 'Escenario sonoro', 'Ritmo y creación')] },
 ]
 
 export function worldZoneById(value: string) { return WORLD_ZONES.find((zone) => zone.id === value) }
