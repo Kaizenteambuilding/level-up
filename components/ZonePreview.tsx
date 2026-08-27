@@ -14,9 +14,9 @@ export default function ZonePreview() {
   if (!player || error) return <DemoGameError title="No se pudo abrir la zona" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
   return <><section className={`zone-preview ${zone.className}`}>
     <header className="zone-preview-top"><DemoAvatar player={player} game={game} /><DemoHud player={player} game={game} /></header>
-    <div className="zone-preview-hero"><span className="zone-preview-icon" aria-hidden="true">{zone.icon}</span><span className="tag">VISTA PREVIA · ZONA EN CONSTRUCCIÓN</span><h1>{zone.name}</h1><h2>{zone.tagline}</h2><p>{zone.description}</p></div>
-    <section className="nova-zone-message"><span aria-hidden="true">🤖</span><div><b>NOVA</b><p>Esta zona ya tiene mapa e historia, pero sus ejercicios todavía no están conectados. No ganarás XP aquí hasta que su contenido curricular esté validado.</p></div></section>
-    <div className="zone-districts">{zone.districts.map((district, index) => <article key={district.name}><span aria-hidden="true">{district.icon}</span><small>DISTRITO {index + 1}</small><h2>{district.name}</h2><p>{district.detail}</p><b>🔒 EN PREPARACIÓN</b></article>)}</div>
-    <section className="zone-campaign"><div><span className="tag">FUTURA CAMPAÑA</span><h2>{zone.mission}</h2><p>Cuando activemos esta asignatura, el curso y el trimestre de Mati decidirán qué misiones aparecen.</p></div><Link href="/world" className="btn primary">← VOLVER AL MUNDO</Link></section>
+    <div className="zone-preview-hero"><span className="zone-preview-icon" aria-hidden="true">{zone.icon}</span><span className="tag">VISTA PREVIA · DISPONIBLE PRÓXIMAMENTE</span><h1>{zone.name}</h1><h2>{zone.tagline}</h2><p>{zone.description}</p></div>
+    <section className="nova-zone-message"><span aria-hidden="true">🤖</span><div><b>NOVA</b><p>La práctica curricular de las materias activas ya puede aparecer en la misión diaria. Estos distritos son campañas propias y estarán disponibles próximamente cuando su experiencia específica esté validada.</p></div></section>
+    <div className="zone-districts">{zone.districts.map((district, index) => <article key={district.name}><span aria-hidden="true">{district.icon}</span><small>DISTRITO {index + 1}</small><h2>{district.name}</h2><p>{district.detail}</p><b>{district.availability === 'playable' ? '✅ DISPONIBLE' : '🔒 DISPONIBLE PRÓXIMAMENTE'}</b></article>)}</div>
+    <section className="zone-campaign"><div><span className="tag">PRÓXIMA CAMPAÑA</span><h2>{zone.mission}</h2><p>El curso, el trimestre y el progreso de Mati decidirán qué retos aparecen cuando abramos esta campaña.</p></div><Link href="/world" className="btn primary">← VOLVER AL MUNDO</Link></section>
   </section><DemoGameDock active="world" /></>
 }
