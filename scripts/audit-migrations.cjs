@@ -41,6 +41,7 @@ const expectedCanonical = [
   '20260826094000_make_attempt_submit_idempotent.sql',
   '20260826134908_harden_internal_security_definer_triggers.sql',
   '20260826200500_restore_xp_commit_on_completion.sql',
+  '20260827053500_open_english_terminal_practice.sql',
 ]
 
 const expectedLegacySnapshots = [
