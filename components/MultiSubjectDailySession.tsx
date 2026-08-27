@@ -225,7 +225,7 @@ export default function MultiSubjectDailySession() {
   }, [])
 
   useEffect(() => {
-    if (loading || error || !skills.length || !plans.length || !sessionId || index >= SESSION_LENGTH) return
+    if (loading || error || question || !skills.length || !plans.length || !sessionId || index >= SESSION_LENGTH) return
     const subjectPlan = subjectForQuestion(plans, index, sessionSeed)
     if (!subjectPlan) { setError('No se pudo elegir una materia activa.'); return }
     const subjectSkills = skills.filter((skill) => subjectPlan.availableUnitIds.includes(skill.unit_id))
@@ -257,7 +257,7 @@ export default function MultiSubjectDailySession() {
     setSelectedOption(null)
     setFeedback('')
     questionStarted.current = Date.now()
-  }, [loading, error, skills, plans, states, sessionId, sessionSeed, index])
+  }, [loading, error, question, skills, plans, states, sessionId, sessionSeed, index])
 
   useEffect(() => {
     if (!sessionId || index < SESSION_LENGTH || completed || closing) return
