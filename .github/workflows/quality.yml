@@ -53,6 +53,9 @@ jobs:
       - name: Audit multi-subject question diversity
         run: npm run audit:multi-subject-diversity
 
+      - name: Audit English Terminal variety
+        run: npm run audit:english-terminal-variety
+
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
