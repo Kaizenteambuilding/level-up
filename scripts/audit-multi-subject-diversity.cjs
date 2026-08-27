@@ -2,8 +2,9 @@ const fs=require('node:fs'),ts=require('typescript')
 function load(path,extras={}){const src=fs.readFileSync(path,'utf8');const js=ts.transpileModule(src,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText;const mod={exports:{}};new Function('exports','module','require',js)(mod.exports,mod,(id)=>extras[id]??require(id));return mod.exports}
 const first=load('lib/firstEvaluationGenerators.ts')
 const langBase=load('lib/languageSubjectGenerators.ts',{'./firstEvaluationGenerators':first})
+const englishExpanded=load('lib/englishExpandedGenerators.ts',{'./firstEvaluationGenerators':first,'./languageSubjectGenerators':langBase})
 const knowBase=load('lib/knowledgeSubjectGenerators.ts',{'./firstEvaluationGenerators':first})
-const lang=load('lib/languageCriticalVariants.ts',{'./firstEvaluationGenerators':first,'./languageSubjectGenerators':langBase})
+const lang=load('lib/languageCriticalVariants.ts',{'./firstEvaluationGenerators':first,'./languageSubjectGenerators':langBase,'./englishExpandedGenerators':englishExpanded})
 const know=load('lib/knowledgeCriticalVariants.ts',{'./firstEvaluationGenerators':first,'./knowledgeSubjectGenerators':knowBase})
 const curricula=load('lib/subjectCurricula.ts')
 const failures=[]
