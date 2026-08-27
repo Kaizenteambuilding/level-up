@@ -12,6 +12,7 @@ const SESSION_LENGTH = 10
 const MODE = 'english_terminal'
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
+const RECENT_PROMPT_WINDOW = 80
 const NETWORK_TIMEOUT_MS = 12_000
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
@@ -113,11 +114,12 @@ export default function EnglishTerminalSession() {
         if (!openedId) throw new Error('El servidor no devolvió un identificador de sesión')
         setSessionId(openedId)
 
-        const [unitsResult, planResult, statesResult, attemptsResult] = await Promise.all([
+        const [unitsResult, planResult, statesResult, attemptsResult, historyResult] = await Promise.all([
           withTimeout(supabase.from('curriculum_units').select('id').eq('subject_id', 'english').eq('active', true).order('sort_order'), 'La carga del currículo de Inglés'),
           withTimeout(supabase.from('player_curriculum_plans').select('focus_unit_ids').eq('player_id', id).eq('subject_id', 'english').maybeSingle(), 'La carga del plan de Inglés'),
           withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso adaptativo'),
           withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at', { ascending: true }), 'La recuperación de la práctica'),
+          withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'E%').order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Inglés'),
         ])
         if (!active) return
 
@@ -125,6 +127,7 @@ export default function EnglishTerminalSession() {
         if (planResult.error) throw new Error(userFacingError(planResult.error, 'No se pudo cargar el plan de Inglés.'))
         if (statesResult.error) throw new Error(userFacingError(statesResult.error, 'No se pudo cargar el progreso de Inglés.'))
         if (attemptsResult.error) throw new Error(userFacingError(attemptsResult.error, 'No se pudo recuperar la práctica.'))
+        if (historyResult.error) throw new Error(userFacingError(historyResult.error, 'No se pudo cargar el historial reciente de Inglés.'))
 
         const unitIds = unitsResult.data.map((row) => String(row.id))
         setAllUnitIds(unitIds)
@@ -169,7 +172,10 @@ export default function EnglishTerminalSession() {
         sessionUnitCounts.current = counts
         recentSkillIds.current = recentSkillIds.current.slice(0, RECENT_SKILL_WINDOW)
         recentUnitIds.current = recentUnitIds.current.slice(0, RECENT_UNIT_WINDOW)
-        recentTemplates.current = attempts.slice(-10).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))).filter(Boolean)
+        recentTemplates.current = (historyResult.data ?? [])
+          .map((attempt) => template(String(attempt.prompt_snapshot ?? '')))
+          .filter(Boolean)
+          .slice(0, RECENT_PROMPT_WINDOW)
         setIndex(Math.min(SESSION_LENGTH, attempts.length))
         setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
         setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
@@ -186,7 +192,7 @@ export default function EnglishTerminalSession() {
   useEffect(() => {
     if (loading || error || question || !sessionId || !skills.length || index >= SESSION_LENGTH) return
     const reviewUnitIds = allUnitIds.filter((unitId) => !focusUnitIds.includes(unitId))
-    const skill = chooseAdaptiveSkill({
+    const primarySkill = chooseAdaptiveSkill({
       skills,
       states,
       focusUnitIds,
@@ -197,15 +203,40 @@ export default function EnglishTerminalSession() {
       seed: seedBase,
       questionIndex: index,
     })
-    if (!skill) { setError('No se pudo elegir un reto de Inglés.'); return }
-    const difficulty = states[skill.id]?.difficulty ?? 1
-    let seed = (seedBase + Math.imul(index + 1, 0x9e3779b9)) >>> 0
-    let generated = generateCurriculumQuestion(skill, difficulty, seed)
-    for (let attempt = 0; attempt < 40 && recentTemplates.current.includes(template(generated.prompt)); attempt += 1) {
-      seed = (seed + 2654435761) >>> 0
-      generated = generateCurriculumQuestion(skill, difficulty, seed)
+    if (!primarySkill) { setError('No se pudo elegir un reto de Inglés.'); return }
+
+    const alternatives = skills
+      .filter((skill) => skill.id !== primarySkill.id)
+      .sort((a, b) => {
+        const aRecent = recentSkillIds.current.includes(a.id) ? 1 : 0
+        const bRecent = recentSkillIds.current.includes(b.id) ? 1 : 0
+        if (aRecent !== bRecent) return aRecent - bRecent
+        return a.id.localeCompare(b.id)
+      })
+    const candidates = [primarySkill, ...alternatives]
+    const baseSeed = (seedBase + Math.imul(index + 1, 0x9e3779b9)) >>> 0
+    let generated: GeneratedQuestion | null = null
+
+    for (let candidateIndex = 0; candidateIndex < candidates.length && !generated; candidateIndex += 1) {
+      const candidate = candidates[candidateIndex]
+      const difficulty = states[candidate.id]?.difficulty ?? 1
+      let seed = (baseSeed + Math.imul(candidateIndex, 0x85ebca6b)) >>> 0
+      for (let attempt = 0; attempt < 16; attempt += 1) {
+        const nextQuestion = generateCurriculumQuestion(candidate, difficulty, seed)
+        if (!recentTemplates.current.includes(template(nextQuestion.prompt))) {
+          generated = nextQuestion
+          break
+        }
+        seed = (seed + 2654435761) >>> 0
+      }
     }
-    recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, 10)
+
+    if (!generated) {
+      const difficulty = states[primarySkill.id]?.difficulty ?? 1
+      generated = generateCurriculumQuestion(primarySkill, difficulty, baseSeed)
+    }
+
+    recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated)
     setAnswered(false)
     setSelectedOption(null)
