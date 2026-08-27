@@ -11,6 +11,8 @@ const required = [
   'Math.round((savedProgress / SESSION_LENGTH) * 100)',
   "role={answered ? 'status' : 'alert'}",
   "aria-live={answered ? 'polite' : 'assertive'}",
+  'if (loading || error || question || !skills.length || !plans.length || !sessionId || index >= SESSION_LENGTH) return',
+  '[loading, error, question, skills, plans, states, sessionId, sessionSeed, index]',
 ]
 
 for (const marker of required) {
