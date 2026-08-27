@@ -1,6 +1,7 @@
 import type { GeneratedQuestion } from './firstEvaluationGenerators'
 import { generateLanguageSubjectQuestion } from './languageSubjectGenerators'
 import { generateExpandedEnglishQuestion } from './englishExpandedGenerators'
+import { generateEnglishBonusQuestion } from './englishBonusVariants'
 
 type SkillMeta = { id: string; name: string; generator_key: string }
 type Variant = { prompt: string; answer: string; distractors: [string,string,string]; solution: string }
@@ -24,9 +25,16 @@ function rotate<T>(items:T[], shift:number){ return items.slice(shift).concat(it
 
 export function generateLanguageQuestionWithCriticalVariants(skill:SkillMeta,difficulty:number,seed:number):GeneratedQuestion {
   const variant = VARIANTS[skill.id]
-  const useCriticalVariant = Boolean(variant) && (skill.id.startsWith('E') ? seed % 7 === 0 : (seed & 1) === 1)
+  const isEnglish = skill.id.startsWith('E')
+  const useCriticalVariant = Boolean(variant) && (isEnglish ? seed % 7 === 0 : (seed & 1) === 1)
   if (!useCriticalVariant) {
-    if (skill.id.startsWith('E')) return generateExpandedEnglishQuestion(skill,difficulty,seed)
+    if (isEnglish) {
+      if (seed % 11 === 0) {
+        const bonus = generateEnglishBonusQuestion(skill,difficulty,seed)
+        if (bonus) return bonus
+      }
+      return generateExpandedEnglishQuestion(skill,difficulty,seed)
+    }
     const base = generateLanguageSubjectQuestion(skill,difficulty,seed)
     if (!base) throw new Error(`No language generator for ${skill.id}`)
     return base
@@ -34,7 +42,7 @@ export function generateLanguageQuestionWithCriticalVariants(skill:SkillMeta,dif
   const selected = variant as Variant
   const options=[selected.answer,...selected.distractors]
   const rotated=rotate(options,(seed+difficulty)%4)
-  return { skillId:skill.id,label:skill.name,difficulty,seed,prompt:selected.prompt,options:rotated,answerIndex:rotated.indexOf(selected.answer),solution:selected.solution,tags:[skill.generator_key,skill.id.startsWith('L')?'spanish':'english','critical_variant'] }
+  return { skillId:skill.id,label:skill.name,difficulty,seed,prompt:selected.prompt,options:rotated,answerIndex:rotated.indexOf(selected.answer),solution:selected.solution,tags:[skill.generator_key,isEnglish?'english':'spanish','critical_variant'] }
 }
 
 export function languageCriticalVariantSkillIds(){ return Object.keys(VARIANTS) }
