@@ -68,6 +68,7 @@ export default function EnglishTerminalSession() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [completed, setCompleted] = useState(false)
+  const [completedToday, setCompletedToday] = useState(false)
   const [closing, setClosing] = useState(false)
   const recentTemplates = useRef<string[]>([])
   const recentSkillIds = useRef<string[]>([])
@@ -89,7 +90,6 @@ export default function EnglishTerminalSession() {
         const supabase = createSupabaseBrowserClient()
         if (!supabase) throw new Error('Supabase no está configurado')
 
-        // Keep SupabaseClient as `this`: extracting rpc as a bare function throws before any network request.
         const openPractice = supabase.rpc.bind(supabase) as unknown as (
           name: 'open_levelup_practice_session',
           args: { p_player_id: string; p_mode: string },
@@ -100,7 +100,14 @@ export default function EnglishTerminalSession() {
           'La apertura de Terminal de palabras',
         )
         if (!active) return
-        if (openError) throw new Error(userFacingError(openError, 'No se pudo abrir Terminal de palabras.'))
+        if (openError) {
+          const message = (openError.message ?? '').toLowerCase()
+          if (message.includes('practice already completed today')) {
+            setCompletedToday(true)
+            return
+          }
+          throw new Error(userFacingError(openError, 'No se pudo abrir Terminal de palabras.'))
+        }
 
         const openedId = String((opened as { session_id?: string } | null)?.session_id ?? '')
         if (!openedId) throw new Error('El servidor no devolvió un identificador de sesión')
@@ -279,6 +286,7 @@ export default function EnglishTerminalSession() {
   }
 
   if (loading) return <section className="card" role="status"><p className="muted">Abriendo Terminal de palabras…</p><p className="muted">Si la red o la sesión no responden, mostraremos un error recuperable en unos segundos.</p></section>
+  if (completedToday) return <section className="card" style={{ textAlign: 'center', padding: 45 }}><div style={{ fontSize: 72 }}>🧳✅</div><span className="tag">TERMINAL COMPLETADA HOY</span><h1>Práctica de hoy terminada</h1><p className="muted">Ya completaste los 10 controles de Terminal de palabras. El progreso y las recompensas están guardados.</p><p className="muted">Mañana podrás abrir una nueva práctica del distrito.</p><div className="action-row" style={{ justifyContent: 'center' }}><Link className="btn primary" href="/zone/english">VOLVER AL PUERTO</Link><Link className="btn dark" href="/world">VOLVER AL MUNDO</Link></div></section>
   if (error) return <section className="card" role="alert"><span className="tag">TERMINAL DE PALABRAS</span><h1>No se puede continuar</h1><p className="muted">{error}</p><div className="action-row"><button className="btn primary" type="button" onClick={() => window.location.reload()}>REINTENTAR</button><Link className="btn dark" href="/zone/english">VOLVER AL PUERTO</Link></div></section>
   if (index >= SESSION_LENGTH) {
     if (!completed) return <section className="card" role="status"><h1>{closing ? 'Validando los 10 retos…' : 'Confirmando resultados…'}</h1></section>
