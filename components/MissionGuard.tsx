@@ -34,12 +34,23 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
       if (!supabase) { if (active) { setMessage('Supabase no está configurado.'); setCanRetry(true) }; return }
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (!active) return
-      if (!user && (!userError || isAuthenticationExpired(userError))) { localStorage.removeItem('levelup_player_id'); router.replace('/login'); return }
+      if (isAuthenticationExpired(userError) || (!user && !userError)) {
+        localStorage.removeItem('levelup_player_id')
+        try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
+        router.replace('/login')
+        return
+      }
       if (userError || !user) { setMessage(userFacingError(userError, 'No se pudo comprobar tu sesión.')); setCanRetry(true); return }
       const playerId = localStorage.getItem('levelup_player_id')
       if (!playerId) { router.replace('/parent/setup'); return }
       const { data: player, error: playerError } = await supabase.from('players').select('id,avatar').eq('id', playerId).maybeSingle()
       if (!active) return
+      if (isAuthenticationExpired(playerError)) {
+        localStorage.removeItem('levelup_player_id')
+        try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
+        router.replace('/login')
+        return
+      }
       if (playerError) { setMessage(userFacingError(playerError, 'No se pudo comprobar el jugador seleccionado.')); setCanRetry(true); return }
       if (!player) { localStorage.removeItem('levelup_player_id'); router.replace('/parent/setup'); return }
       const avatar = player.avatar && typeof player.avatar === 'object' && !Array.isArray(player.avatar) ? player.avatar as Record<string, unknown> : {}
