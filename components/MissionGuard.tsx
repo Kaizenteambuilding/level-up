@@ -16,8 +16,9 @@ const SpanishWordsSession = dynamic(() => import('@/components/SpanishWordsSessi
 const SpanishWritingSession = dynamic(() => import('@/components/SpanishWritingSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Sala de cronistas...</p></section> })
 const SpanishWritingReplay = dynamic(() => import('@/components/SpanishWritingReplay'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando práctica libre de escritura...</p></section> })
 const ScienceLifeSession = dynamic(() => import('@/components/ScienceLifeSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Cúpula de la vida...</p></section> })
+const ScienceObservatorySession = dynamic(() => import('@/components/ScienceObservatorySession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Observatorio...</p></section> })
 
-type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life'
+type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory'
 
 export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
@@ -74,5 +75,6 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
   if (mode === 'spanish_writing') return <SpanishWritingSession />
   if (mode === 'spanish_writing_replay') return <SpanishWritingReplay />
   if (mode === 'science_life') return <ScienceLifeSession />
+  if (mode === 'science_observatory') return <ScienceObservatorySession />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
