@@ -17,8 +17,9 @@ const SpanishWritingSession = dynamic(() => import('@/components/SpanishWritingS
 const SpanishWritingReplay = dynamic(() => import('@/components/SpanishWritingReplay'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando práctica libre de escritura...</p></section> })
 const ScienceLifeSession = dynamic(() => import('@/components/ScienceLifeSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Cúpula de la vida...</p></section> })
 const ScienceObservatorySession = dynamic(() => import('@/components/ScienceObservatorySession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Observatorio...</p></section> })
+const ScienceInvestigationSession = dynamic(() => import('@/components/ScienceInvestigationSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Cámara de investigación...</p></section> })
 
-type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory'
+type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory' | 'science_investigation'
 
 export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
@@ -36,34 +37,22 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
       if (!supabase) { if (active) { setMessage('Supabase no está configurado.'); setCanRetry(true) }; return }
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (!active) return
-      if (isAuthenticationExpired(userError) || (!user && !userError)) {
-        localStorage.removeItem('levelup_player_id')
-        try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
-        router.replace('/login')
-        return
-      }
+      if (isAuthenticationExpired(userError) || (!user && !userError)) { localStorage.removeItem('levelup_player_id'); try { await supabase.auth.signOut({ scope: 'local' }) } catch {}; router.replace('/login'); return }
       if (userError || !user) { setMessage(userFacingError(userError, 'No se pudo comprobar tu sesión.')); setCanRetry(true); return }
       const playerId = localStorage.getItem('levelup_player_id')
       if (!playerId) { router.replace('/parent/setup'); return }
       const { data: player, error: playerError } = await supabase.from('players').select('id,avatar').eq('id', playerId).maybeSingle()
       if (!active) return
-      if (isAuthenticationExpired(playerError)) {
-        localStorage.removeItem('levelup_player_id')
-        try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
-        router.replace('/login')
-        return
-      }
+      if (isAuthenticationExpired(playerError)) { localStorage.removeItem('levelup_player_id'); try { await supabase.auth.signOut({ scope: 'local' }) } catch {}; router.replace('/login'); return }
       if (playerError) { setMessage(userFacingError(playerError, 'No se pudo comprobar el jugador seleccionado.')); setCanRetry(true); return }
       if (!player) { localStorage.removeItem('levelup_player_id'); router.replace('/parent/setup'); return }
       const avatar = player.avatar && typeof player.avatar === 'object' && !Array.isArray(player.avatar) ? player.avatar as Record<string, unknown> : {}
-      const isOnboarding = new URLSearchParams(window.location.search).get('onboarding') === '1'
-      setOnboardingMode(isOnboarding)
+      const isOnboarding = new URLSearchParams(window.location.search).get('onboarding') === '1'; setOnboardingMode(isOnboarding)
       const onboardingStarted = typeof avatar.onboarding_started_at === 'string'
       if (avatar.onboarding_completed !== true && (!isOnboarding || !onboardingStarted)) { router.replace('/onboarding'); return }
       setReady(true)
     }
-    checkAccess()
-    return () => { active = false }
+    checkAccess(); return () => { active = false }
   }, [router, retryKey])
 
   if (!ready) return <section className="card"><p className="muted">{message}</p>{canRetry && <button className="btn primary" type="button" onClick={() => setRetryKey((value) => value + 1)}>REINTENTAR</button>}</section>
@@ -76,5 +65,6 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
   if (mode === 'spanish_writing_replay') return <SpanishWritingReplay />
   if (mode === 'science_life') return <ScienceLifeSession />
   if (mode === 'science_observatory') return <ScienceObservatorySession />
+  if (mode === 'science_investigation') return <ScienceInvestigationSession />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
