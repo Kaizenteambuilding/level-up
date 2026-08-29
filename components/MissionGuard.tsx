@@ -18,8 +18,9 @@ const SpanishWritingReplay = dynamic(() => import('@/components/SpanishWritingRe
 const ScienceLifeSession = dynamic(() => import('@/components/ScienceLifeSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Cúpula de la vida...</p></section> })
 const ScienceObservatorySession = dynamic(() => import('@/components/ScienceObservatorySession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Observatorio...</p></section> })
 const ScienceInvestigationSession = dynamic(() => import('@/components/ScienceInvestigationSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Cámara de investigación...</p></section> })
+const GeographyMapsSession = dynamic(() => import('@/components/GeographyMapsSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Sala de cartografía...</p></section> })
 
-type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory' | 'science_investigation'
+type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory' | 'science_investigation' | 'geography_maps'
 
 export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
@@ -66,5 +67,6 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
   if (mode === 'science_life') return <ScienceLifeSession />
   if (mode === 'science_observatory') return <ScienceObservatorySession />
   if (mode === 'science_investigation') return <ScienceInvestigationSession />
+  if (mode === 'geography_maps') return <GeographyMapsSession />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
