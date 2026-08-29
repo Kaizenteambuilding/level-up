@@ -19,8 +19,10 @@ const ScienceLifeSession = dynamic(() => import('@/components/ScienceLifeSession
 const ScienceObservatorySession = dynamic(() => import('@/components/ScienceObservatorySession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Observatorio...</p></section> })
 const ScienceInvestigationSession = dynamic(() => import('@/components/ScienceInvestigationSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Cámara de investigación...</p></section> })
 const GeographyMapsSession = dynamic(() => import('@/components/GeographyMapsSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Sala de cartografía...</p></section> })
+const GeographyPhysicalSession = dynamic(() => import('@/components/GeographyPhysicalSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Expedición terrestre...</p></section> })
+const HistoryAncientSession = dynamic(() => import('@/components/HistoryAncientSession'), { loading: () => <section className="card" aria-live="polite"><p className="muted">Preparando Archivo del tiempo...</p></section> })
 
-type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory' | 'science_investigation' | 'geography_maps'
+type MissionMode = 'daily' | 'english_terminal' | 'english_conversation' | 'english_listening' | 'spanish_reading' | 'spanish_words' | 'spanish_writing' | 'spanish_writing_replay' | 'science_life' | 'science_observatory' | 'science_investigation' | 'geography_maps' | 'geography_physical' | 'history_ancient'
 
 export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode }) {
   const router = useRouter()
@@ -68,5 +70,7 @@ export default function MissionGuard({ mode = 'daily' }: { mode?: MissionMode })
   if (mode === 'science_observatory') return <ScienceObservatorySession />
   if (mode === 'science_investigation') return <ScienceInvestigationSession />
   if (mode === 'geography_maps') return <GeographyMapsSession />
+  if (mode === 'geography_physical') return <GeographyPhysicalSession />
+  if (mode === 'history_ancient') return <HistoryAncientSession />
   return onboardingMode ? <CurriculumDailySession /> : <MultiSubjectDailySession />
 }
