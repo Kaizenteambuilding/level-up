@@ -1,5 +1,5 @@
-import MathCity from '@/components/MathCity'
+import { permanentRedirect } from 'next/navigation'
 
 export default function MathCityPage() {
-  return <main className="shell game-shell"><MathCity /></main>
+  permanentRedirect('/zone/math')
 }
