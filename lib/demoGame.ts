@@ -182,8 +182,8 @@ export type DemoAchievement = {
 export function demoAchievements(state: DemoGameState): DemoAchievement[] {
   const equippedSlots = Object.keys(state.equipped).length
   return [
-    { id: 'first-mission', name: 'Energía restaurada', description: 'Completa una misión de Ciudad Matemática.', icon: '⚡', unlocked: state.rewardedSessions.length >= 1, progress: Math.min(1, state.rewardedSessions.length), target: 1 },
-    { id: 'three-missions', name: 'Constancia matemática', description: 'Completa tres misiones diferentes.', icon: '🏙️', unlocked: state.rewardedSessions.length >= 3, progress: Math.min(3, state.rewardedSessions.length), target: 3 },
+    { id: 'first-mission', name: 'Energía restaurada', description: 'Completa tu primera misión de aprendizaje.', icon: '⚡', unlocked: state.rewardedSessions.length >= 1, progress: Math.min(1, state.rewardedSessions.length), target: 1 },
+    { id: 'three-missions', name: 'Constancia exploradora', description: 'Completa tres misiones diferentes.', icon: '🗺️', unlocked: state.rewardedSessions.length >= 3, progress: Math.min(3, state.rewardedSessions.length), target: 3 },
     { id: 'first-item', name: 'Primer hallazgo', description: 'Consigue tu primer objeto en la tienda.', icon: '🎁', unlocked: state.owned.length >= 1, progress: Math.min(1, state.owned.length), target: 1 },
     { id: 'collector', name: 'Coleccionista', description: 'Reúne tres objetos cosméticos.', icon: '🎒', unlocked: state.owned.length >= 3, progress: Math.min(3, state.owned.length), target: 3 },
     { id: 'full-loadout', name: 'Explorador equipado', description: 'Equipa cabeza, compañero y estela.', icon: '🧑‍🚀', unlocked: equippedSlots >= 3, progress: Math.min(3, equippedSlots), target: 3 },
@@ -194,15 +194,15 @@ export function demoAchievements(state: DemoGameState): DemoAchievement[] {
 export type DemoGuideStep = { id: string; title: string; message: string; href: string; action: string; icon: string }
 
 export function demoGuideStep(state: DemoGameState, level = 1): DemoGuideStep {
-  if (state.rewardedSessions.length === 0) return { id: 'first-mission', title: 'La ciudad necesita energía', message: 'Completa tu primera misión adaptativa para activar el núcleo y ganar monedas.', href: '/mission/briefing', action: 'ABRIR PRIMERA MISIÓN', icon: '⚡' }
+  if (state.rewardedSessions.length === 0) return { id: 'first-mission', title: 'Tu expedición necesita energía', message: 'Completa tu primera misión adaptativa para activar el núcleo y ganar monedas.', href: '/mission/briefing', action: 'ABRIR PRIMERA MISIÓN', icon: '⚡' }
   if (level < 2) return { id: 'reach-level-2', title: 'La tienda se está preparando', message: 'Alcanza el nivel 2 con nuevas misiones para desbloquear la Tienda del Explorador.', href: '/mission/briefing', action: 'GANAR EXPERIENCIA', icon: '⭐' }
   if (state.owned.length === 0) return { id: 'first-item', title: 'Tienes una recompensa esperándote', message: 'Ya hay monedas en tu cartera. Elige tu primer objeto en la Tienda del Explorador.', href: '/shop', action: 'VISITAR LA TIENDA', icon: '🎁' }
   if (Object.keys(state.equipped).length < 3) return { id: 'full-loadout', title: 'Completa tu equipamiento', message: 'Consigue y combina un objeto de cabeza, un compañero y una estela.', href: '/shop', action: 'BUSCAR EQUIPO', icon: '🎒' }
   if (state.visitedThemes.length < 3) return { id: 'themes', title: 'Haz tuyo el refugio', message: 'Prueba los ambientes del refugio y descubre cuál encaja mejor con tu explorador.', href: '/base', action: 'PERSONALIZAR REFUGIO', icon: '🚀' }
-  if (state.rewardedSessions.length < 3) return { id: 'three-missions', title: 'La constancia abre caminos', message: `Has completado ${state.rewardedSessions.length} de 3 expediciones para el siguiente logro.`, href: '/mission/briefing', action: 'CONTINUAR AVENTURA', icon: '🏙️' }
+  if (state.rewardedSessions.length < 3) return { id: 'three-missions', title: 'La constancia abre caminos', message: `Has completado ${state.rewardedSessions.length} de 3 expediciones para el siguiente logro.`, href: '/mission/briefing', action: 'CONTINUAR AVENTURA', icon: '🗺️' }
   const pending = demoAchievements(state).find((achievement) => !achievement.unlocked)
   if (pending) return { id: pending.id, title: `Siguiente logro: ${pending.name}`, message: pending.description, href: '/achievements', action: 'VER BITÁCORA', icon: pending.icon }
-  return { id: 'complete', title: 'Explorador de élite', message: 'Has completado todos los objetivos actuales. Sigue entrenando mientras se preparan nuevas zonas.', href: '/math-city', action: 'EXPLORAR LA CIUDAD', icon: '🏆' }
+  return { id: 'complete', title: 'Explorador de élite', message: 'Has completado todos los objetivos actuales. Sigue entrenando en cualquiera de los cinco mundos activos.', href: '/world', action: 'ELEGIR MUNDO', icon: '🏆' }
 }
 
 export function equippedDemoItems(state: DemoGameState) {
