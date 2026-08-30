@@ -1,6 +1,6 @@
 {
   "projectRef": "dtyqebdkgayxufffidef",
-  "capturedAt": "2026-08-27",
+  "capturedAt": "2026-08-30",
   "production": [
     ["20260816075245", "harden_attempts_and_abandon_sessions"],
     ["20260816080034", "harden_legacy_functions"],
@@ -45,7 +45,10 @@
     ["20260827103502", "open_english_listening_practice"],
     ["20260827124231", "open_spanish_reading_practice"],
     ["20260827134312", "open_spanish_words_practice"],
-    ["20260827185743", "open_spanish_writing_practice"]
+    ["20260827185743", "open_spanish_writing_practice"],
+    ["20260829081933", "allow_science_geography_practice_modes"],
+    ["20260829082924", "allow_remaining_geography_history_practice_modes"],
+    ["20260830072941", "allow_math_practice_modes"]
   ],
   "repositoryToProduction": {
     "20260816075245_harden_attempts_and_abandon_sessions.sql": "20260816075245",
@@ -92,7 +95,18 @@
     "20260827103500_open_english_listening_practice.sql": "20260827103502",
     "20260827124200_open_spanish_reading_practice.sql": "20260827124231",
     "20260827134300_open_spanish_words_practice.sql": "20260827134312",
-    "20260827185700_open_spanish_writing_practice.sql": "20260827185743"
+    "20260827185700_open_spanish_writing_practice.sql": "20260827185743",
+    "20260830072941_allow_math_practice_modes.sql": "20260830072941"
+  },
+  "productionOnlySuperseded": {
+    "20260829081933": {
+      "name": "allow_science_geography_practice_modes",
+      "supersededBy": "20260830072941_allow_math_practice_modes.sql"
+    },
+    "20260829082924": {
+      "name": "allow_remaining_geography_history_practice_modes",
+      "supersededBy": "20260830072941_allow_math_practice_modes.sql"
+    }
   },
   "notDeployed": {
     "20260824164500_commit_xp_on_completion.sql": {
