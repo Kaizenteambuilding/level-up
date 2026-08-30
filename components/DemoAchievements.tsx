@@ -32,15 +32,15 @@ export default function DemoAchievements() {
         })}
       </section>
       <section className="card expedition-log">
-        <div><span className="tag">🧭 HISTORIAL DE EXPEDICIONES</span><h2>Últimas misiones</h2><p className="muted">Registro sincronizado de las últimas misiones completadas.</p></div>
+        <div><span className="tag">🧭 HISTORIAL DE EXPEDICIONES</span><h2>Últimas expediciones diarias</h2><p className="muted">Registro sincronizado de las últimas expediciones diarias completadas.</p></div>
         {game.missionHistory.length ? <div className="expedition-list">{[...game.missionHistory].reverse().map((record, index) => {
           const date = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(record.completedAt))
-          return <article key={record.sessionId}><span className="expedition-number">#{game.missionHistory.length - index}</span><div><b>Ciudad Matemática</b><small>{date}</small></div><strong>{record.correct}/10</strong><span>⭐ +{record.xp} XP</span><span>🪙 +{record.reward}</span></article>
-        })}</div> : <div className="empty-expedition"><span aria-hidden="true">🗺️</span><div><b>La siguiente misión abrirá el historial</b><p className="muted">Al completarla aparecerán aquí sus aciertos, XP y recompensa.</p></div><Link href="/mission/briefing" className="btn primary">EMPEZAR EXPEDICIÓN</Link></div>}
+          return <article key={record.sessionId}><span className="expedition-number">#{game.missionHistory.length - index}</span><div><b>Expedición diaria</b><small>{date}</small></div><strong>{record.correct}/10</strong><span>⭐ +{record.xp} XP</span><span>🪙 +{record.reward}</span></article>
+        })}</div> : <div className="empty-expedition"><span aria-hidden="true">🗺️</span><div><b>La siguiente expedición abrirá el historial</b><p className="muted">Al completarla aparecerán aquí sus aciertos, XP y recompensa.</p></div><Link href="/mission/briefing" className="btn primary">EMPEZAR EXPEDICIÓN</Link></div>}
       </section>
-      <div className="action-row"><Link href="/world" className="btn primary">← VOLVER AL MAPA</Link><Link href="/mission/briefing" className="btn dark">IR A LA MISIÓN</Link></div>
+      <div className="action-row"><Link href="/world" className="btn primary">← VOLVER AL MAPA</Link><Link href="/mission/briefing" className="btn dark">IR A LA EXPEDICIÓN</Link></div>
       <DemoGameDock />
-      <p className="demo-notice">La bitácora utiliza misiones guardadas en la cuenta. Los logros sirven para el juego y no modifican el informe académico.</p>
+      <p className="demo-notice">La bitácora utiliza expediciones guardadas en la cuenta. Los logros sirven para el juego y no modifican el informe académico.</p>
     </>
   )
 }

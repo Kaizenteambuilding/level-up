@@ -85,7 +85,7 @@ export default function DemoBase() {
             {trail && <span className="base-trail" aria-label={trail.name}>{trail.icon} ✦ ✧</span>}
             <b>{player.alias}</b>
           </div>
-          <div className="base-console"><span>PRÓXIMA MISIÓN</span><b>Ciudad Matemática</b><Link href="/mission/briefing" className="btn primary">ABRIR BRIEFING</Link></div>
+          <div className="base-console"><span>EXPEDICIÓN DIARIA</span><b>Misión de hoy</b><Link href="/mission/briefing" className="btn primary">ABRIR BRIEFING</Link></div>
         </div>
       </section>
 
