@@ -40,7 +40,7 @@ export function useDemoGamePlayer(options: { allowIncompleteOnboarding?: boolean
       ] = await Promise.all([
         supabase.from('players').select('id,alias,xp,level,coins,avatar').eq('id', playerId).maybeSingle(),
         supabase.from('player_inventory').select('item_id,slot,equipped').eq('player_id', playerId),
-        supabase.from('study_sessions').select('id,ended_at,xp_earned,coins_earned').eq('player_id', playerId).eq('completed', true).eq('phase', 'done').order('ended_at', { ascending: false }).limit(20),
+        supabase.from('study_sessions').select('id,ended_at,xp_earned,coins_earned').eq('player_id', playerId).eq('mode', 'daily').eq('completed', true).eq('phase', 'done').order('ended_at', { ascending: false }).limit(20),
         supabase.rpc('get_levelup_game_summary', { p_player_id: playerId }),
       ])
       if ([playerError, inventoryError, missionsError, summaryError].some(isAuthenticationExpired)) { await redirectExpiredSession(); return }
