@@ -34,7 +34,7 @@ export function gameRank(level: number) {
 }
 
 export const GAME_UNLOCKS = [
-  { level: 1, id: 'math-city', label: 'Ciudad Matemática', icon: '🏙️' },
+  { level: 1, id: 'learning-worlds', label: '5 mundos de aprendizaje', icon: '🗺️' },
   { level: 2, id: 'shop', label: 'Tienda del Explorador', icon: '🏪' },
   { level: 3, id: 'base-forest', label: 'Refugio Bosque', icon: '🌲' },
   { level: 5, id: 'base-arcade', label: 'Refugio Arcade', icon: '🕹️' },
