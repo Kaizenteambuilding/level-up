@@ -7,13 +7,13 @@ import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { isAuthenticationExpired, userFacingError } from '@/lib/userFacingError'
 import { fetchCompletedActivity, fetchCompletedSkillEvidence } from '@/lib/progressQueries'
 import { gameRank, levelProgress } from '@/lib/gameProgression'
+import { ACTIVE_SUBJECT_IDS } from '@/lib/subjects'
 
 type Player = { id:string; alias:string; xp:number; coins:number; level:number; daily_target_minutes:number }
 type LastSession = { id:string; started_at:string; ended_at:string|null; completed:boolean; xp_earned:number }
 type ActivitySession = { started_at:string; ended_at:string|null; actual_minutes:number|null }
 type PrioritySkill = { skill_id:string; mastery:number; confidence:number; difficulty:number; priority:number; last_practiced_at:string|null; name:string }
 
-const ACTIVE_CURRICULUM_UNITS = ['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13','M14','M15']
 const SESSION_LENGTH = 10
 const RESUME_WINDOW_MS = 24 * 60 * 60 * 1000
 
@@ -55,15 +55,20 @@ export default function PlayerDashboard() {
     const warnings:string[]=[]; setPlayer(currentPlayer);setMessage('');setDataWarnings([])
     const resumeSince=new Date(Date.now()-RESUME_WINDOW_MS).toISOString(); const {data:openSession,error:openSessionError}=await supabase.from('study_sessions').select('id').eq('player_id',currentPlayer.id).eq('mode','daily').eq('completed',false).is('ended_at',null).gte('started_at',resumeSince).order('started_at',{ascending:false}).limit(1).maybeSingle()
     if(openSessionError){warnings.push('No se pudo comprobar si hay una expedición diaria guardada.');setOpenMissionProgress(null);setOpenMissionProgressUnknown(false)} else if(openSession){const {count,error:countError}=await supabase.from('attempts').select('id',{count:'exact',head:true}).eq('session_id',openSession.id); if(countError||count===null){warnings.push('No se pudo cargar el avance exacto de la expedición guardada.');setOpenMissionProgress(null);setOpenMissionProgressUnknown(true)} else {setOpenMissionProgress(Math.min(SESSION_LENGTH,Number(count)));setOpenMissionProgressUnknown(false)}} else {setOpenMissionProgress(null);setOpenMissionProgressUnknown(false)}
+    const {data:activeUnits,error:activeUnitsError}=await supabase.from('curriculum_units').select('id').eq('active',true).in('subject_id',ACTIVE_SUBJECT_IDS)
+    const activeUnitIds=(activeUnits??[]).map(unit=>String(unit.id))
+    const priorityStateQuery=activeUnitsError||activeUnitIds.length===0
+      ? Promise.resolve({data:null,error:activeUnitsError??new Error('No hay unidades activas disponibles')})
+      : supabase.from('player_skill_state').select(`skill_id,mastery,confidence,difficulty,priority,last_practiced_at,skills!inner (name,unit_id)`).eq('player_id',currentPlayer.id).eq('skills.active',true).in('skills.unit_id',activeUnitIds).order('priority',{ascending:false})
     const [{data:activityData,error:activityError},{data:sessionData,error:sessionError},{data:stateData,error:stateError},{data:skillEvidenceData,error:skillEvidenceError}]=await Promise.all([
       fetchCompletedActivity(supabase,currentPlayer.id),
       supabase.from('study_sessions').select('id,started_at,ended_at,completed,xp_earned').eq('player_id',currentPlayer.id).eq('mode','daily').eq('completed',true).eq('phase','done').order('started_at',{ascending:false}).limit(1).maybeSingle(),
-      supabase.from('player_skill_state').select(`skill_id,mastery,confidence,difficulty,priority,last_practiced_at,skills!inner (name,unit_id)`).eq('player_id',currentPlayer.id).eq('skills.active',true).in('skills.unit_id',ACTIVE_CURRICULUM_UNITS).order('priority',{ascending:false}),
+      priorityStateQuery,
       fetchCompletedSkillEvidence(supabase,currentPlayer.id)
     ])
     if(activityError) warnings.push('No se pudieron cargar el tiempo, los días de entrenamiento y la racha.'); else {const summary=activitySummary((activityData??[]) as ActivitySession[]);setTodayMinutes(summary.todayMinutes);setTrainingDays(summary.totalTrainingDays);setStreak(summary.streak)}
     if(sessionError) warnings.push('No se pudo cargar la última expedición diaria completada.'); else if(sessionData){setLastSession(sessionData as LastSession);const {data:attemptsData,error:attemptsError}=await supabase.from('attempts').select('correct').eq('session_id',sessionData.id);if(attemptsError)warnings.push('No se pudieron cargar los resultados de la última expedición.');const attempts=attemptsError?[]:attemptsData??[];setSessionAttempts(attempts.length);setSessionCorrect(attempts.filter((a:any)=>a.correct===true).length)} else {setLastSession(null);setSessionAttempts(0);setSessionCorrect(0)}
-    if(stateError||skillEvidenceError) warnings.push('No se pudieron cargar las recomendaciones adaptativas.'); else if(stateData&&stateData.length>0){const completedCounts=skillEvidenceData?.attempts??{};setPrioritySkills(stateData.filter((s:any)=>Number(completedCounts[s.skill_id]??0)>=2&&(Number(s.mastery)<70||Number(s.confidence)<60)).slice(0,3).map((s:any)=>({...s,name:s.skills?.name??s.skill_id})))}
+    if(stateError||skillEvidenceError) warnings.push('No se pudieron cargar las recomendaciones adaptativas.'); else if(stateData&&stateData.length>0){const completedCounts=skillEvidenceData?.attempts??{};setPrioritySkills(stateData.filter((s:any)=>Number(completedCounts[s.skill_id]??0)>=2&&(Number(s.mastery)<70||Number(s.confidence)<60)).slice(0,3).map((s:any)=>({...s,name:s.skills?.name??s.skill_id})))} else setPrioritySkills([])
     setDataWarnings(warnings);setLoading(false)
   }
   useEffect(()=>{load()},[])
