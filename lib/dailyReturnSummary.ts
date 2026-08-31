@@ -14,8 +14,8 @@ export function buildDailyReturnSummary(game: DemoGameState, completedToday: boo
   if (!latest) {
     return {
       title: 'Tu expedición empieza aquí',
-      detail: 'Aún no hay una misión completada en tu historial.',
-      next: 'Completa la misión diaria para empezar a construir progreso y racha.',
+      detail: 'Aún no hay una expedición completada en tu historial.',
+      next: 'Completa la expedición diaria para empezar a construir progreso y racha.',
     }
   }
 
@@ -26,7 +26,7 @@ export function buildDailyReturnSummary(game: DemoGameState, completedToday: boo
     title: completedToday ? 'Hoy ya has avanzado' : 'Tu progreso sigue contigo',
     detail: `${latest.correct}/10 aciertos · +${latest.xp} XP${reward}`,
     next: completedToday
-      ? `Racha actual: ${streak} días. Mañana tendrás una nueva misión.`
-      : 'La siguiente misión diaria continúa desde tu progreso persistido.',
+      ? `Racha actual: ${streak} días. Mañana tendrás una nueva expedición.`
+      : 'La siguiente expedición diaria continúa desde tu progreso persistido.',
   }
 }
