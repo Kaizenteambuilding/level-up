@@ -26,15 +26,15 @@ export function buildReturnLoop(history: DemoMissionRecord[], authoritativeStrea
     return {
       completedToday,
       streak,
-      title: streak > 1 ? `Racha protegida: ${streak} días` : 'Primer día de tu nueva racha',
-      message: 'La misión de hoy ya cuenta. Mañana habrá una nueva expedición para mantener la racha y seguir avanzando.',
+      title: streak > 1 ? `Racha actual: ${streak} días` : 'Primer día de tu nueva racha',
+      message: 'La expedición de hoy ya está completada. Tu racha refleja toda la actividad de aprendizaje completada; mañana habrá una nueva expedición diaria.',
     }
   }
 
   return {
     completedToday,
     streak,
-    title: streak > 0 ? `Tu racha de ${streak} días te espera` : 'Hoy puedes empezar una nueva racha',
-    message: 'Completa la misión diaria para registrar el día y mantener viva la expedición.',
+    title: streak > 0 ? `Tu racha de ${streak} días sigue activa` : 'Hoy puedes empezar una nueva racha',
+    message: 'Completa la expedición diaria o un distrito de aprendizaje para seguir entrenando. La expedición diaria añade además sus recompensas específicas.',
   }
 }
