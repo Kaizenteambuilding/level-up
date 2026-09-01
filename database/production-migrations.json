@@ -49,7 +49,8 @@
     ["20260829081933", "allow_science_geography_practice_modes"],
     ["20260829082924", "allow_remaining_geography_history_practice_modes"],
     ["20260830072941", "allow_math_practice_modes"],
-    ["20260901121608", "enforce_practice_skill_scope"]
+    ["20260901121608", "enforce_practice_skill_scope"],
+    ["20260901131627", "serialize_session_switching"]
   ],
   "repositoryToProduction": {
     "20260816075245_harden_attempts_and_abandon_sessions.sql": "20260816075245",
@@ -99,7 +100,7 @@
     "20260827185700_open_spanish_writing_practice.sql": "20260827185743",
     "20260830072941_allow_math_practice_modes.sql": "20260830072941",
     "20260901093000_enforce_practice_skill_scope.sql": "20260901121608",
-    "20260901123500_serialize_session_switching.sql": null
+    "20260901123500_serialize_session_switching.sql": "20260901131627"
   },
   "productionOnlySuperseded": {
     "20260829081933": {
@@ -115,9 +116,6 @@
     "20260824164500_commit_xp_on_completion.sql": {
       "reason": "Repository-only historical migration; its intended XP transaction boundary was later restored authoritatively in production.",
       "supersededBy": "20260826200500_restore_xp_commit_on_completion.sql"
-    },
-    "20260901123500_serialize_session_switching.sql": {
-      "reason": "Pending review and CI validation before applying to production."
     }
   }
 }
