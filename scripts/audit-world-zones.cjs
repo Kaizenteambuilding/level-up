@@ -8,6 +8,7 @@ source = source
   .replace('(icon: string, name: string, detail: string, href: string, mode: string): WorldDistrict', '(icon, name, detail, href, mode)')
   .replace(/: WorldDistrict/g, '')
   .replace(/: WorldZone\[\]/, '')
+  .replace(/export const/g, 'const')
   .replace(/export function/g, 'function')
   .replace(/value: string/, 'value') + '\nmodule.exports={WORLD_ZONES,worldZoneById}'
 const box = { module: { exports: {} } }
