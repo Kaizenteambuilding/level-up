@@ -3,45 +3,49 @@ const fs = require('node:fs')
 const vm = require('node:vm')
 
 let source = fs.readFileSync('lib/worldZones.ts', 'utf8')
-source = source.replace(/export type[\s\S]*?\n\nconst comingSoon/, 'const comingSoon').replace(/: WorldDistrict/g, '').replace(/: WorldZone\[\]/, '').replace(/export function/g, 'function').replace(/value: string/, 'value') + '\nmodule.exports={WORLD_ZONES,worldZoneById}'
+source = source
+  .replace(/export type[\s\S]*?\n\nconst playable/, 'const playable')
+  .replace('(icon: string, name: string, detail: string, href: string, mode: string): WorldDistrict', '(icon, name, detail, href, mode)')
+  .replace(/: WorldDistrict/g, '')
+  .replace(/: WorldZone\[\]/, '')
+  .replace(/export const/g, 'const')
+  .replace(/export function/g, 'function')
+  .replace(/value: string/, 'value') + '\nmodule.exports={WORLD_ZONES,worldZoneById}'
 const box = { module: { exports: {} } }
 vm.runInNewContext(source, box)
 const { WORLD_ZONES, worldZoneById } = box.module.exports
-assert.deepEqual(Array.from(WORLD_ZONES, (zone) => zone.id), ['language', 'english', 'science', 'creative'])
+
+const expectedZones = ['math', 'language', 'english', 'science', 'geography']
+const expectedModes = [
+  'math_numbers', 'math_algebra', 'math_geometry_data',
+  'spanish_reading', 'spanish_words', 'spanish_writing',
+  'english_listening', 'english_conversation', 'english_terminal',
+  'science_life', 'science_investigation', 'science_observatory',
+  'geography_maps', 'geography_physical', 'history_ancient',
+]
+
+assert.deepEqual(Array.from(WORLD_ZONES, (zone) => zone.id), expectedZones)
+assert.equal(WORLD_ZONES.length, 5, 'Level Up must expose five subject worlds')
+assert.equal(WORLD_ZONES.flatMap((zone) => zone.districts).length, 15, 'Level Up must expose fifteen districts')
+
 for (const zone of WORLD_ZONES) {
   assert.equal(zone.districts.length, 3, `${zone.id} must have three districts`)
   assert.equal(worldZoneById(zone.id).name, zone.name)
   for (const district of zone.districts) {
-    assert.ok(['coming_soon', 'playable'].includes(district.availability), `${zone.id}/${district.name} must declare availability`)
-    if (district.availability === 'playable') assert.ok(district.href?.startsWith('/'), `${zone.id}/${district.name} playable district must have an internal href`)
+    assert.equal(district.availability, 'playable', `${zone.id}/${district.name} must be playable`)
+    assert.ok(district.href?.startsWith(`/zone/${zone.id}/`), `${zone.id}/${district.name} must have a route inside its world`)
+    assert.ok(district.mode, `${zone.id}/${district.name} must declare its persisted practice mode`)
   }
 }
 assert.equal(worldZoneById('unknown'), undefined)
-const language = worldZoneById('language')
-assert.deepEqual(Array.from(language.districts, (district) => district.name), ['Galería de lectura', 'Taller de palabras', 'Sala de cronistas'])
-assert.deepEqual(Array.from(language.districts, (district) => district.availability), ['playable', 'playable', 'playable'])
-assert.equal(language.districts[0].href, '/zone/language/reading')
-assert.equal(language.districts[1].href, '/zone/language/words')
-assert.equal(language.districts[2].href, '/zone/language/writing')
-assert.equal(language.districts.filter((district) => district.availability === 'playable').length, 3)
-const english = worldZoneById('english')
-assert.equal(english.districts.filter((district) => district.availability === 'playable').length, 3)
-const preview = fs.readFileSync('components/ZonePreview.tsx', 'utf8')
-assert.ok(preview.includes('DISPONIBLE PRÓXIMAMENTE'))
-assert.ok(preview.includes("district.availability === 'playable'"))
-assert.ok(preview.includes('ENTRAR AL DISTRITO'))
-const reading = fs.readFileSync('components/SpanishReadingSession.tsx', 'utf8')
-assert.ok(reading.includes("const MODE = 'spanish_reading'"))
-assert.ok(reading.includes('complete_levelup_session'))
-const words = fs.readFileSync('components/SpanishWordsSession.tsx', 'utf8')
-assert.ok(words.includes("const MODE = 'spanish_words'"))
-assert.ok(words.includes('complete_levelup_session'))
-const writing = fs.readFileSync('components/SpanishWritingSession.tsx', 'utf8')
-assert.ok(writing.includes("const MODE = 'spanish_writing'"), 'Spanish writing must use its bounded practice mode')
-assert.ok(writing.includes('WRITING_SKILL_IDS'), 'Spanish writing must use its writing-focused skill subset')
-assert.ok(writing.includes("'spanish_writing'"), 'Spanish writing attempts must be identifiable')
-assert.ok(writing.includes('evaluateSpanishWriting'), 'Spanish writing must evaluate guided text criteria')
-assert.ok(writing.includes('complete_levelup_session'), 'Spanish writing must close through authoritative completion')
+assert.deepEqual(Array.from(WORLD_ZONES.flatMap((zone) => zone.districts), (district) => district.mode), expectedModes)
+assert.equal(new Set(WORLD_ZONES.flatMap((zone) => zone.districts).map((district) => district.mode)).size, 15, 'District modes must be unique')
+assert.equal(new Set(WORLD_ZONES.flatMap((zone) => zone.districts).map((district) => district.href)).size, 15, 'District routes must be unique')
+
 const guard = fs.readFileSync('components/MissionGuard.tsx', 'utf8')
-for (const mode of ['english_conversation','english_listening','spanish_reading','spanish_words','spanish_writing']) assert.ok(guard.includes(`mode === '${mode}'`), `Mission guard must route ${mode}`)
-console.log('World zones audit passed.')
+for (const mode of expectedModes) assert.ok(guard.includes(`mode === '${mode}'`), `Mission guard must route ${mode}`)
+
+const migrations = fs.readdirSync('database/migrations').sort().map((file) => fs.readFileSync(`database/migrations/${file}`, 'utf8')).join('\n')
+for (const mode of expectedModes) assert.ok(migrations.includes(`'${mode}'`), `Database migrations must allow practice mode ${mode}`)
+
+console.log('World zones audit passed (5 worlds, 15 playable districts, routes and persisted modes aligned).')
