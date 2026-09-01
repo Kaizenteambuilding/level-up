@@ -60,6 +60,9 @@ jobs:
       - name: Audit all world districts
         run: npm run audit:world-zones
 
+      - name: Audit server-side practice skill scope
+        run: npm run audit:practice-skill-scope
+
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 

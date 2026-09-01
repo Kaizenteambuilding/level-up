@@ -1,6 +1,6 @@
 {
   "projectRef": "dtyqebdkgayxufffidef",
-  "capturedAt": "2026-08-30",
+  "capturedAt": "2026-09-01",
   "production": [
     ["20260816075245", "harden_attempts_and_abandon_sessions"],
     ["20260816080034", "harden_legacy_functions"],
@@ -96,7 +96,8 @@
     "20260827124200_open_spanish_reading_practice.sql": "20260827124231",
     "20260827134300_open_spanish_words_practice.sql": "20260827134312",
     "20260827185700_open_spanish_writing_practice.sql": "20260827185743",
-    "20260830072941_allow_math_practice_modes.sql": "20260830072941"
+    "20260830072941_allow_math_practice_modes.sql": "20260830072941",
+    "20260901093000_enforce_practice_skill_scope.sql": null
   },
   "productionOnlySuperseded": {
     "20260829081933": {
@@ -112,6 +113,9 @@
     "20260824164500_commit_xp_on_completion.sql": {
       "reason": "Repository-only historical migration; its intended XP transaction boundary was later restored authoritatively in production.",
       "supersededBy": "20260826200500_restore_xp_commit_on_completion.sql"
+    },
+    "20260901093000_enforce_practice_skill_scope.sql": {
+      "reason": "Pending review and CI validation in PR #90 before applying to production."
     }
   }
 }

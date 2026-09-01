@@ -48,6 +48,7 @@ const expectedCanonical = [
   '20260827134300_open_spanish_words_practice.sql',
   '20260827185700_open_spanish_writing_practice.sql',
   '20260830072941_allow_math_practice_modes.sql',
+  '20260901093000_enforce_practice_skill_scope.sql',
 ]
 
 const expectedLegacySnapshots = [
