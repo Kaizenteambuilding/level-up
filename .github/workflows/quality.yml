@@ -63,6 +63,9 @@ jobs:
       - name: Audit server-side practice skill scope
         run: npm run audit:practice-skill-scope
 
+      - name: Audit serialized session switching
+        run: npm run audit:session-switching
+
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
