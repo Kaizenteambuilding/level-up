@@ -57,6 +57,9 @@ jobs:
       - name: Audit English Terminal variety
         run: npm run audit:english-terminal-variety
 
+      - name: Audit all world districts
+        run: npm run audit:world-zones
+
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
