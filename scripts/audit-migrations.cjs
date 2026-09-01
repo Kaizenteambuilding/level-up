@@ -50,6 +50,7 @@ const expectedCanonical = [
   '20260830072941_allow_math_practice_modes.sql',
   '20260901093000_enforce_practice_skill_scope.sql',
   '20260901123500_serialize_session_switching.sql',
+  '20260901141000_fix_game_summary_metrics.sql',
 ]
 
 const expectedLegacySnapshots = [
