@@ -61,7 +61,7 @@
     "20260816094047_validate_attempt_rpc_inputs.sql": "20260816094047",
     "20260816094425_server_control_session_completion.sql": "20260816094425",
     "20260816094644_mark_unverified_legacy_sessions.sql": "20260816094644",
-    "20260816095058_prevent_duplicate_session_attempts.sql": "20260816095058",
+    "20260816095000_prevent_duplicate_session_attempts.sql": "20260816095058",
     "20260816095856_require_family_setup_rpc.sql": "20260816095856",
     "20260816101058_open_mission_atomically.sql": "20260816101058",
     "20260816103309_restrict_table_write_grants.sql": "20260816103309",
@@ -100,22 +100,15 @@
     "20260827185700_open_spanish_writing_practice.sql": "20260827185743",
     "20260830072941_allow_math_practice_modes.sql": "20260830072941",
     "20260901093000_enforce_practice_skill_scope.sql": "20260901121608",
-    "20260901123500_serialize_session_switching.sql": "20260901131627"
+    "20260901123500_serialize_session_switching.sql": "20260901131627",
+    "20260901141000_fix_game_summary_metrics.sql": null
   },
   "productionOnlySuperseded": {
-    "20260829081933": {
-      "name": "allow_science_geography_practice_modes",
-      "supersededBy": "20260830072941_allow_math_practice_modes.sql"
-    },
-    "20260829082924": {
-      "name": "allow_remaining_geography_history_practice_modes",
-      "supersededBy": "20260830072941_allow_math_practice_modes.sql"
-    }
+    "20260829081933": {"name": "allow_science_geography_practice_modes", "supersededBy": "20260830072941_allow_math_practice_modes.sql"},
+    "20260829082924": {"name": "allow_remaining_geography_history_practice_modes", "supersededBy": "20260830072941_allow_math_practice_modes.sql"}
   },
   "notDeployed": {
-    "20260824164500_commit_xp_on_completion.sql": {
-      "reason": "Repository-only historical migration; its intended XP transaction boundary was later restored authoritatively in production.",
-      "supersededBy": "20260826200500_restore_xp_commit_on_completion.sql"
-    }
+    "20260824164500_commit_xp_on_completion.sql": {"reason": "Repository-only historical migration; its intended XP transaction boundary was later restored authoritatively in production.", "supersededBy": "20260826200500_restore_xp_commit_on_completion.sql"},
+    "20260901141000_fix_game_summary_metrics.sql": {"reason": "Pending review and CI validation before applying to production."}
   }
 }
