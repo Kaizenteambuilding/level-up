@@ -5,6 +5,7 @@ const vm = require('node:vm')
 let source = fs.readFileSync('lib/worldZones.ts', 'utf8')
 source = source
   .replace(/export type[\s\S]*?\n\nconst playable/, 'const playable')
+  .replace('(icon: string, name: string, detail: string, href: string, mode: string): WorldDistrict', '(icon, name, detail, href, mode)')
   .replace(/: WorldDistrict/g, '')
   .replace(/: WorldZone\[\]/, '')
   .replace(/export function/g, 'function')
