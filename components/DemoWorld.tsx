@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import AcademicNextStep from './AcademicNextStep'
 import { demoAchievements, demoGuideStep, toggleDemoSound } from '@/lib/demoGame'
 import { nextGameUnlock } from '@/lib/gameProgression'
 import { playDemoSound } from '@/lib/demoSound'
@@ -59,7 +60,7 @@ export default function DemoWorld() {
         <div className="world-sky" aria-hidden="true" />
         <div className="world-topbar"><DemoAvatar player={player} game={game} /><DemoHud player={player} game={game} onToggleSound={toggleSoundPreference} /></div>
         <div className="world-heading"><span className="tag">MUNDO PERSISTENTE</span><h1 id="world-title">Mundo de {player.alias}</h1><p>Elige un destino. Los cinco mundos de aprendizaje están operativos con tres distritos cada uno.</p></div>
-        <section className="world-guide" aria-label="Siguiente objetivo recomendado"><div className="guide-character" aria-hidden="true">🤖</div><div><span className="tag">NOVA · GUÍA DE EXPLORACIÓN</span><h2>{guide.icon} {guide.title}</h2><p>{guide.message}</p></div><Link href={guide.href} className="btn primary">{guide.action}</Link></section>
+        <AcademicNextStep playerId={player.id} fallback={guide} />
         <section className="card" aria-label="Resumen de regreso"><span className="tag">🧭 TU ÚLTIMO AVANCE</span><h2>{dailySummary.title}</h2><p><b>{dailySummary.detail}</b></p><p className="muted">{dailySummary.next}</p></section>
         <section className="card" aria-label="Racha diaria"><span className="tag">🔥 EXPEDICIÓN DIARIA</span><h2>{returnLoop.title}</h2><p className="muted">{returnLoop.message}</p>{!returnLoop.completedToday && <Link href="/mission/briefing" className="btn primary">HACER EXPEDICIÓN DE HOY</Link>}</section>
         <div className="world-map">
