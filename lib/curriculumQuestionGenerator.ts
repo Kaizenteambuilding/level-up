@@ -4,6 +4,7 @@ import {
 } from './firstEvaluationGenerators'
 import { generateLanguageQuestionWithCriticalVariants } from './languageCriticalVariants'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
+import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
 
 type SkillMeta = {
   id: string
@@ -23,6 +24,10 @@ export function generateCurriculumQuestion(
   }
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
+  }
+  if (skill.id.startsWith('B01')) {
+    const investigation = generateScienceInvestigationQuestion(skill, difficulty, seed)
+    if (investigation) return investigation
   }
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
     return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
