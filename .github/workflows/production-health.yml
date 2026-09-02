@@ -39,6 +39,39 @@ jobs:
           check_page "/" "Aprende, explora y sube de nivel."
           check_page "/login" "Comprobando sesión…"
 
+      - name: Smoke all production district routes
+        run: |
+          check_district() {
+            path="$1"
+            mode="$2"
+            body="$(curl --fail --silent --show-error --retry 2 --retry-delay 3 --max-time 20 "$BASE_URL$path")"
+            printf '%s' "$body" | grep -Fq "Comprobando acceso..." || {
+              echo "Mission guard marker missing from $path" >&2
+              exit 1
+            }
+            printf '%s' "$body" | grep -Fq "\\\"mode\\\":\\\"$mode\\\"" || {
+              echo "Expected mode '$mode' missing from $path" >&2
+              exit 1
+            }
+            echo "$path serves MissionGuard with $mode"
+          }
+
+          check_district "/zone/math/numbers" "math_numbers"
+          check_district "/zone/math/algebra" "math_algebra"
+          check_district "/zone/math/geometry-data" "math_geometry_data"
+          check_district "/zone/language/reading" "spanish_reading"
+          check_district "/zone/language/words" "spanish_words"
+          check_district "/zone/language/writing" "spanish_writing"
+          check_district "/zone/english/listening" "english_listening"
+          check_district "/zone/english/conversation" "english_conversation"
+          check_district "/zone/english/terminal" "english_terminal"
+          check_district "/zone/science/life" "science_life"
+          check_district "/zone/science/investigation" "science_investigation"
+          check_district "/zone/science/observatory" "science_observatory"
+          check_district "/zone/geography/maps" "geography_maps"
+          check_district "/zone/geography/physical" "geography_physical"
+          check_district "/zone/geography/history" "history_ancient"
+
       - name: Verify baseline security headers
         run: |
           headers="$(mktemp)"
