@@ -52,6 +52,7 @@ const expectedCanonical = [
   '20260901123500_serialize_session_switching.sql',
   '20260901141000_fix_game_summary_metrics.sql',
   '20260902085000_null_safe_session_modes.sql',
+  '20260902093000_restrict_practice_scope_helper.sql',
 ]
 
 const expectedLegacySnapshots = [
