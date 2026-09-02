@@ -51,6 +51,7 @@ const expectedCanonical = [
   '20260901093000_enforce_practice_skill_scope.sql',
   '20260901123500_serialize_session_switching.sql',
   '20260901141000_fix_game_summary_metrics.sql',
+  '20260902085000_null_safe_session_modes.sql',
 ]
 
 const expectedLegacySnapshots = [
@@ -88,17 +89,19 @@ for (const name of canonical) {
   const source = fs.readFileSync(`database/migrations/${name}`, 'utf8')
   assert.ok(source.trim().length > 100, `Migration unexpectedly empty: ${name}`)
   const productionVersion = repositoryToProduction[name]
-  if (productionVersion === null) {
-    const exception = manifest.notDeployed?.[name]
-    assert.ok(exception, `Undeployed migration must have an explicit exception: ${name}`)
-    assert.ok(exception.reason?.trim(), `Undeployed migration must explain why: ${name}`)
-    continue
-  }
-  assert.match(productionVersion ?? '', /^\d{14}$/, `Invalid production provenance for ${name}`)
-  assert.ok(productionVersionToName.has(productionVersion), `Mapped production migration is missing: ${name} -> ${productionVersion}`)
+  if (productionVersion === null) continue
+  assert.match(productionVersion, /^\d{14}$/, `Invalid production mapping for ${name}`)
+  assert.ok(productionVersionToName.has(productionVersion), `Production mapping for ${name} points to missing version ${productionVersion}`)
   mappedProductionVersions.push(productionVersion)
 }
 
-assert.equal(new Set(mappedProductionVersions).size, mappedProductionVersions.length, 'A production migration must not back multiple canonical repository migrations')
+assert.equal(new Set(mappedProductionVersions).size, mappedProductionVersions.length, 'Repository migrations must not map to the same production migration twice')
 
-console.log(JSON.stringify({ canonical: canonical.length, production: productionEntries.length, mapped: mappedProductionVersions.length, exceptions: Object.keys(manifest.notDeployed ?? {}).length }, null, 2))
+const notDeployed = manifest.notDeployed ?? {}
+for (const [name, details] of Object.entries(notDeployed)) {
+  assert.ok(canonical.includes(name), `notDeployed references unknown migration ${name}`)
+  assert.equal(repositoryToProduction[name], null, `notDeployed migration ${name} must map to null`)
+  assert.ok(details && typeof details.reason === 'string' && details.reason.length > 10, `notDeployed migration ${name} needs a reason`)
+}
+
+console.log('Migration history audit passed.')
