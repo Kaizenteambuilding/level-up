@@ -53,6 +53,7 @@ const expectedCanonical = [
   '20260901141000_fix_game_summary_metrics.sql',
   '20260902085000_null_safe_session_modes.sql',
   '20260902093000_restrict_practice_scope_helper.sql',
+  '20260902104018_localize_geography_skill_names.sql',
   '20260902123000_localize_geography_skill_names.sql',
 ]
 
