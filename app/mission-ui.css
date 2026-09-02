@@ -1,0 +1,34 @@
+.answer-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:18px;
+}
+
+.answer-option{
+  width:100%;
+  min-height:64px;
+  padding:16px 18px;
+  border:1px solid #6687a3;
+  border-radius:14px;
+  background:#102640;
+  color:#fff;
+  font:inherit;
+  font-weight:900;
+  line-height:1.3;
+  text-align:left;
+  overflow-wrap:anywhere;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:filter .15s ease,transform .15s ease,background .15s ease,border-color .15s ease;
+}
+
+.answer-option:active:not(:disabled){transform:translateY(1px)}
+.answer-option.correct:disabled{background:#173d27;border-color:var(--green);color:#eaffdf;opacity:1}
+.answer-option.wrong:disabled{background:#432126;border-color:var(--danger);color:#fff1f2;opacity:1}
+.answer-option:disabled{cursor:not-allowed;opacity:.72}
+.feedback-panel{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:18px;padding:14px 16px;border:1px solid #557896;border-radius:14px;background:#0b1b2d}
+
+@media(hover:hover){.answer-option:not(:disabled):hover{filter:brightness(1.12)}}
+@media(prefers-reduced-motion:reduce){.answer-option{transition:none}}
+@media(max-width:560px){.answer-grid{grid-template-columns:1fr}.answer-option{min-height:58px}}
