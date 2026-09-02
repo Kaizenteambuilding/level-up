@@ -6,6 +6,7 @@ import { generateLanguageQuestionWithCriticalVariants } from './languageCritical
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
+import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 
 type SkillMeta = {
   id: string
@@ -33,6 +34,10 @@ export function generateCurriculumQuestion(
   if (skill.id.startsWith('G01')) {
     const cartography = generateCartographyQuestion(skill, difficulty, seed)
     if (cartography) return cartography
+  }
+  if (skill.id.startsWith('G02') || skill.id.startsWith('G03')) {
+    const physical = generateGeographyPhysicalQuestion(skill, difficulty, seed)
+    if (physical) return physical
   }
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
     return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
