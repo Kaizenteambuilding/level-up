@@ -23,7 +23,7 @@ jobs:
           response="$(curl --fail --silent --show-error --retry 2 --retry-delay 3 --max-time 20 "$BASE_URL/api/health")"
           node scripts/verify-production-health.cjs "$response" "$GITHUB_SHA"
 
-      - name: Smoke public entry routes
+      - name: Smoke public and core entry routes
         run: |
           check_page() {
             path="$1"
@@ -38,6 +38,10 @@ jobs:
 
           check_page "/" "Aprende, explora y sube de nivel."
           check_page "/login" "Comprobando sesión…"
+          check_page "/parent/setup" "Comprobando sesión…"
+          check_page "/player" "Comprobando sesión…"
+          check_page "/mission" "Comprobando acceso..."
+          check_page "/parent" "Cargando progreso real…"
 
       - name: Smoke all production district routes
         run: |
