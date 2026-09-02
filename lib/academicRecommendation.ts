@@ -21,12 +21,12 @@ export function academicDestination(subjectId: string, unitId: string) {
     return { href: '/zone/language/reading', destination: 'Galería de lectura' }
   }
   if (subjectId === 'english') return { href: '/zone/english', destination: 'Puerto de Inglés' }
-  if (subjectId === 'science') {
+  if (subjectId === 'biology_geology') {
     if (unitId === 'B01') return { href: '/zone/science/investigation', destination: 'Cámara de investigación' }
     if (unitId === 'B02') return { href: '/zone/science/observatory', destination: 'Observatorio' }
     return { href: '/zone/science/life', destination: 'Cúpula de la vida' }
   }
-  if (subjectId === 'geography') {
+  if (subjectId === 'geography_history') {
     if (unitId === 'G01') return { href: '/zone/geography/maps', destination: 'Sala de cartografía' }
     if (unitId === 'G02' || unitId === 'G03') return { href: '/zone/geography/physical', destination: 'Expedición terrestre' }
     return { href: '/zone/geography/history', destination: 'Archivo del tiempo' }
