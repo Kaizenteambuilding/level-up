@@ -1,6 +1,7 @@
 import './globals.css'
 import './mission-ui.css'
 import './mission-ui-language-english.css'
+import './mission-ui-science.css'
 import Link from 'next/link'
 
 export const metadata = {
