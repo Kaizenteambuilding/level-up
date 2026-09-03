@@ -1,9 +1,5 @@
 import MissionGuard from '@/components/MissionGuard'
 
 export default function SpanishReadingPage() {
-  return (
-    <main className="shell game-shell">
-      <MissionGuard mode="spanish_reading" />
-    </main>
-  )
+  return <main className="shell game-shell lang-console lang-reading"><MissionGuard mode="spanish_reading" /></main>
 }
