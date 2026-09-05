@@ -10,8 +10,11 @@ export default function Home() {
           Entra al mundo de LEVEL UP, completa misiones adaptativas y convierte el aprendizaje en una aventura.
         </p>
         <div className="action-row">
-          <Link className="btn primary" href="/login">
-            ENTRAR
+          <Link className="btn primary" href="/guest">
+            JUGAR COMO INVITADO
+          </Link>
+          <Link className="btn dark" href="/login">
+            ENTRAR CON CUENTA
           </Link>
           <Link className="btn dark" href="/world">
             ABRIR EL MUNDO
