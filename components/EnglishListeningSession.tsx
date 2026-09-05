@@ -225,7 +225,7 @@ export default function EnglishListeningSession() {
   }
   if (!item) return <section className="card" role="status"><p className="muted">Preparando el siguiente audio…</p></section>
 
-  const progress = Math.min(SESSION_LENGTH, index + Number(answered && feedback))
+  const progress = Math.min(SESSION_LENGTH, index + Number(Boolean(answered && feedback)))
   return <div className="mission-console">
     <section className="card mission-control"><div><span className="tag">🎧 INGLÉS · MUELLE DE ESCUCHA</span><h1>Audio {index + 1} de {SESSION_LENGTH}</h1><p className="muted">Escucha primero. El texto no se muestra hasta después de responder.</p></div><Link className="btn dark mission-exit" href="/zone/english">SALIR AL PUERTO</Link><div className="energy-track" role="progressbar" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={progress}>{Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < progress ? 'charged' : position === index ? 'active' : ''}>{position < progress ? '⚡' : position + 1}</span>)}</div></section>
     <div className="mission-stage"><aside className="mission-core"><span className="mission-avatar">🎧</span><span className="core-city">🌍</span><div className="core-orb">🔊</div><b>Muelle {Math.round(progress / SESSION_LENGTH * 100)}%</b><span>{correct} aciertos · {xp} XP</span><small>10 audios para completar el distrito</small></aside>
