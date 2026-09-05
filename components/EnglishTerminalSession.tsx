@@ -326,7 +326,7 @@ export default function EnglishTerminalSession() {
   }
   if (!question) return <section className="card" role="status"><p className="muted">Preparando el siguiente reto de Inglés…</p></section>
 
-  const savedProgress = Math.min(SESSION_LENGTH, index + Number(answered && feedback))
+  const savedProgress = Math.min(SESSION_LENGTH, index + Number(Boolean(answered && feedback)))
   return <div className="mission-console">
     <section className="card mission-control"><div><span className="tag">🌍 INGLÉS · TERMINAL DE PALABRAS</span><h1>Control {index + 1} de {SESSION_LENGTH}</h1><p className="muted">Vocabulario y estructuras adaptados al progreso real.</p></div><Link className="btn dark mission-exit" href="/zone/english">SALIR AL PUERTO</Link><div className="energy-track" role="progressbar" aria-valuemin={0} aria-valuemax={SESSION_LENGTH} aria-valuenow={savedProgress} aria-label="Progreso de Terminal de palabras">{Array.from({ length: SESSION_LENGTH }, (_, position) => <span key={position} className={position < savedProgress ? 'charged' : position === index ? 'active' : ''}>{position < savedProgress ? '⚡' : position + 1}</span>)}</div></section>
     <div className="mission-stage"><aside className="mission-core" aria-label="Estado de la práctica"><span className="mission-avatar">🧳</span><span className="core-city">🌍</span><div className="core-orb">⚡</div><b>Terminal {Math.round((savedProgress / SESSION_LENGTH) * 100)}%</b><span>{correct} aciertos · {xp} XP</span><small>10 controles para completar el distrito</small></aside>
