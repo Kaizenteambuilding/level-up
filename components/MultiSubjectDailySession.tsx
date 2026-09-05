@@ -385,7 +385,7 @@ export default function MultiSubjectDailySession() {
   if (!question) return <section className="card" role="status" aria-live="polite"><p className="muted">Preparando el siguiente reto…</p></section>
 
   const subject = subjectDefinition(question.skillId.startsWith('M') ? 'math' : question.skillId.startsWith('L') ? 'spanish' : question.skillId.startsWith('E') ? 'english' : question.skillId.startsWith('G') ? 'geography_history' : 'biology_geology')
-  const savedProgress = Math.min(SESSION_LENGTH, index + Number(answered && feedback))
+  const savedProgress = Math.min(SESSION_LENGTH, index + Number(Boolean(answered && feedback)))
   return <div className="mission-console">
     <section className="card mission-control">
       <div><span className="tag">{subject?.icon} {subject?.name ?? 'Currículo activo'}</span><h1>Reto {index + 1} de {SESSION_LENGTH}</h1><p className="muted">La misión rota entre las materias activas y adapta la dificultad a tu progreso.</p></div>
