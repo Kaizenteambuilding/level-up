@@ -138,7 +138,7 @@ export default function BossLab() {
             const subject = SUBJECTS[entry.subjectId]
             return (
               <article key={entry.subjectId} className="card shop-item" style={{ position: 'relative', overflow: 'hidden', minHeight: 310, background: 'linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))' }}>
-                <div style={{ position: 'absolute', inset: 'auto -30px -45px auto', fontSize: 150, opacity: .08 }}>{entry.icon}</div>
+                <div style={{ position: 'absolute', inset: 'auto -30px -45px auto', fontSize: 150, opacity: .08, pointerEvents: 'none' }}>{entry.icon}</div>
                 <div style={{ fontSize: 62, filter: eligible ? 'drop-shadow(0 0 18px rgba(255,196,77,.35))' : 'grayscale(1)', transform: eligible ? 'scale(1)' : 'scale(.94)' }}>{entry.icon}</div>
                 <span className="tag">{subject.icon} {subject.name}</span>
                 <h2 style={{ fontSize: 28 }}>{entry.name}</h2>
@@ -162,7 +162,22 @@ export default function BossLab() {
 
   return (
     <section style={{ maxWidth: 900, margin: '24px auto 48px', padding: '0 14px' }}>
-      <div className="card" style={{ padding: '22px', position: 'relative', overflow: 'hidden', background: flash === 'hit' ? 'radial-gradient(circle at 50% 25%,rgba(88,255,166,.25),rgba(10,14,28,.96) 60%)' : flash === 'miss' ? 'radial-gradient(circle at 50% 25%,rgba(255,76,95,.22),rgba(10,14,28,.96) 60%)' : 'radial-gradient(circle at 50% 0%,rgba(122,82,255,.22),rgba(10,14,28,.96) 60%)', transition: 'background .2s ease' }}>
+      <div className="card" style={{ padding: '22px', position: 'relative', overflow: 'hidden', background: result?.passed ? 'radial-gradient(circle at 50% 20%,rgba(255,207,77,.30),rgba(98,56,210,.22) 34%,rgba(10,14,28,.97) 68%)' : flash === 'hit' ? 'radial-gradient(circle at 50% 25%,rgba(88,255,166,.25),rgba(10,14,28,.96) 60%)' : flash === 'miss' ? 'radial-gradient(circle at 50% 25%,rgba(255,76,95,.22),rgba(10,14,28,.96) 60%)' : 'radial-gradient(circle at 50% 0%,rgba(122,82,255,.22),rgba(10,14,28,.96) 60%)', transition: 'background .2s ease' }}>
+        {result?.passed && (
+          <>
+            <style>{`
+              @keyframes bossVictoryBurst { 0% { transform: translateY(24px) scale(.7); opacity: 0; } 55% { opacity: 1; } 100% { transform: translateY(-110px) scale(1.2); opacity: 0; } }
+              @keyframes bossVictoryPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+              @keyframes bossVictoryGlow { 0%,100% { filter: drop-shadow(0 0 12px rgba(255,215,90,.45)); } 50% { filter: drop-shadow(0 0 34px rgba(255,215,90,.95)); } }
+            `}</style>
+            <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+              {['✨','⚡','🏆','⭐','💥','✨','⚡','⭐','🏆','💥','✨','⭐'].map((spark, sparkIndex) => (
+                <span key={`${spark}-${sparkIndex}`} style={{ position: 'absolute', left: `${8 + (sparkIndex * 8) % 88}%`, bottom: `${4 + (sparkIndex % 4) * 7}%`, fontSize: 24 + (sparkIndex % 3) * 6, animation: `bossVictoryBurst ${1.8 + (sparkIndex % 4) * .22}s ease-out ${sparkIndex * .08}s infinite` }}>{spark}</span>
+              ))}
+            </div>
+          </>
+        )}
+
         <div style={{ textAlign: 'center' }}>
           <span className="tag">{subject.icon} {subject.name} · ULTIMATE BOSS</span>
           <div style={{ fontSize: 78, marginTop: 8, transform: flash === 'hit' ? 'scale(.88) rotate(-3deg)' : flash === 'miss' ? 'scale(1.05)' : 'scale(1)', transition: 'transform .16s ease', filter: 'drop-shadow(0 0 22px rgba(255,190,70,.28))' }}>{boss.icon}</div>
@@ -195,20 +210,30 @@ export default function BossLab() {
             <p className="muted">Refuerza los contenidos débiles. Cuando el contador llegue a cero, el portal volverá a abrirse.</p>
           </div>
         ) : result ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: 32 }}>{result.passed ? '🏆⚡ JEFE DERROTADO ⚡🏆' : '🛡️ EL JEFE SOBREVIVE'}</h2>
-            <p style={{ fontSize: 22 }}>Resultado: <strong>{result.correct}/{boss.questions.length} · {result.percent}%</strong></p>
-            {result.passed ? (
-              <p>Has superado el umbral del {BOSS_PASS_PERCENT}%. El guardián del trimestre ha caído.</p>
-            ) : (
-              <>
-                <p>Has luchado bien, pero este Ultimate Boss exige al menos un {BOSS_PASS_PERCENT}%. Ya sabes dónde reforzarte antes del siguiente combate.</p>
-                {result.failedAreas.length > 0 && <div style={{ textAlign: 'left', maxWidth: 540, margin: '16px auto' }}><strong>⚙️ Zonas que debes reforzar:</strong><ul>{result.failedAreas.map((area) => <li key={area}>{area}</li>)}</ul></div>}
-                <p>El portal se reactivará en:</p>
-                <p style={{ fontSize: 34, fontWeight: 900 }}>{countdown}</p>
-              </>
-            )}
-          </div>
+          result.passed ? (
+            <div className="card" style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '30px 18px', border: '1px solid rgba(255,218,105,.55)', boxShadow: '0 0 42px rgba(255,199,75,.20), inset 0 0 40px rgba(255,255,255,.03)', background: 'linear-gradient(180deg,rgba(255,220,112,.13),rgba(126,88,255,.09))' }}>
+              <div style={{ fontSize: 72, lineHeight: 1, animation: 'bossVictoryPulse 1.15s ease-in-out infinite, bossVictoryGlow 1.4s ease-in-out infinite' }}>🏆</div>
+              <div style={{ marginTop: 10, fontSize: 15, fontWeight: 1000, letterSpacing: 4 }}>VICTORIA LEGENDARIA</div>
+              <h2 style={{ fontSize: 'clamp(2.2rem,7vw,4.4rem)', lineHeight: .95, margin: '8px 0 12px', textShadow: '0 0 24px rgba(255,215,100,.38)' }}>⚡ ¡JEFE DERROTADO! ⚡</h2>
+              <p style={{ fontSize: 23, margin: '0 0 12px' }}>Has vencido a <strong>{boss.name}</strong>.</p>
+              <div style={{ display: 'inline-flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', margin: '8px 0 18px' }}>
+                <span className="tag">🎯 {result.correct}/{boss.questions.length} ACIERTOS</span>
+                <span className="tag">⚡ {result.percent}% DE DOMINIO</span>
+                <span className="tag">🏅 RETO SUPERADO</span>
+              </div>
+              <p style={{ maxWidth: 620, margin: '0 auto', fontSize: 18 }}>El guardián del trimestre ha caído. Has demostrado que dominas esta materia al nivel que exige el Ultimate Boss.</p>
+              <p style={{ marginTop: 16, fontWeight: 900, fontSize: 18 }}>✨ El portal reconoce tu victoria. ✨</p>
+            </div>
+          ) : (
+            <div className="card" style={{ textAlign: 'center' }}>
+              <h2 style={{ fontSize: 32 }}>🛡️ EL JEFE SOBREVIVE</h2>
+              <p style={{ fontSize: 22 }}>Resultado: <strong>{result.correct}/{boss.questions.length} · {result.percent}%</strong></p>
+              <p>Has luchado bien, pero este Ultimate Boss exige al menos un {BOSS_PASS_PERCENT}%. Ya sabes dónde reforzarte antes del siguiente combate.</p>
+              {result.failedAreas.length > 0 && <div style={{ textAlign: 'left', maxWidth: 540, margin: '16px auto' }}><strong>⚙️ Zonas que debes reforzar:</strong><ul>{result.failedAreas.map((area) => <li key={area}>{area}</li>)}</ul></div>}
+              <p>El portal se reactivará en:</p>
+              <p style={{ fontSize: 34, fontWeight: 900 }}>{countdown}</p>
+            </div>
+          )
         ) : !eligible ? (
           <div className="card" style={{ textAlign: 'center' }}><h2>🔒 EL PORTAL SE HA CERRADO</h2><p>Necesitas al menos {BOSS_REQUIRED_PROGRESS_PERCENT}% de progreso y {BOSS_REQUIRED_STREAK_DAYS} días de racha.</p></div>
         ) : (
