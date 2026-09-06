@@ -9,6 +9,7 @@ import { userFacingError } from '@/lib/userFacingError'
 export default function GuestEntry() {
   const router = useRouter()
   const [alias, setAlias] = useState('')
+  const [readyAlias, setReadyAlias] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const locked = useRef(false)
@@ -74,8 +75,9 @@ export default function GuestEntry() {
 
       localStorage.setItem('levelup_player_id', playerId)
       localStorage.setItem('levelup_guest_session', '1')
-      router.push('/world')
-      router.refresh()
+      setReadyAlias(cleanAlias)
+      setMessage('')
+      setLoading(false)
     } catch (cause) {
       await supabase.auth.signOut().catch(() => undefined)
       localStorage.removeItem('levelup_player_id')
@@ -89,6 +91,34 @@ export default function GuestEntry() {
       locked.current = false
       setLoading(false)
     }
+  }
+
+  function startAdventure() {
+    router.push('/world')
+    router.refresh()
+  }
+
+  if (readyAlias) {
+    return (
+      <section className="card hero" style={{ maxWidth: 680, margin: '40px auto', textAlign: 'center' }}>
+        <span className="tag">✨ PARTIDA LISTA</span>
+        <h1>¡Bienvenido, {readyAlias}!</h1>
+        <p className="muted" style={{ fontSize: 18 }}>
+          Tu aventura de LEVEL UP ya está preparada. Lo que consigas jugando se guardará automáticamente en este navegador.
+        </p>
+
+        <div className="metric" style={{ marginTop: 18, textAlign: 'left' }}>
+          <b>💾 Tu progreso se queda en este dispositivo</b>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            Para continuar otro día, vuelve a entrar desde este mismo navegador y dispositivo. Si borras los datos del navegador o cambias de dispositivo, la partida de invitado no se podrá recuperar.
+          </p>
+        </div>
+
+        <button className="btn primary" type="button" onClick={startAdventure} style={{ marginTop: 22, fontSize: 18, padding: '16px 24px' }}>
+          🚀 EMPEZAR AVENTURA
+        </button>
+      </section>
+    )
   }
 
   return (
