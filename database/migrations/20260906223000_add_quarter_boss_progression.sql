@@ -64,18 +64,23 @@ begin
     else extract(year from v_today)::integer - 1
   end;
 
-  if v_today >= make_date(v_school_year_start + 1, 6, 1) then
-    v_term := 3;
-    v_unlock_date := make_date(v_school_year_start + 1, 6, 1);
-  elsif v_today >= make_date(v_school_year_start + 1, 3, 15) then
-    v_term := 2;
-    v_unlock_date := make_date(v_school_year_start + 1, 3, 15);
-  elsif v_today >= make_date(v_school_year_start, 12, 15) then
+  if v_today between make_date(v_school_year_start, 12, 15) and make_date(v_school_year_start + 1, 1, 15) then
     v_term := 1;
     v_unlock_date := make_date(v_school_year_start, 12, 15);
+  elsif v_today between make_date(v_school_year_start + 1, 3, 15) and make_date(v_school_year_start + 1, 4, 15) then
+    v_term := 2;
+    v_unlock_date := make_date(v_school_year_start + 1, 3, 15);
+  elsif v_today between make_date(v_school_year_start + 1, 6, 1) and make_date(v_school_year_start + 1, 7, 15) then
+    v_term := 3;
+    v_unlock_date := make_date(v_school_year_start + 1, 6, 1);
   else
     v_term := 0;
-    v_unlock_date := make_date(v_school_year_start, 12, 15);
+    v_unlock_date := case
+      when v_today < make_date(v_school_year_start, 12, 15) then make_date(v_school_year_start, 12, 15)
+      when v_today < make_date(v_school_year_start + 1, 3, 15) then make_date(v_school_year_start + 1, 3, 15)
+      when v_today < make_date(v_school_year_start + 1, 6, 1) then make_date(v_school_year_start + 1, 6, 1)
+      else make_date(v_school_year_start + 1, 12, 15)
+    end;
   end if;
 
   with activity_dates as (
