@@ -33,11 +33,19 @@ export default function BossLab() {
   const [now, setNow] = useState(() => Date.now())
   const [progressPercent, setProgressPercent] = useState(82)
   const [streakDays, setStreakDays] = useState(9)
+  const [flash, setFlash] = useState<'hit' | 'miss' | null>(null)
+  const [combo, setCombo] = useState(0)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (!flash) return
+    const timer = window.setTimeout(() => setFlash(null), 650)
+    return () => window.clearTimeout(timer)
+  }, [flash])
 
   const cooldownUntil = useMemo(() => {
     if (!boss || typeof window === 'undefined') return 0
@@ -53,34 +61,42 @@ export default function BossLab() {
     setBoss(nextBoss)
     setIndex(0)
     setCorrect(0)
+    setCombo(0)
     setFailedAreas([])
     setResult(null)
+    setFlash(null)
     setNow(Date.now())
   }
 
   function answer(optionIndex: number) {
-    if (!boss || result || coolingDown || !eligible) return
+    if (!boss || result || coolingDown || !eligible || flash) return
     const question = boss.questions[index]
     const isCorrect = optionIndex === question.answer
     const nextCorrect = correct + Number(isCorrect)
+    const nextCombo = isCorrect ? combo + 1 : 0
     const nextFailedAreas = isCorrect ? failedAreas : Array.from(new Set([...failedAreas, question.area]))
+    setFlash(isCorrect ? 'hit' : 'miss')
+    setCombo(nextCombo)
+
     const isLast = index === boss.questions.length - 1
-    if (!isLast) {
+    window.setTimeout(() => {
+      if (!isLast) {
+        setCorrect(nextCorrect)
+        setFailedAreas(nextFailedAreas)
+        setIndex((value) => value + 1)
+        return
+      }
+      const percent = Math.round((nextCorrect / boss.questions.length) * 100)
+      const passed = percent >= BOSS_PASS_PERCENT
+      const nextResult = { correct: nextCorrect, percent, passed, failedAreas: nextFailedAreas }
       setCorrect(nextCorrect)
       setFailedAreas(nextFailedAreas)
-      setIndex((value) => value + 1)
-      return
-    }
-    const percent = Math.round((nextCorrect / boss.questions.length) * 100)
-    const passed = percent >= BOSS_PASS_PERCENT
-    const nextResult = { correct: nextCorrect, percent, passed, failedAreas: nextFailedAreas }
-    setCorrect(nextCorrect)
-    setFailedAreas(nextFailedAreas)
-    setResult(nextResult)
-    if (!passed && typeof window !== 'undefined') {
-      localStorage.setItem(cooldownKey(boss.subjectId), String(Date.now() + BOSS_COOLDOWN_HOURS * 3600000))
-      setNow(Date.now())
-    }
+      setResult(nextResult)
+      if (!passed && typeof window !== 'undefined') {
+        localStorage.setItem(cooldownKey(boss.subjectId), String(Date.now() + BOSS_COOLDOWN_HOURS * 3600000))
+        setNow(Date.now())
+      }
+    }, 520)
   }
 
   function resetLab() {
@@ -88,106 +104,131 @@ export default function BossLab() {
     localStorage.removeItem(cooldownKey(boss.subjectId))
     setIndex(0)
     setCorrect(0)
+    setCombo(0)
     setFailedAreas([])
     setResult(null)
+    setFlash(null)
     setNow(Date.now())
   }
 
   if (!boss) {
     return (
-      <section className="card" style={{ maxWidth: 920, margin: '32px auto' }}>
-        <span className="tag">LABORATORIO · NO AFECTA AL JUEGO NORMAL</span>
-        <h1>Jefes de fin de trimestre</h1>
-        <p className="muted">Cada materia tiene su propio monstruo. El reto solo se desbloquea con suficiente progreso y constancia.</p>
-
-        <div className="card" style={{ marginTop: 18 }}>
-          <h2>🔐 Requisitos de acceso</h2>
-          <p><strong>≥ {BOSS_REQUIRED_PROGRESS_PERCENT}%</strong> del desarrollo previsto de la materia y una racha mínima de <strong>{BOSS_REQUIRED_STREAK_DAYS} días</strong>.</p>
-          <p className="muted">En este laboratorio los dos valores se simulan para probar el comportamiento sin conectar el sistema al progreso real.</p>
-          <div style={{ display: 'grid', gap: 14, marginTop: 14 }}>
-            <label>Progreso simulado: <strong>{progressPercent}%</strong><input style={{ width: '100%' }} type="range" min="0" max="100" value={progressPercent} onChange={(event) => setProgressPercent(Number(event.target.value))} /></label>
-            <label>Racha simulada: <strong>{streakDays} días</strong><input style={{ width: '100%' }} type="range" min="0" max="14" value={streakDays} onChange={(event) => setStreakDays(Number(event.target.value))} /></label>
+      <section style={{ maxWidth: 1040, margin: '24px auto 48px', padding: '0 14px' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '34px 24px', background: 'radial-gradient(circle at 50% 0%, rgba(122,82,255,.26), rgba(10,14,28,.96) 58%)', border: '1px solid rgba(160,132,255,.4)', boxShadow: '0 20px 60px rgba(0,0,0,.28)' }}>
+          <div style={{ fontSize: 20, letterSpacing: 3, fontWeight: 900 }}>⚔️ ULTIMATE BOSS</div>
+          <h1 style={{ fontSize: 'clamp(2rem,6vw,4.6rem)', lineHeight: .95, margin: '12px 0' }}>EL PORTAL DEL TRIMESTRE SE HA ABIERTO</h1>
+          <p className="muted" style={{ maxWidth: 720, margin: '0 auto', fontSize: 18 }}>Has entrenado durante semanas. Cinco guardianes protegen el cierre del trimestre. Cada uno domina una materia. Solo puedes entrar cuando tu progreso y tu constancia demuestran que estás preparado.</p>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 10, marginTop: 22 }}>
+            <span className="tag">🧭 {BOSS_REQUIRED_PROGRESS_PERCENT}% DE PROGRESO</span>
+            <span className="tag">🔥 RACHA DE {BOSS_REQUIRED_STREAK_DAYS} DÍAS</span>
+            <span className="tag">🏆 VICTORIA CON {BOSS_PASS_PERCENT}%</span>
           </div>
-          <p style={{ marginTop: 12 }}><strong>{eligible ? '✅ Jefes desbloqueados para la prueba' : '🔒 Aún no cumples los requisitos'}</strong></p>
+        </div>
+
+        <div className="card" style={{ marginTop: 18, padding: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 14 }}>
+            <label className="card" style={{ margin: 0 }}>🧭 Progreso de preparación <strong>{progressPercent}%</strong><input style={{ width: '100%', marginTop: 8 }} type="range" min="0" max="100" value={progressPercent} onChange={(event) => setProgressPercent(Number(event.target.value))} /></label>
+            <label className="card" style={{ margin: 0 }}>🔥 Racha de entrenamiento <strong>{streakDays} días</strong><input style={{ width: '100%', marginTop: 8 }} type="range" min="0" max="14" value={streakDays} onChange={(event) => setStreakDays(Number(event.target.value))} /></label>
+          </div>
+          <p style={{ textAlign: 'center', margin: '14px 0 0', fontWeight: 900 }}>{eligible ? '⚡ EL PORTAL TE RECONOCE. PUEDES ENTRAR.' : '🔒 EL PORTAL SIGUE SELLADO. AÚN DEBES ENTRENAR.'}</p>
         </div>
 
         <div className="shop-grid" style={{ marginTop: 20 }}>
           {SUBJECT_BOSSES.map((entry) => {
             const subject = SUBJECTS[entry.subjectId]
             return (
-              <article key={entry.subjectId} className="card shop-item">
-                <div style={{ fontSize: 44 }}>{entry.icon}</div>
+              <article key={entry.subjectId} className="card shop-item" style={{ position: 'relative', overflow: 'hidden', minHeight: 310, background: 'linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02))' }}>
+                <div style={{ position: 'absolute', inset: 'auto -30px -45px auto', fontSize: 150, opacity: .08 }}>{entry.icon}</div>
+                <div style={{ fontSize: 62, filter: eligible ? 'drop-shadow(0 0 18px rgba(255,196,77,.35))' : 'grayscale(1)', transform: eligible ? 'scale(1)' : 'scale(.94)' }}>{entry.icon}</div>
                 <span className="tag">{subject.icon} {subject.name}</span>
-                <h2>{entry.name}</h2>
+                <h2 style={{ fontSize: 28 }}>{entry.name}</h2>
                 <p className="muted">{entry.intro}</p>
-                <button className="btn primary" type="button" onClick={() => chooseBoss(entry)} disabled={!eligible}>{eligible ? 'DESAFIAR AL JEFE' : '🔒 BLOQUEADO'}</button>
+                <button className="btn primary" type="button" onClick={() => chooseBoss(entry)} disabled={!eligible}>{eligible ? '⚔️ ENTRAR EN COMBATE' : '🔒 SELLO ACTIVO'}</button>
               </article>
             )
           })}
         </div>
+        <p className="demo-notice" style={{ marginTop: 18 }}>Laboratorio aislado: no modifica XP, monedas, inventario ni progreso real.</p>
       </section>
     )
   }
 
   const subject = SUBJECTS[boss.subjectId]
   const question = boss.questions[index]
-  const bossHp = result ? (result.passed ? 0 : Math.max(0, 100 - result.percent)) : Math.max(0, 100 - Math.round((correct / boss.questions.length) * 100))
+  const attempted = result ? boss.questions.length : index
+  const damagePercent = result ? result.percent : Math.round((correct / boss.questions.length) * 100)
+  const bossHp = result ? (result.passed ? 0 : Math.max(0, 100 - result.percent)) : Math.max(0, 100 - damagePercent)
+  const challengeProgress = Math.round((attempted / boss.questions.length) * 100)
 
   return (
-    <section className="card" style={{ maxWidth: 820, margin: '32px auto' }}>
-      <span className="tag">{subject.icon} {subject.name} · JEFE TRIMESTRAL</span>
-      <h1>{boss.icon} {boss.name}</h1>
-      <p className="muted">{boss.intro}</p>
-      <p><strong>Victoria: {BOSS_PASS_PERCENT}% o más.</strong></p>
+    <section style={{ maxWidth: 900, margin: '24px auto 48px', padding: '0 14px' }}>
+      <div className="card" style={{ padding: '22px', position: 'relative', overflow: 'hidden', background: flash === 'hit' ? 'radial-gradient(circle at 50% 25%,rgba(88,255,166,.25),rgba(10,14,28,.96) 60%)' : flash === 'miss' ? 'radial-gradient(circle at 50% 25%,rgba(255,76,95,.22),rgba(10,14,28,.96) 60%)' : 'radial-gradient(circle at 50% 0%,rgba(122,82,255,.22),rgba(10,14,28,.96) 60%)', transition: 'background .2s ease' }}>
+        <div style={{ textAlign: 'center' }}>
+          <span className="tag">{subject.icon} {subject.name} · ULTIMATE BOSS</span>
+          <div style={{ fontSize: 78, marginTop: 8, transform: flash === 'hit' ? 'scale(.88) rotate(-3deg)' : flash === 'miss' ? 'scale(1.05)' : 'scale(1)', transition: 'transform .16s ease', filter: 'drop-shadow(0 0 22px rgba(255,190,70,.28))' }}>{boss.icon}</div>
+          <h1 style={{ fontSize: 'clamp(2rem,5vw,3.8rem)', margin: '4px 0' }}>{boss.name}</h1>
+          <p className="muted" style={{ maxWidth: 660, margin: '0 auto 8px' }}>{boss.intro}</p>
+        </div>
 
-      <div style={{ margin: '22px 0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><strong>Energía del jefe</strong><strong>{bossHp}%</strong></div>
-        <div style={{ height: 16, borderRadius: 999, background: 'rgba(255,255,255,.12)', overflow: 'hidden', marginTop: 8 }}>
-          <div style={{ width: `${bossHp}%`, height: '100%', background: 'linear-gradient(90deg,#ff6b6b,#ffb347)', transition: 'width .25s ease' }} />
-        </div>
-      </div>
-
-      {coolingDown && !result ? (
-        <div className="card" style={{ textAlign: 'center' }}>
-          <h2>⚡ Energía recargando</h2>
-          <p>Tu siguiente oportunidad contra este jefe estará disponible en:</p>
-          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: 2 }}>{countdown}</p>
-          <p className="muted">Aprovecha estas {BOSS_COOLDOWN_HOURS} horas para reforzar los contenidos que más te costaron.</p>
-        </div>
-      ) : result ? (
-        <div className="card" style={{ textAlign: 'center' }}>
-          <h2>{result.passed ? '🏆 JEFE DERROTADO' : '⚡ EL JEFE RESISTE'}</h2>
-          <p>Resultado: <strong>{result.correct}/{boss.questions.length} · {result.percent}%</strong></p>
-          {result.passed ? (
-            <p>Has superado el reto con al menos un {BOSS_PASS_PERCENT}%. Gran trabajo.</p>
-          ) : (
-            <>
-              <p>Necesitas al menos un {BOSS_PASS_PERCENT}% para vencerlo. No pasa nada: ahora sabes exactamente qué reforzar.</p>
-              {result.failedAreas.length > 0 && <div style={{ textAlign: 'left', maxWidth: 520, margin: '16px auto' }}><strong>Prepárate mejor en:</strong><ul>{result.failedAreas.map((area) => <li key={area}>{area}</li>)}</ul></div>}
-              <p>La energía volverá a estar lista en <strong>{BOSS_COOLDOWN_HOURS} horas</strong>.</p>
-              <p style={{ fontSize: 30, fontWeight: 800 }}>{countdown}</p>
-            </>
-          )}
-        </div>
-      ) : !eligible ? (
-        <div className="card" style={{ textAlign: 'center' }}><h2>🔒 Jefe bloqueado</h2><p>Necesitas al menos {BOSS_REQUIRED_PROGRESS_PERCENT}% de progreso y {BOSS_REQUIRED_STREAK_DAYS} días de racha.</p></div>
-      ) : (
-        <div>
-          <p className="tag">RETO {index + 1} DE {boss.questions.length} · {question.area}</p>
-          <h2>{question.prompt}</h2>
-          <div style={{ display: 'grid', gap: 10, marginTop: 18 }}>
-            {question.options.map((option, optionIndex) => (
-              <button key={option} type="button" className="btn dark" onClick={() => answer(optionIndex)} style={{ textAlign: 'left' }}>{option}</button>
-            ))}
+        <div style={{ margin: '22px 0 14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><strong>❤️ Energía del jefe</strong><strong>{bossHp}%</strong></div>
+          <div style={{ height: 22, borderRadius: 999, background: 'rgba(255,255,255,.10)', overflow: 'hidden', marginTop: 8, boxShadow: flash === 'hit' ? '0 0 24px rgba(89,255,164,.36)' : 'none' }}>
+            <div style={{ width: `${bossHp}%`, height: '100%', background: 'linear-gradient(90deg,#ff374f,#ff7b36,#ffc14d)', transition: 'width .45s cubic-bezier(.2,.8,.2,1)' }} />
           </div>
         </div>
-      )}
 
-      <div className="action-row" style={{ marginTop: 24 }}>
-        <button className="btn dark" type="button" onClick={() => setBoss(null)}>← OTRO JEFE</button>
-        <button className="btn dark" type="button" onClick={resetLab}>REINICIAR PRUEBA LAB</button>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center', marginBottom: 20 }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Avance del combate</span><strong>{challengeProgress}%</strong></div>
+            <div style={{ height: 8, borderRadius: 999, background: 'rgba(255,255,255,.10)', overflow: 'hidden', marginTop: 5 }}><div style={{ width: `${challengeProgress}%`, height: '100%', background: 'linear-gradient(90deg,#6f8cff,#b46cff)', transition: 'width .3s ease' }} /></div>
+          </div>
+          <div className="tag">🎯 {correct}/{boss.questions.length} GOLPES</div>
+        </div>
+
+        {flash && !result && <div style={{ textAlign: 'center', fontSize: 27, fontWeight: 1000, margin: '2px 0 16px', transform: 'scale(1.06)' }}>{flash === 'hit' ? `💥 ¡IMPACTO CRÍTICO!${combo >= 2 ? ` · RACHA x${combo}` : ''}` : '🛡️ EL JEFE BLOQUEA EL ATAQUE'}</div>}
+
+        {coolingDown && !result ? (
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h2>⚡ EL JEFE ESTÁ RECUPERANDO ENERGÍA</h2>
+            <p>Tu siguiente oportunidad estará disponible en:</p>
+            <p style={{ fontSize: 38, fontWeight: 900, letterSpacing: 3 }}>{countdown}</p>
+            <p className="muted">Refuerza los contenidos débiles. Cuando el contador llegue a cero, el portal volverá a abrirse.</p>
+          </div>
+        ) : result ? (
+          <div className="card" style={{ textAlign: 'center' }}>
+            <h2 style={{ fontSize: 32 }}>{result.passed ? '🏆⚡ JEFE DERROTADO ⚡🏆' : '🛡️ EL JEFE SOBREVIVE'}</h2>
+            <p style={{ fontSize: 22 }}>Resultado: <strong>{result.correct}/{boss.questions.length} · {result.percent}%</strong></p>
+            {result.passed ? (
+              <p>Has superado el umbral del {BOSS_PASS_PERCENT}%. El guardián del trimestre ha caído.</p>
+            ) : (
+              <>
+                <p>Has luchado bien, pero este Ultimate Boss exige al menos un {BOSS_PASS_PERCENT}%. Ya sabes dónde reforzarte antes del siguiente combate.</p>
+                {result.failedAreas.length > 0 && <div style={{ textAlign: 'left', maxWidth: 540, margin: '16px auto' }}><strong>⚙️ Zonas que debes reforzar:</strong><ul>{result.failedAreas.map((area) => <li key={area}>{area}</li>)}</ul></div>}
+                <p>El portal se reactivará en:</p>
+                <p style={{ fontSize: 34, fontWeight: 900 }}>{countdown}</p>
+              </>
+            )}
+          </div>
+        ) : !eligible ? (
+          <div className="card" style={{ textAlign: 'center' }}><h2>🔒 EL PORTAL SE HA CERRADO</h2><p>Necesitas al menos {BOSS_REQUIRED_PROGRESS_PERCENT}% de progreso y {BOSS_REQUIRED_STREAK_DAYS} días de racha.</p></div>
+        ) : (
+          <div className="card" style={{ padding: 20, border: '1px solid rgba(255,255,255,.12)' }}>
+            <p className="tag">FASE {index + 1} DE {boss.questions.length} · {question.area}</p>
+            <h2 style={{ fontSize: 26, lineHeight: 1.2 }}>{question.prompt}</h2>
+            <div style={{ display: 'grid', gap: 10, marginTop: 18 }}>
+              {question.options.map((option, optionIndex) => (
+                <button key={option} type="button" className="btn dark" onClick={() => answer(optionIndex)} disabled={Boolean(flash)} style={{ textAlign: 'left', minHeight: 52 }}>{option}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="action-row" style={{ marginTop: 22 }}>
+          <button className="btn dark" type="button" onClick={() => setBoss(null)}>← ELEGIR OTRO JEFE</button>
+          <button className="btn dark" type="button" onClick={resetLab}>REINICIAR LAB</button>
+        </div>
       </div>
-      <p className="demo-notice">Modo laboratorio: usa solo estado local del navegador. No escribe en Supabase ni modifica el juego normal.</p>
+      <p className="demo-notice">Modo laboratorio: usa solo estado local del navegador y no escribe en Supabase.</p>
     </section>
   )
 }
