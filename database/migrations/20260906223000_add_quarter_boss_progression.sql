@@ -70,12 +70,12 @@ begin
   elsif v_today >= make_date(v_school_year_start + 1, 3, 15) then
     v_term := 2;
     v_unlock_date := make_date(v_school_year_start + 1, 3, 15);
-  elsif v_today >= make_date(v_school_year_start, 12, 8) then
+  elsif v_today >= make_date(v_school_year_start, 12, 15) then
     v_term := 1;
-    v_unlock_date := make_date(v_school_year_start, 12, 8);
+    v_unlock_date := make_date(v_school_year_start, 12, 15);
   else
     v_term := 0;
-    v_unlock_date := make_date(v_school_year_start, 12, 8);
+    v_unlock_date := make_date(v_school_year_start, 12, 15);
   end if;
 
   with activity_dates as (
