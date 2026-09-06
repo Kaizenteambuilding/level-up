@@ -88,8 +88,7 @@ begin
   )
   select max(activity_date) into v_latest from activity_dates;
 
-  if v_latest is not null
-     and v_latest >= v_today - 1 then
+  if v_latest is not null and v_latest >= v_today - 1 then
     with activity_dates as (
       select distinct (ss.ended_at at time zone 'Europe/Madrid')::date activity_date
       from public.study_sessions ss
@@ -177,8 +176,7 @@ $$;
 
 create or replace function public.complete_levelup_boss_attempt(
   p_attempt_id uuid,
-  p_correct integer,
-  p_total integer,
+  p_answers integer[],
   p_failed_areas text[] default '{}'
 )
 returns jsonb
@@ -188,16 +186,24 @@ set search_path = ''
 as $$
 declare
   v_attempt public.boss_attempts%rowtype;
+  v_key integer[];
+  v_correct integer := 0;
   v_percent integer;
   v_passed boolean;
   v_retry_at timestamptz;
+  v_failed_indexes integer[] := '{}';
+  i integer;
 begin
   if auth.uid() is null then
     raise exception 'Authentication required';
   end if;
 
-  if p_total <> 15 or p_correct < 0 or p_correct > p_total then
-    raise exception 'Invalid boss result';
+  if array_length(p_answers, 1) <> 15 then
+    raise exception 'Invalid boss answers';
+  end if;
+
+  if exists (select 1 from unnest(p_answers) answer where answer < 0 or answer > 3) then
+    raise exception 'Invalid boss answers';
   end if;
 
   select ba.*
@@ -214,14 +220,35 @@ begin
     raise exception 'Boss attempt not available';
   end if;
 
-  v_percent := round((p_correct::numeric / p_total::numeric) * 100)::integer;
+  v_key := case v_attempt.subject_id
+    when 'math' then array[2,1,0,2,1,1,2,2,1,2,2,1,1,1,0]
+    when 'spanish' then array[1,2,2,1,1,1,1,2,1,1,1,2,2,1,2]
+    when 'english' then array[1,1,1,1,1,1,1,0,1,2,0,0,2,1,1]
+    when 'geography_history' then array[1,1,1,1,1,1,1,1,0,0,1,0,1,0,2]
+    when 'biology_geology' then array[2,1,2,2,1,0,1,1,1,1,1,0,1,2,1]
+    else null
+  end;
+
+  if v_key is null then
+    raise exception 'Unknown boss subject';
+  end if;
+
+  for i in 1..15 loop
+    if p_answers[i] = v_key[i] then
+      v_correct := v_correct + 1;
+    else
+      v_failed_indexes := array_append(v_failed_indexes, i - 1);
+    end if;
+  end loop;
+
+  v_percent := round((v_correct::numeric / 15::numeric) * 100)::integer;
   v_passed := v_percent >= 80;
   v_retry_at := case when v_passed then null else now() + interval '24 hours' end;
 
   update public.boss_attempts
   set completed_at = now(),
-      correct = p_correct,
-      total = p_total,
+      correct = v_correct,
+      total = 15,
       percent = v_percent,
       passed = v_passed,
       failed_areas = coalesce(p_failed_areas, '{}'),
@@ -230,18 +257,19 @@ begin
 
   return jsonb_build_object(
     'attempt_id', p_attempt_id,
-    'correct', p_correct,
-    'total', p_total,
+    'correct', v_correct,
+    'total', 15,
     'percent', v_percent,
     'passed', v_passed,
-    'retry_at', v_retry_at
+    'retry_at', v_retry_at,
+    'failed_indexes', v_failed_indexes
   );
 end;
 $$;
 
 revoke all on function public.get_levelup_boss_status(uuid, text) from public, anon;
 revoke all on function public.start_levelup_boss_attempt(uuid, text) from public, anon;
-revoke all on function public.complete_levelup_boss_attempt(uuid, integer, integer, text[]) from public, anon;
+revoke all on function public.complete_levelup_boss_attempt(uuid, integer[], text[]) from public, anon;
 grant execute on function public.get_levelup_boss_status(uuid, text) to authenticated;
 grant execute on function public.start_levelup_boss_attempt(uuid, text) to authenticated;
-grant execute on function public.complete_levelup_boss_attempt(uuid, integer, integer, text[]) to authenticated;
+grant execute on function public.complete_levelup_boss_attempt(uuid, integer[], text[]) to authenticated;
