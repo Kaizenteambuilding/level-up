@@ -33,8 +33,8 @@ export default function GuestFeedback() {
     if (!playerId) return
 
     setSaving(true)
-    const route = `/world?fb=1&fun=${fun}&clarity=${clarity}&more=${more}`
-    await reportProductEvent(playerId, 'world_opened', route)
+    const route = `/world?fun=${fun}&clarity=${clarity}&more=${more}`
+    await reportProductEvent(playerId, 'beta_feedback', route)
     localStorage.setItem(`levelup_guest_feedback_${playerId}`, '1')
     setSubmitted(true)
     setSaving(false)
