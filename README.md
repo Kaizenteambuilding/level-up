@@ -70,3 +70,7 @@ Antes de dar una release por cerrada:
 - Confirmar `/api/health` con estado `ok`, versión esperada y prefijo de deployment esperado.
 - Revisar los avisos de seguridad y rendimiento de Supabase después de cualquier DDL.
 - Realizar un recorrido autenticado real de 10 preguntas cuando se disponga de una sesión de usuario de prueba.
+
+## Licencia
+
+Creado por Luis López. Distribuido bajo los términos de la GNU General Public License v3.0. El texto completo está en [`LICENSE`](LICENSE).
