@@ -179,15 +179,52 @@ export type DemoAchievement = {
   target: number
 }
 
-export function demoAchievements(state: DemoGameState): DemoAchievement[] {
+export type DemoAchievementContext = {
+  totalMissions?: number
+  streakDays?: number
+  level?: number
+  bossWins?: number
+  bossSubjectsDefeated?: number
+  perfectBossWins?: number
+  clearedBossTerms?: number
+}
+
+export function demoAchievements(state: DemoGameState, context: DemoAchievementContext = {}): DemoAchievement[] {
   const equippedSlots = Object.keys(state.equipped).length
+  const totalMissions = Math.max(state.rewardedSessions.length, Math.floor(context.totalMissions ?? 0))
+  const streakDays = Math.max(0, Math.floor(context.streakDays ?? 0))
+  const level = Math.max(1, Math.floor(context.level ?? 1))
+  const bossWins = Math.max(0, Math.floor(context.bossWins ?? 0))
+  const bossSubjectsDefeated = Math.max(0, Math.min(5, Math.floor(context.bossSubjectsDefeated ?? 0)))
+  const perfectBossWins = Math.max(0, Math.floor(context.perfectBossWins ?? 0))
+  const clearedBossTerms = Math.max(0, Math.floor(context.clearedBossTerms ?? 0))
+  const progress = (value: number, target: number) => Math.min(target, value)
+
   return [
-    { id: 'first-mission', name: 'Energía restaurada', description: 'Completa tu primera misión de aprendizaje.', icon: '⚡', unlocked: state.rewardedSessions.length >= 1, progress: Math.min(1, state.rewardedSessions.length), target: 1 },
-    { id: 'three-missions', name: 'Constancia exploradora', description: 'Completa tres misiones diferentes.', icon: '🗺️', unlocked: state.rewardedSessions.length >= 3, progress: Math.min(3, state.rewardedSessions.length), target: 3 },
-    { id: 'first-item', name: 'Primer hallazgo', description: 'Consigue tu primer objeto en la tienda.', icon: '🎁', unlocked: state.owned.length >= 1, progress: Math.min(1, state.owned.length), target: 1 },
-    { id: 'collector', name: 'Coleccionista', description: 'Reúne tres objetos cosméticos.', icon: '🎒', unlocked: state.owned.length >= 3, progress: Math.min(3, state.owned.length), target: 3 },
-    { id: 'full-loadout', name: 'Explorador equipado', description: 'Equipa cabeza, compañero y estela.', icon: '🧑‍🚀', unlocked: equippedSlots >= 3, progress: Math.min(3, equippedSlots), target: 3 },
-    { id: 'decorator', name: 'Diseñador de refugios', description: 'Prueba los tres ambientes del refugio.', icon: '🚀', unlocked: state.visitedThemes.length >= 3, progress: Math.min(3, state.visitedThemes.length), target: 3 },
+    { id: 'first-mission', name: 'Energía restaurada', description: 'Completa tu primera misión de aprendizaje.', icon: '⚡', unlocked: totalMissions >= 1, progress: progress(totalMissions, 1), target: 1 },
+    { id: 'three-missions', name: 'Constancia exploradora', description: 'Completa tres misiones diferentes.', icon: '🗺️', unlocked: totalMissions >= 3, progress: progress(totalMissions, 3), target: 3 },
+    { id: 'first-item', name: 'Primer hallazgo', description: 'Consigue tu primer objeto en la tienda.', icon: '🎁', unlocked: state.owned.length >= 1, progress: progress(state.owned.length, 1), target: 1 },
+    { id: 'collector', name: 'Coleccionista', description: 'Reúne tres objetos cosméticos.', icon: '🎒', unlocked: state.owned.length >= 3, progress: progress(state.owned.length, 3), target: 3 },
+    { id: 'full-loadout', name: 'Explorador equipado', description: 'Equipa cabeza, compañero y estela.', icon: '🧑‍🚀', unlocked: equippedSlots >= 3, progress: progress(equippedSlots, 3), target: 3 },
+    { id: 'decorator', name: 'Diseñador de refugios', description: 'Prueba los tres ambientes del refugio.', icon: '🚀', unlocked: state.visitedThemes.length >= 3, progress: progress(state.visitedThemes.length, 3), target: 3 },
+    { id: 'missions-10', name: 'Rumbo firme', description: 'Completa 10 misiones de aprendizaje.', icon: '🧭', unlocked: totalMissions >= 10, progress: progress(totalMissions, 10), target: 10 },
+    { id: 'missions-25', name: 'Cartógrafo del saber', description: 'Completa 25 misiones de aprendizaje.', icon: '🗺️', unlocked: totalMissions >= 25, progress: progress(totalMissions, 25), target: 25 },
+    { id: 'missions-50', name: 'Veterano de expediciones', description: 'Completa 50 misiones de aprendizaje.', icon: '🎖️', unlocked: totalMissions >= 50, progress: progress(totalMissions, 50), target: 50 },
+    { id: 'missions-100', name: 'Centurión del conocimiento', description: 'Completa 100 misiones de aprendizaje.', icon: '💯', unlocked: totalMissions >= 100, progress: progress(totalMissions, 100), target: 100 },
+    { id: 'missions-250', name: 'Leyenda incansable', description: 'Completa 250 misiones de aprendizaje.', icon: '🌌', unlocked: totalMissions >= 250, progress: progress(totalMissions, 250), target: 250 },
+    { id: 'streak-7', name: 'Semana en llamas', description: 'Mantén una racha real de 7 días.', icon: '🔥', unlocked: streakDays >= 7, progress: progress(streakDays, 7), target: 7 },
+    { id: 'streak-12', name: 'Llave del portal', description: 'Mantén una racha real de 12 días y demuestra que estás listo para los Ultimate Boss.', icon: '🗝️', unlocked: streakDays >= 12, progress: progress(streakDays, 12), target: 12 },
+    { id: 'streak-30', name: 'Fuego imparable', description: 'Mantén una racha real de 30 días.', icon: '☄️', unlocked: streakDays >= 30, progress: progress(streakDays, 30), target: 30 },
+    { id: 'streak-60', name: 'Núcleo eterno', description: 'Mantén una racha real de 60 días.', icon: '🌋', unlocked: streakDays >= 60, progress: progress(streakDays, 60), target: 60 },
+    { id: 'level-5', name: 'Explorador avanzado', description: 'Alcanza el nivel 5.', icon: '⭐', unlocked: level >= 5, progress: progress(level, 5), target: 5 },
+    { id: 'level-10', name: 'Comandante de expedición', description: 'Alcanza el nivel 10.', icon: '🌟', unlocked: level >= 10, progress: progress(level, 10), target: 10 },
+    { id: 'level-15', name: 'Maestro de LEVEL UP', description: 'Alcanza el nivel 15.', icon: '👑', unlocked: level >= 15, progress: progress(level, 15), target: 15 },
+    { id: 'all-items', name: 'Arsenal completo', description: 'Consigue los seis objetos cosméticos de la tienda.', icon: '🧰', unlocked: state.owned.length >= DEMO_ITEMS.length, progress: progress(state.owned.length, DEMO_ITEMS.length), target: DEMO_ITEMS.length },
+    { id: 'first-boss', name: 'Cazador de gigantes', description: 'Derrota tu primer Ultimate Boss.', icon: '⚔️', unlocked: bossWins >= 1, progress: progress(bossWins, 1), target: 1 },
+    { id: 'boss-five-wins', name: 'Azote de guardianes', description: 'Consigue 5 victorias contra Ultimate Boss.', icon: '🐉', unlocked: bossWins >= 5, progress: progress(bossWins, 5), target: 5 },
+    { id: 'boss-perfect', name: 'Golpe perfecto', description: 'Derrota un Ultimate Boss con 15/15 respuestas correctas.', icon: '💥', unlocked: perfectBossWins >= 1, progress: progress(perfectBossWins, 1), target: 1 },
+    { id: 'boss-five-subjects', name: 'Dominador de los cinco mundos', description: 'Derrota al menos una vez al Ultimate Boss de cada una de las cinco materias.', icon: '🏆', unlocked: bossSubjectsDefeated >= 5, progress: progress(bossSubjectsDefeated, 5), target: 5 },
+    { id: 'boss-clear-term', name: 'Conquistador del trimestre', description: 'Derrota los cinco Ultimate Boss dentro de un mismo trimestre.', icon: '👑', unlocked: clearedBossTerms >= 1, progress: progress(clearedBossTerms, 1), target: 1 },
   ]
 }
 
@@ -200,7 +237,7 @@ export function demoGuideStep(state: DemoGameState, level = 1): DemoGuideStep {
   if (Object.keys(state.equipped).length < 3) return { id: 'full-loadout', title: 'Completa tu equipamiento', message: 'Consigue y combina un objeto de cabeza, un compañero y una estela.', href: '/shop', action: 'BUSCAR EQUIPO', icon: '🎒' }
   if (state.visitedThemes.length < 3) return { id: 'themes', title: 'Haz tuyo el refugio', message: 'Prueba los ambientes del refugio y descubre cuál encaja mejor con tu explorador.', href: '/base', action: 'PERSONALIZAR REFUGIO', icon: '🚀' }
   if (state.rewardedSessions.length < 3) return { id: 'three-missions', title: 'La constancia abre caminos', message: `Has completado ${state.rewardedSessions.length} de 3 expediciones para el siguiente logro.`, href: '/mission/briefing', action: 'CONTINUAR AVENTURA', icon: '🗺️' }
-  const pending = demoAchievements(state).find((achievement) => !achievement.unlocked)
+  const pending = demoAchievements(state, { level }).find((achievement) => !achievement.unlocked)
   if (pending) return { id: pending.id, title: `Siguiente logro: ${pending.name}`, message: pending.description, href: '/achievements', action: 'VER BITÁCORA', icon: pending.icon }
   return { id: 'complete', title: 'Explorador de élite', message: 'Has completado todos los objetivos actuales. Sigue entrenando en cualquiera de los cinco mundos activos.', href: '/world', action: 'ELEGIR MUNDO', icon: '🏆' }
 }
