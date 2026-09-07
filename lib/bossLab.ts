@@ -17,6 +17,7 @@ export type SubjectBoss = {
 
 export const BOSS_PASS_PERCENT = 80
 export const BOSS_COOLDOWN_HOURS = 24
+export const BOSS_REQUIRED_PROGRESS_PERCENT = 0
 export const BOSS_REQUIRED_STREAK_DAYS = 12
 
 export const SUBJECT_BOSSES: SubjectBoss[] = [
