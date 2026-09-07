@@ -1,20 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import { demoAchievements } from '@/lib/demoGame'
 import { DemoAvatar, DemoGameDock, DemoGameError, DemoHud, DemoLoading, useDemoGamePlayer } from './DemoGameShell'
+import { usePlayerAchievements } from './usePlayerAchievements'
 
 export default function DemoAchievements() {
   const { player, game, loading, error } = useDemoGamePlayer()
+  const achievements = usePlayerAchievements(player, game)
   if (loading) return <DemoLoading />
   if (!player || error) return <DemoGameError title="No se pudo abrir la bitácora" message={error} backHref="/world" backLabel="VOLVER AL MAPA" />
-  const achievements = demoAchievements(game)
   const unlocked = achievements.filter((achievement) => achievement.unlocked).length
 
   return (
     <>
       <section className="card achievements-header">
-        <div><span className="tag">📖 BITÁCORA DEL EXPLORADOR</span><h1>Proezas de {player.alias}</h1><p className="muted">Los logros registran las misiones y acciones de tu aventura.</p></div>
+        <div><span className="tag">📖 BITÁCORA DEL EXPLORADOR</span><h1>Proezas de {player.alias}</h1><p className="muted">24 logros de constancia, exploración, progreso y victorias contra Ultimate Boss.</p></div>
         <DemoAvatar player={player} game={game} />
         <DemoHud player={player} game={game} />
         <div className="achievement-total"><b>{unlocked}/{achievements.length}</b><span>desbloqueados</span></div>
@@ -40,7 +40,7 @@ export default function DemoAchievements() {
       </section>
       <div className="action-row"><Link href="/world" className="btn primary">← VOLVER AL MAPA</Link><Link href="/mission/briefing" className="btn dark">IR A LA EXPEDICIÓN</Link></div>
       <DemoGameDock />
-      <p className="demo-notice">La bitácora utiliza expediciones guardadas en la cuenta. Los logros sirven para el juego y no modifican el informe académico.</p>
+      <p className="demo-notice">La bitácora usa progreso real de la cuenta. Las victorias de Ultimate Boss se leen del servidor y los logros no modifican el informe académico.</p>
     </>
   )
 }
