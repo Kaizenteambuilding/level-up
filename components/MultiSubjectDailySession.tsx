@@ -37,6 +37,7 @@ type StoredPlan = {
 const SESSION_LENGTH = 10
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
+const RECENT_PROMPT_WINDOW = 120
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -157,14 +158,16 @@ export default function MultiSubjectDailySession() {
       setSessionId(openedId)
       void reportProductEvent(id, 'mission_started', '/mission')
 
-      const [attemptsResult, unitsResult, plansResult, statesResult] = await Promise.all([
+      const [attemptsResult, historyResult, unitsResult, plansResult, statesResult] = await Promise.all([
         retryJwtFuture(async () => await supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot').eq('session_id', openedId).order('created_at', { ascending: true })),
+        retryJwtFuture(async () => await supabase.from('attempts').select('prompt_snapshot,created_at').eq('player_id', id).order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW)),
         retryJwtFuture(async () => await supabase.from('curriculum_units').select('id,subject_id,sort_order').eq('active', true)),
         retryJwtFuture(async () => await supabase.from('player_curriculum_plans').select('player_id,subject_id,academic_year_start,pacing_mode,current_term,focus_unit_ids,updated_at').eq('player_id', id)),
         retryJwtFuture(async () => await supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id)),
       ])
 
       if (attemptsResult.error) { setError(userFacingError(attemptsResult.error, 'No se pudo recuperar la misión.')); setLoading(false); return }
+      if (historyResult.error) { setError(userFacingError(historyResult.error, 'No se pudo recuperar el historial de preguntas.')); setLoading(false); return }
       if (unitsResult.error) { setError(userFacingError(unitsResult.error, 'No se pudo cargar el currículo activo.')); setLoading(false); return }
       if (plansResult.error) { setError(userFacingError(plansResult.error, 'No se pudieron cargar los planes curriculares.')); setLoading(false); return }
       if (statesResult.error) { setError(userFacingError(statesResult.error, 'No se pudo cargar el progreso adaptativo.')); setLoading(false); return }
@@ -219,7 +222,10 @@ export default function MultiSubjectDailySession() {
       setIndex(Math.min(SESSION_LENGTH, attempts.length))
       setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
       setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
-      recentTemplates.current = attempts.slice(-10).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))).filter(Boolean)
+      recentTemplates.current = Array.from(new Set([
+        ...(historyResult.data ?? []).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))),
+        ...attempts.map((attempt) => template(String(attempt.prompt_snapshot ?? ''))),
+      ].filter(Boolean))).slice(0, RECENT_PROMPT_WINDOW)
       setLoading(false)
     })()
   }, [])
@@ -231,7 +237,7 @@ export default function MultiSubjectDailySession() {
     const subjectSkills = skills.filter((skill) => subjectPlan.availableUnitIds.includes(skill.unit_id))
     if (!subjectSkills.length) { setError(`No hay habilidades activas para ${subjectDefinition(subjectPlan.subjectId)?.name ?? subjectPlan.subjectId}.`); return }
 
-    const skill = chooseAdaptiveSkill({
+    const primary = chooseAdaptiveSkill({
       skills: subjectSkills,
       states,
       focusUnitIds: subjectPlan.focusUnitIds,
@@ -242,16 +248,35 @@ export default function MultiSubjectDailySession() {
       seed: sessionSeed,
       questionIndex: index,
     })
-    if (!skill) { setError('No se pudo elegir una habilidad para el reto.'); return }
+    if (!primary) { setError('No se pudo elegir una habilidad para el reto.'); return }
 
-    const difficulty = states[skill.id]?.difficulty ?? 1
-    let seed = (sessionSeed + Math.imul(index + 1, 0x9e3779b9)) >>> 0
-    let generated = generateCurriculumQuestion(skill, difficulty, seed)
-    for (let attempt = 0; attempt < 40 && recentTemplates.current.includes(template(generated.prompt)); attempt++) {
-      seed = (seed + 2654435761) >>> 0
-      generated = generateCurriculumQuestion(skill, difficulty, seed)
+    const alternatives = subjectSkills
+      .filter((skill) => skill.id !== primary.id)
+      .sort((a, b) => hashText(`${a.id}:${sessionSeed}:${index}`) - hashText(`${b.id}:${sessionSeed}:${index}`))
+    const candidates = [primary, ...alternatives]
+    const baseSeed = (sessionSeed + Math.imul(index + 1, 0x9e3779b9)) >>> 0
+    let generated: GeneratedQuestion | null = null
+
+    for (let candidateIndex = 0; candidateIndex < candidates.length && !generated; candidateIndex++) {
+      const candidate = candidates[candidateIndex]
+      const difficulty = states[candidate.id]?.difficulty ?? 1
+      let seed = (baseSeed + Math.imul(candidateIndex, 0x85ebca6b)) >>> 0
+      for (let attempt = 0; attempt < 64; attempt++) {
+        const nextQuestion = generateCurriculumQuestion(candidate, difficulty, seed)
+        if (!recentTemplates.current.includes(template(nextQuestion.prompt))) {
+          generated = nextQuestion
+          break
+        }
+        seed = (seed + 2654435761) >>> 0
+      }
     }
-    recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, 10)
+
+    if (!generated) {
+      setError('No se encontró un reto nuevo sin repetir preguntas recientes. Vuelve al mapa y prueba de nuevo más tarde.')
+      return
+    }
+
+    recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated)
     setAnswered(false)
     setSelectedOption(null)
