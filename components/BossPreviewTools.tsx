@@ -7,8 +7,7 @@ export default function BossPreviewTools() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const host = window.location.hostname
-    setVisible(host.includes('git-feature-quarter-boss-lab') || host.includes('level-up-a544-'))
+    setVisible(window.location.hostname.includes('git-feature-quarter-boss-lab'))
   }, [])
 
   if (!visible) return null
