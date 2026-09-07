@@ -49,6 +49,24 @@ const themed = setDemoBaseTheme(setDemoBaseTheme(setDemoBaseTheme(INITIAL_DEMO_S
 assert.equal(themed.visitedThemes.length, 3)
 assert.equal(demoAchievements(themed).find((item) => item.id === 'decorator').unlocked, true)
 assert.equal(demoAchievements(missionAward.state).find((item) => item.id === 'first-mission').unlocked, true)
+
+const freshAchievements = demoAchievements(INITIAL_DEMO_STATE)
+assert.equal(freshAchievements.length, 24)
+assert.equal(freshAchievements.find((item) => item.id === 'first-boss').unlocked, false)
+const expandedAchievements = demoAchievements(themed, {
+  totalMissions: 250,
+  streakDays: 60,
+  level: 15,
+  bossWins: 5,
+  bossSubjectsDefeated: 5,
+  perfectBossWins: 1,
+  clearedBossTerms: 1,
+})
+assert.equal(expandedAchievements.length, 24)
+for (const id of ['missions-250', 'streak-60', 'level-15', 'first-boss', 'boss-five-wins', 'boss-perfect', 'boss-five-subjects', 'boss-clear-term']) {
+  assert.equal(expandedAchievements.find((item) => item.id === id).unlocked, true, `${id} should unlock`)
+}
+
 assert.equal(setDemoAvatar(INITIAL_DEMO_STATE, 'ninja').avatarId, 'ninja')
 assert.equal(setDemoAvatar(INITIAL_DEMO_STATE, 'invalid'), INITIAL_DEMO_STATE)
 assert.equal(normalizeDemoState({ coins: 1, avatarId: 'invalid' }).avatarId, 'astronaut')
