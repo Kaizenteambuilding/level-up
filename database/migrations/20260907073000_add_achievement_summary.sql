@@ -3,7 +3,7 @@ returns jsonb
 language plpgsql
 stable
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   v_uid uuid := auth.uid();
@@ -13,17 +13,17 @@ declare
   v_cleared_terms integer := 0;
 begin
   if v_uid is null then
-    raise exception 'authentication required';
+    raise exception 'Authentication required';
   end if;
 
   if not exists (
     select 1
     from public.players p
-    join public.parent_profiles pp on pp.id = p.parent_id
+    join public.parent_profiles pp on pp.family_id = p.family_id
     where p.id = p_player_id
-      and pp.user_id = v_uid
+      and pp.id = v_uid
   ) then
-    raise exception 'player not found';
+    raise exception 'Player not available';
   end if;
 
   select count(*)::integer,
