@@ -23,6 +23,7 @@ export function usePlayerAchievements(player: DemoPlayer | null, game: DemoGameS
   const [bossSummary, setBossSummary] = useState(EMPTY_BOSS_SUMMARY)
 
   useEffect(() => {
+    setBossSummary(EMPTY_BOSS_SUMMARY)
     if (!player?.id) return
     let cancelled = false
     ;(async () => {
