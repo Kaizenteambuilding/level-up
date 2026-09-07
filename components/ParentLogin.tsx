@@ -42,6 +42,16 @@ export default function ParentLogin() {
         return
       }
 
+      const isGuest = user.is_anonymous === true || user.user_metadata?.levelup_guest === true
+      if (isGuest) {
+        await supabase.auth.signOut().catch(() => undefined)
+        localStorage.removeItem('levelup_player_id')
+        localStorage.removeItem('levelup_guest_session')
+        setMessage('Sesión de invitado cerrada. Ya puedes entrar con tu cuenta familiar.')
+        setCheckingSession(false)
+        return
+      }
+
       const { data: players, error } = await supabase
         .from('players')
         .select('id,alias')
@@ -78,6 +88,7 @@ export default function ParentLogin() {
     setLoading(true)
     setMessage('')
     localStorage.removeItem('levelup_player_id')
+    localStorage.removeItem('levelup_guest_session')
 
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
@@ -137,6 +148,7 @@ export default function ParentLogin() {
     setLoading(true)
     setMessage('')
     localStorage.removeItem('levelup_player_id')
+    localStorage.removeItem('levelup_guest_session')
 
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
