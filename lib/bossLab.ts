@@ -17,8 +17,7 @@ export type SubjectBoss = {
 
 export const BOSS_PASS_PERCENT = 80
 export const BOSS_COOLDOWN_HOURS = 24
-export const BOSS_REQUIRED_PROGRESS_PERCENT = 80
-export const BOSS_REQUIRED_STREAK_DAYS = 7
+export const BOSS_REQUIRED_STREAK_DAYS = 12
 
 export const SUBJECT_BOSSES: SubjectBoss[] = [
   {
@@ -121,23 +120,19 @@ export const SUBJECT_BOSSES: SubjectBoss[] = [
     questions: [
       { area: 'La célula', prompt: '¿Cuál es la unidad básica de los seres vivos?', options: ['Tejido', 'Órgano', 'Célula', 'Sistema'], answer: 2 },
       { area: 'Fotosíntesis', prompt: '¿Qué orgánulo realiza principalmente la fotosíntesis?', options: ['Núcleo', 'Cloroplasto', 'Ribosoma', 'Mitocondria'], answer: 1 },
-      { area: 'Rocas', prompt: '¿Qué tipo de roca se forma al enfriarse el magma?', options: ['Sedimentaria', 'Metamórfica', 'Ígnea', 'Caliza exclusivamente'], answer: 2 },
-      { area: 'Ecosistemas', prompt: 'En una cadena trófica, las plantas son normalmente…', options: ['Consumidores', 'Descomponedores', 'Productores', 'Depredadores'], answer: 2 },
-      { area: 'Geología', prompt: '¿Qué capa sólida externa de la Tierra incluye la corteza y parte del manto superior?', options: ['Atmósfera', 'Litosfera', 'Hidrosfera', 'Núcleo externo'], answer: 1 },
-      { area: 'La célula', prompt: '¿Qué estructura controla principalmente las actividades de una célula eucariota?', options: ['Núcleo', 'Pared celular', 'Vacuola', 'Membrana únicamente'], answer: 0 },
-      { area: 'Nutrición', prompt: '¿Qué aparato transforma los alimentos y absorbe nutrientes?', options: ['Respiratorio', 'Digestivo', 'Excretor', 'Locomotor'], answer: 1 },
-      { area: 'Ecosistemas', prompt: '¿Qué relación existe cuando dos organismos compiten por el mismo recurso limitado?', options: ['Mutualismo', 'Competencia', 'Parasitismo siempre', 'Fotosíntesis'], answer: 1 },
-      { area: 'Biodiversidad', prompt: 'La biodiversidad describe...', options: ['solo el número de árboles', 'la variedad de seres vivos y ecosistemas', 'solo animales vertebrados', 'la temperatura del planeta'], answer: 1 },
-      { area: 'Atmósfera', prompt: '¿Qué gas es el más abundante en la atmósfera terrestre?', options: ['Oxígeno', 'Nitrógeno', 'Dióxido de carbono', 'Hidrógeno'], answer: 1 },
-      { area: 'Geología', prompt: '¿Qué proceso puede transformar una roca por presión y temperatura sin fundirla?', options: ['Erosión', 'Metamorfismo', 'Evaporación', 'Sedimentación únicamente'], answer: 1 },
-      { area: 'Tectónica', prompt: 'La mayoría de terremotos se concentran...', options: ['en límites de placas tectónicas', 'solo en desiertos', 'en el centro de todos los continentes', 'solo bajo ríos'], answer: 0 },
-      { area: 'Agua', prompt: 'En el ciclo del agua, el paso de líquido a vapor se llama...', options: ['Condensación', 'Evaporación', 'Precipitación', 'Infiltración'], answer: 1 },
-      { area: 'Clasificación', prompt: '¿Cuál de estos animales es vertebrado?', options: ['Medusa', 'Araña', 'Salmón', 'Caracol'], answer: 2 },
-      { area: 'Ecología', prompt: '¿Qué ocurriría primero si desaparecieran los productores de una cadena trófica?', options: ['Aumentaría la energía disponible', 'Los consumidores perderían su fuente básica de energía', 'Nada cambiaría', 'Aparecerían más productores automáticamente'], answer: 1 },
+      { area: 'Rocas', prompt: '¿Qué tipo de roca se forma al enfriarse el magma?', options: ['Sedimentaria', 'Metamórfica', 'Ígnea', 'Orgánica'], answer: 2 },
+      { area: 'Ecosistemas', prompt: 'En una cadena alimentaria, los productores son principalmente...', options: ['hongos', 'plantas y algas', 'carnívoros', 'descomponedores'], answer: 1 },
+      { area: 'Nutrición', prompt: '¿Qué aparato transporta oxígeno y nutrientes por el cuerpo?', options: ['Digestivo', 'Circulatorio', 'Excretor', 'Reproductor'], answer: 1 },
+      { area: 'Geología', prompt: '¿Cuál es una capa interna de la Tierra?', options: ['Manto', 'Atmósfera baja', 'Océano', 'Ecosistema'], answer: 0 },
+      { area: 'Reproducción', prompt: 'La unión de un óvulo y un espermatozoide se llama...', options: ['digestión', 'fecundación', 'respiración', 'germinación'], answer: 1 },
+      { area: 'Célula', prompt: '¿Dónde se encuentra principalmente el material genético en una célula eucariota?', options: ['Pared celular', 'Núcleo', 'Vacuola', 'Membrana'], answer: 1 },
+      { area: 'Ecosistemas', prompt: 'Una población es...', options: ['individuos de la misma especie en un lugar', 'todos los ecosistemas del planeta', 'solo los depredadores', 'factores abióticos'], answer: 0 },
+      { area: 'Salud', prompt: '¿Qué sistema coordina respuestas rápidas mediante impulsos?', options: ['Nervioso', 'Digestivo', 'Respiratorio', 'Esquelético'], answer: 0 },
+      { area: 'Geología', prompt: 'La erosión consiste en...', options: ['desgaste y transporte de materiales', 'formación exclusiva de magma', 'creación de ADN', 'fotosíntesis'], answer: 0 },
+      { area: 'Atmósfera', prompt: '¿Qué gas es más abundante en la atmósfera terrestre?', options: ['Oxígeno', 'Nitrógeno', 'Dióxido de carbono', 'Hidrógeno'], answer: 1 },
+      { area: 'Biodiversidad', prompt: '¿Qué describe mejor la biodiversidad?', options: ['Variedad de seres vivos y ecosistemas', 'Solo número de árboles', 'Cantidad de lluvia anual', 'Altura de montañas'], answer: 0 },
+      { area: 'Tectónica', prompt: 'Los terremotos se relacionan frecuentemente con...', options: ['límites de placas tectónicas', 'fases lunares únicamente', 'fotosíntesis', 'evaporación'], answer: 0 },
+      { area: 'Respiración', prompt: '¿Qué órgano principal intercambia oxígeno y dióxido de carbono?', options: ['Riñones', 'Pulmones', 'Hígado', 'Estómago'], answer: 1 },
     ],
   },
 ]
-
-export function bossForSubject(subjectId: string) {
-  return SUBJECT_BOSSES.find((boss) => boss.subjectId === subjectId) ?? null
-}
