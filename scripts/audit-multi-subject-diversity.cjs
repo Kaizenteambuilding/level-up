@@ -10,7 +10,8 @@ const know=load('lib/knowledgeCriticalVariants.ts',{'./firstEvaluationGenerators
 const curricula=load('lib/subjectCurricula.ts')
 const failures=[]
 function skillMeta(id){for(const units of Object.values(curricula.SUBJECT_CURRICULA)){for(const unit of units){const skill=unit.skills.find((item)=>item.id===id);if(skill)return{id:skill.id,name:skill.name,generator_key:skill.generatorKey}}}throw new Error(`Missing curriculum skill ${id}`)}
-function audit(ids,generate){for(const id of ids){let skill;try{skill=skillMeta(id)}catch(e){failures.push(`${id}:metadata:${e.message}`);continue}const prompts=new Set();for(const seed of [1,2,3,4,5,6,7,11]){try{prompts.add(generate(skill,2,seed).prompt)}catch(e){failures.push(`${id}:generation:${e.message}`)}}if(prompts.size<2)failures.push(`${id}:insufficient_prompt_diversity:${prompts.size}`)}}
+function audit(ids,generate,minPrompts=2){for(const id of ids){let skill;try{skill=skillMeta(id)}catch(e){failures.push(`${id}:metadata:${e.message}`);continue}const prompts=new Set();for(const seed of [1,2,3,4,5,6,7,11]){try{prompts.add(generate(skill,2,seed).prompt)}catch(e){failures.push(`${id}:generation:${e.message}`)}}if(prompts.size<minPrompts)failures.push(`${id}:insufficient_prompt_diversity:${prompts.size}`)}}
 audit(lang.languageCriticalVariantSkillIds(),lang.generateLanguageQuestionWithCriticalVariants)
-audit(know.criticalVariantSkillIds(),know.generateKnowledgeQuestionWithCriticalVariants)
-console.log(JSON.stringify({languageCritical:lang.languageCriticalVariantSkillIds().length,knowledgeCritical:know.criticalVariantSkillIds().length,failures},null,2));if(failures.length)process.exitCode=1
+audit(know.criticalVariantSkillIds(),know.generateKnowledgeQuestionWithCriticalVariants,4)
+for(const id of know.criticalVariantSkillIds()){if(know.criticalVariantCount(id)<3)failures.push(`${id}:insufficient_critical_variants:${know.criticalVariantCount(id)}`)}
+console.log(JSON.stringify({languageCritical:lang.languageCriticalVariantSkillIds().length,knowledgeCritical:know.criticalVariantSkillIds().length,knowledgeCriticalVariants:know.criticalVariantSkillIds().reduce((sum,id)=>sum+know.criticalVariantCount(id),0),failures},null,2));if(failures.length)process.exitCode=1
