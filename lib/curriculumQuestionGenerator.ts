@@ -3,6 +3,7 @@ import {
   type GeneratedQuestion,
 } from './firstEvaluationGenerators'
 import { generateLanguageQuestionWithCriticalVariants } from './languageCriticalVariants'
+import { generateLanguageDistractorVariant } from './languageDistractorVariants'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
@@ -30,6 +31,8 @@ function generateRawCurriculumQuestion(
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
   }
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
+    const strongerDistractors = generateLanguageDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
   }
 
