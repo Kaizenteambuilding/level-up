@@ -19,13 +19,14 @@ for (const skill of skills) {
 
 if (!router.includes("if (skill.id.startsWith('B01'))")) failures.push('b01_not_routed_to_specialized_generator')
 if (!router.includes('generateScienceInvestigationQuestion')) failures.push('specialized_generator_not_imported')
-if (!session.includes('const HISTORY = 80')) failures.push('history_window_missing')
+if (!session.includes('const HISTORY = 120')) failures.push('history_window_missing')
 if (!session.includes('recentTemplates.current.includes(template(next.prompt))')) failures.push('recent_template_guard_missing')
-if (!session.includes('attempt < 20')) failures.push('seed_retry_guard_missing')
+if (!session.includes('attempt < 64')) failures.push('seed_retry_guard_missing')
+if (/generated\s*\?\?=\s*generateCurriculumQuestion/.test(session)) failures.push('permissive_duplicate_fallback')
 
 const totalPrompts = [...bank.matchAll(/prompt:\s*'([^']+)'/g)].map((match) => match[1])
 if (totalPrompts.length < 32) failures.push(`bank_too_small:${totalPrompts.length}`)
 if (new Set(totalPrompts).size !== totalPrompts.length) failures.push('duplicate_prompt_across_investigation_bank')
 
-console.log(JSON.stringify({ skills: skills.length, minimumPromptsPerSkill: 8, totalPrompts: totalPrompts.length, uniquePrompts: new Set(totalPrompts).size, historyWindow: 80, failures }, null, 2))
+console.log(JSON.stringify({ skills: skills.length, minimumPromptsPerSkill: 8, totalPrompts: totalPrompts.length, uniquePrompts: new Set(totalPrompts).size, historyWindow: 120, failures }, null, 2))
 if (failures.length) process.exitCode = 1
