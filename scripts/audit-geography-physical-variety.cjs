@@ -9,8 +9,11 @@ for(const id of ['G02S01','G02S02','G02S03','G02S04','G03S01','G03S02','G03S03',
  const prompts=(block[1].match(/prompt:/g)||[]).length
  assert(prompts>=8,`${id} needs at least 8 prompt structures; found ${prompts}`)
 }
-assert(router.includes("generateGeographyPhysicalQuestion"),'Curriculum router must use physical geography generator')
+assert(router.includes('generateGeographyPhysicalQuestion'),'Curriculum router must use physical geography generator')
 assert(router.includes("skill.id.startsWith('G02') || skill.id.startsWith('G03')"),'G02/G03 must route to physical geography generator')
 assert(session.includes('recentTemplates.current.includes(template(next.prompt))'),'Territory session must reject recently used prompt templates')
 assert(session.includes('limit(HISTORY)'),'Territory session must load recent geography history')
-console.log('Geography physical variety audit passed: 8+ structures per skill with recent-template avoidance.')
+assert(session.includes('HISTORY = 120'),'Territory session must retain 120 recent prompts')
+assert(session.includes('attempt<64')||session.includes('attempt < 64'),'Territory session must try enough deterministic alternatives')
+assert(!/generated\s*\?\?=\s*generateCurriculumQuestion/.test(session),'Territory session must not knowingly fall back to a repeated prompt')
+console.log('Geography physical variety audit passed: 8+ structures per skill with strict recent-template avoidance.')
