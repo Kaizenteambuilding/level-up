@@ -4,17 +4,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { userFacingError } from '@/lib/userFacingError'
-import { ENGLISH_LISTENING_VARIANTS, type EnglishListeningItem as ListeningItem } from '@/lib/englishListeningVariants'
 
 const SESSION_LENGTH = 10
 const MODE = 'english_listening'
 const NETWORK_TIMEOUT_MS = 12_000
 const RECENT_PROMPT_WINDOW = 120
 
+type ListeningItem = { skillId: string; difficulty: number; spoken: string; question: string; options: [string,string,string,string]; answerIndex: number; solution: string }
 type SkillState = { mastery: number; priority: number; difficulty: number }
 type PracticeOpenResult = { data: unknown; error: { message?: string } | null }
 
-const CORE_BANK: ListeningItem[] = [
+const BANK: ListeningItem[] = [
   { skillId:'E01S01',difficulty:1,spoken:'Hi, my name is Emma and I am twelve years old.',question:'How old is Emma?',options:['Ten','Eleven','Twelve','Thirteen'],answerIndex:2,solution:'Emma says: “I am twelve years old.”' },
   { skillId:'E01S01',difficulty:1,spoken:'I live in Bristol with my parents and my little brother.',question:'Where does the speaker live?',options:['Bristol','London','Oxford','Leeds'],answerIndex:0,solution:'The speaker says: “I live in Bristol.”' },
   { skillId:'E01S01',difficulty:2,spoken:'My birthday is on the fifteenth of March.',question:'When is the birthday?',options:['March 5th','March 15th','May 15th','March 25th'],answerIndex:1,solution:'The date heard is the fifteenth of March.' },
@@ -46,8 +46,6 @@ const CORE_BANK: ListeningItem[] = [
   { skillId:'E06S04',difficulty:3,spoken:'Tickets are sold out for tonight, but there are still seats available tomorrow.',question:'What can someone still do?',options:['Buy a ticket for tonight','Buy a ticket for tomorrow','Exchange a ticket for tonight','Enter tonight without a ticket'],answerIndex:1,solution:'Tonight is sold out, but tomorrow still has seats.' },
   { skillId:'E06S04',difficulty:3,spoken:'The café is closed on Sundays, so we need to meet there on Saturday instead.',question:'Why are they meeting on Saturday?',options:['The café closes early on Sunday','The café is closed on Sunday','The café is busier on Sunday','The café opens later on Sunday'],answerIndex:1,solution:'The café is closed on Sundays.' },
 ]
-
-const BANK: ListeningItem[] = [...CORE_BANK, ...ENGLISH_LISTENING_VARIANTS]
 
 async function withTimeout<T>(operation: PromiseLike<T>, label: string): Promise<T> { let timer: ReturnType<typeof setTimeout> | undefined; try { return await Promise.race([Promise.resolve(operation), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} agotó el tiempo de espera`)), NETWORK_TIMEOUT_MS) })]) } finally { if (timer) clearTimeout(timer) } }
 function hashText(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619) } return hash >>> 0 }
