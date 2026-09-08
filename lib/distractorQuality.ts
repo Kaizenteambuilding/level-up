@@ -8,6 +8,8 @@ export type DistractorAssessment = {
 const GENERIC_FILLER = /^(otra opción|otra respuesta|ninguna de las anteriores|todas las anteriores)(?:\s+\d+)?$/i
 const ABSOLUTE_GIVEAWAY = /\b(siempre|nunca|jamás|únicamente|solamente|imposible|obviamente|todos|todas|ninguno|ninguna|cualquier)\b/i
 const NEGATIVE_GIVEAWAY = /\b(no|nunca|jamás|sin|ninguno|ninguna|imposible)\b/i
+const SUBJECTIVE_GIVEAWAY = /\b(bonit[oa]s?|me gusta|prefiero|mejor porque sí|interesante|divertid[oa]s?|perfect[oa]s?|estupend[oa]s?|más colores?|suene más|parezca más)\b/i
+const META_GIVEAWAY = /\b(número de la página|nombre de la planta|nombre de las semillas|conclusión del informe|hipótesis escrita|resultado esperado|orden en que se encontraron|día exacto en que fueron fotografiad[oa]s?)\b/i
 const NUMERIC = /^[-+]?\d+(?:[.,]\d+)?(?:\s*[a-zA-Z%°²³/]+)?$/
 
 function normalized(value: string) {
@@ -28,9 +30,10 @@ function median(values: number[]) {
 }
 
 /**
- * Heuristic detector for answer sets that can be solved by visual/linguistic
- * elimination instead of subject knowledge. A higher score means weaker
- * distractors. It intentionally flags only strong giveaway patterns.
+ * Heuristic detector for answer sets that can be solved by visual, linguistic
+ * or elementary semantic elimination instead of subject knowledge. A higher
+ * score means weaker distractors. The rules are intentionally conservative:
+ * they target recurring giveaway patterns rather than trying to judge truth.
  */
 export function assessDistractorQuality(question: Pick<GeneratedQuestion, 'options' | 'answerIndex'>): DistractorAssessment {
   const reasons: string[] = []
@@ -68,6 +71,20 @@ export function assessDistractorQuality(question: Pick<GeneratedQuestion, 'optio
   if (!answerHasNegative && distractorNegatives === 3) {
     score += 3
     reasons.push('all_distractors_are_negative')
+  }
+
+  const answerHasSubjectiveCue = SUBJECTIVE_GIVEAWAY.test(answer)
+  const subjectiveDistractors = distractors.filter((option) => SUBJECTIVE_GIVEAWAY.test(option)).length
+  if (!answerHasSubjectiveCue && subjectiveDistractors >= 2) {
+    score += 2
+    reasons.push('distractors_are_subjective_giveaways')
+  }
+
+  const answerHasMetaCue = META_GIVEAWAY.test(answer)
+  const metaDistractors = distractors.filter((option) => META_GIVEAWAY.test(option)).length
+  if (!answerHasMetaCue && metaDistractors >= 2) {
+    score += 2
+    reasons.push('distractors_are_meta_or_irrelevant')
   }
 
   if (kinds.every((value) => value === 'text')) {
