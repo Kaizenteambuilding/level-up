@@ -6,6 +6,7 @@ import { generateLanguageQuestionWithCriticalVariants } from './languageCritical
 import { generateLanguageDistractorVariant } from './languageDistractorVariants'
 import { generateExtraLanguageDistractorVariant } from './languageDistractorVariantsExtra'
 import { generateExtraLanguageDistractorVariant2 } from './languageDistractorVariantsExtra2'
+import { generateExtraLanguageDistractorVariant3 } from './languageDistractorVariantsExtra3'
 import { generateLanguageReadingDistractorVariant } from './languageDistractorVariantsReading'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
@@ -37,6 +38,7 @@ function generateRawCurriculumQuestion(
     const strongerDistractors = generateLanguageDistractorVariant(skill, difficulty, seed)
       ?? generateExtraLanguageDistractorVariant(skill, difficulty, seed)
       ?? generateExtraLanguageDistractorVariant2(skill, difficulty, seed)
+      ?? generateExtraLanguageDistractorVariant3(skill, difficulty, seed)
       ?? generateLanguageReadingDistractorVariant(skill, difficulty, seed)
     if (strongerDistractors) return strongerDistractors
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
