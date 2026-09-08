@@ -5,13 +5,14 @@ import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
+import { generateSpanishReadingVariant } from '@/lib/spanishReadingVariants'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { userFacingError } from '@/lib/userFacingError'
 
 const SESSION_LENGTH = 10
 const MODE = 'spanish_reading'
 const NETWORK_TIMEOUT_MS = 12_000
-const RECENT_PROMPT_WINDOW = 80
+const RECENT_PROMPT_WINDOW = 120
 const READING_SKILL_IDS = new Set(['L01S01','L01S02','L01S03','L01S04','L06S04'])
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
@@ -126,7 +127,10 @@ export default function SpanishReadingSession() {
         sessionUnitCounts.current = counts
         recentSkillIds.current = recentSkillIds.current.slice(0, 5)
         recentUnitIds.current = recentUnitIds.current.slice(0, 3)
-        recentTemplates.current = (historyResult.data ?? []).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))).filter(Boolean).slice(0, RECENT_PROMPT_WINDOW)
+        recentTemplates.current = Array.from(new Set([
+          ...(historyResult.data ?? []).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))),
+          ...attempts.map((attempt) => template(String(attempt.prompt_snapshot ?? ''))),
+        ].filter(Boolean))).slice(0, RECENT_PROMPT_WINDOW)
         setIndex(Math.min(SESSION_LENGTH, attempts.length))
         setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
         setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
@@ -144,19 +148,33 @@ export default function SpanishReadingSession() {
     const unitIds = Array.from(new Set(skills.map((skill) => skill.unit_id)))
     const primarySkill = chooseAdaptiveSkill({ skills, states, focusUnitIds: unitIds, reviewUnitIds: [], sessionUnitCounts: sessionUnitCounts.current, recentSkillIds: recentSkillIds.current, recentUnitIds: recentUnitIds.current, seed: seedBase, questionIndex: index })
     if (!primarySkill) { setError('No se pudo elegir un reto de lectura.'); return }
-    const candidates = [primarySkill, ...skills.filter((skill) => skill.id !== primarySkill.id)]
+    const alternatives = skills
+      .filter((skill) => skill.id !== primarySkill.id)
+      .sort((a, b) => hashText(`${a.id}:${seedBase}:${index}`) - hashText(`${b.id}:${seedBase}:${index}`))
+    const candidates = [primarySkill, ...alternatives]
     const baseSeed = (seedBase + Math.imul(index + 1, 0x9e3779b9)) >>> 0
     let generated: GeneratedQuestion | null = null
     for (let c = 0; c < candidates.length && !generated; c += 1) {
       const candidate = candidates[c]
+      const difficulty = states[candidate.id]?.difficulty ?? 1
       let seed = (baseSeed + Math.imul(c, 0x85ebca6b)) >>> 0
-      for (let attempt = 0; attempt < 16; attempt += 1) {
-        const nextQuestion = generateCurriculumQuestion(candidate, states[candidate.id]?.difficulty ?? 1, seed)
-        if (!recentTemplates.current.includes(template(nextQuestion.prompt))) { generated = nextQuestion; break }
+      for (let attempt = 0; attempt < 64; attempt += 1) {
+        const galleryQuestion = generateSpanishReadingVariant(candidate, difficulty, seed)
+        const curriculumQuestion = generateCurriculumQuestion(candidate, difficulty, seed)
+        for (const nextQuestion of [galleryQuestion, curriculumQuestion]) {
+          if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt))) {
+            generated = nextQuestion
+            break
+          }
+        }
+        if (generated) break
         seed = (seed + 2654435761) >>> 0
       }
     }
-    if (!generated) generated = generateCurriculumQuestion(primarySkill, states[primarySkill.id]?.difficulty ?? 1, baseSeed)
+    if (!generated) {
+      setError('No se encontró un reto de lectura nuevo sin repetir preguntas recientes. Vuelve a la biblioteca y prueba de nuevo más tarde.')
+      return
+    }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated)
     setAnswered(false)
