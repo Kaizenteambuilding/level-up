@@ -32,6 +32,15 @@ function generateRawCurriculumQuestion(
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
   }
+
+  // For knowledge subjects, authored high-quality distractor cards take
+  // precedence at difficulty 3-5. This prevents specialized generators from
+  // reintroducing semantically obvious alternatives in the hardest levels.
+  if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
+    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
+  }
+
   if (skill.id.startsWith('B01')) {
     const investigation = generateScienceInvestigationQuestion(skill, difficulty, seed)
     if (investigation) return investigation
@@ -49,8 +58,6 @@ function generateRawCurriculumQuestion(
     if (history) return history
   }
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
-    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
-    if (strongerDistractors) return strongerDistractors
     return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
   }
   throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
