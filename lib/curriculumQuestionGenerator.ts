@@ -9,6 +9,7 @@ import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
+import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
 import { acceptableDistractorScore, assessDistractorQuality } from './distractorQuality'
 
 type SkillMeta = {
@@ -48,6 +49,8 @@ function generateRawCurriculumQuestion(
     if (history) return history
   }
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
+    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
     return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
   }
   throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
