@@ -31,12 +31,25 @@ function loadTs(file) {
 const catalogueSql = fs.readFileSync('database/catalog/active_curriculum.sql', 'utf8')
 const catalogueMatch = catalogueSql.match(/\$levelup_skills\$\n([\s\S]*?)\n\$levelup_skills\$/)
 if (!catalogueMatch) throw new Error('No se pudo leer el catálogo versionado de habilidades.')
-const skills = JSON.parse(catalogueMatch[1])
+
+const mathSkills = JSON.parse(catalogueMatch[1])
+const subjectCurricula = loadTs('lib/subjectCurricula.ts').SUBJECT_CURRICULA
+const subjectSkills = Object.values(subjectCurricula).flatMap((units) =>
+  units.flatMap((unit) => unit.skills.map((skill) => ({
+    id: skill.id,
+    name: skill.name,
+    generator_key: skill.generatorKey,
+    unit_id: unit.id,
+  })))
+)
+const skills = Array.from(new Map([...mathSkills, ...subjectSkills].map((skill) => [skill.id, skill])).values())
+
 const curriculum = loadTs('lib/curriculumQuestionGenerator.ts')
 const quality = loadTs('lib/distractorQuality.ts')
 
 const failures = []
 const bySubject = {}
+const weakest = []
 let checked = 0
 let severe = 0
 let weakHighDifficulty = 0
@@ -51,7 +64,20 @@ for (const skill of skills) {
       const assessment = quality.assessDistractorQuality(question)
       checked += 1
       bySubject[subject].checked += 1
-      if (assessment.score > quality.acceptableDistractorScore(difficulty)) bySubject[subject].weak += 1
+
+      const maxScore = quality.acceptableDistractorScore(difficulty)
+      if (assessment.score > maxScore) {
+        bySubject[subject].weak += 1
+        weakest.push({
+          skill: skill.id,
+          difficulty,
+          seed,
+          score: assessment.score,
+          reasons: assessment.reasons,
+          prompt: question.prompt,
+          options: question.options,
+        })
+      }
       if (assessment.score >= 6) {
         severe += 1
         bySubject[subject].severe += 1
@@ -68,12 +94,15 @@ for (const skill of skills) {
   }
 }
 
+weakest.sort((a, b) => b.score - a.score || b.difficulty - a.difficulty || a.skill.localeCompare(b.skill))
+
 const result = {
   skills: skills.length,
   questions: checked,
   severeGiveaways: severe,
   highDifficultyWeakShare: Number((weakHighDifficulty / Math.max(1, highDifficultyChecked)).toFixed(3)),
   bySubject,
+  weakest: weakest.slice(0, 20),
 }
 console.log(JSON.stringify(result, null, 2))
 
