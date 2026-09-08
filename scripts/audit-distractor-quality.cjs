@@ -49,6 +49,7 @@ const quality = loadTs('lib/distractorQuality.ts')
 
 const failures = []
 const bySubject = {}
+const weakBySkill = {}
 const weakest = []
 let checked = 0
 let severe = 0
@@ -68,6 +69,7 @@ for (const skill of skills) {
       const maxScore = quality.acceptableDistractorScore(difficulty)
       if (assessment.score > maxScore) {
         bySubject[subject].weak += 1
+        weakBySkill[skill.id] = (weakBySkill[skill.id] ?? 0) + 1
         weakest.push({
           skill: skill.id,
           difficulty,
@@ -95,6 +97,9 @@ for (const skill of skills) {
 }
 
 weakest.sort((a, b) => b.score - a.score || b.difficulty - a.difficulty || a.skill.localeCompare(b.skill))
+const weakestSkills = Object.entries(weakBySkill)
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  .map(([skill, weak]) => ({ skill, weak }))
 
 const result = {
   skills: skills.length,
@@ -102,6 +107,7 @@ const result = {
   severeGiveaways: severe,
   highDifficultyWeakShare: Number((weakHighDifficulty / Math.max(1, highDifficultyChecked)).toFixed(3)),
   bySubject,
+  weakestSkills,
   weakest: weakest.slice(0, 20),
 }
 console.log(JSON.stringify(result, null, 2))
