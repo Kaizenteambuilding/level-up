@@ -8,6 +8,7 @@ import { generateScienceInvestigationQuestion } from './scienceInvestigationQues
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
+import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { acceptableDistractorScore, assessDistractorQuality } from './distractorQuality'
 
 type SkillMeta = {
@@ -23,6 +24,8 @@ function generateRawCurriculumQuestion(
   seed: number
 ): GeneratedQuestion {
   if (skill.id.startsWith('M')) {
+    const strongerDistractors = generateMathDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
   }
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
