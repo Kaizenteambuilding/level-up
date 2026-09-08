@@ -54,13 +54,15 @@ for (const unit of curricula.SUBJECT_CURRICULA.english) {
 
 const terminalSource = fs.readFileSync('components/EnglishTerminalSession.tsx', 'utf8')
 for (const marker of [
-  'RECENT_PROMPT_WINDOW = 80',
+  'RECENT_PROMPT_WINDOW = 120',
   ".eq('player_id', id).like('skill_id', 'E%')",
   'recentTemplates.current.includes(template(nextQuestion.prompt))',
   'const candidates = [primarySkill, ...alternatives]',
+  'attempt < 64',
 ]) {
   if (!terminalSource.includes(marker)) failures.push(`terminal_missing:${marker}`)
 }
+if (/if\s*\(!generated\).*generateCurriculumQuestion/s.test(terminalSource)) failures.push('terminal_permissive_duplicate_fallback')
 
 console.log(JSON.stringify({
   englishSkills: curricula.SUBJECT_CURRICULA.english.flatMap((unit) => unit.skills).length,
