@@ -12,6 +12,7 @@ import { generateExtraLanguageDistractorVariant5 } from './languageDistractorVar
 import { generateLanguageReadingDistractorVariant } from './languageDistractorVariantsReading'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
+import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
@@ -46,6 +47,13 @@ function generateRawCurriculumQuestion(
       ?? generateLanguageReadingDistractorVariant(skill, difficulty, seed)
     if (strongerDistractors) return strongerDistractors
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
+  }
+
+  // Targeted science cleanups take precedence at difficulty 3-5 when an older
+  // authored card still contains an ambiguous or too-easy distractor.
+  if (skill.id.startsWith('B')) {
+    const cleanedScience = generateScienceDistractorCleanup(skill, difficulty, seed)
+    if (cleanedScience) return cleanedScience
   }
 
   // For knowledge subjects, authored high-quality distractor cards take
