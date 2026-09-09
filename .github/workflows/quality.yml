@@ -60,6 +60,9 @@ jobs:
       - name: Audit English Terminal variety
         run: npm run audit:english-terminal-variety
 
+      - name: Audit English Listening quality
+        run: npm run audit:english-listening-quality
+
       - name: Audit all world districts
         run: npm run audit:world-zones
 
