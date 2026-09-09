@@ -13,6 +13,7 @@ import { generateLanguageReadingDistractorVariant } from './languageDistractorVa
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
 import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
+import { generateHistoryDistractorCleanup } from './historyDistractorCleanup'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
@@ -47,6 +48,11 @@ function generateRawCurriculumQuestion(
       ?? generateLanguageReadingDistractorVariant(skill, difficulty, seed)
     if (strongerDistractors) return strongerDistractors
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
+  }
+
+  if (skill.id.startsWith('G')) {
+    const cleanedHistory = generateHistoryDistractorCleanup(skill, difficulty, seed)
+    if (cleanedHistory) return cleanedHistory
   }
 
   // Targeted science cleanups take precedence at difficulty 3-5 when an older
