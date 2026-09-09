@@ -1,3 +1,4 @@
+# Temporary workflow to regenerate the lockfile with patched production dependencies.
 name: Update secure dependencies
 
 on:
