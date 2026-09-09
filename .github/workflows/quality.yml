@@ -75,6 +75,9 @@ jobs:
       - name: Audit longitudinal adaptive behavior
         run: npm run audit:adaptive-engine
 
+      - name: Audit fresh-player adaptive progression
+        run: npm run audit:fresh-player-adaptive
+
       - name: Audit parent insight thresholds
         run: npm run audit:parent-insights
 
