@@ -1,0 +1,34 @@
+name: Update secure dependencies
+
+on:
+  push:
+    branches:
+      - fix/migration-provenance-audit
+
+permissions:
+  contents: write
+
+jobs:
+  update-lockfile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/migration-provenance-audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Update patched production dependencies
+        run: npm install --save-exact next@16.3.4 sharp@0.35.4
+      - name: Verify production audit
+        run: npm audit --omit=dev --audit-level=high
+      - name: Commit regenerated manifests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: patch vulnerable production dependencies"
+          git push origin HEAD:fix/migration-provenance-audit
