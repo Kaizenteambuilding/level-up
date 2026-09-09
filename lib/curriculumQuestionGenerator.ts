@@ -3,11 +3,24 @@ import {
   type GeneratedQuestion,
 } from './firstEvaluationGenerators'
 import { generateLanguageQuestionWithCriticalVariants } from './languageCriticalVariants'
+import { generateLanguageDistractorVariant } from './languageDistractorVariants'
+import { generateExtraLanguageDistractorVariant } from './languageDistractorVariantsExtra'
+import { generateExtraLanguageDistractorVariant2 } from './languageDistractorVariantsExtra2'
+import { generateExtraLanguageDistractorVariant3 } from './languageDistractorVariantsExtra3'
+import { generateExtraLanguageDistractorVariant4 } from './languageDistractorVariantsExtra4'
+import { generateExtraLanguageDistractorVariant5 } from './languageDistractorVariantsExtra5'
+import { generateLanguageReadingDistractorVariant } from './languageDistractorVariantsReading'
+import { generateLanguageDistractorCleanup } from './languageDistractorCleanup'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
+import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
+import { generateHistoryDistractorCleanup } from './historyDistractorCleanup'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
+import { generateMathDistractorVariant } from './mathDistractorVariants'
+import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
+import { acceptableDistractorScore, assessDistractorQuality } from './distractorQuality'
 
 type SkillMeta = {
   id: string
@@ -16,18 +29,51 @@ type SkillMeta = {
   unit_id?: string
 }
 
-/** Single audited entry point for all curriculum questions. */
-export function generateCurriculumQuestion(
+function generateRawCurriculumQuestion(
   skill: SkillMeta,
   difficulty: number,
   seed: number
 ): GeneratedQuestion {
   if (skill.id.startsWith('M')) {
+    const strongerDistractors = generateMathDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
   }
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
+    const cleanedLanguage = generateLanguageDistractorCleanup(skill, difficulty, seed)
+    if (cleanedLanguage) return cleanedLanguage
+
+    const strongerDistractors = generateLanguageDistractorVariant(skill, difficulty, seed)
+      ?? generateExtraLanguageDistractorVariant(skill, difficulty, seed)
+      ?? generateExtraLanguageDistractorVariant2(skill, difficulty, seed)
+      ?? generateExtraLanguageDistractorVariant3(skill, difficulty, seed)
+      ?? generateExtraLanguageDistractorVariant4(skill, difficulty, seed)
+      ?? generateExtraLanguageDistractorVariant5(skill, difficulty, seed)
+      ?? generateLanguageReadingDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
   }
+
+  if (skill.id.startsWith('G')) {
+    const cleanedHistory = generateHistoryDistractorCleanup(skill, difficulty, seed)
+    if (cleanedHistory) return cleanedHistory
+  }
+
+  // Targeted science cleanups take precedence at difficulty 3-5 when an older
+  // authored card still contains an ambiguous or too-easy distractor.
+  if (skill.id.startsWith('B')) {
+    const cleanedScience = generateScienceDistractorCleanup(skill, difficulty, seed)
+    if (cleanedScience) return cleanedScience
+  }
+
+  // For knowledge subjects, authored high-quality distractor cards take
+  // precedence at difficulty 3-5. This prevents specialized generators from
+  // reintroducing semantically obvious alternatives in the hardest levels.
+  if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
+    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
+  }
+
   if (skill.id.startsWith('B01')) {
     const investigation = generateScienceInvestigationQuestion(skill, difficulty, seed)
     if (investigation) return investigation
@@ -48,4 +94,44 @@ export function generateCurriculumQuestion(
     return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
   }
   throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
+}
+
+/**
+ * Single audited entry point for all curriculum questions.
+ *
+ * Besides routing to the subject generator, this performs a small deterministic
+ * search for a version whose distractors do not give the answer away through
+ * obvious linguistic or visual clues. It never invents distractors here: it
+ * chooses among real questions already authored by the subject generators.
+ */
+export function generateCurriculumQuestion(
+  skill: SkillMeta,
+  difficulty: number,
+  seed: number
+): GeneratedQuestion {
+  const maxScore = acceptableDistractorScore(difficulty)
+  let candidateSeed = seed >>> 0
+  let best = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+  let bestAssessment = assessDistractorQuality(best)
+
+  if (bestAssessment.score <= maxScore) return best
+
+  // Higher levels deserve a wider search because eliminating implausible
+  // distractors should not substitute for knowing the content.
+  const retries = difficulty >= 4 ? 12 : difficulty >= 2 ? 8 : 4
+  for (let attempt = 1; attempt < retries; attempt += 1) {
+    candidateSeed = (candidateSeed + 2654435761) >>> 0
+    const next = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+    const assessment = assessDistractorQuality(next)
+
+    if (assessment.score < bestAssessment.score) {
+      best = next
+      bestAssessment = assessment
+    }
+    if (assessment.score <= maxScore) return next
+  }
+
+  // Never block a practice because an old bank has not yet been rewritten.
+  // Returning the least weak candidate lets us improve content incrementally.
+  return best
 }

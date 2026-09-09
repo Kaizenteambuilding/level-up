@@ -15,7 +15,8 @@ for (const skillId of ['G01S01', 'G01S02', 'G01S03', 'G01S04']) {
 assert.match(router, /skill\.id\.startsWith\('G01'\)/, 'G01 must route through the dedicated cartography generator')
 assert.match(router, /generateCartographyQuestion/, 'Curriculum router must call the cartography generator')
 assert.match(session, /recentTemplates\.current/, 'Cartography session must retain recent prompt templates')
-assert.match(session, /attempt < 20/, 'Cartography session must retry generation when a recent template repeats')
-assert.match(session, /HISTORY = 80/, 'Cartography repeat protection must include cross-session history')
+assert.match(session, /attempt < 64/, 'Cartography session must retry deeply when a recent template repeats')
+assert.match(session, /HISTORY = 120/, 'Cartography repeat protection must include broad cross-session history')
+assert.doesNotMatch(session, /generated\s*\?\?=\s*generateCurriculumQuestion/, 'Cartography must not knowingly fall back to a repeated prompt')
 
-console.log('Cartography variety audit passed: 4 skills × >=8 structures plus recent-history deduplication.')
+console.log('Cartography variety audit passed: 4 skills × >=8 structures plus strict recent-history deduplication.')

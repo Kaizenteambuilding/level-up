@@ -10,7 +10,7 @@ import { userFacingError } from '@/lib/userFacingError'
 const SESSION_LENGTH = 10
 const MODE = 'spanish_writing'
 const NETWORK_TIMEOUT_MS = 12_000
-const RECENT_PROMPT_WINDOW = 80
+const RECENT_PROMPT_WINDOW = 120
 const WRITING_SKILL_IDS = new Set(spanishWritingSkillIds())
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
@@ -53,7 +53,7 @@ export default function SpanishWritingSession() {
     if (skillsError || !skillRows?.length) throw new Error('No hay habilidades activas de Lengua disponibles'); const loadedSkills = (skillRows as SkillRow[]).filter((skill) => WRITING_SKILL_IDS.has(skill.id)); if (!loadedSkills.length) throw new Error('No hay habilidades de expresión escrita disponibles'); setSkills(loadedSkills)
     const stateMap: Record<string, SkillState> = {}; for (const row of statesResult.data ?? []) { const skillId = typeof row.skill_id === 'string' ? row.skill_id : ''; if (!WRITING_SKILL_IDS.has(skillId)) continue; stateMap[skillId] = { skill_id: skillId, mastery: Number(row.mastery ?? 50), confidence: Number(row.confidence ?? 50), difficulty: Number(row.difficulty ?? 1), priority: Number(row.priority ?? 50), last_practiced_at: row.last_practiced_at } } setStates(stateMap)
     const skillToUnit = new Map(loadedSkills.map((skill) => [skill.id, skill.unit_id])); const attempts = attemptsResult.data ?? []; const counts: Record<string, number> = {}; for (const attempt of attempts) { const skillId = String(attempt.skill_id ?? ''), unitId = skillToUnit.get(skillId); if (!unitId) continue; counts[unitId] = (counts[unitId] ?? 0) + 1; recentSkillIds.current.unshift(skillId); recentUnitIds.current.unshift(unitId) }
-    sessionUnitCounts.current = counts; recentSkillIds.current = recentSkillIds.current.slice(0, 5); recentUnitIds.current = recentUnitIds.current.slice(0, 3); recentTemplates.current = (historyResult.data ?? []).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))).filter(Boolean).slice(0, RECENT_PROMPT_WINDOW); setIndex(Math.min(SESSION_LENGTH, attempts.length)); setCorrect(attempts.filter((attempt) => attempt.correct === true).length); setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
+    sessionUnitCounts.current = counts; recentSkillIds.current = recentSkillIds.current.slice(0, 5); recentUnitIds.current = recentUnitIds.current.slice(0, 3); recentTemplates.current = Array.from(new Set([...(historyResult.data ?? []).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))), ...attempts.map((attempt) => template(String(attempt.prompt_snapshot ?? '')))].filter(Boolean))).slice(0, RECENT_PROMPT_WINDOW); setIndex(Math.min(SESSION_LENGTH, attempts.length)); setCorrect(attempts.filter((attempt) => attempt.correct === true).length); setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
   } catch (cause) { if (active) setError(errorMessage(cause, 'No se pudo abrir Sala de cronistas.')) } finally { if (active) setLoading(false) } })(); return () => { active = false } }, [])
 
   useEffect(() => {
@@ -69,9 +69,9 @@ export default function SpanishWritingSession() {
       let selected: ActiveTask | null = null
       for (let c = 0; c < candidates.length && !selected; c += 1) {
         const candidate = candidates[c]; let seed = (baseSeed + Math.imul(c, 0x85ebca6b)) >>> 0
-        for (let attempt = 0; attempt < 12; attempt += 1) { try { const nextTask = generateSpanishWritingTask(candidate.id, seed); if (!recentTemplates.current.includes(template(nextTask.prompt))) { selected = { ...nextTask, difficulty: states[candidate.id]?.difficulty ?? 1, seed, label: candidate.name }; break } } catch { break } seed = (seed + 2654435761) >>> 0 }
+        for (let attempt = 0; attempt < 64; attempt += 1) { try { const nextTask = generateSpanishWritingTask(candidate.id, seed); if (!recentTemplates.current.includes(template(nextTask.prompt))) { selected = { ...nextTask, difficulty: states[candidate.id]?.difficulty ?? 1, seed, label: candidate.name }; break } } catch { break } seed = (seed + 2654435761) >>> 0 }
       }
-      if (!selected) { const fallbackSkill = skills[index % skills.length]; const fallback = generateSpanishWritingTask(fallbackSkill.id, baseSeed); selected = { ...fallback, difficulty: states[fallbackSkill.id]?.difficulty ?? 1, seed: baseSeed, label: fallbackSkill.name } }
+      if (!selected) { setError('No se encontró un encargo de escritura nuevo sin repetir propuestas recientes. Vuelve a la biblioteca y prueba de nuevo más tarde.'); return }
       recentTemplates.current = [template(selected.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW); setTask(selected); setResponse(''); setEvaluation(null); setAnswered(false); setFeedback(''); taskStarted.current = Date.now()
     } catch (cause) { setError(errorMessage(cause, 'No se pudo generar el siguiente encargo.')) }
   }, [loading, error, task, sessionId, skills, states, seedBase, index])

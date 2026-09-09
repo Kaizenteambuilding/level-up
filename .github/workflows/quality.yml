@@ -39,6 +39,9 @@ jobs:
       - name: Audit pedagogical question quality
         run: npm run audit:question-quality
 
+      - name: Audit distractor plausibility
+        run: npm run audit:distractor-quality
+
       - name: Audit multi-subject curriculum
         run: npm run audit:multi-subject-curriculum
 
@@ -56,6 +59,9 @@ jobs:
 
       - name: Audit English Terminal variety
         run: npm run audit:english-terminal-variety
+
+      - name: Audit English Listening quality
+        run: npm run audit:english-listening-quality
 
       - name: Audit all world districts
         run: npm run audit:world-zones
