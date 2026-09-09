@@ -67,20 +67,22 @@ const profiles = [
 function simulate(profile) {
   const rng = random(profile.seed)
   const states = {}
-  const sessionUnitCounts = {}
-  let recentSkillIds = []
-  let recentUnitIds = []
-  let shortestRepeatGap = Infinity
-  const lastSeen = new Map()
-  const history = []
+  let shortestWithinSessionRepeatGap = Infinity
   const sessionSummaries = []
   const unitCounts = Object.fromEntries(plan.focusUnitIds.map((unitId) => [unitId, 0]))
 
   for (let session = 0; session < SESSIONS; session += 1) {
     const sessionTime = NOW.getTime() + session * DAY_MS
+    // Production reconstructs these from the attempts in the currently open session.
+    // A new mission therefore starts with fresh skill/unit recency and unit counts.
+    const sessionUnitCounts = {}
+    let recentSkillIds = []
+    let recentUnitIds = []
+    const lastSeenInSession = new Map()
     let sessionCorrect = 0
     let sessionMaxDifficulty = 1
     const sessionDifficulties = []
+
     for (let index = 0; index < SESSION_LENGTH; index += 1) {
       const skill = chooseAdaptiveSkill({
         skills: activeSkills,
@@ -113,10 +115,11 @@ function simulate(profile) {
         new Date(sessionTime + index * 60_000).toISOString()
       )
 
-      const previousIndex = lastSeen.get(skill.id)
-      if (previousIndex !== undefined) shortestRepeatGap = Math.min(shortestRepeatGap, history.length - previousIndex)
-      lastSeen.set(skill.id, history.length)
-      history.push(skill.id)
+      const previousIndex = lastSeenInSession.get(skill.id)
+      if (previousIndex !== undefined) {
+        shortestWithinSessionRepeatGap = Math.min(shortestWithinSessionRepeatGap, index - previousIndex)
+      }
+      lastSeenInSession.set(skill.id, index)
       recentSkillIds = [skill.id, ...recentSkillIds.filter((id) => id !== skill.id)].slice(0, 5)
       recentUnitIds = [skill.unit_id, ...recentUnitIds.filter((id) => id !== skill.unit_id)].slice(0, 3)
       sessionUnitCounts[skill.unit_id] = (sessionUnitCounts[skill.unit_id] ?? 0) + 1
@@ -138,7 +141,7 @@ function simulate(profile) {
   const stateValues = Object.values(states)
   return {
     profile: profile.name,
-    shortestRepeatGap,
+    shortestWithinSessionRepeatGap,
     skillsSeen: stateValues.length,
     focusUnitsCovered: Object.values(unitCounts).filter((count) => count > 0).length,
     focusUnitCount: plan.focusUnitIds.length,
@@ -153,7 +156,7 @@ const results = profiles.map(simulate)
 const failures = []
 
 for (const result of results) {
-  if (result.shortestRepeatGap < 6) failures.push(`${result.profile}: recent_skill_repeat`)
+  if (result.shortestWithinSessionRepeatGap < 6) failures.push(`${result.profile}: recent_skill_repeat`)
   if (result.focusUnitsCovered !== result.focusUnitCount) failures.push(`${result.profile}: incomplete_focus_unit_coverage`)
   if (result.minFocusUnitAttempts < 10) failures.push(`${result.profile}: focus_unit_starvation`)
   if (result.sessionSummaries[0].maxDifficulty > 2) failures.push(`${result.profile}: first_session_escalates_too_fast`)
@@ -175,7 +178,9 @@ if (balanced.maxDifficulty < 2) failures.push('balanced_start_never_progresses')
 
 const publicResults = results.map((result) => ({
   profile: result.profile,
-  shortestRepeatGap: result.shortestRepeatGap,
+  shortestWithinSessionRepeatGap: Number.isFinite(result.shortestWithinSessionRepeatGap)
+    ? result.shortestWithinSessionRepeatGap
+    : null,
   skillsSeen: result.skillsSeen,
   focusUnitsCovered: `${result.focusUnitsCovered}/${result.focusUnitCount}`,
   minFocusUnitAttempts: result.minFocusUnitAttempts,
