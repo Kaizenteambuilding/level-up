@@ -12,7 +12,9 @@ const authored = fs.readFileSync(authoredPath, 'utf8')
 function sliceArray(source, marker) {
   const markerIndex = source.indexOf(marker)
   assert(markerIndex >= 0, `Missing array marker: ${marker}`)
-  const start = source.indexOf('[', markerIndex)
+  const assignment = source.indexOf('=', markerIndex)
+  assert(assignment >= 0, `Missing assignment after: ${marker}`)
+  const start = source.indexOf('[', assignment)
   assert(start >= 0, `Missing opening bracket after: ${marker}`)
   let depth = 0
   let quote = null
