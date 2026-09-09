@@ -55,6 +55,12 @@ const expectedCanonical = [
   '20260902093000_restrict_practice_scope_helper.sql',
   '20260902104018_localize_geography_skill_names.sql',
   '20260902123000_localize_geography_skill_names.sql',
+  '20260906124500_add_beta_feedback_product_event.sql',
+  '20260906212500_rebalance_shop_economy.sql',
+  '20260906223000_add_quarter_boss_progression.sql',
+  '20260906231500_tune_quarter_boss_windows.sql',
+  '20260907073000_add_achievement_summary.sql',
+  '20260907112500_harden_quarter_boss_completion.sql',
 ]
 
 const expectedLegacySnapshots = [
@@ -65,6 +71,7 @@ const expectedLegacySnapshots = [
 ]
 
 const manifest = JSON.parse(fs.readFileSync('database/production-migrations.json', 'utf8'))
+const stateSnapshot = JSON.parse(fs.readFileSync('database/production-migrations-2026-09-09.json', 'utf8'))
 const allSql = fs.readdirSync('database/migrations').filter((name) => name.endsWith('.sql')).sort()
 const canonical = allSql.filter((name) => /^\d{14}_[a-z0-9_]+\.sql$/.test(name))
 const legacySnapshots = allSql.filter((name) => !/^\d{14}_[a-z0-9_]+\.sql$/.test(name))
@@ -72,7 +79,9 @@ const legacySnapshots = allSql.filter((name) => !/^\d{14}_[a-z0-9_]+\.sql$/.test
 assert.deepEqual(canonical, expectedCanonical, 'Canonical migration files differ from the recorded repository history')
 assert.deepEqual(legacySnapshots, expectedLegacySnapshots, 'Legacy migration snapshots differ from the recorded history')
 assert.equal(manifest.projectRef, 'dtyqebdkgayxufffidef', 'Production migration manifest points to the wrong project')
+assert.equal(stateSnapshot.projectRef, manifest.projectRef, 'Production state snapshot points to the wrong project')
 assert.match(manifest.capturedAt, /^\d{4}-\d{2}-\d{2}$/, 'Production migration manifest capturedAt must be an ISO date')
+assert.match(stateSnapshot.capturedAt, /^\d{4}-\d{2}-\d{2}$/, 'Production state snapshot capturedAt must be an ISO date')
 
 const productionEntries = manifest.production
 assert.ok(Array.isArray(productionEntries) && productionEntries.length > 0, 'Production migration manifest is empty')
@@ -83,19 +92,46 @@ for (const [version, name] of productionEntries) {
   assert.match(name, /^[a-z0-9_]+$/, `Invalid production migration name: ${name}`)
 }
 
+assert.equal(
+  stateSnapshot.schemaMigrationLatest,
+  productionEntries.at(-1)?.[0],
+  'Production state snapshot must name the latest recorded schema migration version',
+)
+
 const repositoryToProduction = manifest.repositoryToProduction ?? {}
-assert.deepEqual(Object.keys(repositoryToProduction).sort(), canonical, 'Every canonical repository migration must have explicit production provenance')
+const stateVerified = stateSnapshot.productionStateVerified ?? {}
+const stateNotDeployed = stateSnapshot.notDeployed ?? {}
+const knownProvenance = new Set([
+  ...Object.keys(repositoryToProduction),
+  ...Object.keys(stateVerified),
+  ...Object.keys(stateNotDeployed),
+])
+assert.deepEqual([...knownProvenance].sort(), canonical, 'Every canonical repository migration must have explicit production provenance')
 
 const mappedProductionVersions = []
 for (const name of canonical) {
   assert.match(name, /^\d{14}_[a-z0-9_]+\.sql$/, `Invalid canonical migration filename: ${name}`)
   const source = fs.readFileSync(`database/migrations/${name}`, 'utf8')
   assert.ok(source.trim().length > 100, `Migration unexpectedly empty: ${name}`)
-  const productionVersion = repositoryToProduction[name]
-  if (productionVersion === null) continue
-  assert.match(productionVersion, /^\d{14}$/, `Invalid production mapping for ${name}`)
-  assert.ok(productionVersionToName.has(productionVersion), `Production mapping for ${name} points to missing version ${productionVersion}`)
-  mappedProductionVersions.push(productionVersion)
+
+  if (Object.hasOwn(repositoryToProduction, name)) {
+    const productionVersion = repositoryToProduction[name]
+    if (productionVersion === null) continue
+    assert.match(productionVersion, /^\d{14}$/, `Invalid production mapping for ${name}`)
+    assert.ok(productionVersionToName.has(productionVersion), `Production mapping for ${name} points to missing version ${productionVersion}`)
+    mappedProductionVersions.push(productionVersion)
+    continue
+  }
+
+  if (Object.hasOwn(stateVerified, name)) {
+    const details = stateVerified[name]
+    assert.equal(details.schemaMigrationVersion, null, `State-verified migration ${name} must not claim a schema migration version`)
+    assert.ok(details && typeof details.reason === 'string' && details.reason.length > 30, `State-verified migration ${name} needs an evidence-based reason`)
+    continue
+  }
+
+  const details = stateNotDeployed[name]
+  assert.ok(details && typeof details.reason === 'string' && details.reason.length > 20, `Undeployed migration ${name} needs a reason`)
 }
 
 assert.equal(new Set(mappedProductionVersions).size, mappedProductionVersions.length, 'Repository migrations must not map to the same production migration twice')
@@ -105,6 +141,17 @@ for (const [name, details] of Object.entries(notDeployed)) {
   assert.ok(canonical.includes(name), `notDeployed references unknown migration ${name}`)
   assert.equal(repositoryToProduction[name], null, `notDeployed migration ${name} must map to null`)
   assert.ok(details && typeof details.reason === 'string' && details.reason.length > 10, `notDeployed migration ${name} needs a reason`)
+}
+
+for (const name of Object.keys(stateVerified)) {
+  assert.ok(canonical.includes(name), `productionStateVerified references unknown migration ${name}`)
+  assert.ok(!Object.hasOwn(repositoryToProduction, name), `State-verified migration ${name} must not also claim recorded migration provenance`)
+  assert.ok(!Object.hasOwn(stateNotDeployed, name), `State-verified migration ${name} cannot also be marked not deployed`)
+}
+
+for (const name of Object.keys(stateNotDeployed)) {
+  assert.ok(canonical.includes(name), `state snapshot notDeployed references unknown migration ${name}`)
+  assert.ok(!Object.hasOwn(repositoryToProduction, name), `State snapshot notDeployed migration ${name} must not also claim recorded migration provenance`)
 }
 
 console.log('Migration history audit passed.')

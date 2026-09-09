@@ -1,0 +1,32 @@
+{
+  "projectRef": "dtyqebdkgayxufffidef",
+  "capturedAt": "2026-09-09",
+  "schemaMigrationLatest": "20260902104018",
+  "productionStateVerified": {
+    "20260906124500_add_beta_feedback_product_event.sql": {
+      "schemaMigrationVersion": null,
+      "reason": "Production exposes report_levelup_product_event(uuid,text,text) with beta_feedback allowed, and the product_events event_name constraint also includes beta_feedback. The state is present in production but no matching row exists in supabase_migrations.schema_migrations."
+    },
+    "20260906223000_add_quarter_boss_progression.sql": {
+      "schemaMigrationVersion": null,
+      "reason": "Production contains public.boss_attempts and the quarter-boss RPC surface introduced by this migration. The state is present in production but no matching row exists in supabase_migrations.schema_migrations."
+    },
+    "20260906231500_tune_quarter_boss_windows.sql": {
+      "schemaMigrationVersion": null,
+      "reason": "Production get_levelup_boss_status(uuid,text) uses the tuned windows 5-22 December, 20 March-5 April, and 5-22 June. The state is present in production but no matching row exists in supabase_migrations.schema_migrations."
+    },
+    "20260907073000_add_achievement_summary.sql": {
+      "schemaMigrationVersion": null,
+      "reason": "Production exposes get_levelup_achievement_summary(uuid), confirming the achievement summary state is present, while no matching row exists in supabase_migrations.schema_migrations."
+    },
+    "20260907112500_harden_quarter_boss_completion.sql": {
+      "schemaMigrationVersion": null,
+      "reason": "Production complete_levelup_boss_attempt(uuid,integer[],text[]) contains the hardened 15-answer and null/range validation. The state is present in production but no matching row exists in supabase_migrations.schema_migrations."
+    }
+  },
+  "notDeployed": {
+    "20260906212500_rebalance_shop_economy.sql": {
+      "reason": "Production game_items still uses the pre-rebalance prices and minimum levels, so this repository migration is not deployed."
+    }
+  }
+}
