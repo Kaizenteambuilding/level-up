@@ -6,22 +6,22 @@ type Card = { prompt: string; answer: string; distractors: [string, string, stri
 const CARDS: Record<string, Card[]> = {
   L04S01: [
     {
-      prompt: '¿Qué palabra debe llevar tilde por ser esdrújula?',
+      prompt: '¿Qué palabra lleva tilde por ser esdrújula?',
       answer: 'música',
-      distractors: ['pared', 'reloj', 'camino'],
-      solution: '«Música» es esdrújula porque la sílaba tónica es la antepenúltima; todas las esdrújulas llevan tilde.',
+      distractors: ['canción', 'árbol', 'país'],
+      solution: '«Música» es esdrújula porque la sílaba tónica es la antepenúltima. «Canción» es aguda, «árbol» es llana y «país» lleva tilde por hiato.',
     },
     {
       prompt: '¿Qué palabra lleva tilde por contener un hiato con vocal cerrada tónica?',
       answer: 'país',
-      distractors: ['aire', 'causa', 'cuidado'],
-      solution: 'En «país», la í tónica rompe el diptongo y forma hiato.',
+      distractors: ['música', 'canción', 'árbol'],
+      solution: 'En «país», la í tónica rompe el diptongo y forma hiato. Las otras palabras llevan tilde por reglas de acentuación distintas.',
     },
     {
-      prompt: '¿Qué palabra necesita tilde por ser llana terminada en consonante distinta de n o s?',
+      prompt: '¿Qué palabra lleva tilde por ser llana terminada en consonante distinta de n o s?',
       answer: 'árbol',
-      distractors: ['joven', 'imagen', 'lunes'],
-      solution: '«Árbol» es llana y termina en l; por esa regla lleva tilde.',
+      distractors: ['canción', 'música', 'país'],
+      solution: '«Árbol» es llana y termina en l; por esa regla lleva tilde. Las otras opciones se acentúan por motivos diferentes.',
     },
   ],
   E05S03: [
