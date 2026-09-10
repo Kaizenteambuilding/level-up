@@ -61,6 +61,7 @@ const expectedCanonical = [
   '20260906231500_tune_quarter_boss_windows.sql',
   '20260907073000_add_achievement_summary.sql',
   '20260907112500_harden_quarter_boss_completion.sql',
+  '20260910024400_harden_attempt_submission_integrity.sql',
 ]
 
 const expectedLegacySnapshots = [
