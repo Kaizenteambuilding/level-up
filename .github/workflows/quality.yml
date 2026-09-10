@@ -48,6 +48,9 @@ jobs:
       - name: Audit multi-subject mission rotation
         run: npm run audit:multi-subject-rotation
 
+      - name: Audit explorer community privacy
+        run: node scripts/audit-explorer-community.cjs
+
       - name: Audit active subject plans
         run: npm run audit:active-subject-plans
 

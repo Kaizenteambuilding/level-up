@@ -62,6 +62,7 @@ const expectedCanonical = [
   '20260907073000_add_achievement_summary.sql',
   '20260907112500_harden_quarter_boss_completion.sql',
   '20260910024400_harden_attempt_submission_integrity.sql',
+  '20260910032900_add_explorer_public_profiles.sql',
 ]
 
 const expectedLegacySnapshots = [
