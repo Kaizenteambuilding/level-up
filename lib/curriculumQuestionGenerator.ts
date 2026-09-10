@@ -59,16 +59,11 @@ function generateRawCurriculumQuestion(
     if (cleanedHistory) return cleanedHistory
   }
 
-  // Targeted science cleanups take precedence at difficulty 3-5 when an older
-  // authored card still contains an ambiguous or too-easy distractor.
   if (skill.id.startsWith('B')) {
     const cleanedScience = generateScienceDistractorCleanup(skill, difficulty, seed)
     if (cleanedScience) return cleanedScience
   }
 
-  // For knowledge subjects, authored high-quality distractor cards take
-  // precedence at difficulty 3-5. This prevents specialized generators from
-  // reintroducing semantically obvious alternatives in the hardest levels.
   if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
     const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
     if (strongerDistractors) return strongerDistractors
@@ -96,6 +91,32 @@ function generateRawCurriculumQuestion(
   throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
 }
 
+function isDegenerateMathQuestion(question: GeneratedQuestion) {
+  if (!question.skillId.startsWith('M')) return false
+
+  const directRule = question.prompt.match(
+    /^Si\s+(\d+)\s+unidades\s+cuestan\s+[^?]+¿cuánto\s+cuestan\s+(\d+)\s+unidades\?$/i,
+  )
+
+  return directRule ? Number(directRule[1]) === Number(directRule[2]) : false
+}
+
+function generatePlayableRawQuestion(
+  skill: SkillMeta,
+  difficulty: number,
+  seed: number,
+): GeneratedQuestion {
+  let candidateSeed = seed >>> 0
+  let candidate = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+
+  for (let attempt = 0; attempt < 8 && isDegenerateMathQuestion(candidate); attempt += 1) {
+    candidateSeed = (candidateSeed + 2654435761) >>> 0
+    candidate = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+  }
+
+  return candidate
+}
+
 /**
  * Single audited entry point for all curriculum questions.
  *
@@ -111,17 +132,15 @@ export function generateCurriculumQuestion(
 ): GeneratedQuestion {
   const maxScore = acceptableDistractorScore(difficulty)
   let candidateSeed = seed >>> 0
-  let best = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+  let best = generatePlayableRawQuestion(skill, difficulty, candidateSeed)
   let bestAssessment = assessDistractorQuality(best)
 
   if (bestAssessment.score <= maxScore) return best
 
-  // Higher levels deserve a wider search because eliminating implausible
-  // distractors should not substitute for knowing the content.
   const retries = difficulty >= 4 ? 12 : difficulty >= 2 ? 8 : 4
   for (let attempt = 1; attempt < retries; attempt += 1) {
     candidateSeed = (candidateSeed + 2654435761) >>> 0
-    const next = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+    const next = generatePlayableRawQuestion(skill, difficulty, candidateSeed)
     const assessment = assessDistractorQuality(next)
 
     if (assessment.score < bestAssessment.score) {
@@ -131,7 +150,5 @@ export function generateCurriculumQuestion(
     if (assessment.score <= maxScore) return next
   }
 
-  // Never block a practice because an old bank has not yet been rewritten.
-  // Returning the least weak candidate lets us improve content incrementally.
   return best
 }
