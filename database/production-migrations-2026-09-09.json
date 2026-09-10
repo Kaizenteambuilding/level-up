@@ -1,7 +1,7 @@
 {
   "projectRef": "dtyqebdkgayxufffidef",
   "capturedAt": "2026-09-10",
-  "schemaMigrationLatest": "20260910024401",
+  "schemaMigrationLatest": "20260910032913",
   "productionStateVerified": {
     "20260906124500_add_beta_feedback_product_event.sql": {
       "schemaMigrationVersion": null,
