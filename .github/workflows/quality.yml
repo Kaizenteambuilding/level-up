@@ -42,6 +42,9 @@ jobs:
       - name: Audit distractor plausibility
         run: npm run audit:distractor-quality
 
+      - name: Audit playability blockers
+        run: node scripts/audit-playability-blockers.cjs
+
       - name: Audit multi-subject curriculum
         run: npm run audit:multi-subject-curriculum
 
