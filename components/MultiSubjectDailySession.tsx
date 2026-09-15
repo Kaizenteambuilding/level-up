@@ -272,8 +272,10 @@ export default function MultiSubjectDailySession() {
     }
 
     if (!generated) {
-      setError('No se encontró un reto nuevo sin repetir preguntas recientes. Vuelve al mapa y prueba de nuevo más tarde.')
-      return
+      // Course-long daily fallback: continue with spaced review rather than blocking.
+      const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
+      const fallbackSeed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
+      generated = generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
     }
 
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)

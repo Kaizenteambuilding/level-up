@@ -155,8 +155,12 @@ export default function SpanishWordsSession() {
       }
     }
     if (!generated) {
-      setError('No se encontró un reto de palabras nuevo sin repetir preguntas recientes. Vuelve a la biblioteca y prueba de nuevo más tarde.')
-      return
+      // Course-long fallback: recent-history is a preference, never a stop condition.
+      // After the fresh pool is exhausted, revisit a valid skill with a seed that keeps
+      // numeric/contextual generators moving while allowing deliberate spaced review.
+      const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
+      const fallbackSeed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
+      generated = generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
     }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated); setAnswered(false); setSelectedOption(null); setFeedback(''); questionStarted.current = Date.now()
