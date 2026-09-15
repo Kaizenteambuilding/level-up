@@ -18,7 +18,7 @@ const VERBS=['play','watch','visit','clean','help','start','finish','open','clos
 const ADJECTIVES=['tall','short','quiet','friendly','busy','modern','old','bright','small','large','interesting','noisy']
 const IRREGULAR=[['go','went'],['see','saw'],['buy','bought'],['come','came'],['take','took'],['make','made'],['get','got'],['have','had'],['eat','ate'],['write','wrote'],['give','gave'],['find','found']] as const
 
-function pick<T>(xs:T[],i:number,o=0){return xs[(i+o)%xs.length]}
+function pick<T>(xs:readonly T[],i:number,o=0){return xs[(i+o)%xs.length]}
 function rotate<T>(xs:T[],n:number){const k=((n%xs.length)+xs.length)%xs.length;return xs.slice(k).concat(xs.slice(0,k))}
 function make(skill:SkillMeta,difficulty:number,seed:number,x:Item):GeneratedQuestion{const options=rotate([x.answer,...x.distractors],(seed>>>0)+difficulty);return{skillId:skill.id,label:skill.name,difficulty,seed,prompt:x.prompt,options,answerIndex:options.indexOf(x.answer),solution:x.solution,tags:[skill.generator_key,'english','terminal_course_depth']}}
 
