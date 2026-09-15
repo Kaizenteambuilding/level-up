@@ -45,6 +45,9 @@ jobs:
       - name: Audit playability blockers
         run: node scripts/audit-playability-blockers.cjs
 
+      - name: Audit course-long practice continuity
+        run: node scripts/audit-practice-antirepeat.cjs
+
       - name: Audit multi-subject curriculum
         run: npm run audit:multi-subject-curriculum
 
