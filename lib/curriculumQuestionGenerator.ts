@@ -16,6 +16,7 @@ import { generateScienceInvestigationQuestion } from './scienceInvestigationQues
 import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
 import { generateGeologyLongTermVariant } from './geologyLongTermVariants'
 import { generateScienceLifeLongTermVariant } from './scienceLifeLongTermVariants'
+import { generateScienceHealthLongTermVariant } from './scienceHealthLongTermVariants'
 import { generateHistoryDistractorCleanup } from './historyDistractorCleanup'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
@@ -69,6 +70,11 @@ function generateRawCurriculumQuestion(
   if (skill.id.startsWith('B03') || skill.id.startsWith('B04') || skill.id.startsWith('B05')) {
     const life = generateScienceLifeLongTermVariant(skill, difficulty, seed)
     if (life) return life
+  }
+
+  if (skill.id.startsWith('B06')) {
+    const health = generateScienceHealthLongTermVariant(skill, difficulty, seed)
+    if (health) return health
   }
 
   if (skill.id.startsWith('B')) {
