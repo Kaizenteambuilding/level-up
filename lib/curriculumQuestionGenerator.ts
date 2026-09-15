@@ -18,6 +18,7 @@ import { generateGeologyLongTermVariant } from './geologyLongTermVariants'
 import { generateScienceLifeLongTermVariant } from './scienceLifeLongTermVariants'
 import { generateScienceHealthLongTermVariant } from './scienceHealthLongTermVariants'
 import { generateGeographyLongTermVariant } from './geographyLongTermVariants'
+import { generateHistoryLongTermVariant } from './historyLongTermVariants'
 import { generateHistoryDistractorCleanup } from './historyDistractorCleanup'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
@@ -61,6 +62,11 @@ function generateRawCurriculumQuestion(
   if (skill.id.startsWith('G01') || skill.id.startsWith('G02') || skill.id.startsWith('G03')) {
     const geography = generateGeographyLongTermVariant(skill, difficulty, seed)
     if (geography) return geography
+  }
+
+  if (skill.id.startsWith('G04') || skill.id.startsWith('G05') || skill.id.startsWith('G06')) {
+    const history = generateHistoryLongTermVariant(skill, difficulty, seed)
+    if (history) return history
   }
 
   if (skill.id.startsWith('G')) {
