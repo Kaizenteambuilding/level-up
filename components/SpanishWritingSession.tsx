@@ -71,7 +71,13 @@ export default function SpanishWritingSession() {
         const candidate = candidates[c]; let seed = (baseSeed + Math.imul(c, 0x85ebca6b)) >>> 0
         for (let attempt = 0; attempt < 64; attempt += 1) { try { const nextTask = generateSpanishWritingTask(candidate.id, seed); if (!recentTemplates.current.includes(template(nextTask.prompt))) { selected = { ...nextTask, difficulty: states[candidate.id]?.difficulty ?? 1, seed, label: candidate.name }; break } } catch { break } seed = (seed + 2654435761) >>> 0 }
       }
-      if (!selected) { setError('No se encontró un encargo de escritura nuevo sin repetir propuestas recientes. Vuelve a la biblioteca y prueba de nuevo más tarde.'); return }
+      if (!selected) {
+        // Course-long writing fallback: recycle a valid writing objective with a new seed.
+        const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
+        const seed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
+        const nextTask = generateSpanishWritingTask(fallbackSkill.id, seed)
+        selected = { ...nextTask, difficulty: states[fallbackSkill.id]?.difficulty ?? 1, seed, label: fallbackSkill.name }
+      }
       recentTemplates.current = [template(selected.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW); setTask(selected); setResponse(''); setEvaluation(null); setAnswered(false); setFeedback(''); taskStarted.current = Date.now()
     } catch (cause) { setError(errorMessage(cause, 'No se pudo generar el siguiente encargo.')) }
   }, [loading, error, task, sessionId, skills, states, seedBase, index])
