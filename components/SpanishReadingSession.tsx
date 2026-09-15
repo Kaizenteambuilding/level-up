@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
 import { generateSpanishReadingVariant } from '@/lib/spanishReadingVariants'
+import { generateSpanishReadingGenerated } from '@/lib/spanishReadingGenerated'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { userFacingError } from '@/lib/userFacingError'
 
@@ -159,9 +160,10 @@ export default function SpanishReadingSession() {
       const difficulty = states[candidate.id]?.difficulty ?? 1
       let seed = (baseSeed + Math.imul(c, 0x85ebca6b)) >>> 0
       for (let attempt = 0; attempt < 64; attempt += 1) {
+        const courseDepthQuestion = generateSpanishReadingGenerated(candidate, difficulty, seed)
         const galleryQuestion = generateSpanishReadingVariant(candidate, difficulty, seed)
         const curriculumQuestion = generateCurriculumQuestion(candidate, difficulty, seed)
-        for (const nextQuestion of [galleryQuestion, curriculumQuestion]) {
+        for (const nextQuestion of [courseDepthQuestion, galleryQuestion, curriculumQuestion]) {
           if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt))) {
             generated = nextQuestion
             break
