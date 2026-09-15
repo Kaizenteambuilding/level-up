@@ -84,6 +84,9 @@ jobs:
       - name: Audit geography course depth
         run: node scripts/audit-geography-course-depth.cjs
 
+      - name: Audit history course depth
+        run: node scripts/audit-history-course-depth.cjs
+
       - name: Audit Geography History and Biology generators
         run: npm run audit:knowledge-generators
 
