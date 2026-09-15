@@ -27,6 +27,7 @@ import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGe
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
 import { generateMathStatsProbabilityLongTermVariant } from './mathStatsProbabilityLongTermVariants'
 import { generateMathStatsDeepVariant } from './mathStatsDeepVariants'
+import { generateMathStatsSamplingMedianSupplement } from './mathStatsSamplingMedianSupplement'
 import { generateMathStatsDepthSupplement } from './mathStatsDepthSupplement'
 import { generateMathStatsVariableDepth } from './mathStatsVariableDepth'
 import { generateMathGeometryDepthVariant } from './mathGeometryDepthVariants'
@@ -51,6 +52,9 @@ function generateRawCurriculumQuestion(
 ): GeneratedQuestion {
   const polishedCourseDepth = generateCourseDepthDistractorPolish(skill, difficulty, seed)
   if (polishedCourseDepth) return polishedCourseDepth
+
+  const samplingMedianDepth = generateMathStatsSamplingMedianSupplement(skill, difficulty, seed)
+  if (samplingMedianDepth) return samplingMedianDepth
 
   const variableDepth = generateMathStatsVariableDepth(skill, difficulty, seed)
   if (variableDepth) return variableDepth
