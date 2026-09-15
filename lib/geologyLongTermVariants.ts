@@ -1,4 +1,5 @@
 import type { GeneratedQuestion } from './firstEvaluationGenerators'
+import { getGeologyCourseDepthSupplement } from './geologyCourseDepthSupplement'
 
 type SkillMeta = { id: string; name: string; generator_key: string }
 type Card = {
@@ -84,8 +85,8 @@ function rotate<T>(items: T[], shift: number) {
 }
 
 export function generateGeologyLongTermVariant(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion | null {
-  const cards = CARDS[skill.id]
-  if (!cards?.length) return null
+  const cards = [...(CARDS[skill.id] ?? []), ...getGeologyCourseDepthSupplement(skill.id)]
+  if (!cards.length) return null
 
   const target = Math.max(1, Math.min(5, difficulty))
   const eligible = cards.filter((card) => Math.abs(card.level - target) <= 1)
