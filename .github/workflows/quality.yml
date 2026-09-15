@@ -75,6 +75,12 @@ jobs:
       - name: Audit science investigation course depth
         run: node scripts/audit-science-investigation-course-depth.cjs
 
+      - name: Audit biology and ecosystems course depth
+        run: node scripts/audit-science-life-course-depth.cjs
+
+      - name: Audit health and sustainability course depth
+        run: node scripts/audit-science-health-course-depth.cjs
+
       - name: Audit Geography History and Biology generators
         run: npm run audit:knowledge-generators
 
