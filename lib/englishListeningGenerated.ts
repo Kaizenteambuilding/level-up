@@ -39,7 +39,7 @@ function item(skillId: string, difficulty: number, spoken: string, question: str
 
 function byIndex<T>(values: T[], i: number, offset = 0) { return values[(i + offset) % values.length] }
 
-const VARIANTS = 32
+const VARIANTS = 8
 
 function e01s01(family: number, i: number) {
   const name = byIndex(NAMES, i, family * 3), city = byIndex(CITIES, i, family * 5)
@@ -54,10 +54,10 @@ function e01s01(family: number, i: number) {
 function e01s04(family: number, i: number) {
   const page = 18 + i, next = page + 2
   if (family === 0) return item('E01S04',1,`Open your books on page ${page}, read the first paragraph, and underline two key words.`,`Which page should students open?`,String(page),[String(page-2),String(next),String(page+10)],`The instruction gives page ${page}.`,i)
-  if (family === 1) return item('E01S04',2,`Work alone on questions one to ${3 + (i%4)}. Then compare the next question with a partner.`,`Which part should students do with a partner?`,`The next question`,['Questions one to three','The whole worksheet','Only the title'],`Partner work starts after the individual questions.`,i+1)
-  if (family === 2) return item('E01S04',2,`Before using the equipment, write today's date and your group number at the top of the page.`,`What should students do before using the equipment?`,`Write the date and group number`,['Collect the equipment','Start the experiment','Read the results'],`The date and group number must be written first.`,i+2)
-  if (family === 3) return item('E01S04',3,`Listen to the recording twice. On the first listen, do not write anything; on the second, complete boxes ${1+i%3} to ${4+i%3}.`,`When should students write?`,`During the second listen`,['During the first listen','Before the recording','After leaving class'],`Writing is explicitly reserved for the second listen.`,i+3)
-  return item('E01S04',3,`Put your finished sheet in the blue tray, but keep the vocabulary list because you will need it for tomorrow's lesson.`,`What should students keep?`,`The vocabulary list`,['The finished sheet','The blue tray','Tomorrow’s worksheet'],`The finished sheet is handed in; the vocabulary list is kept.`,i)
+  if (family === 1) return item('E01S04',2,`Work alone on questions one to ${3 + (i%4)}. Then compare the next question with ${byIndex(NAMES,i)}.`,`Which part should students do with a partner?`,`The next question`,['Questions one to three','The whole worksheet','Only the title'],`Partner work starts after the individual questions.`,i+1)
+  if (family === 2) return item('E01S04',2,`Before using the equipment in the ${byIndex(PLACES,i)}, write today's date and your group number at the top of the page.`,`What should students do before using the equipment?`,`Write the date and group number`,['Collect the equipment','Start the experiment','Read the results'],`The date and group number must be written first.`,i+2)
+  if (family === 3) return item('E01S04',3,`The recording is about ${byIndex(SUBJECTS,i)}. Listen twice. On the first listen, do not write anything; on the second, complete boxes ${1+i%3} to ${4+i%3}.`,`When should students write?`,`During the second listen`,['During the first listen','Before the recording','After leaving class'],`Writing is explicitly reserved for the second listen.`,i+3)
+  return item('E01S04',3,`Put your finished sheet in the blue tray, but keep the ${byIndex(SUBJECTS,i)} vocabulary list because you will need it for tomorrow's lesson.`,`What should students keep?`,`The vocabulary list`,['The finished sheet','The blue tray','Tomorrow’s worksheet'],`The finished sheet is handed in; the vocabulary list is kept.`,i)
 }
 
 function e02s04(family: number, i: number) {
@@ -66,7 +66,7 @@ function e02s04(family: number, i: number) {
   const activity = byIndex(ACTIVITIES,i)
   if (family === 0) return item('E02S04',1,`I get up at ${start} and have breakfast thirty minutes later before school.`,`When does the speaker have breakfast?`,timeLabel(hour + (minute>=30?1:0),(minute+30)%60),[start,finish,timeLabel(hour,(minute+15)%60)],`Breakfast is thirty minutes after ${start}.`,i)
   if (family === 1) return item('E02S04',2,`After school I do my homework before ${activity}, and I have dinner after ${activity}.`,`What happens first after school?`,`Homework`,[activity,'Dinner','Going to bed'],`Homework comes before the activity and dinner.`,i+1)
-  if (family === 2) return item('E02S04',2,`${activity} practice starts at ${start} and finishes at ${finish} every ${byIndex(DAYS,i)}.`,`When does ${activity} practice finish?`,finish,[start,timeLabel(hour,30),timeLabel(hour+2,minute)],`The speaker says practice finishes at ${finish}.`,i+2)
+  if (family === 2) return item('E02S04',2,`${activity} practice starts at ${start} and finishes at ${finish} every ${byIndex(DAYS,i)}.`,`When does ${activity} practice finish?`,finish,[start,timeLabel(hour,(minute+15)%60),timeLabel(hour+2,minute)],`The speaker says practice finishes at ${finish}.`,i+2)
   if (family === 3) return item('E02S04',3,`The film begins at ${timeLabel(7 + i%2,30)}. We want to arrive twenty minutes early, and the ${byIndex(TRANSPORT,i)} journey takes fifteen minutes.`,`How many minutes before the film should they leave?`,`35 minutes`,['15 minutes','20 minutes','50 minutes'],`They need 20 minutes of early arrival plus 15 minutes of travel.`,i+3)
   return item('E02S04',3,`I usually walk home, but on ${byIndex(DAYS,i)} I stay for ${activity}, so my dad collects me by car afterwards.`,`How does the speaker get home after ${activity}?`,`By car`,['On foot','By bicycle','By bus'],`The speaker says their dad collects them by car.`,i)
 }
@@ -75,7 +75,7 @@ function e03s03(family: number, i: number) {
   const name = byIndex(NAMES,i), place = byIndex(PLACES,i), other = byIndex(PLACES,i,7)
   if (family === 0) return item('E03S03',1,`The ${place} is next to the bank and opposite the ${other}.`,`What is opposite the ${place}?`,other,['The bank',byIndex(PLACES,i,11),byIndex(PLACES,i,15)],`The description places the ${other} opposite the ${place}.`,i)
   if (family === 1) return item('E03S03',2,`${name} has long curly hair, wears a green jacket and carries a black backpack.`,`Which detail describes ${name}'s hair?`,`Long and curly`,['Short and curly','Long and straight','Short and straight'],`The hair is described as long and curly.`,i+1)
-  if (family === 2) return item('E03S03',2,`There are two chairs beside the desk, a lamp on the desk and a bag under it.`,`Where is the lamp?`,`On the desk`,['Under the desk','Beside the desk','Behind the desk'],`The lamp is explicitly on the desk.`,i+2)
+  if (family === 2) return item('E03S03',2,`In ${byIndex(NAMES,i)}'s room there are two chairs beside the desk, a lamp on the desk and a ${byIndex(OBJECTS,i)} under it.`,`Where is the lamp?`,`On the desk`,['Under the desk','Beside the desk','Behind the desk'],`The lamp is explicitly on the desk.`,i+2)
   if (family === 3) return item('E03S03',3,`${name} and ${byIndex(NAMES,i,5)} both have dark hair. ${name} wears glasses, while the other person wears a red scarf.`,`Which detail identifies ${name}?`,`Glasses`,['A red scarf','Light hair','A blue hat'],`Only ${name} is described as wearing glasses.`,i+3)
   return item('E03S03',4,`The small blue suitcase belongs to ${name}. The large blue one belongs to a parent, and the small black one belongs to a sibling.`,`Which suitcase belongs to ${name}?`,`The small blue suitcase`,['The large blue suitcase','The small black suitcase','The large black suitcase'],`The first sentence identifies the small blue suitcase as ${name}'s.`,i)
 }
@@ -139,7 +139,7 @@ function e06s04(family: number, i: number) {
   if (family === 0) return item('E06S04',2,`Please queue here for the ${place} and have your ticket ready.`,`What should visitors have ready?`,`Their ticket`,['Their lunch','Their homework','Their passport photo'],`The instruction says to have the ticket ready.`,i)
   if (family === 1) return item('E06S04',3,`Tickets for the ${place} are sold out tonight, but there are still seats available tomorrow.`,`What can someone still do?`,`Buy a ticket for tomorrow`,['Buy a ticket for tonight','Enter tonight without a ticket','Cancel tomorrow’s event'],`Tomorrow still has seats available.`,i+1)
   if (family === 2) return item('E06S04',3,`The café kitchen closes at ${timeLabel(3+i%2,0)}, although drinks are served until ${timeLabel(4+i%2,30)}.`,`What can a customer still order after the kitchen closes?`,`A drink`,[food,'A cooked meal','A hot sandwich'],`Food service has ended, but drinks continue later.`,i+2)
-  if (family === 3) return item('E06S04',4,`Your ticket is for the balcony, not the stalls. Use the stairs on the left after the main entrance; the right-hand stairs lead to the stalls.`,`Which route should the ticket holder take?`,`The left-hand stairs to the balcony`,['The right-hand stairs to the stalls','The exit beside the café','The stairs to the basement'],`The balcony is reached by the stairs on the left.`,i+3)
+  if (family === 3) return item('E06S04',4,`At the ${place}, your ticket is for the balcony, not the stalls. Use the stairs on the left after the main entrance; the right-hand stairs lead to the stalls.`,`Which route should the ticket holder take?`,`The left-hand stairs to the balcony`,['The right-hand stairs to the stalls','The exit beside the café','The stairs to the basement'],`The balcony is reached by the stairs on the left.`,i+3)
   return item('E06S04',4,`The ${place} closes at six, but the final guided tour starts at five fifteen and lasts forty minutes.`,`Can someone joining the final tour finish before closing?`,`Yes, it finishes before six`,['No, it finishes after six','No, the tour starts at six','There is no final tour'],`A 5:15 start plus 40 minutes ends at 5:55, before six.`,i)
 }
 
