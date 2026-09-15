@@ -17,6 +17,7 @@ import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
 import { generateGeologyLongTermVariant } from './geologyLongTermVariants'
 import { generateScienceLifeLongTermVariant } from './scienceLifeLongTermVariants'
 import { generateScienceHealthLongTermVariant } from './scienceHealthLongTermVariants'
+import { generateGeographyLongTermVariant } from './geographyLongTermVariants'
 import { generateHistoryDistractorCleanup } from './historyDistractorCleanup'
 import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
@@ -55,6 +56,11 @@ function generateRawCurriculumQuestion(
       ?? generateLanguageReadingDistractorVariant(skill, difficulty, seed)
     if (strongerDistractors) return strongerDistractors
     return generateLanguageQuestionWithCriticalVariants(skill, difficulty, seed)
+  }
+
+  if (skill.id.startsWith('G01') || skill.id.startsWith('G02') || skill.id.startsWith('G03')) {
+    const geography = generateGeographyLongTermVariant(skill, difficulty, seed)
+    if (geography) return geography
   }
 
   if (skill.id.startsWith('G')) {
