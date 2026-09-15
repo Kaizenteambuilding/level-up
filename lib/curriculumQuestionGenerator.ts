@@ -12,6 +12,7 @@ import { generateExtraLanguageDistractorVariant5 } from './languageDistractorVar
 import { generateLanguageReadingDistractorVariant } from './languageDistractorVariantsReading'
 import { generateLanguageDistractorCleanup } from './languageDistractorCleanup'
 import { generateSpanishUpperLongTermVariant } from './spanishUpperLongTermVariants'
+import { generateCourseDepthDistractorPolish } from './courseDepthDistractorPolish'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
 import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
@@ -42,6 +43,9 @@ function generateRawCurriculumQuestion(
   difficulty: number,
   seed: number
 ): GeneratedQuestion {
+  const polishedCourseDepth = generateCourseDepthDistractorPolish(skill, difficulty, seed)
+  if (polishedCourseDepth) return polishedCourseDepth
+
   if (skill.id.startsWith('M14') || skill.id.startsWith('M15')) {
     const statsProbability = generateMathStatsProbabilityLongTermVariant(skill, difficulty, seed)
     if (statsProbability) return statsProbability
