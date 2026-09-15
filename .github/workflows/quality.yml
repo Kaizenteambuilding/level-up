@@ -69,6 +69,9 @@ jobs:
       - name: Audit geology observatory course depth
         run: node scripts/audit-geology-course-depth.cjs
 
+      - name: Audit science investigation course depth
+        run: node scripts/audit-science-investigation-course-depth.cjs
+
       - name: Audit Geography History and Biology generators
         run: npm run audit:knowledge-generators
 
