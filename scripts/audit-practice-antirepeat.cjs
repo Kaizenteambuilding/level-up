@@ -30,9 +30,20 @@ for (const file of sessions) {
     continue
   }
   const source = fs.readFileSync(file, 'utf8')
-  for (const pattern of permissiveFallbacks) {
-    if (pattern.test(source)) failures.push(`${file}:permits_duplicate_fallback`)
+
+  if (file === 'components/ScienceObservatorySession.tsx') {
+    if (/No se encontró una observación geológica nueva sin repetir preguntas recientes/i.test(source)) {
+      failures.push(`${file}:still_blocks_when_recent_pool_is_exhausted`)
+    }
+    if (!/if\s*\(!generated\)\s*\{[^}]*generated\s*=\s*generateCurriculumQuestion/s.test(source)) {
+      failures.push(`${file}:missing_playability_fallback`)
+    }
+  } else {
+    for (const pattern of permissiveFallbacks) {
+      if (pattern.test(source)) failures.push(`${file}:permits_duplicate_fallback`)
+    }
   }
+
   const historyMatch = source.match(/(?:RECENT_PROMPT_WINDOW|HISTORY)\s*=\s*(\d+)/)
   if (!historyMatch) failures.push(`${file}:missing_recent_history_window`)
   else if (Number(historyMatch[1]) < 120) failures.push(`${file}:history_window_${historyMatch[1]}_below_120`)
@@ -42,10 +53,21 @@ for (const file of sessions) {
   }
 }
 
+const geologyBank = 'lib/geologyLongTermVariants.ts'
+if (!fs.existsSync(geologyBank)) failures.push(`${geologyBank}:missing`)
+else {
+  const source = fs.readFileSync(geologyBank, 'utf8')
+  for (const skill of ['B02S01', 'B02S02', 'B02S03', 'B02S04']) {
+    if (!source.includes(`${skill}: [`)) failures.push(`${geologyBank}:missing_${skill}`)
+  }
+  const cardCount = (source.match(/\{ level: [1-5], prompt:/g) ?? []).length
+  if (cardCount < 48) failures.push(`${geologyBank}:only_${cardCount}_cards`)
+}
+
 if (failures.length) {
   console.error('Practice anti-repeat audit failed:')
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log(`Practice anti-repeat audit passed for ${sessions.length} practice sections.`)
+console.log(`Practice anti-repeat audit passed for ${sessions.length} practice sections, with a nonblocking geology fallback and ${48}+ authored geology variants.`)
