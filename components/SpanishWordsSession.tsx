@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
+import { generateSpanishWordsVariant } from '@/lib/spanishWordsGenerated'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { userFacingError } from '@/lib/userFacingError'
 
@@ -149,8 +150,16 @@ export default function SpanishWordsSession() {
       const candidate = candidates[c]
       let seed = (baseSeed + Math.imul(c, 0x85ebca6b)) >>> 0
       for (let attempt = 0; attempt < 64; attempt += 1) {
-        const nextQuestion = generateCurriculumQuestion(candidate, states[candidate.id]?.difficulty ?? 1, seed)
-        if (!recentTemplates.current.includes(template(nextQuestion.prompt))) { generated = nextQuestion; break }
+        const difficulty = states[candidate.id]?.difficulty ?? 1
+        const courseQuestion = generateSpanishWordsVariant(candidate, difficulty, seed)
+        const curriculumQuestion = generateCurriculumQuestion(candidate, difficulty, seed)
+        for (const nextQuestion of [courseQuestion, curriculumQuestion]) {
+          if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt))) {
+            generated = nextQuestion
+            break
+          }
+        }
+        if (generated) break
         seed = (seed + 2654435761) >>> 0
       }
     }
@@ -160,7 +169,8 @@ export default function SpanishWordsSession() {
       // numeric/contextual generators moving while allowing deliberate spaced review.
       const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
       const fallbackSeed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
-      generated = generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
+      generated = generateSpanishWordsVariant(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
+        ?? generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
     }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated); setAnswered(false); setSelectedOption(null); setFeedback(''); questionStarted.current = Date.now()

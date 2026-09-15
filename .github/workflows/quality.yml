@@ -60,6 +60,9 @@ jobs:
       - name: Audit Spanish and English generators
         run: npm run audit:language-generators
 
+      - name: Audit Spanish words course depth
+        run: node scripts/audit-spanish-words-depth.cjs
+
       - name: Audit Geography History and Biology generators
         run: npm run audit:knowledge-generators
 
