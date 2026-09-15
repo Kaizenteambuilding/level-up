@@ -59,10 +59,11 @@ for (const marker of [
   'recentTemplates.current.includes(template(nextQuestion.prompt))',
   'const candidates = [primarySkill, ...alternatives]',
   'attempt < 64',
+  'Course-long fallback: recent-history is a preference',
 ]) {
   if (!terminalSource.includes(marker)) failures.push(`terminal_missing:${marker}`)
 }
-if (/if\s*\(!generated\).*generateCurriculumQuestion/s.test(terminalSource)) failures.push('terminal_permissive_duplicate_fallback')
+if (/No se encontró un reto de Inglés nuevo sin repetir preguntas recientes/i.test(terminalSource)) failures.push('terminal_can_block_when_fresh_pool_is_exhausted')
 
 console.log(JSON.stringify({
   englishSkills: curricula.SUBJECT_CURRICULA.english.flatMap((unit) => unit.skills).length,
