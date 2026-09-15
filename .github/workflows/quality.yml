@@ -78,6 +78,9 @@ jobs:
       - name: Audit English Terminal variety
         run: npm run audit:english-terminal-variety
 
+      - name: Audit English Terminal course depth
+        run: node scripts/audit-english-terminal-course-depth.cjs
+
       - name: Audit English Listening quality
         run: npm run audit:english-listening-quality
 
