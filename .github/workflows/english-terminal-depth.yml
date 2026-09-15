@@ -1,0 +1,31 @@
+name: English terminal course depth
+
+on:
+  push:
+    branches:
+      - feat/course-depth-english-terminal
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: ${{ !contains(github.event.head_commit.message, '[terminal-depth]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/course-depth-english-terminal
+          fetch-depth: 0
+
+      - name: Integrate terminal depth
+        run: node scripts/apply-english-terminal-depth.cjs
+
+      - name: Commit integrated sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: deepen English terminal for the school year [terminal-depth]"
+          git push origin HEAD:feat/course-depth-english-terminal
