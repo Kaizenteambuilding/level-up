@@ -29,6 +29,7 @@ import { generateMathStatsProbabilityLongTermVariant } from './mathStatsProbabil
 import { generateMathStatsDeepVariant } from './mathStatsDeepVariants'
 import { generateMathStatsDepthSupplement } from './mathStatsDepthSupplement'
 import { generateMathStatsVariableDepth } from './mathStatsVariableDepth'
+import { generateMathGeometryDepthVariant } from './mathGeometryDepthVariants'
 import { generateMathCoreLongTermVariant } from './mathCoreLongTermVariants'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
@@ -57,6 +58,9 @@ function generateRawCurriculumQuestion(
 
   const deepStats = generateMathStatsDeepVariant(skill, difficulty, seed)
   if (deepStats) return deepStats
+
+  const geometryDepth = generateMathGeometryDepthVariant(skill, difficulty, seed)
+  if (geometryDepth) return geometryDepth
 
   if (skill.id.startsWith('M14') || skill.id.startsWith('M15')) {
     const statsProbability = generateMathStatsProbabilityLongTermVariant(skill, difficulty, seed)
