@@ -183,6 +183,7 @@ export function generateMathStatsSamplingMedianSupplement(
   seed: number,
 ): GeneratedQuestion | null {
   const normalized = seed >>> 0
+  if (normalized % 4 !== 0) return null
   if (skill.id === 'M14S01') return sampling(skill, difficulty, normalized)
   if (skill.id === 'M14S06') return median(skill, difficulty, normalized)
   return null
