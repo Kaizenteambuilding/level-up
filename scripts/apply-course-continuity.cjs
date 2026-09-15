@@ -44,7 +44,6 @@ for (const file of generatedSessions) {
   if (after !== before) fs.writeFileSync(file, after)
 }
 
-// Writing has its own task generator rather than GeneratedQuestion.
 {
   const file = 'components/SpanishWritingSession.tsx'
   let source = fs.readFileSync(file, 'utf8')
@@ -61,8 +60,6 @@ for (const file of generatedSessions) {
   }
 }
 
-// Listening uses a finite authored bank: when everything is recent, perform spaced review
-// instead of stopping the session.
 {
   const file = 'components/EnglishListeningSession.tsx'
   let source = fs.readFileSync(file, 'utf8')
@@ -74,7 +71,6 @@ for (const file of generatedSessions) {
   fs.writeFileSync(file, source)
 }
 
-// Multi-subject daily practice has the same failure mode and is the most important path.
 {
   const file = 'components/MultiSubjectDailySession.tsx'
   let source = fs.readFileSync(file, 'utf8')
@@ -92,7 +88,6 @@ for (const file of generatedSessions) {
   fs.writeFileSync(file, source)
 }
 
-// Make the anti-repeat audit enforce the course-long policy globally.
 fs.writeFileSync('scripts/audit-practice-antirepeat.cjs', `const fs = require('node:fs')
 
 const sessions = [
@@ -158,20 +153,4 @@ if (failures.length) { console.error('180-day continuity contract failed:'); for
 console.log('180-day continuity contract passed: finite recent-history pools cannot terminate any course practice path.')
 `)
 
-// Wire the new course-long contract into the existing Quality workflow.
-{
-  const file = '.github/workflows/quality.yml'
-  let source = fs.readFileSync(file, 'utf8')
-  if (!source.includes('Audit course-long practice continuity')) {
-    const marker = '      - name: Audit playability blockers\n        run: node scripts/audit-playability-blockers.cjs\n'
-    const insert = marker + '\n      - name: Audit course-long practice continuity\n        run: node scripts/audit-course-long-continuity.cjs\n'
-    if (source.includes(marker)) source = source.replace(marker, insert)
-    else console.log('Quality marker not found; course-long audit remains available as a script.')
-    fs.writeFileSync(file, source)
-  }
-}
-
-// The transformer is only a one-shot maintenance tool; remove it and its workflow from the final commit.
-for (const file of ['scripts/apply-course-continuity.cjs', '.github/workflows/course-continuity-fix.yml']) {
-  if (fs.existsSync(file)) fs.unlinkSync(file)
-}
+if (fs.existsSync('scripts/apply-course-continuity.cjs')) fs.unlinkSync('scripts/apply-course-continuity.cjs')
