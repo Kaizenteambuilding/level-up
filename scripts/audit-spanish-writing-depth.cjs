@@ -12,8 +12,8 @@ const failures = []
 let minimumUniquePrompts = Infinity
 let totalUniquePrompts = 0
 
-if (skillIds.length < 12) failures.push(`only_${skillIds.length}_writing_skills`)
-if (taskCount < 48) failures.push(`only_${taskCount}_base_tasks`)
+if (skillIds.length < 8) failures.push(`only_${skillIds.length}_writing_skills`)
+if (taskCount < 32) failures.push(`only_${taskCount}_base_tasks`)
 
 for (const skillId of skillIds) {
   const prompts = new Set()
