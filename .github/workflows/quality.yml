@@ -48,6 +48,9 @@ jobs:
       - name: Audit course-long practice continuity
         run: node scripts/audit-practice-antirepeat.cjs
 
+      - name: Simulate a full school year of curriculum practice
+        run: node scripts/audit-course-year-simulation.cjs
+
       - name: Audit multi-subject curriculum
         run: npm run audit:multi-subject-curriculum
 
