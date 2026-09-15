@@ -1,4 +1,5 @@
 import type { GeneratedQuestion } from './firstEvaluationGenerators'
+import { generateMathRepeatHotspotVariant } from './mathRepeatHotspotVariants'
 
 type SkillMeta = { id: string; name: string; generator_key: string }
 type Card = { level: number; prompt: string; answer: string; distractors: [string,string,string]; solution: string }
@@ -49,6 +50,9 @@ function rotate<T>(items: T[], shift: number) {
 }
 
 export function generateCourseDepthDistractorPolish(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion | null {
+  const hotspot = generateMathRepeatHotspotVariant(skill, difficulty, seed)
+  if (hotspot && ((seed >>> 0) % 3 !== 0)) return hotspot
+
   const cards = BANK[skill.id]
   if (!cards?.length) return null
   const eligible = cards.filter((card) => Math.abs(card.level - difficulty) <= 1)
