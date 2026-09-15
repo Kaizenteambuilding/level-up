@@ -1,4 +1,5 @@
 import type { GeneratedQuestion } from './firstEvaluationGenerators'
+import { getScienceInvestigationCourseDepth } from './scienceInvestigationCourseDepth'
 
 type SkillMeta = { id: string; name: string; generator_key: string }
 type Card = { prompt: string; answer: string; distractors: [string, string, string]; why: string }
@@ -61,8 +62,8 @@ function rotate<T>(items: T[], shift: number) {
 }
 
 export function generateScienceInvestigationQuestion(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion | null {
-  const cards = BANK[skill.id]
-  if (!cards?.length) return null
+  const cards = [...(BANK[skill.id] ?? []), ...getScienceInvestigationCourseDepth(skill.id)]
+  if (!cards.length) return null
   const card = cards[hash(seed + Math.max(1, difficulty), skill.id) % cards.length]
   const options = [card.answer, ...card.distractors]
   const rotated = rotate(options, seed + difficulty)
