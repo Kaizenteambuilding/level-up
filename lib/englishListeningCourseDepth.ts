@@ -44,7 +44,7 @@ function buildFor(skillId: string, i: number, family: number): GeneratedListenin
   }
 
   if (skillId === 'E02S04') {
-    if (family === 0) return item(skillId,2,`${name} practises ${activity} on ${day} and ${pick(DAYS,i,2)}, but never on Sunday because that is family day.`,`On which day does ${name} definitely not practise?`,'Sunday',[day,pick(DAYS,i,2),pick(DAYS,i,4)],`Sunday is explicitly excluded from the practice routine.`,i)
+    if (family === 0) return item(skillId,2,`${name} practises ${activity} on ${day} and ${pick(DAYS,i,2)}, but never on Sunday because that is family day.`,`On which day does ${name} definitely not practise?`,'Sunday',['Monday','Wednesday','Friday'],`Sunday is explicitly excluded from the practice routine.`,i)
     return item(skillId,3,`${name} leaves home at seven forty-five. The bus takes twenty minutes and school begins at eight thirty.`,`How many minutes before school begins does ${name} arrive?`,'25 minutes',['10 minutes','20 minutes','45 minutes'],`7:45 plus 20 minutes is 8:05, which is 25 minutes before 8:30.`,i+1)
   }
 
