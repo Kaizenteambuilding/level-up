@@ -1,3 +1,5 @@
+import { buildEnglishListeningCourseDepthBank } from './englishListeningCourseDepth'
+
 export type GeneratedListeningItem = {
   skillId: string
   difficulty: number
@@ -152,5 +154,5 @@ export function buildEnglishListeningGeneratedBank(): GeneratedListeningItem[] {
       for (let i = 0; i < VARIANTS; i += 1) bank.push(builder(family, i))
     }
   }
-  return bank
+  return bank.concat(buildEnglishListeningCourseDepthBank())
 }
