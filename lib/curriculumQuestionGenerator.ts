@@ -25,6 +25,7 @@ import { generateCartographyQuestion } from './cartographyQuestionGenerators'
 import { generateGeographyPhysicalQuestion } from './geographyPhysicalQuestionGenerators'
 import { generateHistoryAncientQuestion } from './historyAncientQuestionGenerators'
 import { generateMathStatsProbabilityLongTermVariant } from './mathStatsProbabilityLongTermVariants'
+import { generateMathCoreLongTermVariant } from './mathCoreLongTermVariants'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
 import { acceptableDistractorScore, assessDistractorQuality } from './distractorQuality'
@@ -47,6 +48,8 @@ function generateRawCurriculumQuestion(
   }
 
   if (skill.id.startsWith('M')) {
+    const coreMath = generateMathCoreLongTermVariant(skill, difficulty, seed)
+    if (coreMath) return coreMath
     const strongerDistractors = generateMathDistractorVariant(skill, difficulty, seed)
     if (strongerDistractors) return strongerDistractors
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
