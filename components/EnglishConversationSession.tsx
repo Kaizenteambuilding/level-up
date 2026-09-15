@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { chooseAdaptiveSkill } from '@/lib/adaptiveEngine'
 import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
+import { generateEnglishConversationVariant } from '@/lib/englishConversationGenerated'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { userFacingError } from '@/lib/userFacingError'
 
@@ -67,14 +68,14 @@ export default function EnglishConversationSession() {
     if (!primarySkill) { setError('No se pudo elegir una situación de conversación.'); return }
     const alternatives = skills.filter((skill) => skill.id !== primarySkill.id).sort((a, b) => Number(recentSkillIds.current.includes(a.id)) - Number(recentSkillIds.current.includes(b.id)) || hashText(`${a.id}:${seedBase}:${index}`) - hashText(`${b.id}:${seedBase}:${index}`)), candidates = [primarySkill, ...alternatives], baseSeed = (seedBase + Math.imul(index + 1, 0x9e3779b9)) >>> 0
     let generated: GeneratedQuestion | null = null
-    for (let candidateIndex = 0; candidateIndex < candidates.length && !generated; candidateIndex += 1) { const candidate = candidates[candidateIndex], difficulty = states[candidate.id]?.difficulty ?? 1; let seed = (baseSeed + Math.imul(candidateIndex, 0x85ebca6b)) >>> 0; for (let attempt = 0; attempt < 64; attempt += 1) { const nextQuestion = generateCurriculumQuestion(candidate, difficulty, seed); if (!recentTemplates.current.includes(template(nextQuestion.prompt))) { generated = nextQuestion; break } seed = (seed + 2654435761) >>> 0 } }
+    for (let candidateIndex = 0; candidateIndex < candidates.length && !generated; candidateIndex += 1) { const candidate = candidates[candidateIndex], difficulty = states[candidate.id]?.difficulty ?? 1; let seed = (baseSeed + Math.imul(candidateIndex, 0x85ebca6b)) >>> 0; for (let attempt = 0; attempt < 64; attempt += 1) { const courseQuestion = generateEnglishConversationVariant(candidate, difficulty, seed), curriculumQuestion = generateCurriculumQuestion(candidate, difficulty, seed); for (const nextQuestion of [courseQuestion, curriculumQuestion]) { if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt))) { generated = nextQuestion; break } } if (generated) break; seed = (seed + 2654435761) >>> 0 } }
     if (!generated) {
       // Course-long fallback: recent-history is a preference, never a stop condition.
       // After the fresh pool is exhausted, revisit a valid skill with a seed that keeps
       // numeric/contextual generators moving while allowing deliberate spaced review.
       const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
       const fallbackSeed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
-      generated = generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
+      generated = generateEnglishConversationVariant(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed) ?? generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
     }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW); setQuestion(generated); setAnswered(false); setSelectedOption(null); setFeedback(''); questionStarted.current = Date.now()
   }, [loading, error, question, sessionId, skills, states, focusUnitIds, allUnitIds, seedBase, index])
