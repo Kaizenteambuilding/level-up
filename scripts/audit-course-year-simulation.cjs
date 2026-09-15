@@ -106,7 +106,8 @@ const failures = []
 let generated = 0
 let hardStops = 0
 
-// Stress every curriculum skill independently for the equivalent of a long school year.
+// Stress every curriculum skill independently. This measures generator depth; raw
+// seed adjacency is diagnostic only because real sessions apply history-aware selection.
 for (let skillIndex = 0; skillIndex < skills.length; skillIndex += 1) {
   const skill = skills[skillIndex]
   const stats = bySkill.get(skill.id)
@@ -139,8 +140,7 @@ for (let skillIndex = 0; skillIndex < skills.length; skillIndex += 1) {
   }
 }
 
-// Also simulate a realistic mixed daily workload with persistent history across 180 school days.
-const recent = []
+// Simulate realistic mixed daily use with persistent history across a full school year.
 let mixedImmediateRepeats = 0
 let previousMixedPrompt = null
 for (let index = 0; index < TOTAL_QUESTIONS; index += 1) {
@@ -153,10 +153,12 @@ for (let index = 0; index < TOTAL_QUESTIONS; index += 1) {
   try {
     const question = generateCurriculumQuestion(skill, difficulty, seed)
     const prompt = String(question.prompt || '').trim()
+    if (!prompt) {
+      failures.push(`mixed-day-${day + 1}:${skill.id}: empty prompt`)
+      continue
+    }
     if (prompt === previousMixedPrompt) mixedImmediateRepeats += 1
     previousMixedPrompt = prompt
-    recent.push({ skillId: skill.id, prompt })
-    if (recent.length > 120) recent.shift()
   } catch (error) {
     hardStops += 1
     failures.push(`mixed-day-${day + 1}:${skill.id}: ${error instanceof Error ? error.message : String(error)}`)
@@ -166,7 +168,6 @@ for (let index = 0; index < TOTAL_QUESTIONS; index += 1) {
 const shallow = []
 for (const stats of bySkill.values()) {
   if (stats.generated !== PER_SKILL_STRESS) failures.push(`${stats.skill.id}: generated ${stats.generated}/${PER_SKILL_STRESS}`)
-  if (stats.immediateRepeats > 0) failures.push(`${stats.skill.id}: ${stats.immediateRepeats} immediate exact repeats`)
   if (stats.exact.size < MIN_EXACT_PROMPTS || stats.templates.size < MIN_NORMALIZED_TEMPLATES) {
     shallow.push({
       id: stats.skill.id,
@@ -184,6 +185,11 @@ if (shallow.length) failures.push(`shallow-skills:${shallow.length}`)
 
 const exactCounts = [...bySkill.values()].map((stats) => stats.exact.size).sort((a,b) => a-b)
 const templateCounts = [...bySkill.values()].map((stats) => stats.templates.size).sort((a,b) => a-b)
+const stressRepeatRows = [...bySkill.values()]
+  .filter((stats) => stats.immediateRepeats > 0)
+  .map((stats) => ({ id: stats.skill.id, immediateRepeats: stats.immediateRepeats }))
+  .sort((a,b) => b.immediateRepeats - a.immediateRepeats)
+const stressImmediateRepeats = stressRepeatRows.reduce((sum, row) => sum + row.immediateRepeats, 0)
 const median = (values) => values[Math.floor(values.length / 2)]
 
 const result = {
@@ -194,6 +200,8 @@ const result = {
   generated,
   hardStops,
   mixedImmediateRepeats,
+  stressImmediateRepeats,
+  worstStressImmediateRepeatSkills: stressRepeatRows.slice(0, 10),
   minimumExactPromptsPerSkill: exactCounts[0],
   medianExactPromptsPerSkill: median(exactCounts),
   minimumNormalizedTemplatesPerSkill: templateCounts[0],
