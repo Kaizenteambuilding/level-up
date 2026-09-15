@@ -1,13 +1,23 @@
 const fs = require('node:fs')
 const path = require('node:path')
 const assert = require('node:assert/strict')
+const ts = require('typescript')
 
 const root = path.resolve(__dirname, '..')
 const componentPath = path.join(root, 'components', 'EnglishListeningSession.tsx')
 const authoredPath = path.join(root, 'lib', 'englishListeningAuthored.ts')
+const generatedPath = path.join(root, 'lib', 'englishListeningGenerated.ts')
 
 const component = fs.readFileSync(componentPath, 'utf8')
 const authored = fs.readFileSync(authoredPath, 'utf8')
+
+function loadGeneratedBank() {
+  const generatedSource = fs.readFileSync(generatedPath, 'utf8')
+  const compiled = ts.transpileModule(generatedSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText
+  const mod = { exports: {} }
+  new Function('exports','module','require',compiled)(mod.exports, mod, require)
+  return mod.exports.buildEnglishListeningGeneratedBank()
+}
 
 function sliceArray(source, marker) {
   const markerIndex = source.indexOf(marker)
@@ -102,11 +112,13 @@ function parseItems(source, marker, origin) {
 
 const core = parseItems(component, 'const CORE_BANK', 'core')
 const handAuthored = parseItems(authored, 'export const ENGLISH_LISTENING_AUTHORED', 'authored')
-const items = [...core, ...handAuthored]
+const generated = loadGeneratedBank().map((entry, index) => ({ ...entry, origin: 'generated', index }))
+const items = [...core, ...handAuthored, ...generated]
 
 assert(core.length >= 30, `Expected at least 30 core listening items, found ${core.length}`)
 assert(handAuthored.length >= 24, `Expected at least 24 authored listening items, found ${handAuthored.length}`)
-assert(items.length >= 54, `Expected at least 54 listening items, found ${items.length}`)
+assert(generated.length >= 1760, `Expected at least 1760 generated listening items, found ${generated.length}`)
+assert(items.length >= 1814, `Expected at least 1814 listening items, found ${items.length}`)
 
 const spokenSeen = new Map()
 const questionSeen = new Map()
@@ -139,7 +151,7 @@ const repeatedStems = [...stemCounts.entries()]
   .filter(([, count]) => count >= 5)
   .sort((a, b) => b[1] - a[1])
 
-console.log(`Listening quality audit: ${items.length} items (${core.length} core + ${handAuthored.length} authored)`)
+console.log(`Listening quality audit: ${items.length} items (${core.length} core + ${handAuthored.length} authored + ${generated.length} generated)`)
 console.log(`Unique spoken prompts: ${spokenSeen.size}`)
 console.log(`Unique exact questions: ${questionSeen.size}`)
 if (repeatedStems.length) {

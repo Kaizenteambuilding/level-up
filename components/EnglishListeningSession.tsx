@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
 import { userFacingError } from '@/lib/userFacingError'
 import { ENGLISH_LISTENING_AUTHORED } from '@/lib/englishListeningAuthored'
+import { buildEnglishListeningGeneratedBank } from '@/lib/englishListeningGenerated'
 
 const SESSION_LENGTH = 10
 const MODE = 'english_listening'
@@ -48,7 +49,7 @@ const CORE_BANK: ListeningItem[] = [
   { skillId:'E06S04',difficulty:3,spoken:'The café is closed on Sundays, so we need to meet there on Saturday instead.',question:'Why are they meeting on Saturday?',options:['The café closes early on Sunday','The café is closed on Sunday','The café is busier on Sunday','The café opens later on Sunday'],answerIndex:1,solution:'The café is closed on Sundays.' },
 ]
 
-const BANK: ListeningItem[] = [...CORE_BANK, ...ENGLISH_LISTENING_AUTHORED]
+const BANK: ListeningItem[] = [...CORE_BANK, ...ENGLISH_LISTENING_AUTHORED, ...buildEnglishListeningGeneratedBank()]
 
 async function withTimeout<T>(operation: PromiseLike<T>, label: string): Promise<T> { let timer: ReturnType<typeof setTimeout> | undefined; try { return await Promise.race([Promise.resolve(operation), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} agotó el tiempo de espera`)), NETWORK_TIMEOUT_MS) })]) } finally { if (timer) clearTimeout(timer) } }
 function hashText(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619) } return hash >>> 0 }
