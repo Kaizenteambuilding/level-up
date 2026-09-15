@@ -11,12 +11,27 @@ const generatedPath = path.join(root, 'lib', 'englishListeningGenerated.ts')
 const component = fs.readFileSync(componentPath, 'utf8')
 const authored = fs.readFileSync(authoredPath, 'utf8')
 
-function loadGeneratedBank() {
-  const generatedSource = fs.readFileSync(generatedPath, 'utf8')
-  const compiled = ts.transpileModule(generatedSource, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText
+function loadTsModule(file, cache = new Map()) {
+  const absolute = path.resolve(file)
+  if (cache.has(absolute)) return cache.get(absolute).exports
+  const source = fs.readFileSync(absolute, 'utf8')
+  const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText
   const mod = { exports: {} }
-  new Function('exports','module','require',compiled)(mod.exports, mod, require)
-  return mod.exports.buildEnglishListeningGeneratedBank()
+  cache.set(absolute, mod)
+  function localRequire(request) {
+    if (!request.startsWith('.')) return require(request)
+    const base = path.resolve(path.dirname(absolute), request)
+    const candidate = [base, `${base}.ts`, `${base}.js`, `${base}.cjs`].find((entry) => fs.existsSync(entry))
+    if (!candidate) throw new Error(`Cannot resolve ${request} from ${absolute}`)
+    if (candidate.endsWith('.ts')) return loadTsModule(candidate, cache)
+    return require(candidate)
+  }
+  new Function('exports','module','require',compiled)(mod.exports, mod, localRequire)
+  return mod.exports
+}
+
+function loadGeneratedBank() {
+  return loadTsModule(generatedPath).buildEnglishListeningGeneratedBank()
 }
 
 function sliceArray(source, marker) {
@@ -117,12 +132,13 @@ const items = [...core, ...handAuthored, ...generated]
 
 assert(core.length >= 30, `Expected at least 30 core listening items, found ${core.length}`)
 assert(handAuthored.length >= 24, `Expected at least 24 authored listening items, found ${handAuthored.length}`)
-assert(generated.length >= 440, `Expected at least 440 generated listening items, found ${generated.length}`)
-assert(items.length >= 494, `Expected at least 494 listening items, found ${items.length}`)
+assert(generated.length >= 616, `Expected at least 616 generated listening items, found ${generated.length}`)
+assert(items.length >= 670, `Expected at least 670 listening items, found ${items.length}`)
 
 const spokenSeen = new Map()
 const questionSeen = new Map()
 const stemCounts = new Map()
+const generatedBySkill = new Map()
 
 for (const item of items) {
   const where = `${item.origin}[${item.index}]`
@@ -145,7 +161,13 @@ for (const item of items) {
 
   const stem = questionKey.replace(/[^a-z0-9\s]/g, '').split(/\s+/).slice(0, 4).join(' ')
   stemCounts.set(stem, (stemCounts.get(stem) ?? 0) + 1)
+  if (item.origin === 'generated') generatedBySkill.set(item.skillId, (generatedBySkill.get(item.skillId) ?? 0) + 1)
 }
+
+for (const skillId of ['E01S01','E01S04','E02S04','E03S03','E04S04','E05S01','E05S02','E05S03','E05S04','E06S02','E06S04']) {
+  assert((generatedBySkill.get(skillId) ?? 0) >= 56, `${skillId}: expected at least 56 generated listening scenarios`)
+}
+assert(questionSeen.size >= 300, `Expected at least 300 unique exact listening questions, found ${questionSeen.size}`)
 
 const repeatedStems = [...stemCounts.entries()]
   .filter(([, count]) => count >= 5)
@@ -154,9 +176,10 @@ const repeatedStems = [...stemCounts.entries()]
 console.log(`Listening quality audit: ${items.length} items (${core.length} core + ${handAuthored.length} authored + ${generated.length} generated)`)
 console.log(`Unique spoken prompts: ${spokenSeen.size}`)
 console.log(`Unique exact questions: ${questionSeen.size}`)
+console.log(`Minimum generated scenarios per covered listening skill: ${Math.min(...generatedBySkill.values())}`)
 if (repeatedStems.length) {
   console.log('Repeated question stems to review manually:')
-  for (const [stem, count] of repeatedStems) console.log(`- ${count}x: ${stem}`)
+  for (const [stem, count] of repeatedStems.slice(0, 20)) console.log(`- ${count}x: ${stem}`)
 } else {
   console.log('No question stem appears five or more times.')
 }
