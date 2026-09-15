@@ -1,0 +1,31 @@
+name: Fix final listening duplicate
+
+on:
+  push:
+    branches:
+      - feat/course-depth-listening
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[listening-final-duplicate]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/course-depth-listening
+          fetch-depth: 0
+
+      - name: Apply final duplicate cleanup
+        run: node scripts/fix-listening-final-duplicate.cjs
+
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: remove final generated listening duplicate [listening-final-duplicate]"
+          git push origin HEAD:feat/course-depth-listening
