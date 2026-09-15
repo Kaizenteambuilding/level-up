@@ -66,6 +66,9 @@ jobs:
       - name: Audit Spanish words course depth
         run: node scripts/audit-spanish-words-depth.cjs
 
+      - name: Audit upper Spanish course depth
+        run: node scripts/audit-spanish-upper-course-depth.cjs
+
       - name: Audit English conversation course depth
         run: node scripts/audit-english-conversation-depth.cjs
 

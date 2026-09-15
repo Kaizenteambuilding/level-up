@@ -11,6 +11,7 @@ import { generateExtraLanguageDistractorVariant4 } from './languageDistractorVar
 import { generateExtraLanguageDistractorVariant5 } from './languageDistractorVariantsExtra5'
 import { generateLanguageReadingDistractorVariant } from './languageDistractorVariantsReading'
 import { generateLanguageDistractorCleanup } from './languageDistractorCleanup'
+import { generateSpanishUpperLongTermVariant } from './spanishUpperLongTermVariants'
 import { generateKnowledgeQuestionWithCriticalVariants } from './knowledgeCriticalVariants'
 import { generateScienceInvestigationQuestion } from './scienceInvestigationQuestions'
 import { generateScienceDistractorCleanup } from './scienceDistractorCleanup'
@@ -44,6 +45,12 @@ function generateRawCurriculumQuestion(
     if (strongerDistractors) return strongerDistractors
     return generateFirstEvaluationQuestion(skill, difficulty, seed)
   }
+
+  if (skill.id.startsWith('L04') || skill.id.startsWith('L05') || skill.id.startsWith('L06')) {
+    const upperSpanish = generateSpanishUpperLongTermVariant(skill, difficulty, seed)
+    if (upperSpanish) return upperSpanish
+  }
+
   if (skill.id.startsWith('L') || skill.id.startsWith('E')) {
     const cleanedLanguage = generateLanguageDistractorCleanup(skill, difficulty, seed)
     if (cleanedLanguage) return cleanedLanguage
