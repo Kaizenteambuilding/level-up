@@ -36,6 +36,7 @@ import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperatio
 import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
 import { generateMathRecurrenceHotspotDepth } from './mathRecurrenceHotspotDepth'
 import { generateMathSamplingLaplaceRecurrenceDepth } from './mathSamplingLaplaceRecurrenceDepth'
+import { generateMathProportionalityEventsDepth } from './mathProportionalityEventsDepth'
 import { generateMathCoreLongTermVariant } from './mathCoreLongTermVariants'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
@@ -61,6 +62,9 @@ function generateRawCurriculumQuestion(
 
   const samplingLaplaceDepth = generateMathSamplingLaplaceRecurrenceDepth(skill, difficulty, seed)
   if (samplingLaplaceDepth) return samplingLaplaceDepth
+
+  const proportionalityEventsDepth = generateMathProportionalityEventsDepth(skill, difficulty, seed)
+  if (proportionalityEventsDepth) return proportionalityEventsDepth
 
   const samplingMedianDepth = generateMathStatsSamplingMedianSupplement(skill, difficulty, seed)
   if (samplingMedianDepth) return samplingMedianDepth
