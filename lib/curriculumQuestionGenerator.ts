@@ -60,14 +60,17 @@ function generateRawCurriculumQuestion(
   const variableDepth = generateMathStatsVariableDepth(skill, difficulty, seed)
   if (variableDepth) return variableDepth
 
+  // This supplement deliberately returns null on half the seeds so the
+  // established banks remain in rotation. It must run before the broader
+  // statistics supplement, otherwise M14S03 is completely shadowed.
+  const frequencyOrderDepth = generateMathFrequencyOrderDepth(skill, difficulty, seed)
+  if (frequencyOrderDepth) return frequencyOrderDepth
+
   const statsSupplement = generateMathStatsDepthSupplement(skill, difficulty, seed)
   if (statsSupplement) return statsSupplement
 
   const deepStats = generateMathStatsDeepVariant(skill, difficulty, seed)
   if (deepStats) return deepStats
-
-  const frequencyOrderDepth = generateMathFrequencyOrderDepth(skill, difficulty, seed)
-  if (frequencyOrderDepth) return frequencyOrderDepth
 
   const geometryDepth = generateMathGeometryDepthVariant(skill, difficulty, seed)
   if (geometryDepth) return geometryDepth
