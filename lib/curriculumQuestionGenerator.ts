@@ -33,6 +33,7 @@ import { generateMathStatsVariableDepth } from './mathStatsVariableDepth'
 import { generateMathGeometryDepthVariant } from './mathGeometryDepthVariants'
 import { generateMathPrimeDepthVariant } from './mathPrimeDepthVariants'
 import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperationsDepthVariants'
+import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
 import { generateMathCoreLongTermVariant } from './mathCoreLongTermVariants'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
@@ -64,6 +65,9 @@ function generateRawCurriculumQuestion(
 
   const deepStats = generateMathStatsDeepVariant(skill, difficulty, seed)
   if (deepStats) return deepStats
+
+  const frequencyOrderDepth = generateMathFrequencyOrderDepth(skill, difficulty, seed)
+  if (frequencyOrderDepth) return frequencyOrderDepth
 
   const geometryDepth = generateMathGeometryDepthVariant(skill, difficulty, seed)
   if (geometryDepth) return geometryDepth
