@@ -45,6 +45,9 @@ jobs:
       - name: Audit math operation semantics
         run: node scripts/audit-math-operations-semantics.cjs
 
+      - name: Audit M01S05 order semantics
+        run: node scripts/audit-m01-order-semantics.cjs
+
       - name: Audit M14S01 sampling recurrence
         run: node scripts/audit-m14-sampling-recurrence.cjs
 

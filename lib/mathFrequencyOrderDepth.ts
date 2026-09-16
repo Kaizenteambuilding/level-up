@@ -101,6 +101,22 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     'Restar los conteos permite comparar cuántas observaciones más tiene una categoría que otra.')
 }
 
+function uniqueWrongExpressions(
+  correctValue: number,
+  candidates: Array<{ expression: string; value: number }>,
+): [string, string, string] {
+  const seenValues = new Set<number>([correctValue])
+  const distractors: string[] = []
+  for (const candidate of candidates) {
+    if (seenValues.has(candidate.value)) continue
+    seenValues.add(candidate.value)
+    distractors.push(candidate.expression)
+    if (distractors.length === 3) break
+  }
+  if (distractors.length !== 3) throw new Error('Insufficient distinct M01S05 expression distractors')
+  return distractors as [string, string, string]
+}
+
 function order(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
   const family = (seed >>> 1) % 12
   const a = 3 + (seed % 7)
@@ -155,9 +171,20 @@ function order(skill: SkillMeta, difficulty: number, seed: number): GeneratedQue
   }
   if (family === 7) {
     const left = a * b + c
+    const distractors = uniqueWrongExpressions(left, [
+      { expression: `${a} × (${b}+${c})`, value: a * (b + c) },
+      { expression: `${a}+${b}×${c}`, value: a + b * c },
+      { expression: `(${a}+${b})×${c}`, value: (a + b) * c },
+      { expression: `${a} × ${b} - ${c}`, value: a * b - c },
+      { expression: `${a}+${b}+${c}`, value: a + b + c },
+      { expression: `${a} × ${c} + ${b}`, value: a * c + b },
+      { expression: `${a} × ${b} + ${c} + 1`, value: left + 1 },
+      { expression: `${a} × ${b} + ${c} + 2`, value: left + 2 },
+      { expression: `${a} × ${b} + ${c} + 3`, value: left + 3 },
+    ])
     return q(skill, difficulty, seed,
       `¿Cuál expresión vale ${left}?`, `${a} × ${b} + ${c}`,
-      [`${a} × (${b}+${c})`, `${a}+${b}×${c}`, `(${a}+${b})×${c}`],
+      distractors,
       `${a}×${b}+${c}=${left}.`)
   }
   if (family === 8) {
