@@ -34,6 +34,7 @@ import { generateMathGeometryDepthVariant } from './mathGeometryDepthVariants'
 import { generateMathPrimeDepthVariant } from './mathPrimeDepthVariants'
 import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperationsDepthVariants'
 import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
+import { generateMathRecurrenceHotspotDepth } from './mathRecurrenceHotspotDepth'
 import { generateMathCoreLongTermVariant } from './mathCoreLongTermVariants'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
@@ -53,6 +54,11 @@ function generateRawCurriculumQuestion(
 ): GeneratedQuestion {
   const polishedCourseDepth = generateCourseDepthDistractorPolish(skill, difficulty, seed)
   if (polishedCourseDepth) return polishedCourseDepth
+
+  // Longitudinal recurrence hotspots need to run before the broader math banks.
+  // The helper returns null on half the seeds, preserving established practice.
+  const recurrenceHotspotDepth = generateMathRecurrenceHotspotDepth(skill, difficulty, seed)
+  if (recurrenceHotspotDepth) return recurrenceHotspotDepth
 
   const samplingMedianDepth = generateMathStatsSamplingMedianSupplement(skill, difficulty, seed)
   if (samplingMedianDepth) return samplingMedianDepth
