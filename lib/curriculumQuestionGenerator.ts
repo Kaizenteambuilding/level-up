@@ -35,6 +35,7 @@ import { generateMathPrimeDepthVariant } from './mathPrimeDepthVariants'
 import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperationsDepthVariants'
 import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
 import { generateMathRecurrenceHotspotDepth } from './mathRecurrenceHotspotDepth'
+import { generateMathSamplingLaplaceRecurrenceDepth } from './mathSamplingLaplaceRecurrenceDepth'
 import { generateMathCoreLongTermVariant } from './mathCoreLongTermVariants'
 import { generateMathDistractorVariant } from './mathDistractorVariants'
 import { generateKnowledgeDistractorVariant } from './knowledgeDistractorVariants'
@@ -55,10 +56,11 @@ function generateRawCurriculumQuestion(
   const polishedCourseDepth = generateCourseDepthDistractorPolish(skill, difficulty, seed)
   if (polishedCourseDepth) return polishedCourseDepth
 
-  // Longitudinal recurrence hotspots need to run before the broader math banks.
-  // The helper returns null on half the seeds, preserving established practice.
   const recurrenceHotspotDepth = generateMathRecurrenceHotspotDepth(skill, difficulty, seed)
   if (recurrenceHotspotDepth) return recurrenceHotspotDepth
+
+  const samplingLaplaceDepth = generateMathSamplingLaplaceRecurrenceDepth(skill, difficulty, seed)
+  if (samplingLaplaceDepth) return samplingLaplaceDepth
 
   const samplingMedianDepth = generateMathStatsSamplingMedianSupplement(skill, difficulty, seed)
   if (samplingMedianDepth) return samplingMedianDepth
@@ -66,9 +68,6 @@ function generateRawCurriculumQuestion(
   const variableDepth = generateMathStatsVariableDepth(skill, difficulty, seed)
   if (variableDepth) return variableDepth
 
-  // This supplement deliberately returns null on half the seeds so the
-  // established banks remain in rotation. It must run before the broader
-  // statistics supplement, otherwise M14S03 is completely shadowed.
   const frequencyOrderDepth = generateMathFrequencyOrderDepth(skill, difficulty, seed)
   if (frequencyOrderDepth) return frequencyOrderDepth
 
@@ -208,14 +207,6 @@ function generatePlayableRawQuestion(
   return candidate
 }
 
-/**
- * Single audited entry point for all curriculum questions.
- *
- * Besides routing to the subject generator, this performs a small deterministic
- * search for a version whose distractors do not give the answer away through
- * obvious linguistic or visual clues. It never invents distractors here: it
- * chooses among real questions already authored by the subject generators.
- */
 export function generateCurriculumQuestion(
   skill: SkillMeta,
   difficulty: number,
