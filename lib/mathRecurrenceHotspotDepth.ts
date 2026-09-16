@@ -43,10 +43,9 @@ function superscript(value: number) {
 }
 
 function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const mixed = mixSeed(seed, 0x02a11ce)
-  const family = mixed % 14
-  const base = 2 + ((mixed >>> 3) % 7)
-  const exponent = 2 + ((mixed >>> 9) % 4)
+  const family = (seed >>> 1) % 14
+  const base = 2 + (seed % 7)
+  const exponent = 2 + ((seed >>> 5) % 4)
   const notation = `${base}${superscript(exponent)}`
   const expanded = Array.from({ length: exponent }, () => String(base)).join(' × ')
 
@@ -78,7 +77,7 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
     ['Porque las potencias representan sumas repetidas', 'Porque el exponente nunca afecta al cálculo', 'Porque la base debe ser siempre 10'],
     `${notation} representa ${expanded}, no un único producto entre base y exponente.`)
   if (family === 6) {
-    const squareBase = 3 + ((mixed >>> 13) % 8)
+    const squareBase = 3 + (seed % 8)
     return q(skill, difficulty, seed,
       `Un cuadrado tiene lado ${squareBase} cm. Su área se expresa como ${squareBase}². ¿Qué representa el “²”?`,
       'Multiplicar la longitud del lado por sí misma',
@@ -86,7 +85,7 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
       `El área es ${squareBase}×${squareBase}; por eso aparece una potencia de exponente 2.`)
   }
   if (family === 7) {
-    const cubeBase = 2 + ((mixed >>> 17) % 6)
+    const cubeBase = 2 + (seed % 6)
     return q(skill, difficulty, seed,
       `El volumen de un cubo de arista ${cubeBase} cm puede escribirse ${cubeBase}³. ¿Qué producto describe esa potencia?`,
       `${cubeBase} × ${cubeBase} × ${cubeBase}`,
@@ -112,7 +111,7 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
     [`El valor de la base, ${base}`, `La suma ${base + exponent}`, `El producto ${base * exponent}`],
     'El exponente cuenta cuántas veces aparece la base como factor.')
   if (family === 12) {
-    const tenExp = 2 + ((mixed >>> 21) % 4)
+    const tenExp = 2 + (seed % 4)
     return q(skill, difficulty, seed,
       `En 10${superscript(tenExp)}, ¿qué describe mejor la notación?`,
       `El producto de ${tenExp} factores iguales a 10`,
@@ -204,10 +203,13 @@ export function generateMathRecurrenceHotspotDepth(
   seed: number,
 ): GeneratedQuestion | null {
   const normalized = seed >>> 0
-  // Keep the established banks in rotation, but use three quarters of seeds for
-  // the deeper bank. This reduces recurrence without turning review into a hard rule.
-  if ((normalized & 3) === 3) return null
-  if (skill.id === 'M02S01') return powers(skill, difficulty, normalized)
-  if (skill.id === 'M15S03') return favorablePossible(skill, difficulty, normalized)
+  if (skill.id === 'M02S01') {
+    if ((normalized & 1) === 1) return null
+    return powers(skill, difficulty, normalized)
+  }
+  if (skill.id === 'M15S03') {
+    if ((normalized & 3) === 3) return null
+    return favorablePossible(skill, difficulty, normalized)
+  }
   return null
 }
