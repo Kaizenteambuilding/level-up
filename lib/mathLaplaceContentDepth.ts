@@ -19,6 +19,52 @@ function fraction(numerator: number, denominator: number) {
   return `${numerator / divisor}/${denominator / divisor}`
 }
 
+function optionKey(option: string) {
+  const trimmed = option.trim()
+  const fractionMatch = trimmed.match(/^(-?\d+)\/(\d+)$/)
+  if (fractionMatch) {
+    const numerator = Number(fractionMatch[1])
+    const denominator = Number(fractionMatch[2])
+    if (denominator !== 0) return `fraction:${fraction(numerator, denominator)}`
+  }
+  if (/^-?\d+$/.test(trimmed)) return `number:${Number(trimmed)}`
+  return `text:${trimmed.toLowerCase()}`
+}
+
+function distinctDistractors(answer: string, distractors: [string, string, string]): [string, string, string] {
+  const answerKey = optionKey(answer)
+  const selected: string[] = []
+  const seen = new Set<string>([answerKey])
+
+  for (const distractor of distractors) {
+    const key = optionKey(distractor)
+    if (seen.has(key)) continue
+    seen.add(key)
+    selected.push(distractor)
+  }
+
+  const isFractionAnswer = /^-?\d+\/\d+$/.test(answer.trim())
+  const isIntegerAnswer = /^-?\d+$/.test(answer.trim())
+  const fallbackCandidates = isFractionAnswer
+    ? ['0', '1', '1/2', '1/3', '2/3', '1/4', '3/4', '1/5', '2/5', '3/5', '4/5', '1/6', '5/6']
+    : isIntegerAnswer
+      ? Array.from({ length: 12 }, (_, index) => String(Math.max(0, Number(answer) - 5 + index)))
+      : []
+
+  for (const candidate of fallbackCandidates) {
+    if (selected.length === 3) break
+    const key = optionKey(candidate)
+    if (seen.has(key)) continue
+    seen.add(key)
+    selected.push(candidate)
+  }
+
+  if (selected.length !== 3) {
+    throw new Error(`Insufficient distinct M15S04 distractors for answer ${answer}`)
+  }
+  return selected as [string, string, string]
+}
+
 function q(
   skill: SkillMeta,
   difficulty: number,
@@ -28,9 +74,11 @@ function q(
   distractors: [string, string, string],
   solution: string,
 ): GeneratedQuestion {
-  const uniqueOptions = [answer, ...distractors]
-  if (new Set(uniqueOptions).size !== uniqueOptions.length) {
-    throw new Error(`Duplicate M15S04 options for seed ${seed}: ${JSON.stringify(uniqueOptions)}`)
+  const safeDistractors = distinctDistractors(answer, distractors)
+  const uniqueOptions = [answer, ...safeDistractors]
+  const semanticKeys = uniqueOptions.map(optionKey)
+  if (new Set(semanticKeys).size !== semanticKeys.length) {
+    throw new Error(`Duplicate M15S04 option values for seed ${seed}: ${JSON.stringify(uniqueOptions)}`)
   }
   const options = rotate(uniqueOptions, seed + difficulty)
   return {
@@ -226,7 +274,7 @@ function laplace(skill: SkillMeta, difficulty: number, seed: number): GeneratedQ
     const fav = 2 + ((seed >>> 10) % Math.max(2, Math.floor(total / 2) - 1))
     return q(skill, difficulty, seed,
       `Un suceso tiene ${fav} casos favorables entre ${total} casos posibles equiprobables. ¿Qué expresión aplica correctamente la regla de Laplace?`,
-      `${fav}/${total}`, [`${total}/${fav}`, `${fav}/${total - fav}`, `${total - fav}/${fav}`],
+      fraction(fav, total), [fraction(total, fav), fraction(fav, total - fav), fraction(total - fav, fav)],
       'La probabilidad clásica es número de casos favorables dividido entre número de casos posibles.')
   }
 
