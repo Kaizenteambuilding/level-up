@@ -7,6 +7,13 @@ function rotate<T>(items: T[], shift: number) {
   return items.slice(offset).concat(items.slice(0, offset))
 }
 
+function mixSeed(seed: number, salt: number) {
+  let value = (seed ^ salt) >>> 0
+  value = Math.imul(value ^ (value >>> 16), 0x7feb352d)
+  value = Math.imul(value ^ (value >>> 15), 0x846ca68b)
+  return (value ^ (value >>> 16)) >>> 0
+}
+
 function q(
   skill: SkillMeta,
   difficulty: number,
@@ -36,9 +43,10 @@ function superscript(value: number) {
 }
 
 function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const family = (seed >>> 1) % 14
-  const base = 2 + (seed % 7)
-  const exponent = 2 + ((seed >>> 5) % 4)
+  const mixed = mixSeed(seed, 0x02a11ce)
+  const family = mixed % 14
+  const base = 2 + ((mixed >>> 3) % 7)
+  const exponent = 2 + ((mixed >>> 9) % 4)
   const notation = `${base}${superscript(exponent)}`
   const expanded = Array.from({ length: exponent }, () => String(base)).join(' × ')
 
@@ -70,7 +78,7 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
     ['Porque las potencias representan sumas repetidas', 'Porque el exponente nunca afecta al cálculo', 'Porque la base debe ser siempre 10'],
     `${notation} representa ${expanded}, no un único producto entre base y exponente.`)
   if (family === 6) {
-    const squareBase = 3 + (seed % 8)
+    const squareBase = 3 + ((mixed >>> 13) % 8)
     return q(skill, difficulty, seed,
       `Un cuadrado tiene lado ${squareBase} cm. Su área se expresa como ${squareBase}². ¿Qué representa el “²”?`,
       'Multiplicar la longitud del lado por sí misma',
@@ -78,7 +86,7 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
       `El área es ${squareBase}×${squareBase}; por eso aparece una potencia de exponente 2.`)
   }
   if (family === 7) {
-    const cubeBase = 2 + (seed % 6)
+    const cubeBase = 2 + ((mixed >>> 17) % 6)
     return q(skill, difficulty, seed,
       `El volumen de un cubo de arista ${cubeBase} cm puede escribirse ${cubeBase}³. ¿Qué producto describe esa potencia?`,
       `${cubeBase} × ${cubeBase} × ${cubeBase}`,
@@ -104,7 +112,7 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
     [`El valor de la base, ${base}`, `La suma ${base + exponent}`, `El producto ${base * exponent}`],
     'El exponente cuenta cuántas veces aparece la base como factor.')
   if (family === 12) {
-    const tenExp = 2 + (seed % 4)
+    const tenExp = 2 + ((mixed >>> 21) % 4)
     return q(skill, difficulty, seed,
       `En 10${superscript(tenExp)}, ¿qué describe mejor la notación?`,
       `El producto de ${tenExp} factores iguales a 10`,
@@ -119,10 +127,11 @@ function powers(skill: SkillMeta, difficulty: number, seed: number): GeneratedQu
 }
 
 function favorablePossible(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const family = (seed >>> 1) % 14
-  const red = 2 + (seed % 5)
-  const blue = 2 + ((seed >>> 4) % 5)
-  const green = 1 + ((seed >>> 8) % 4)
+  const mixed = mixSeed(seed, 0x15fa903)
+  const family = mixed % 14
+  const red = 2 + ((mixed >>> 3) % 5)
+  const blue = 2 + ((mixed >>> 8) % 5)
+  const green = 1 + ((mixed >>> 13) % 4)
   const total = red + blue + green
 
   if (family === 0) return q(skill, difficulty, seed,
@@ -139,7 +148,7 @@ function favorablePossible(skill: SkillMeta, difficulty: number, seed: number): 
     `Favorables son rojas o azules: ${red}+${blue}=${red + blue}.`)
   if (family === 3) {
     const sides = 6
-    const threshold = 3 + (seed % 3)
+    const threshold = 3 + ((mixed >>> 18) % 3)
     const favorable = sides - threshold
     return q(skill, difficulty, seed,
       `Al lanzar un dado de seis caras, ¿cuántos casos favorables hay para obtener un número mayor que ${threshold}?`,
@@ -195,9 +204,9 @@ export function generateMathRecurrenceHotspotDepth(
   seed: number,
 ): GeneratedQuestion | null {
   const normalized = seed >>> 0
-  // Interleave with established banks rather than replacing them. The other half
-  // of seeds keeps the existing long-term generators and their useful repetition.
-  if ((normalized & 1) === 1) return null
+  // Keep the established banks in rotation, but use three quarters of seeds for
+  // the deeper bank. This reduces recurrence without turning review into a hard rule.
+  if ((normalized & 3) === 3) return null
   if (skill.id === 'M02S01') return powers(skill, difficulty, normalized)
   if (skill.id === 'M15S03') return favorablePossible(skill, difficulty, normalized)
   return null
