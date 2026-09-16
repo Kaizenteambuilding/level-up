@@ -7,6 +7,13 @@ function rotate<T>(items: T[], shift: number) {
   return items.slice(offset).concat(items.slice(0, offset))
 }
 
+function mixSeed(seed: number, salt: number) {
+  let value = (seed ^ salt) >>> 0
+  value = Math.imul(value ^ (value >>> 16), 0x7feb352d)
+  value = Math.imul(value ^ (value >>> 15), 0x846ca68b)
+  return (value ^ (value >>> 16)) >>> 0
+}
+
 function q(
   skill: SkillMeta,
   difficulty: number,
@@ -31,9 +38,10 @@ function q(
 }
 
 function sampling(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const family = (seed >>> 1) % 14
-  const population = 300 + 50 * (seed % 9)
-  const sample = 30 + 10 * ((seed >>> 4) % 6)
+  const mixed = mixSeed(seed, 0x14a501)
+  const family = mixed % 14
+  const population = 300 + 50 * ((mixed >>> 3) % 9)
+  const sample = 30 + 10 * ((mixed >>> 10) % 6)
 
   if (family === 0) return q(skill, difficulty, seed,
     `Una ciudad tiene ${population} estudiantes de secundaria y se encuesta a ${sample}. ¿Cuál es la población del estudio?`,
@@ -58,7 +66,7 @@ function sampling(skill: SkillMeta, difficulty: number, seed: number): Generated
     ['Elegir solo del curso más grande', 'Elegir solo a quienes tengan mejor nota', 'Preguntar únicamente al primer grupo disponible'],
     'Un muestreo estratificado o proporcional evita dejar grupos relevantes fuera.')
   if (family === 5) return q(skill, difficulty, seed,
-    `Se selecciona cada 10.º nombre de una lista después de elegir al azar el punto de inicio. ¿Qué método se está usando?`,
+    'Se selecciona cada 10.º nombre de una lista después de elegir al azar el punto de inicio. ¿Qué método se está usando?',
     'Muestreo sistemático', ['Censo', 'Muestreo por conveniencia', 'Autoselección'],
     'Elegir elementos a intervalos regulares tras un inicio aleatorio es muestreo sistemático.')
   if (family === 6) return q(skill, difficulty, seed,
@@ -106,9 +114,10 @@ function fraction(numerator: number, denominator: number) {
 }
 
 function laplace(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const family = (seed >>> 1) % 14
+  const mixed = mixSeed(seed, 0x15a04ce)
+  const family = mixed % 14
   const sides = 6
-  const favorable = 1 + (seed % 5)
+  const favorable = 1 + ((mixed >>> 5) % 5)
 
   if (family === 0) return q(skill, difficulty, seed,
     'En una moneda equilibrada, ¿cuál es la probabilidad de obtener cara?', '1/2', ['1', '1/4', '2'],
@@ -169,7 +178,9 @@ export function generateMathSamplingLaplaceRecurrenceDepth(
   seed: number,
 ): GeneratedQuestion | null {
   const normalized = seed >>> 0
-  if ((normalized & 1) === 1) return null
+  // Use the deeper bank for three quarters of seeds while retaining established
+  // long-term questions as spaced review on the remaining quarter.
+  if ((normalized & 3) === 3) return null
   if (skill.id === 'M14S01') return sampling(skill, difficulty, normalized)
   if (skill.id === 'M15S04') return laplace(skill, difficulty, normalized)
   return null
