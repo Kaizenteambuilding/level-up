@@ -178,6 +178,9 @@ function order(skill: SkillMeta, difficulty: number, seed: number): GeneratedQue
       { expression: `${a} × ${b} - ${c}`, value: a * b - c },
       { expression: `${a}+${b}+${c}`, value: a + b + c },
       { expression: `${a} × ${c} + ${b}`, value: a * c + b },
+      { expression: `${a} × ${b} + ${c} + 1`, value: left + 1 },
+      { expression: `${a} × ${b} + ${c} + 2`, value: left + 2 },
+      { expression: `${a} × ${b} + ${c} + 3`, value: left + 3 },
     ])
     return q(skill, difficulty, seed,
       `¿Cuál expresión vale ${left}?`, `${a} × ${b} + ${c}`,
