@@ -169,6 +169,7 @@ export function generateMathRandomExperimentsDepth(
 ): GeneratedQuestion | null {
   if (skill.id !== 'M15S01') return null
   const normalized = seed >>> 0
-  if ((normalized & 1) === 1) return null
+  // Keep one in four seeds on established material for spaced review.
+  if ((normalized & 3) === 3) return null
   return finish(skill, difficulty, normalized, randomExperiment(normalized))
 }
