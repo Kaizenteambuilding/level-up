@@ -39,6 +39,9 @@ function randomExperiment(seed: number): Item {
   const day = 1 + ((seed >>> 14) % 28)
   const spinner = [6, 8, 10, 12][(seed >>> 17) % 4]
   const red = 1 + ((seed >>> 20) % Math.max(2, spinner - 2))
+  const variant = (seed >>> 22) % 4
+  const calcA = 4 + ((seed >>> 24) % 6)
+  const calcB = 3 + ((seed >>> 27) % 5)
 
   if (family === 0) return {
     prompt: `Se lanza un dado de ${sides} caras y se anota el número obtenido. ¿Por qué es un experimento aleatorio?`,
@@ -82,11 +85,19 @@ function randomExperiment(seed: number): Item {
     distractors: ['Porque toda temperatura es aleatoria por definición', 'Porque no puede medirse', 'Porque el día del mes determina exactamente la temperatura'],
     solution: 'La incertidumbre previa a la observación distingue este caso de un dato ya fijado.',
   }
-  if (family === 7) return {
-    prompt: '¿Cuál de estas situaciones es determinista?',
-    answer: 'Calcular 7×8 con las reglas habituales de aritmética',
-    distractors: ['Lanzar una moneda', 'Extraer una carta al azar', 'Girar una ruleta equilibrada'],
-    solution: 'Un procedimiento determinista produce el mismo resultado dadas las mismas condiciones.',
+  if (family === 7) {
+    const deterministic = [
+      `Calcular ${calcA}×${calcB} con las reglas habituales de aritmética`,
+      `Contar los ${students} nombres de una lista que ya está completa`,
+      `Leer en una regla una marca fija de ${sides} cm`,
+      `Sumar ${calcA}+${calcB} con las reglas habituales de aritmética`,
+    ][variant]
+    return {
+      prompt: `¿Cuál de estas situaciones es determinista en este caso: ${variant + 1}?`,
+      answer: deterministic,
+      distractors: ['Lanzar una moneda', 'Extraer una carta al azar', 'Girar una ruleta equilibrada'],
+      solution: 'Un procedimiento determinista produce el mismo resultado dadas las mismas condiciones.',
+    }
   }
   if (family === 8) return {
     prompt: `En una ruleta con ${spinner} sectores iguales, ${red} son rojos. Antes de girarla una vez, ¿qué se sabe?`,
@@ -100,11 +111,19 @@ function randomExperiment(seed: number): Item {
     distractors: ['Sí, necesariamente', 'Sí, salvo que el programa esté mal hecho', 'No puede ejecutarse dos veces'],
     solution: 'Repetir un experimento aleatorio no obliga a repetir el resultado.',
   }
-  if (family === 10) return {
-    prompt: '¿Qué condición es esencial para hablar de espacio muestral?',
-    answer: 'Definir claramente cuáles son todos los resultados posibles',
-    distractors: ['Conocer de antemano cuál ocurrirá', 'Tener exactamente dos resultados', 'Usar siempre números'],
-    solution: 'El espacio muestral es el conjunto de todos los resultados posibles.',
+  if (family === 10) {
+    const contexts = [
+      `los resultados 1, 2, ..., ${sides} de un dado`,
+      `${spinner} sectores numerados de una ruleta`,
+      `${students} estudiantes identificados de una clase`,
+      `${draws} lanzamientos sucesivos de una moneda`,
+    ]
+    return {
+      prompt: `Para definir el espacio muestral de ${contexts[variant]}, ¿qué condición es esencial?`,
+      answer: 'Identificar claramente todos los resultados posibles',
+      distractors: ['Conocer de antemano cuál ocurrirá', 'Tener exactamente dos resultados', 'Usar siempre números'],
+      solution: 'El espacio muestral es el conjunto de todos los resultados posibles.',
+    }
   }
   if (family === 11) return {
     prompt: `Se elige al azar un estudiante de una clase de ${students}. ¿Cuál es un resultado elemental del experimento?`,
@@ -113,16 +132,19 @@ function randomExperiment(seed: number): Item {
     solution: 'Un resultado elemental describe una única realización posible del experimento.',
   }
   if (family === 12) return {
-    prompt: `Un dado de ${sides} caras se lanza 100 veces. ¿Que aparezcan varias veces resultados distintos contradice que el experimento sea repetible?`,
+    prompt: `Un dado de ${sides} caras se lanza ${50 + 25 * variant} veces. ¿Que aparezcan varias veces resultados distintos contradice que el experimento sea repetible?`,
     answer: 'No, repetible significa que puede realizarse de nuevo bajo condiciones comparables',
     distractors: ['Sí, repetir exige obtener siempre lo mismo', 'Sí, porque un dado solo puede lanzarse una vez', 'No, porque los resultados no importan nunca'],
     solution: 'Repetibilidad se refiere al procedimiento, no a que el resultado sea idéntico.',
   }
-  if (family === 13) return {
-    prompt: '¿Qué distingue mejor un experimento aleatorio de uno determinista?',
-    answer: 'En el aleatorio no puede saberse con certeza el resultado concreto antes de realizarlo',
-    distractors: ['El aleatorio carece de resultados posibles', 'El determinista usa siempre números', 'El aleatorio no puede repetirse'],
-    solution: 'La diferencia central es la incertidumbre previa sobre el resultado concreto.',
+  if (family === 13) {
+    const settings = ['una moneda', `un dado de ${sides} caras`, `una ruleta de ${spinner} sectores`, 'una extracción al azar de una bolsa']
+    return {
+      prompt: `Al comparar un proceso determinista con ${settings[variant]}, ¿qué distingue mejor al experimento aleatorio?`,
+      answer: 'No puede saberse con certeza el resultado concreto antes de realizarlo',
+      distractors: ['Carece de resultados posibles', 'Usa siempre números', 'No puede repetirse'],
+      solution: 'La diferencia central es la incertidumbre previa sobre el resultado concreto.',
+    }
   }
   if (family === 14) return {
     prompt: `Se escoge una tarjeta numerada del 1 al ${sides}. Si antes de elegir ya sabemos cuál tarjeta está marcada para salir, ¿sigue siendo aleatorio para quien conoce esa información?`,
@@ -136,17 +158,23 @@ function randomExperiment(seed: number): Item {
     distractors: ['Solo el número total de lanzamientos posibles', 'La regla de lanzar una moneda', 'El nombre del experimento'],
     solution: 'Una realización completa especifica qué resultado ocurrió en cada repetición.',
   }
-  if (family === 16) return {
-    prompt: '¿Por qué “elegir al azar” necesita un procedimiento bien definido?',
-    answer: 'Para saber qué resultados son posibles y cómo se realiza la selección',
-    distractors: ['Para garantizar siempre el mismo resultado', 'Para eliminar todos los resultados posibles', 'Porque azar significa elegir sin reglas de ningún tipo'],
-    solution: 'El azar no elimina la necesidad de definir el experimento y su conjunto de resultados.',
+  if (family === 16) {
+    const methods = ['sortear una tarjeta', 'usar un generador aleatorio', 'girar una ruleta', 'extraer una bola sin mirar']
+    return {
+      prompt: `Si se va a ${methods[variant]}, ¿por qué el procedimiento aleatorio debe estar bien definido?`,
+      answer: 'Para saber qué resultados son posibles y cómo se realiza la selección',
+      distractors: ['Para garantizar siempre el mismo resultado', 'Para eliminar todos los resultados posibles', 'Porque azar significa elegir sin reglas de ningún tipo'],
+      solution: 'El azar no elimina la necesidad de definir el experimento y su conjunto de resultados.',
+    }
   }
-  if (family === 17) return {
-    prompt: `Se extrae una bola, no se devuelve y se vuelve a extraer. ¿Por qué la segunda extracción no está exactamente en las mismas condiciones que la primera?`,
-    answer: 'Porque ha cambiado la composición de la bolsa',
-    distractors: ['Porque la segunda extracción deja de ser aleatoria', 'Porque siempre saldrá el mismo color', 'Porque una bolsa no puede usarse dos veces'],
-    solution: 'Sin reposición, el primer resultado modifica el conjunto disponible para la segunda extracción.',
+  if (family === 17) {
+    const totalBalls = 6 + 2 * variant
+    return {
+      prompt: `Una bolsa tiene ${totalBalls} bolas. Se extrae una, no se devuelve y se vuelve a extraer. ¿Por qué la segunda extracción no está exactamente en las mismas condiciones que la primera?`,
+      answer: 'Porque ha cambiado la composición de la bolsa',
+      distractors: ['Porque la segunda extracción deja de ser aleatoria', 'Porque siempre saldrá el mismo color', 'Porque una bolsa no puede usarse dos veces'],
+      solution: 'Sin reposición, el primer resultado modifica el conjunto disponible para la segunda extracción.',
+    }
   }
   if (family === 18) return {
     prompt: `Una ruleta tiene ${spinner} sectores, pero algunos son más grandes que otros. ¿Sigue siendo un experimento aleatorio al girarla?`,
@@ -155,7 +183,7 @@ function randomExperiment(seed: number): Item {
     solution: 'Aleatoriedad no exige equiprobabilidad; solo incertidumbre sobre qué resultado ocurrirá.',
   }
   return {
-    prompt: `En un experimento con resultados posibles numerados del 1 al ${sides}, se repite el procedimiento muchas veces. ¿Qué afirmación es correcta?`,
+    prompt: `En un experimento con resultados posibles numerados del 1 al ${sides}, se repite el procedimiento ${20 + 10 * variant} veces. ¿Qué afirmación es correcta?`,
     answer: 'Cada repetición produce un resultado posible del mismo experimento, aunque pueda variar',
     distractors: ['Todas las repeticiones deben coincidir', 'Después de la primera repetición deja de haber azar', 'Los resultados posibles cambian obligatoriamente en cada intento'],
     solution: 'Repetir un experimento aleatorio conserva el procedimiento y permite resultados distintos entre realizaciones.',
@@ -169,7 +197,7 @@ export function generateMathRandomExperimentsDepth(
 ): GeneratedQuestion | null {
   if (skill.id !== 'M15S01') return null
   const normalized = seed >>> 0
-  // Keep one in eight seeds on established material for spaced review.
-  if ((normalized & 7) === 7) return null
+  // Keep one in four seeds on established material for spaced review.
+  if ((normalized & 3) === 3) return null
   return finish(skill, difficulty, normalized, randomExperiment(normalized))
 }
