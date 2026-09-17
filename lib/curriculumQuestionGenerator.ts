@@ -36,7 +36,6 @@ import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperatio
 import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
 import { generateMathRecurrenceHotspotDepth } from './mathRecurrenceHotspotDepth'
 import { generateMathIntegerInterpretationDepth } from './mathIntegerInterpretationDepth'
-import { generateMathGraphRepresentationDepth } from './mathGraphRepresentationDepth'
 import { generateMathRandomExperimentsDepth } from './mathRandomExperimentsDepth'
 import { generateMathEventsContentDepth } from './mathEventsContentDepth'
 import { generateMathLaplaceContentDepth } from './mathLaplaceContentDepth'
@@ -71,9 +70,6 @@ function generateRawCurriculumQuestion(
 
   const integerInterpretationDepth = generateMathIntegerInterpretationDepth(skill, difficulty, seed)
   if (integerInterpretationDepth) return integerInterpretationDepth
-
-  const graphRepresentationDepth = generateMathGraphRepresentationDepth(skill, difficulty, seed)
-  if (graphRepresentationDepth) return graphRepresentationDepth
 
   const randomExperimentsDepth = generateMathRandomExperimentsDepth(skill, difficulty, seed)
   if (randomExperimentsDepth) return randomExperimentsDepth
@@ -160,25 +156,79 @@ function generateRawCurriculumQuestion(
   if (skill.id.startsWith('G')) {
     const cleanedHistory = generateHistoryDistractorCleanup(skill, difficulty, seed)
     if (cleanedHistory) return cleanedHistory
-    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
-    if (strongerDistractors) return strongerDistractors
-    if (skill.id.startsWith('G01')) return generateCartographyQuestion(skill, difficulty, seed)
-    if (skill.id.startsWith('G02') || skill.id.startsWith('G03')) return generateGeographyPhysicalQuestion(skill, difficulty, seed)
-    return generateHistoryAncientQuestion(skill, difficulty, seed)
+  }
+
+  if (skill.id.startsWith('B02')) {
+    const geology = generateGeologyLongTermVariant(skill, difficulty, seed)
+    if (geology) return geology
+  }
+
+  if (skill.id.startsWith('B03') || skill.id.startsWith('B04') || skill.id.startsWith('B05')) {
+    const life = generateScienceLifeLongTermVariant(skill, difficulty, seed)
+    if (life) return life
+  }
+
+  if (skill.id.startsWith('B06')) {
+    const health = generateScienceHealthLongTermVariant(skill, difficulty, seed)
+    if (health) return health
   }
 
   if (skill.id.startsWith('B')) {
     const cleanedScience = generateScienceDistractorCleanup(skill, difficulty, seed)
     if (cleanedScience) return cleanedScience
-    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
-    if (strongerDistractors) return strongerDistractors
-    if (skill.id.startsWith('B01')) return generateScienceInvestigationQuestion(skill, difficulty, seed)
-    if (skill.id.startsWith('B02')) return generateGeologyLongTermVariant(skill, difficulty, seed) ?? generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
-    if (skill.id.startsWith('B03') || skill.id.startsWith('B04') || skill.id.startsWith('B05')) return generateScienceLifeLongTermVariant(skill, difficulty, seed) ?? generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
-    if (skill.id.startsWith('B06')) return generateScienceHealthLongTermVariant(skill, difficulty, seed) ?? generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
   }
 
-  return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
+  if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
+    const strongerDistractors = generateKnowledgeDistractorVariant(skill, difficulty, seed)
+    if (strongerDistractors) return strongerDistractors
+  }
+
+  if (skill.id.startsWith('B01')) {
+    const investigation = generateScienceInvestigationQuestion(skill, difficulty, seed)
+    if (investigation) return investigation
+  }
+  if (skill.id.startsWith('G01')) {
+    const cartography = generateCartographyQuestion(skill, difficulty, seed)
+    if (cartography) return cartography
+  }
+  if (skill.id.startsWith('G02') || skill.id.startsWith('G03')) {
+    const physical = generateGeographyPhysicalQuestion(skill, difficulty, seed)
+    if (physical) return physical
+  }
+  if (skill.id.startsWith('G04') || skill.id.startsWith('G05') || skill.id.startsWith('G06')) {
+    const history = generateHistoryAncientQuestion(skill, difficulty, seed)
+    if (history) return history
+  }
+  if (skill.id.startsWith('G') || skill.id.startsWith('B')) {
+    return generateKnowledgeQuestionWithCriticalVariants(skill, difficulty, seed)
+  }
+  throw new Error(`No audited question generator for skill ${skill.id} (${skill.generator_key})`)
+}
+
+function isDegenerateMathQuestion(question: GeneratedQuestion) {
+  if (!question.skillId.startsWith('M')) return false
+
+  const directRule = question.prompt.match(
+    /^Si\s+(\d+)\s+unidades\s+cuestan\s+[^?]+¿cuánto\s+cuestan\s+(\d+)\s+unidades\?$/i,
+  )
+
+  return directRule ? Number(directRule[1]) === Number(directRule[2]) : false
+}
+
+function generatePlayableRawQuestion(
+  skill: SkillMeta,
+  difficulty: number,
+  seed: number,
+): GeneratedQuestion {
+  let candidateSeed = seed >>> 0
+  let candidate = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+
+  for (let attempt = 0; attempt < 8 && isDegenerateMathQuestion(candidate); attempt += 1) {
+    candidateSeed = (candidateSeed + 2654435761) >>> 0
+    candidate = generateRawCurriculumQuestion(skill, difficulty, candidateSeed)
+  }
+
+  return candidate
 }
 
 export function generateCurriculumQuestion(
@@ -186,16 +236,25 @@ export function generateCurriculumQuestion(
   difficulty: number,
   seed: number
 ): GeneratedQuestion {
-  let currentSeed = seed >>> 0
-  let question = generateRawCurriculumQuestion(skill, difficulty, currentSeed)
-  const maxAttempts = 8
+  const maxScore = acceptableDistractorScore(difficulty)
+  let candidateSeed = seed >>> 0
+  let best = generatePlayableRawQuestion(skill, difficulty, candidateSeed)
+  let bestAssessment = assessDistractorQuality(best)
 
-  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const assessment = assessDistractorQuality(question)
-    if (acceptableDistractorScore(assessment, difficulty)) return question
-    currentSeed = (currentSeed + 2654435761) >>> 0
-    question = generateRawCurriculumQuestion(skill, difficulty, currentSeed)
+  if (bestAssessment.score <= maxScore) return best
+
+  const retries = difficulty >= 4 ? 12 : difficulty >= 2 ? 8 : 4
+  for (let attempt = 1; attempt < retries; attempt += 1) {
+    candidateSeed = (candidateSeed + 2654435761) >>> 0
+    const next = generatePlayableRawQuestion(skill, difficulty, candidateSeed)
+    const assessment = assessDistractorQuality(next)
+
+    if (assessment.score < bestAssessment.score) {
+      best = next
+      bestAssessment = assessment
+    }
+    if (assessment.score <= maxScore) return next
   }
 
-  return question
+  return best
 }
