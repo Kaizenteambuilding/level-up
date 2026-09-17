@@ -54,6 +54,9 @@ jobs:
       - name: Audit M15S04 Laplace recurrence
         run: node scripts/audit-m15-laplace-recurrence.cjs
 
+      - name: Audit M15S02 event recurrence
+        run: node scripts/audit-m15-events-recurrence.cjs
+
       - name: Audit playability blockers
         run: node scripts/audit-playability-blockers.cjs
 
