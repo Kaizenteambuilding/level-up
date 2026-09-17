@@ -14,19 +14,36 @@ function rotate<T>(items: T[], shift: number) {
   return items.slice(offset).concat(items.slice(0, offset))
 }
 
+function distinctDistractors(answer: string, distractors: [string, string, string]): [string, string, string] {
+  const selected: string[] = []
+  const seen = new Set<string>([answer])
+  for (const distractor of distractors) {
+    if (seen.has(distractor)) continue
+    seen.add(distractor)
+    selected.push(distractor)
+  }
+  const fallbacks = ['∅', 'Seguro', 'Imposible', 'Elemental', 'Compuesto', 'Espacio muestral', '{1}', '{2}', '{1, 2}', '{2, 3}', '{1, 3}']
+  for (const candidate of fallbacks) {
+    if (selected.length === 3) break
+    if (seen.has(candidate)) continue
+    seen.add(candidate)
+    selected.push(candidate)
+  }
+  if (selected.length !== 3) throw new Error(`Insufficient distinct M15S02 distractors for answer ${answer}`)
+  return selected as [string, string, string]
+}
+
 function finish(skill: SkillMeta, difficulty: number, seed: number, item: Item): GeneratedQuestion {
-  const raw = [item.answer, ...item.distractors]
-  const options = Array.from(new Set(raw))
-  if (options.length !== 4) throw new Error(`Duplicate M15S02 options for seed ${seed}: ${JSON.stringify(raw)}`)
-  const rotated = rotate(options, seed + difficulty)
+  const safeDistractors = distinctDistractors(item.answer, item.distractors)
+  const options = rotate([item.answer, ...safeDistractors], seed + difficulty)
   return {
     skillId: skill.id,
     label: skill.name,
     difficulty,
     seed,
     prompt: item.prompt,
-    options: rotated,
-    answerIndex: rotated.indexOf(item.answer),
+    options,
+    answerIndex: options.indexOf(item.answer),
     solution: item.solution,
     tags: [skill.generator_key, 'math', 'events_content_depth'],
   }
