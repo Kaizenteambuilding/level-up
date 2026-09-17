@@ -60,6 +60,9 @@ jobs:
       - name: Audit M15S01 random experiment recurrence
         run: node scripts/audit-m15-random-experiments-recurrence.cjs
 
+      - name: Audit M04S01 integer recurrence
+        run: node scripts/audit-m04-integer-recurrence.cjs
+
       - name: Audit playability blockers
         run: node scripts/audit-playability-blockers.cjs
 

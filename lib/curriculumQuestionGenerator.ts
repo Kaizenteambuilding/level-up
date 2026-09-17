@@ -35,6 +35,7 @@ import { generateMathPrimeDepthVariant } from './mathPrimeDepthVariants'
 import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperationsDepthVariants'
 import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
 import { generateMathRecurrenceHotspotDepth } from './mathRecurrenceHotspotDepth'
+import { generateMathIntegerInterpretationDepth } from './mathIntegerInterpretationDepth'
 import { generateMathRandomExperimentsDepth } from './mathRandomExperimentsDepth'
 import { generateMathEventsContentDepth } from './mathEventsContentDepth'
 import { generateMathLaplaceContentDepth } from './mathLaplaceContentDepth'
@@ -66,6 +67,9 @@ function generateRawCurriculumQuestion(
 
   const recurrenceHotspotDepth = generateMathRecurrenceHotspotDepth(skill, difficulty, seed)
   if (recurrenceHotspotDepth) return recurrenceHotspotDepth
+
+  const integerInterpretationDepth = generateMathIntegerInterpretationDepth(skill, difficulty, seed)
+  if (integerInterpretationDepth) return integerInterpretationDepth
 
   const randomExperimentsDepth = generateMathRandomExperimentsDepth(skill, difficulty, seed)
   if (randomExperimentsDepth) return randomExperimentsDepth
