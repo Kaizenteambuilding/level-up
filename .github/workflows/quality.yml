@@ -63,6 +63,9 @@ jobs:
       - name: Audit M04S01 integer recurrence
         run: node scripts/audit-m04-integer-recurrence.cjs
 
+      - name: Audit M13S03 graph recurrence
+        run: node scripts/audit-m13-graph-recurrence.cjs
+
       - name: Audit playability blockers
         run: node scripts/audit-playability-blockers.cjs
 
