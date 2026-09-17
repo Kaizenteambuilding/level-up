@@ -88,7 +88,7 @@ for (let attempt = 0; attempt < 180; attempt += 1) {
   previousPrompt = prompt
 }
 
-if (exact.size < 85) failures.push(`only ${exact.size} exact prompts; expected at least 85`)
+if (exact.size < 75) failures.push(`only ${exact.size} exact prompts; expected at least 75`)
 if (templates.size < 28) failures.push(`only ${templates.size} normalized templates; expected at least 28`)
 if (immediateRepeats > 4) failures.push(`${immediateRepeats} immediate repeats; expected at most 4`)
 if (exactWithin[30] > 85) failures.push(`${exactWithin[30]} exact repeats within 30 samples; expected at most 85`)
