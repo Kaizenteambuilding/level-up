@@ -14,12 +14,18 @@ function rotate<T>(items: T[], shift: number) { const n=((shift%items.length)+it
 export function generateMathStatsVariableDepth(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion | null {
   if (skill.id !== 'M14S02') return null
   const n = seed >>> 0
-  const family = n % 12
+  // Keep one in four seeds on established material for spaced review.
+  if ((n & 3) === 3) return null
+
+  const family = (n >>> 2) % 22
   const discrete = pick(DISCRETE,n)
   const continuous = pick(CONTINUOUS,n,2)
   const nominal = pick(NOMINAL,n,4)
   const ordinal = pick(ORDINAL,n,6)
   const setting = pick(SETTINGS,n,1)
+  const otherSetting = pick(SETTINGS,n,5)
+  const count = 2 + ((n >>> 8) % 18)
+  const code = 100 + ((n >>> 12) % 900)
   let prompt = ''
   let answer = ''
   let distractors: [string,string,string]
@@ -29,15 +35,27 @@ export function generateMathStatsVariableDepth(skill: SkillMeta, difficulty: num
   else if (family === 1) { prompt=`En ${setting}, se cuenta el número de ${discrete}. ¿Qué tipo de variable resulta?`; answer='Cuantitativa discreta'; distractors=['Cualitativa nominal','Cuantitativa continua','Cualitativa ordinal']; solution='Un conteo toma valores separados y normalmente enteros.' }
   else if (family === 2) { prompt=`En ${setting}, se mide ${continuous} con decimales. ¿Cómo se clasifica?`; answer='Cuantitativa continua'; distractors=['Cuantitativa discreta','Cualitativa nominal','Cualitativa ordinal']; solution='Una medición puede tomar numerosos valores dentro de un intervalo.' }
   else if (family === 3) { prompt=`Una encuesta de ${setting} registra ${ordinal} como bajo, medio o alto. ¿Qué variable es?`; answer='Cualitativa ordinal'; distractors=['Cualitativa nominal','Cuantitativa discreta','Cuantitativa continua']; solution='Las categorías tienen un orden natural, pero no son una medida numérica.' }
-  else if (family === 4) { const code=100+(n%900); prompt=`En ${setting}, el código ${code} identifica a una persona. ¿Por qué el código no es una variable cuantitativa?`; answer='Porque el número funciona como etiqueta'; distractors=['Porque tiene tres cifras','Porque todo número es continuo','Porque no puede repetirse']; solution='El valor identifica, pero no representa una cantidad sobre la que tenga sentido operar.' }
+  else if (family === 4) { prompt=`En ${setting}, el código ${code} identifica a una persona. ¿Por qué el código no es una variable cuantitativa?`; answer='Porque el número funciona como etiqueta'; distractors=['Porque tiene tres cifras','Porque todo número es continuo','Porque no puede repetirse']; solution='El valor identifica, pero no representa una cantidad sobre la que tenga sentido operar.' }
   else if (family === 5) { prompt=`Se redondea ${continuous} al entero más cercano en ${setting}. ¿Qué ocurre con su naturaleza?`; answer='Sigue siendo continua'; distractors=['Pasa a ser cualitativa','Pasa a ser discreta por naturaleza','Deja de ser una variable']; solution='El redondeo cambia el registro, no la magnitud subyacente.' }
   else if (family === 6) { prompt=`Para estudiar ${nominal} en ${setting}, ¿tiene sentido calcular la media de las categorías?`; answer='No, porque no representan cantidades'; distractors=['Sí, siempre','Sí, si hay muchas respuestas','Sí, si se ordenan alfabéticamente']; solution='La media requiere valores cuantitativos con significado aritmético.' }
-  else if (family === 7) { prompt=`Para “${discrete}” en ${setting}, ¿tendría sentido observar 2,37 unidades individuales?`; answer='No, es un conteo discreto'; distractors=['Sí, porque toda variable numérica es continua','Sí, cualquier decimal vale','No, porque es cualitativa']; solution='Los conteos de unidades indivisibles toman valores separados.' }
+  else if (family === 7) { prompt=`Para “${discrete}” en ${setting}, ¿tendría sentido observar ${count},37 unidades individuales?`; answer='No, es un conteo discreto'; distractors=['Sí, porque toda variable numérica es continua','Sí, cualquier decimal vale','No, porque es cualitativa']; solution='Los conteos de unidades indivisibles toman valores separados.' }
   else if (family === 8) { prompt=`Una balanza o cronómetro mejora su precisión al medir ${continuous} en ${setting}. ¿Qué sugiere esto?`; answer='Que la variable puede considerarse continua'; distractors=['Que solo puede tomar enteros','Que es nominal','Que es una frecuencia']; solution='La posibilidad de medir con precisión creciente es propia de magnitudes continuas.' }
   else if (family === 9) { prompt=`En ${setting}, se ordena ${ordinal} de menor a mayor. ¿Qué propiedad estadística se está usando?`; answer='El orden entre categorías'; distractors=['Una distancia numérica exacta entre categorías','Una media aritmética natural','Una frecuencia acumulada obligatoria']; solution='Las variables ordinales permiten ordenar categorías sin asumir distancias cuantitativas iguales.' }
   else if (family === 10) { prompt=`Compara “${nominal}” y “${continuous}” en ${setting}. ¿Cuál es cuantitativa?`; answer=continuous; distractors=[nominal,ordinal,discrete]; solution=`${continuous} se mide como cantidad; ${nominal} describe una categoría.` }
-  else { prompt=`Compara “${discrete}” y “${continuous}” en ${setting}. ¿Cuál suele proceder de un conteo?`; answer=discrete; distractors=[continuous,nominal,ordinal]; solution=`${discrete} toma valores contables separados, mientras ${continuous} se mide sobre un continuo.` }
+  else if (family === 11) { prompt=`Compara “${discrete}” y “${continuous}” en ${setting}. ¿Cuál suele proceder de un conteo?`; answer=discrete; distractors=[continuous,nominal,ordinal]; solution=`${discrete} toma valores contables separados, mientras ${continuous} se mide sobre un continuo.` }
+  else if (family === 12) { prompt=`En ${setting} se registra “sí/no” para una pregunta. ¿Qué tipo de variable es?`; answer='Cualitativa nominal dicotómica'; distractors=['Cuantitativa continua','Cuantitativa discreta','Cualitativa ordinal necesariamente']; solution='Sí y no son dos categorías sin magnitud ni orden cuantitativo.' }
+  else if (family === 13) { prompt=`En ${setting}, ${ordinal} se codifica como 1, 2 y 3. ¿Qué sigue siendo la variable conceptualmente?`; answer='Cualitativa ordinal'; distractors=['Cuantitativa discreta por usar números','Cuantitativa continua','Cualitativa nominal sin orden']; solution='Los números pueden actuar como códigos de categorías ordenadas sin convertirse en cantidades.' }
+  else if (family === 14) { prompt=`En ${setting} se registra la edad exacta con años, meses y días. ¿Qué clasificación es más apropiada?`; answer='Cuantitativa continua'; distractors=['Cualitativa ordinal','Cuantitativa discreta necesariamente','Cualitativa nominal']; solution='La edad es una magnitud temporal que puede medirse con precisión creciente.' }
+  else if (family === 15) { prompt=`En ${setting} se registra la edad solo como número de años cumplidos. ¿Qué describe mejor el dato registrado?`; answer='Un registro discreto de una magnitud subyacente continua'; distractors=['Una variable nominal','Una variable cualitativa ordinal','Una frecuencia relativa']; solution='La edad evoluciona continuamente, aunque el registro en años cumplidos tome valores enteros.' }
+  else if (family === 16) { prompt=`En ${setting} se anotan dorsales 4, 7 y 12. ¿Tiene sentido decir que el dorsal 12 es “tres veces” el dorsal 4 en la característica medida?`; answer='No, los dorsales funcionan como etiquetas'; distractors=['Sí, siempre que sean números','Sí, porque 12/4=3','No, porque 12 es continuo']; solution='Un identificador numérico no representa una cantidad medible.' }
+  else if (family === 17) { prompt=`En ${setting}, ¿qué ejemplo representa mejor una variable cuantitativa discreta?`; answer=`Número de ${discrete}`; distractors=[continuous,nominal,ordinal]; solution='Un conteo de unidades toma valores separados.' }
+  else if (family === 18) { prompt=`En ${setting}, ¿qué ejemplo representa mejor una variable cuantitativa continua?`; answer=continuous; distractors=[discrete,nominal,ordinal]; solution='Una medición puede tomar valores dentro de intervalos.' }
+  else if (family === 19) { prompt=`En ${otherSetting}, ¿qué ejemplo representa mejor una variable cualitativa ordinal?`; answer=ordinal; distractors=[nominal,discrete,continuous]; solution='Sus categorías admiten un orden natural.' }
+  else if (family === 20) { prompt=`En ${otherSetting}, ¿qué ejemplo representa mejor una variable cualitativa nominal?`; answer=nominal; distractors=[ordinal,discrete,continuous]; solution='Describe categorías sin orden necesario.' }
+  else { prompt=`Dos estudios registran “${continuous}” y “${nominal}”. ¿Qué diferencia esencial hay entre ambas variables?`; answer='La primera expresa una medida; la segunda una categoría'; distractors=['Ambas son necesariamente continuas','Ambas son etiquetas numéricas','La primera es siempre ordinal y la segunda discreta']; solution='Las variables cuantitativas expresan cantidades; las cualitativas describen categorías.' }
 
-  const options=rotate([answer,...distractors],n+difficulty)
-  return { skillId:skill.id,label:skill.name,difficulty,seed,prompt,options,answerIndex:options.indexOf(answer),solution,tags:[skill.generator_key,'math','variables_course_depth'] }
+  const raw=[answer,...distractors]
+  if(new Set(raw).size!==4) return null
+  const options=rotate(raw,n+difficulty)
+  return { skillId:skill.id,label:skill.name,difficulty,seed,prompt,options,answerIndex:options.indexOf(answer),solution,tags:[skill.generator_key,'math','variables_course_depth_v2'] }
 }
