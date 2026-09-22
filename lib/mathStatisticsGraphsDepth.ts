@@ -79,7 +79,7 @@ function graphQuestion(seed: number): Item {
   if (family === 6) return {
     prompt: `Un gráfico de sectores representa ${part} de ${total} casos. Aproximadamente, ¿qué ángulo debería ocupar ese sector?`,
     answer: `${angle}°`,
-    distractors: [`${part}°`, `${total}°`, `${Math.max(1, 360 - angle)}°`],
+    distractors: [`${(angle + 30) % 360}°`, `${(angle + 60) % 360}°`, `${(angle + 90) % 360}°`],
     solution: 'El ángulo se obtiene multiplicando la proporción por 360°.',
   }
   if (family === 7) return {
