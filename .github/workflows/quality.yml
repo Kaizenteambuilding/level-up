@@ -57,6 +57,9 @@ jobs:
       - name: Audit M15S02 event recurrence
         run: node scripts/audit-m15-events-recurrence.cjs
 
+      - name: Audit M15S03 favorable and possible recurrence
+        run: node scripts/audit-m15-favorable-recurrence.cjs
+
       - name: Audit M15S01 random experiment recurrence
         run: node scripts/audit-m15-random-experiments-recurrence.cjs
 
