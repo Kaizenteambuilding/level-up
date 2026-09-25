@@ -173,14 +173,7 @@ export default function SpanishReadingSession() {
         seed = (seed + 2654435761) >>> 0
       }
     }
-    if (!generated) {
-      // Course-long fallback: recent-history is a preference, never a stop condition.
-      // After the fresh pool is exhausted, revisit a valid skill with a seed that keeps
-      // numeric/contextual generators moving while allowing deliberate spaced review.
-      const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
-      const fallbackSeed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
-      generated = generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
-    }
+    if (!generated) { setError('No quedan retos nuevos disponibles sin repetir contenido reciente.'); return }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated)
     setAnswered(false)
