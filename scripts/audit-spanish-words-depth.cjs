@@ -31,7 +31,8 @@ if (totalCases < 100) throw new Error(`Expected at least 100 authored grammar/vo
 if (!generated.includes('const PROMPT_FRAMES = [') || !generated.includes('spanishWordsVariantCount')) throw new Error('Variant framing/count helpers missing')
 if (!session.includes("import { generateSpanishWordsVariant } from '@/lib/spanishWordsGenerated'")) throw new Error('Spanish Words session is not wired to the course-depth bank')
 if (!session.includes('const courseQuestion = generateSpanishWordsVariant(candidate, difficulty, seed)')) throw new Error('Course-depth questions are not prioritized')
-if (!session.includes('generated = generateSpanishWordsVariant(fallbackSkill')) throw new Error('Fallback does not keep course-depth content available')
+if (session.includes('generated = generateSpanishWordsVariant(fallbackSkill')) throw new Error('Repeat-permitting fallback must not bypass recent-history protection')
+if (!session.includes("No quedan retos nuevos disponibles sin repetir contenido reciente.")) throw new Error('Spanish Words must fail closed when fresh content is exhausted')
 if (session.includes('No se encontró') && session.includes('sin repetir')) throw new Error('Novelty must not be a hard blocker')
 
 console.log(`Spanish words depth OK: ${totalCases} authored cases, ${totalCases * 4} prompt formulations across 8 skills.`)
