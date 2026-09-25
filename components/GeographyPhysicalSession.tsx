@@ -18,7 +18,7 @@ type SkillState = { skill_id:string; mastery:number; confidence:number; difficul
 type OpenResult = { data:unknown; error:{ message?:string }|null }
 async function timed<T>(value:PromiseLike<T>,label:string):Promise<T>{let timer:ReturnType<typeof setTimeout>|undefined;try{return await Promise.race([Promise.resolve(value),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error(`${label} agotó el tiempo de espera`)),TIMEOUT)})])}finally{if(timer)clearTimeout(timer)}}
 function hash(value:string){let h=2166136261;for(let i=0;i<value.length;i+=1){h^=value.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
-const PROMPT_FRAMES = ['analiza el mapa o la situación:', 'aplica tus conocimientos de geografía:', 'reto geográfico:']
+const PROMPT_FRAMES = ['analiza el mapa o la situacion:', 'aplica tus conocimientos de geografia:', 'reto geografico:']
 function template(value:string){let normalized=value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\d+(?:[.,]\d+)?/g,'#').replace(/\s+/g,' ').trim();for(const frame of PROMPT_FRAMES){if(normalized.startsWith(frame))normalized=normalized.slice(frame.length).trim()}return normalized}
 function message(error:unknown,fallback:string){return error instanceof Error&&error.message?`${fallback} ${error.message}.`:fallback}
 
