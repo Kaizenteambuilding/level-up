@@ -2,7 +2,7 @@ const fs=require('node:fs')
 const source=fs.readFileSync('components/GeographyPhysicalSession.tsx','utf8')
 const bank=fs.readFileSync('lib/geographyLongTermVariants.ts','utf8')
 const failures=[]
-if(!source.includes("const PROMPT_FRAMES = ['analiza el mapa o la situación:', 'aplica tus conocimientos de geografía:', 'reto geográfico:']")) failures.push('semantic frame stripping missing')
+if(!source.includes("const PROMPT_FRAMES = ['analiza el mapa o la situacion:', 'aplica tus conocimientos de geografia:', 'reto geografico:']")) failures.push('semantic frame stripping missing')
 if(!source.includes("normalize('NFD').replace(/[\\u0300-\\u036f]/g,''")) failures.push('accent normalization missing')
 if(source.includes("fallbackSeed=(base+Math.imul(recentTemplates.current.length+index+1,0x27d4eb2d))")) failures.push('repeat-permitting fallback still present')
 if(!source.includes("No quedan retos nuevos disponibles sin repetir contenido reciente.")) failures.push('fail-closed behavior missing')
