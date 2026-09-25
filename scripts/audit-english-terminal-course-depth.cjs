@@ -39,7 +39,8 @@ for(const id of ids){
 const session=fs.readFileSync('components/EnglishTerminalSession.tsx','utf8')
 if(!session.includes("import { generateEnglishTerminalCourseDepth } from '@/lib/englishTerminalCourseDepth'"))throw new Error('English Terminal is not wired to the course-depth bank')
 if(!session.includes('const courseQuestion = generateEnglishTerminalCourseDepth(candidate, difficulty, seed)'))throw new Error('English Terminal does not prioritize course-depth questions')
-if(!session.includes('generated = generateEnglishTerminalCourseDepth(fallbackSkill'))throw new Error('English Terminal fallback does not retain course-depth content')
-if(/No se encontró un reto de Inglés nuevo sin repetir preguntas recientes/i.test(session))throw new Error('English Terminal can block on novelty again')
+if(session.includes('generated = generateEnglishTerminalCourseDepth(fallbackSkill'))throw new Error('English Terminal repeat fallback must not bypass recent-history protection')
+if(!session.includes('No quedan retos nuevos disponibles sin repetir contenido reciente.'))throw new Error('English Terminal must fail closed when fresh content is exhausted')
+
 
 console.log(JSON.stringify({skills:ids.length,totalExactAcrossSkills:totalExact,minimumExactPrompts:minExact,minimumNormalizedPrompts:minNormalized,stats},null,2))
