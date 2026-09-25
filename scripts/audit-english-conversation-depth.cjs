@@ -36,7 +36,8 @@ for (const skillId of expected) {
 const session = fs.readFileSync('components/EnglishConversationSession.tsx', 'utf8')
 if (!session.includes("import { generateEnglishConversationVariant } from '@/lib/englishConversationGenerated'")) throw new Error('Conversation session is not wired to the course-depth generator')
 if (!session.includes('const courseQuestion = generateEnglishConversationVariant(candidate, difficulty, seed)')) throw new Error('Conversation session does not prioritize course-depth questions')
-if (!session.includes('generated = generateEnglishConversationVariant(fallbackSkill')) throw new Error('Conversation fallback does not retain course-depth content')
-if (session.includes('No se encontró') && session.includes('sin repetir')) throw new Error('Conversation novelty must never be a hard blocker')
+if (session.includes('generated = generateEnglishConversationVariant(fallbackSkill')) throw new Error('Conversation repeat fallback must not bypass recent-history protection')
+if (!session.includes("No quedan retos nuevos disponibles sin repetir contenido reciente.")) throw new Error('English Conversation must fail closed when fresh content is exhausted')
+
 
 console.log(`English conversation depth OK (exact/normalized prompts): ${stats.join(', ')}`)
