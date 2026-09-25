@@ -123,6 +123,9 @@ jobs:
       - name: Audit geography semantic anti-repeat
         run: node scripts/audit-geography-semantic-antirepeat.cjs
 
+      - name: Audit cross-session anti-repeat
+        run: node scripts/audit-session-antirepeat.cjs
+
       - name: Audit history course depth
         run: node scripts/audit-history-course-depth.cjs
 

@@ -69,14 +69,7 @@ export default function EnglishTerminalSession() {
     const candidates = [primarySkill, ...alternatives], baseSeed = (seedBase + Math.imul(index + 1, 0x9e3779b9)) >>> 0
     let generated: GeneratedQuestion | null = null
     for (let candidateIndex = 0; candidateIndex < candidates.length && !generated; candidateIndex += 1) { const candidate = candidates[candidateIndex], difficulty = states[candidate.id]?.difficulty ?? 1; let seed = (baseSeed + Math.imul(candidateIndex, 0x85ebca6b)) >>> 0; for (let attempt = 0; attempt < 64; attempt += 1) { const courseQuestion = generateEnglishTerminalCourseDepth(candidate, difficulty, seed), curriculumQuestion = generateCurriculumQuestion(candidate, difficulty, seed); for (const nextQuestion of [courseQuestion, curriculumQuestion]) { if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt))) { generated = nextQuestion; break } } if (generated) break; seed = (seed + 2654435761) >>> 0 } }
-    if (!generated) {
-      // Course-long fallback: recent-history is a preference, never a stop condition.
-      // After the fresh pool is exhausted, revisit a valid skill with a seed that keeps
-      // numeric/contextual generators moving while allowing deliberate spaced review.
-      const fallbackSkill = candidates[(index + recentTemplates.current.length) % candidates.length]
-      const fallbackSeed = (baseSeed + Math.imul(recentTemplates.current.length + index + 1, 0x27d4eb2d)) >>> 0
-      generated = generateEnglishTerminalCourseDepth(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed) ?? generateCurriculumQuestion(fallbackSkill, states[fallbackSkill.id]?.difficulty ?? 1, fallbackSeed)
-    }
+    if (!generated) { setError('No quedan retos nuevos disponibles sin repetir contenido reciente.'); return }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW); setQuestion(generated); setAnswered(false); setSelectedOption(null); setFeedback(''); questionStarted.current = Date.now()
   }, [loading, error, question, sessionId, skills, states, focusUnitIds, allUnitIds, seedBase, index])
 
