@@ -4,8 +4,18 @@ type SkillMeta = { id: string; name: string; generator_key: string }
 type Item = { prompt:string; answer:string; distractors:[string,string,string]; solution:string }
 
 function rotate<T>(items:T[], shift:number){ const n=((shift%items.length)+items.length)%items.length; return items.slice(n).concat(items.slice(0,n)) }
+function distinctDistractors(answer:string, distractors:string[], seed:number):[string,string,string]{
+  const out:string[]=[]
+  for(const value of [...distractors, `${Number(answer)+1}`, `${Number(answer)+2}`, `${Number(answer)+3}`, 'Ninguna de las anteriores']){
+    if(value!==answer && !out.includes(value)) out.push(value)
+    if(out.length===3) break
+  }
+  if(out.length!==3) throw new Error(`Could not build distinct M15S03 distractors for seed ${seed}`)
+  return out as [string,string,string]
+}
 function finish(skill:SkillMeta,difficulty:number,seed:number,item:Item):GeneratedQuestion{
-  const raw=[item.answer,...item.distractors]
+  const distractors=distinctDistractors(item.answer,item.distractors,seed)
+  const raw=[item.answer,...distractors]
   if(new Set(raw).size!==4) throw new Error(`Duplicate M15S03 options for seed ${seed}`)
   const options=rotate(raw,seed+difficulty)
   return {skillId:skill.id,label:skill.name,difficulty,seed,prompt:item.prompt,options,answerIndex:options.indexOf(item.answer),solution:item.solution,tags:[skill.generator_key,'math','favorable_possible_depth_v2']}
