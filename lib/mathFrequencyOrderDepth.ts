@@ -31,10 +31,11 @@ function q(
 }
 
 function frequency(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const family = (seed >>> 1) % 12
-  const a = 4 + (seed % 9)
-  const b = 3 + ((seed >>> 4) % 8)
-  const c = 2 + ((seed >>> 8) % 7)
+  const family = (seed >>> 2) % 18
+  const a = 4 + ((seed >>> 1) % 9)
+  const b = 3 + ((seed >>> 5) % 8)
+  const c = 2 + ((seed >>> 9) % 7)
+  const context = ['una clase','un club','una biblioteca','un torneo'][(seed >>> 12) % 4]
   const total = a + b + c
 
   if (family === 0) return q(skill, difficulty, seed,
@@ -95,10 +96,16 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     'Hay que revisar datos o redondeos porque debería sumar aproximadamente 1',
     ['La tabla es necesariamente correcta', 'Significa que faltan exactamente 7 datos', 'Las frecuencias relativas no necesitan guardar relación con 1'],
     'Una desviación apreciable respecto de 1 exige revisar el cálculo o el redondeo.')
-  return q(skill, difficulty, seed,
+  if (family === 11) return q(skill, difficulty, seed,
     `A tiene frecuencia ${a} y B frecuencia ${b}. ¿Qué expresa ${Math.abs(a - b)}?`,
     'La diferencia entre sus frecuencias absolutas', ['La frecuencia relativa de A', 'El tamaño total', 'La media de la tabla'],
     'Restar los conteos permite comparar cuántas observaciones más tiene una categoría que otra.')
+  if (family === 12) return q(skill,difficulty,seed,`En ${context}, una categoría aparece ${a} veces de ${total}. ¿Qué dato falta para construir su frecuencia relativa?`,'Ninguno: basta dividir su frecuencia entre el total',['La media de los datos','El valor máximo','El orden alfabético'],'La frecuencia relativa se obtiene como frecuencia absoluta dividida por el total.')
+  if (family === 13) return q(skill,difficulty,seed,`En ${context}, A aparece ${a} veces y B ${b}. Si se añaden ${c} casos a B, ¿cuál será su nueva frecuencia absoluta?`,String(b+c),[String(b),String(c),String(a+b+c)],`La nueva frecuencia de B es ${b}+${c}=${b+c}.`)
+  if (family === 14) return q(skill,difficulty,seed,`Una categoría tiene frecuencia relativa ${a}/${total}. ¿Qué representa el denominador ${total}?`,'El número total de observaciones',[`Los ${a} casos de esa categoría`,'El número de categorías','La frecuencia acumulada anterior'],'El denominador de una frecuencia relativa es el tamaño total de la muestra.')
+  if (family === 15) return q(skill,difficulty,seed,`En ${context}, las frecuencias de A, B y C son ${a}, ${b} y ${c}. ¿Cuál es la frecuencia acumulada hasta B?`,String(a+b),[String(b),String(total),String(a+c)],`Se acumulan A y B: ${a}+${b}=${a+b}.`)
+  if (family === 16) return q(skill,difficulty,seed,'¿Qué diferencia esencial hay entre frecuencia absoluta y relativa?','La absoluta cuenta casos; la relativa expresa la parte respecto del total',['La absoluta siempre es un porcentaje','La relativa siempre es un número entero','Son dos nombres para el mismo valor'],'Una cuenta observaciones y la otra las compara con el total.')
+  return q(skill,difficulty,seed,`En ${context}, A representa ${a} de ${total} casos y B representa ${b}. ¿Qué categoría tiene mayor frecuencia relativa?`,a>b?'A':'B',[a>b?'B':'A','Tienen necesariamente la misma','No puede compararse'],`Como comparten el mismo total, basta comparar ${a} y ${b}.`)
 }
 
 function uniqueWrongExpressions(
@@ -219,10 +226,13 @@ export function generateMathFrequencyOrderDepth(
   seed: number,
 ): GeneratedQuestion | null {
   const normalized = seed >>> 0
-  // Preserve the already-diverse generators on half the seeds and interleave
-  // these additional families on the other half.
+  if (skill.id === 'M14S03') {
+    // Keep one in four seeds on established material for spaced review.
+    if ((normalized & 3) === 3) return null
+    return frequency(skill, difficulty, normalized)
+  }
+  // M01S05 keeps its established half-seed interleave.
   if ((normalized & 1) === 1) return null
-  if (skill.id === 'M14S03') return frequency(skill, difficulty, normalized)
   if (skill.id === 'M01S05') return order(skill, difficulty, normalized)
   return null
 }
