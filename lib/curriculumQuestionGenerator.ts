@@ -34,6 +34,7 @@ import { generateMathGeometryDepthVariant } from './mathGeometryDepthVariants'
 import { generateMathPrimeDepthVariant } from './mathPrimeDepthVariants'
 import { generateMathNaturalOperationsDepthVariant } from './mathNaturalOperationsDepthVariants'
 import { generateMathFrequencyOrderDepth } from './mathFrequencyOrderDepth'
+import { generateMathFavorablePossibleDepth } from './mathFavorablePossibleDepth'
 import { generateMathRecurrenceHotspotDepth } from './mathRecurrenceHotspotDepth'
 import { generateMathIntegerInterpretationDepth } from './mathIntegerInterpretationDepth'
 import { generateMathGraphRepresentationDepth } from './mathGraphRepresentationDepth'
@@ -66,6 +67,9 @@ function generateRawCurriculumQuestion(
 
   const powerNotationDepth = generateMathPowerNotationDepth(skill, difficulty, seed)
   if (powerNotationDepth) return powerNotationDepth
+
+  const favorablePossibleDepth = generateMathFavorablePossibleDepth(skill, difficulty, seed)
+  if (favorablePossibleDepth) return favorablePossibleDepth
 
   const recurrenceHotspotDepth = generateMathRecurrenceHotspotDepth(skill, difficulty, seed)
   if (recurrenceHotspotDepth) return recurrenceHotspotDepth
