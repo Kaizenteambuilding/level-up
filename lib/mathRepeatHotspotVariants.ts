@@ -52,26 +52,28 @@ function simplify(skill:SkillMeta,difficulty:number,seed:number) {
 
 function median(skill:SkillMeta,difficulty:number,seed:number) {
   const family = seed % 16
-  const a = 4 + (seed % 10)
+  const cycle = Math.floor(seed / 16)
+  const a = 4 + ((seed + cycle * 3) % 10)
+  const context = ['notas','tiempos','puntuaciones','mediciones'][(seed + cycle) % 4]
   const odd = [a,a+2,a+5,a+8,a+12]
   const even = [a,a+2,a+5,a+9,a+12,a+16]
   const medEven = (even[2]+even[3])/2
-  if (family===0) return q(skill,difficulty,seed,`¿Cuál es la mediana de ${odd.join(', ')}?`,String(odd[2]),[String(odd[1]),String(odd[3]),String(a+6)],'Con cinco datos ordenados, la mediana es el tercero.')
-  if (family===1) return q(skill,difficulty,seed,`¿Cuál es la mediana de ${even.join(', ')}?`,String(medEven).replace('.',','),[String(even[2]),String(even[3]),String(a+7)],'Con seis datos se promedian los dos centrales.')
-  if (family===2) return q(skill,difficulty,seed,'En 11 datos ordenados, ¿qué posición ocupa la mediana?','La 6.ª',['La 5.ª','La 7.ª','La 11.ª'],'Quedan cinco datos a cada lado de la sexta posición.')
-  if (family===3) return q(skill,difficulty,seed,'En 12 datos ordenados, ¿qué valores determinan la mediana?','El 6.º y el 7.º',['El 5.º y el 6.º','El 7.º y el 8.º','El 1.º y el 12.º'],'Con un número par se usan las dos posiciones centrales.')
+  if (family===0) return q(skill,difficulty,seed,`En una serie de ${context}, ¿cuál es la mediana de ${odd.join(', ')}?`,String(odd[2]),[String(odd[1]),String(odd[3]),String(a+6)],'Con cinco datos ordenados, la mediana es el tercero.')
+  if (family===1) return q(skill,difficulty,seed,`En una serie de ${context}, ¿cuál es la mediana de ${even.join(', ')}?`,String(medEven).replace('.',','),[String(even[2]),String(even[3]),String(a+7)],'Con seis datos se promedian los dos centrales.')
+  if (family===2) return q(skill,difficulty,seed,`En una serie de ${context} con 11 datos ordenados, ¿qué posición ocupa la mediana?`,'La 6.ª',['La 5.ª','La 7.ª','La 11.ª'],'Quedan cinco datos a cada lado de la sexta posición.')
+  if (family===3) return q(skill,difficulty,seed,`En una serie de ${context} con 12 datos ordenados, ¿qué valores determinan la mediana?`,'El 6.º y el 7.º',['El 5.º y el 6.º','El 7.º y el 8.º','El 1.º y el 12.º'],'Con un número par se usan las dos posiciones centrales.')
   if (family===4) return q(skill,difficulty,seed,`Si solo aumenta mucho el máximo de ${odd.join(', ')}, ¿qué ocurre con la mediana?`,'Permanece igual',['Aumenta igual que el máximo','Se convierte en la media','Desaparece'],'Cambiar un extremo no altera la posición central.')
   if (family===5) return q(skill,difficulty,seed,`Los datos son ${a}, ${a+3}, x, ${a+10}, ${a+14} y la mediana es ${a+6}. ¿Cuánto vale x?`,String(a+6),[String(a+3),String(a+10),String(a+7)],'Con cinco datos ordenados, el tercer valor es la mediana.')
-  if (family===6) return q(skill,difficulty,seed,'¿Por qué la mediana suele ser útil con ingresos muy desiguales?','Porque es resistente a valores extremos',['Porque siempre supera a la media','Porque usa el máximo','Porque no requiere ordenar'],'La posición central cambia poco ante extremos aislados.')
-  if (family===7) return q(skill,difficulty,seed,'¿Puede cambiar la mediana al añadir un dato nuevo?','Sí, porque cambian el número de datos y las posiciones centrales',['No, nunca','Solo cambia la media','Solo si el dato es cero'],'Añadir un dato puede desplazar las posiciones centrales.')
+  if (family===6) return q(skill,difficulty,seed,`¿Por qué la mediana suele ser útil al resumir ${context} con valores extremos?`,'Porque es resistente a valores extremos',['Porque siempre supera a la media','Porque usa el máximo','Porque no requiere ordenar'],'La posición central cambia poco ante extremos aislados.')
+  if (family===7) return q(skill,difficulty,seed,`En una serie de ${context}, ¿puede cambiar la mediana al añadir un dato nuevo?`,'Sí, porque cambian el número de datos y las posiciones centrales',['No, nunca','Solo cambia la media','Solo si el dato es cero'],'Añadir un dato puede desplazar las posiciones centrales.')
   if (family===8) return q(skill,difficulty,seed,`Dos conjuntos tienen mediana ${a+5}. ¿Pueden tener distinta media?`,'Sí',['No','Solo si tienen el mismo máximo','Solo si ambos tienen cinco datos'],'La mediana no determina los valores alejados del centro.')
   if (family===9) return q(skill,difficulty,seed,`Ordena primero ${a+12}, ${a}, ${a+8}, ${a+2}, ${a+5}. ¿Cuál queda en el centro?`,String(a+5),[String(a+2),String(a+8),String(a+12)],'Tras ordenar, el tercer valor es el central.')
-  if (family===10) return q(skill,difficulty,seed,'Una lista tiene 15 datos. ¿Cuántos quedan a cada lado de la mediana?','7',['6','8','14'],'La octava posición es central, con siete datos a cada lado.')
+  if (family===10) return q(skill,difficulty,seed,`Una lista de ${context} tiene 15 datos. ¿Cuántos quedan a cada lado de la mediana?`,'7',['6','8','14'],'La octava posición es central, con siete datos a cada lado.')
   if (family===11) return q(skill,difficulty,seed,`Si todos los valores de un conjunto aumentan en ${2+(seed%5)}, ¿qué ocurre con la mediana?`,'Aumenta en la misma cantidad',['No cambia','Se duplica siempre','Pasa a ser la media'],'Trasladar todos los datos desplaza también el valor central.')
-  if (family===12) return q(skill,difficulty,seed,'Si todos los valores se multiplican por 2, ¿qué ocurre con la mediana?','Se multiplica por 2',['No cambia','Se suma 2','Se divide entre 2'],'Una transformación multiplicativa positiva conserva el orden y escala la posición central.')
-  if (family===13) return q(skill,difficulty,seed,'¿Qué paso debe hacerse antes de localizar la mediana?','Ordenar los datos',['Sumarlos','Buscar la moda','Calcular el rango'],'La mediana depende de la posición, por eso hay que ordenar.')
+  if (family===12) return q(skill,difficulty,seed,`Si todos los valores de ${context} se multiplican por 2, ¿qué ocurre con la mediana?`,'Se multiplica por 2',['No cambia','Se suma 2','Se divide entre 2'],'Una transformación multiplicativa positiva conserva el orden y escala la posición central.')
+  if (family===13) return q(skill,difficulty,seed,`¿Qué paso debe hacerse antes de localizar la mediana de una serie de ${context}?`,'Ordenar los datos',['Sumarlos','Buscar la moda','Calcular el rango'],'La mediana depende de la posición, por eso hay que ordenar.')
   if (family===14) return q(skill,difficulty,seed,`Una lista ordenada tiene valores centrales ${a+4} y ${a+8}. ¿Cuál es su mediana?`,String(a+6),[String(a+4),String(a+8),String(a+12)],`La mediana es (${a+4}+${a+8})/2=${a+6}.`)
-  return q(skill,difficulty,seed,'Para comparar el centro de dos grupos con valores extremos muy diferentes, ¿qué medida suele ser especialmente robusta?','La mediana',['El máximo','La suma','El rango'],'La mediana resume la posición central y resiste mejor los extremos.')
+  return q(skill,difficulty,seed,`Para comparar el centro de dos grupos de ${context} con valores extremos muy diferentes, ¿qué medida suele ser especialmente robusta?`,'La mediana',['El máximo','La suma','El rango'],'La mediana resume la posición central y resiste mejor los extremos.')
 }
 
 export function generateMathRepeatHotspotVariant(skill:SkillMeta,difficulty:number,seed:number):GeneratedQuestion|null {
