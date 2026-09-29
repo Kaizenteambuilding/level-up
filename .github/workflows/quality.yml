@@ -75,6 +75,9 @@ jobs:
       - name: Audit M14S02 variable recurrence
         run: node scripts/audit-m14-variable-recurrence.cjs
 
+      - name: Audit M14S03 frequency recurrence
+        run: node scripts/audit-m14-frequency-recurrence.cjs
+
       - name: Audit playability blockers
         run: node scripts/audit-playability-blockers.cjs
 
