@@ -35,15 +35,16 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
   const a = 4 + ((seed >>> 1) % 9)
   const b = 3 + ((seed >>> 5) % 8)
   const c = 2 + ((seed >>> 9) % 7)
-  const context = ['una clase','un club','una biblioteca','un torneo'][(seed >>> 12) % 4]
+  const context = ['una clase','un club','una biblioteca','un torneo'][(seed >>> 1) % 4]
+  const item = ['libros','fichas','respuestas','visitas'][(seed >>> 3) % 4]
   const total = a + b + c
 
   if (family === 0) return q(skill, difficulty, seed,
-    `Una tabla registra A=${a}, B=${b} y C=${c}. ¿Cuál es el tamaño de la muestra?`,
+    `En ${context}, una tabla de ${item} registra A=${a}, B=${b} y C=${c}. ¿Cuál es el tamaño de la muestra?`,
     String(total), [String(a + b), String(a), String(total + 1)],
     `El total es ${a}+${b}+${c}=${total}.`)
   if (family === 1) return q(skill, difficulty, seed,
-    `En ${total} observaciones, la categoría A aparece ${a} veces. ¿Cuál es su frecuencia relativa?`,
+    `En ${context}, de ${total} ${item}, la categoría A aparece ${a} veces. ¿Cuál es su frecuencia relativa?`,
     `${a}/${total}`, [`${total}/${a}`, `${b}/${total}`, String(a)],
     'La frecuencia relativa es frecuencia absoluta dividida por el total.')
   if (family === 2) {
@@ -51,7 +52,7 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     const n = 40
     const count = pct * n / 100
     return q(skill, difficulty, seed,
-      `En una muestra de ${n} personas, una opción representa el ${pct} %. ¿Cuál es su frecuencia absoluta?`,
+      `En ${context}, una muestra de ${n} ${item} asigna el ${pct} % a una opción. ¿Cuál es su frecuencia absoluta?`,
       String(count), [String(pct), String(n - count), String(count + 5)],
       `${pct}% de ${n} es ${count}.`)
   }
@@ -60,44 +61,44 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     const f2 = a + b
     const f3 = total
     return q(skill, difficulty, seed,
-      `Las frecuencias acumuladas son ${f1}, ${f2} y ${f3}. ¿Cuál es la frecuencia absoluta de la segunda categoría?`,
+      `En ${context}, las frecuencias acumuladas de ${item} son ${f1}, ${f2} y ${f3}. ¿Cuál es la frecuencia absoluta de la segunda categoría?`,
       String(b), [String(f2), String(a), String(c)],
       `La segunda frecuencia absoluta es ${f2}-${f1}=${b}.`)
   }
   if (family === 4) return q(skill, difficulty, seed,
-    `Dos grupos tienen tamaños ${total} y ${total * 2}. Para comparar la presencia de una categoría, ¿qué medida conviene usar?`,
+    `En ${context}, dos grupos de ${item} tienen tamaños ${total} y ${total * 2}. Para comparar una categoría, ¿qué medida conviene usar?`,
     'La frecuencia relativa', ['La frecuencia absoluta sin más', 'El total de ambos grupos', 'Solo la moda'],
     'La frecuencia relativa permite comparar proporciones entre grupos de tamaños distintos.')
   if (family === 5) return q(skill, difficulty, seed,
-    'Si todas las frecuencias absolutas de una tabla se duplican, ¿qué ocurre con las frecuencias relativas?',
+    `Si en ${context} todas las frecuencias absolutas de ${item} se duplican, ¿qué ocurre con las frecuencias relativas?`,
     'Permanecen iguales', ['También se duplican', 'Se reducen a la mitad', 'Todas pasan a valer 1'],
     'Numerador y total se multiplican por el mismo factor, por lo que la proporción no cambia.')
   if (family === 6) return q(skill, difficulty, seed,
-    `Una tabla tiene frecuencias ${a}, ${b}, ${c} y x, y un total de ${total + 6}. ¿Cuánto vale x?`,
+    `En ${context}, una tabla de ${item} tiene frecuencias ${a}, ${b}, ${c} y x, y total ${total + 6}. ¿Cuánto vale x?`,
     '6', ['5', '7', String(total)],
     `x=${total + 6}-(${a}+${b}+${c})=6.`)
   if (family === 7) return q(skill, difficulty, seed,
-    'La suma de las frecuencias relativas de todas las categorías debe ser aproximadamente…',
+    `En una tabla de ${item} de ${context}, la suma de todas las frecuencias relativas debe ser aproximadamente…`,
     '1', ['0', 'El número de categorías', 'La frecuencia máxima'],
     'Las frecuencias relativas representan partes del total y suman 1, salvo pequeños redondeos.')
   if (family === 8) {
     const pct = Math.round((a / total) * 100)
     return q(skill, difficulty, seed,
-      `Aparecen ${a} casos de A en un total de ${total}. Aproximadamente, ¿qué porcentaje representa?`,
+      `En ${context}, aparecen ${a} ${item} de A en un total de ${total}. Aproximadamente, ¿qué porcentaje representa?`,
       `${pct} %`, [`${a} %`, `${total} %`, `${Math.max(0, pct - 10)} %`],
       `${a}/${total} × 100 ≈ ${pct}%.`)
   }
   if (family === 9) return q(skill, difficulty, seed,
-    `En una tabla, A tiene frecuencia ${a + 5}, B ${b} y C ${c}. ¿Cuál es la categoría modal?`,
+    `En ${context}, A tiene ${a + 5} ${item}, B ${b} y C ${c}. ¿Cuál es la categoría modal?`,
     'A', ['B', 'C', 'No puede saberse'],
     'La categoría modal es la que tiene mayor frecuencia absoluta.')
   if (family === 10) return q(skill, difficulty, seed,
-    'Una tabla de frecuencias relativas suma 0,93. ¿Qué interpretación es más rigurosa?',
+    `Una tabla de ${item} de ${context} tiene frecuencias relativas que suman 0,93. ¿Qué interpretación es más rigurosa?`,
     'Hay que revisar datos o redondeos porque debería sumar aproximadamente 1',
     ['La tabla es necesariamente correcta', 'Significa que faltan exactamente 7 datos', 'Las frecuencias relativas no necesitan guardar relación con 1'],
     'Una desviación apreciable respecto de 1 exige revisar el cálculo o el redondeo.')
   if (family === 11) return q(skill, difficulty, seed,
-    `A tiene frecuencia ${a} y B frecuencia ${b}. ¿Qué expresa ${Math.abs(a - b)}?`,
+    `En ${context}, A tiene ${a} ${item} y B ${b}. ¿Qué expresa la diferencia ${Math.abs(a - b)}?`,
     'La diferencia entre sus frecuencias absolutas', ['La frecuencia relativa de A', 'El tamaño total', 'La media de la tabla'],
     'Restar los conteos permite comparar cuántas observaciones más tiene una categoría que otra.')
   if (family === 12) return q(skill,difficulty,seed,`En ${context}, una categoría aparece ${a} veces de ${total}. ¿Qué dato falta para construir su frecuencia relativa?`,'Ninguno: basta dividir su frecuencia entre el total',['La media de los datos','El valor máximo','El orden alfabético'],'La frecuencia relativa se obtiene como frecuencia absoluta dividida por el total.')
