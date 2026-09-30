@@ -54,7 +54,7 @@ for (const unit of curricula.SUBJECT_CURRICULA.english) {
 
 const terminalSource = fs.readFileSync('components/EnglishTerminalSession.tsx', 'utf8')
 for (const marker of [
-  'RECENT_PROMPT_WINDOW = 120',
+  'RECENT_PROMPT_WINDOW = 400',
   ".eq('player_id', id).like('skill_id', 'E%')",
   'recentTemplates.current.includes(template(nextQuestion.prompt))',
   'const candidates = [primarySkill, ...alternatives]',
