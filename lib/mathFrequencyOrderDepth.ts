@@ -46,7 +46,7 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     `El total es ${a}+${b}+${c}=${total}.`)
   if (family === 1) return q(skill, difficulty, seed,
     `En ${context}, de ${total} ${item}, la categoría A aparece ${a} veces. ¿Cuál es su frecuencia relativa?`,
-    `${a}/${total}`, [`${total}/${a}`, `${b}/${total}`, String(a)],
+    `${a}/${total}`, [`${total}/${a}`, `${Math.max(1, a - 1)}/${total}`, String(a)],
     'La frecuencia relativa es frecuencia absoluta dividida por el total.')
   if (family === 2) {
     const pct = 20 + 5 * (seed % 9)
@@ -54,7 +54,7 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     const count = pct * n / 100
     return q(skill, difficulty, seed,
       `En ${context}, una muestra de ${n} ${item} asigna el ${pct} % a una opción. ¿Cuál es su frecuencia absoluta?`,
-      String(count), [String(pct), String(n - count), String(count + 5)],
+      String(count), [String(count + 2), String(Math.max(0, count - 2)), String(n)],
       `${pct}% de ${n} es ${count}.`)
   }
   if (family === 3) {
@@ -63,7 +63,7 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     const f3 = total
     return q(skill, difficulty, seed,
       `En ${context}, las frecuencias acumuladas de ${item} son ${f1}, ${f2} y ${f3}. ¿Cuál es la frecuencia absoluta de la segunda categoría?`,
-      String(b), [String(f2), String(a), String(c)],
+      String(b), [String(b + 1), String(b + 2), String(Math.max(0, b - 1))],
       `La segunda frecuencia absoluta es ${f2}-${f1}=${b}.`)
   }
   if (family === 4) return q(skill, difficulty, seed,
@@ -86,13 +86,16 @@ function frequency(skill: SkillMeta, difficulty: number, seed: number): Generate
     const pct = Math.round((a / total) * 100)
     return q(skill, difficulty, seed,
       `En ${context}, aparecen ${a} ${item} de A en un total de ${total}. Aproximadamente, ¿qué porcentaje representa?`,
-      `${pct} %`, [`${a} %`, `${total} %`, `${Math.max(0, pct - 10)} %`],
+      `${pct} %`, [`${Math.max(0, pct - 10)} %`, `${Math.min(100, pct + 10)} %`, `${Math.max(0, pct - 5)} %`],
       `${a}/${total} × 100 ≈ ${pct}%.`)
   }
-  if (family === 9) return q(skill, difficulty, seed,
-    `En ${context}, A tiene ${a + 5} ${item}, B ${b} y C ${c}. ¿Cuál es la categoría modal?`,
-    'A', ['B', 'C', 'No puede saberse'],
-    'La categoría modal es la que tiene mayor frecuencia absoluta.')
+  if (family === 9) {
+    const modalA = Math.max(a, b, c) + 2
+    return q(skill, difficulty, seed,
+      `En ${context}, A tiene ${modalA} ${item}, B ${b} y C ${c}. ¿Cuál es la categoría modal?`,
+      'A', ['B', 'C', 'No puede saberse'],
+      `A tiene ${modalA}, más que B (${b}) y C (${c}); por eso es la categoría modal.`)
+  }
   if (family === 10) return q(skill, difficulty, seed,
     `Una tabla de ${item} de ${context} tiene frecuencias relativas que suman 0,93. ¿Qué interpretación es más rigurosa?`,
     'Hay que revisar datos o redondeos porque debería sumar aproximadamente 1',
