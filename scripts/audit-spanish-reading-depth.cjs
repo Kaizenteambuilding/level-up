@@ -14,12 +14,12 @@ const expectedSkills = ['L01S01','L01S02','L01S03','L01S04','L06S04']
 const failures = []
 let uniquePrompts = 0
 
-if (generated.spanishReadingGeneratedScenarioCount() < 60) failures.push(`only_${generated.spanishReadingGeneratedScenarioCount()}_scenarios`)
+if (generated.spanishReadingGeneratedScenarioCount() < 90) failures.push(`only_${generated.spanishReadingGeneratedScenarioCount()}_scenarios`)
 for (const skillId of expectedSkills) {
   if (!generated.spanishReadingGeneratedSkillIds().includes(skillId)) failures.push(`${skillId}:missing_skill`)
-  if (generated.spanishReadingGeneratedPromptCount(skillId) < 48) failures.push(`${skillId}:only_${generated.spanishReadingGeneratedPromptCount(skillId)}_possible_prompts`)
+  if (generated.spanishReadingGeneratedPromptCount(skillId) < 72) failures.push(`${skillId}:only_${generated.spanishReadingGeneratedPromptCount(skillId)}_possible_prompts`)
   const prompts = new Set()
-  for (let seed = 0; seed < 96; seed += 1) {
+  for (let seed = 0; seed < 144; seed += 1) {
     const skill = { id: skillId, name: skillId, generator_key: 'reading' }
     const question = generated.generateSpanishReadingGenerated(skill, 3, seed)
     if (!question) { failures.push(`${skillId}:missing_question`); continue }
@@ -29,7 +29,7 @@ for (const skillId of expectedSkills) {
     if (!question.solution?.trim()) failures.push(`${skillId}:missing_solution_seed_${seed}`)
   }
   uniquePrompts += prompts.size
-  if (prompts.size < 48) failures.push(`${skillId}:only_${prompts.size}_sampled_unique_prompts`)
+  if (prompts.size < 72) failures.push(`${skillId}:only_${prompts.size}_sampled_unique_prompts`)
 }
 
 const session = fs.readFileSync('components/SpanishReadingSession.tsx', 'utf8')
@@ -39,5 +39,5 @@ if (!session.includes('readingSignature(nextQuestion.prompt)')) failures.push('s
 if (!session.includes("normalize('NFD')")) failures.push('session:semantic_signature_not_accent_folded')
 if (!session.includes('READING_FRAME_MARKERS')) failures.push('session:semantic_signature_not_frame_aware')
 
-console.log(JSON.stringify({ scenarios: generated.spanishReadingGeneratedScenarioCount(), skills: expectedSkills.length, uniquePrompts, minimumPromptsPerSkill: 48, failures }, null, 2))
+console.log(JSON.stringify({ scenarios: generated.spanishReadingGeneratedScenarioCount(), skills: expectedSkills.length, uniquePrompts, minimumPromptsPerSkill: 72, failures }, null, 2))
 if (failures.length) process.exit(1)
