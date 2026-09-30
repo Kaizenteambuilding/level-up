@@ -8,7 +8,7 @@ import { generateCurriculumQuestion } from '@/lib/curriculumQuestionGenerator'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { userFacingError } from '@/lib/userFacingError'
 
-const SESSION_LENGTH=10, NETWORK_TIMEOUT_MS=12000, RECENT_PROMPT_WINDOW=120
+const SESSION_LENGTH=10, NETWORK_TIMEOUT_MS=12000, RECENT_PROMPT_WINDOW=400
 type MathMode='math_numbers'|'math_algebra'|'math_geometry_data'
 type Config={title:string;icon:string;detail:string;units:string[];world:string;core:string;mission:string}
 const CONFIG:Record<MathMode,Config>={math_numbers:{title:'Forja de números',icon:'🔢',detail:'Naturales, potencias, divisibilidad, enteros, decimales, medida y fracciones',units:['M01','M02','M03','M04','M05','M06','M07'],world:'⚙️',core:'∞',mission:'ACTIVA LA FORJA'},math_algebra:{title:'Taller de proporciones',icon:'⚖️',detail:'Proporcionalidad, porcentajes, álgebra y ecuaciones',units:['M08','M09'],world:'🧩',core:'x',mission:'DESCIFRA EL CÓDIGO'},math_geometry_data:{title:'Observatorio geométrico',icon:'📐',detail:'Ángulos, figuras, áreas, gráficas, estadística y probabilidad',units:['M10','M11','M12','M13','M14','M15'],world:'🛰️',core:'△',mission:'CALIBRA EL OBSERVATORIO'}}
