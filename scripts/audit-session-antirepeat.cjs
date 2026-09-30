@@ -21,6 +21,8 @@ const scoped=[
  ['components/EnglishConversationSession.tsx','Array.from(CONVERSATION_SKILL_IDS)'],
 ]
 for(const [path,marker] of scoped){const source=fs.readFileSync(path,'utf8');if(!source.includes(".in('skill_id',")||!source.includes(marker))failures.push(path+': history is not scoped to the mode skills')}
+const semanticPaths=['components/MathDistrictSession.tsx','components/ScienceInvestigationSession.tsx','components/ScienceLifeSession.tsx','components/ScienceObservatorySession.tsx','components/HistoryAncientSession.tsx','components/SpanishWordsSession.tsx','components/SpanishWritingSession.tsx','components/EnglishTerminalSession.tsx','components/EnglishConversationSession.tsx','components/MultiSubjectDailySession.tsx']
+for(const path of semanticPaths){const source=fs.readFileSync(path,'utf8');if(!source.includes("semanticQuestionSignature"))failures.push(path+': shared semantic signature missing')}
 const maps=fs.readFileSync('components/GeographyMapsSession.tsx','utf8')
 if(!maps.includes('recentMapSignatures'))failures.push('GeographyMapsSession: semantic history missing')
 if(!maps.includes('mapSignature(next.prompt)'))failures.push('GeographyMapsSession: semantic repeat guard missing')
