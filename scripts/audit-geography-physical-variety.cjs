@@ -13,7 +13,7 @@ assert(router.includes('generateGeographyPhysicalQuestion'),'Curriculum router m
 assert(router.includes("skill.id.startsWith('G02') || skill.id.startsWith('G03')"),'G02/G03 must route to physical geography generator')
 assert(session.includes('recentTemplates.current.includes(template(next.prompt))'),'Territory session must reject recently used prompt templates')
 assert(session.includes('limit(HISTORY)'),'Territory session must load recent geography history')
-assert(session.includes('HISTORY = 120'),'Territory session must retain 120 recent prompts')
+assert(session.includes('HISTORY = 400'),'Territory session must retain 400 recent prompts')
 assert(session.includes('attempt<64')||session.includes('attempt < 64'),'Territory session must try enough deterministic alternatives')
 assert(!/generated\s*\?\?=\s*generateCurriculumQuestion/.test(session),'Territory session must not knowingly fall back to a repeated prompt')
 console.log('Geography physical variety audit passed: 8+ structures per skill with strict recent-template avoidance.')
