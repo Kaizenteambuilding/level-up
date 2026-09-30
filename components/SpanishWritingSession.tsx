@@ -10,7 +10,7 @@ import { userFacingError } from '@/lib/userFacingError'
 const SESSION_LENGTH = 10
 const MODE = 'spanish_writing'
 const NETWORK_TIMEOUT_MS = 12_000
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 const WRITING_SKILL_IDS = new Set(spanishWritingSkillIds())
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
@@ -47,7 +47,7 @@ export default function SpanishWritingSession() {
       withTimeout(supabase.from('curriculum_units').select('id').eq('subject_id', 'spanish').eq('active', true).order('sort_order'), 'La carga del currículo de Lengua'),
       withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso de Lengua'),
       withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at', { ascending: true }), 'La recuperación de Sala de cronistas'),
-      withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'L%').order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Lengua')])
+      withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).in('skill_id', Array.from(WRITING_SKILL_IDS)).order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Lengua')])
     if (!active) return; if (unitsResult.error || !unitsResult.data?.length) throw new Error('No se pudo cargar el currículo activo de Lengua'); if (statesResult.error) throw new Error(userFacingError(statesResult.error, 'No se pudo cargar el progreso de Lengua.')); if (attemptsResult.error) throw new Error(userFacingError(attemptsResult.error, 'No se pudo recuperar Sala de cronistas.')); if (historyResult.error) throw new Error(userFacingError(historyResult.error, 'No se pudo cargar el historial reciente de Lengua.'))
     const unitIds = unitsResult.data.map((row) => String(row.id)); const { data: skillRows, error: skillsError } = await withTimeout(supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', unitIds), 'La carga de expresión escrita'); if (!active) return
     if (skillsError || !skillRows?.length) throw new Error('No hay habilidades activas de Lengua disponibles'); const loadedSkills = (skillRows as SkillRow[]).filter((skill) => WRITING_SKILL_IDS.has(skill.id)); if (!loadedSkills.length) throw new Error('No hay habilidades de expresión escrita disponibles'); setSkills(loadedSkills)
