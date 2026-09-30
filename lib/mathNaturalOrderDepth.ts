@@ -15,8 +15,8 @@ function q(skill:SkillMeta,difficulty:number,seed:number,prompt:string,answer:st
 export function generateMathNaturalOrderDepth(skill:SkillMeta,difficulty:number,seed:number):GeneratedQuestion|null {
   if (skill.id !== 'M01S02') return null
   const s = seed >>> 0
-  if ((s & 1) === 1) return null
-  const routed = s >>> 1
+  if ((s & 3) !== 0) return null
+  const routed = s >>> 2
   const family = routed % 12
   const cycle = Math.floor(routed / 12)
   const a = 1200 + ((routed * 137 + cycle * 53) % 7600)
