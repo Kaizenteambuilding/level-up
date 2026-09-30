@@ -44,7 +44,8 @@ for (const skillId of expected) {
 }
 
 const observatory = fs.readFileSync('components/ScienceObservatorySession.tsx', 'utf8')
-if (!observatory.includes('if (!generated) { const fallback = candidates[')) throw new Error('Observatory no longer has a non-blocking repeat fallback')
+if (observatory.includes('if (!generated) { const fallback = candidates[')) throw new Error('Observatory still has a repeat-permitting fallback')
+if (!observatory.includes('No quedan retos nuevos disponibles sin repetir contenido reciente.')) throw new Error('Observatory must fail closed when fresh content is exhausted')
 if (observatory.includes('No se encontró una observación geológica nueva')) throw new Error('Old novelty blocker has returned')
 
 console.log(`Geology course depth OK: ${stats.join(', ')}`)
