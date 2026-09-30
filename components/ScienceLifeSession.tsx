@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -11,14 +12,14 @@ import { userFacingError } from '@/lib/userFacingError'
 const SESSION_LENGTH = 10
 const MODE = 'science_life'
 const NETWORK_TIMEOUT_MS = 12_000
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 const LIFE_SKILL_IDS = new Set(['B03S01','B03S02','B03S03','B03S04','B04S01','B04S02','B04S03','B04S04','B05S01','B05S02','B05S03','B05S04'])
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
 type SkillState = { skill_id: string; mastery: number; confidence: number; difficulty: number; priority: number; last_practiced_at?: string | null }
 type PracticeOpenResult = { data: unknown; error: { message?: string } | null }
 async function withTimeout<T>(operation: PromiseLike<T>, label: string): Promise<T> { let timer: ReturnType<typeof setTimeout> | undefined; try { return await Promise.race([Promise.resolve(operation), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} agotó el tiempo de espera`)), NETWORK_TIMEOUT_MS) })]) } finally { if (timer) clearTimeout(timer) } }
 function hashText(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619) }; return hash >>> 0 }
-function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+function template(value: string) { return semanticQuestionSignature(value) }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 
 export default function ScienceLifeSession() {
@@ -37,7 +38,7 @@ export default function ScienceLifeSession() {
     const { data: opened, error: openError } = await withTimeout(openPractice('open_levelup_practice_session', { p_player_id: id, p_mode: MODE }), 'La apertura de Cúpula de la vida'); if (!active) return
     if (openError) { if ((openError.message ?? '').toLowerCase().includes('practice already completed today')) { setCompletedToday(true); return }; throw new Error(userFacingError(openError, 'No se pudo abrir Cúpula de la vida.')) }
     const openedId = String((opened as { session_id?: string } | null)?.session_id ?? ''); if (!openedId) throw new Error('El servidor no devolvió una sesión'); setSessionId(openedId)
-    const [unitsResult, statesResult, attemptsResult, historyResult] = await Promise.all([withTimeout(supabase.from('curriculum_units').select('id').eq('subject_id', 'biology_geology').eq('active', true).order('sort_order'), 'La carga del currículo de ciencias'), withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso de ciencias'), withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at'), 'La recuperación del laboratorio'), withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'B%').order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'El historial reciente de ciencias')]); if (!active) return
+    const [unitsResult, statesResult, attemptsResult, historyResult] = await Promise.all([withTimeout(supabase.from('curriculum_units').select('id').eq('subject_id', 'biology_geology').eq('active', true).order('sort_order'), 'La carga del currículo de ciencias'), withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso de ciencias'), withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at'), 'La recuperación del laboratorio'), withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).in('skill_id', Array.from(LIFE_SKILL_IDS)).order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'El historial reciente de ciencias')]); if (!active) return
     if (unitsResult.error || !unitsResult.data?.length) throw new Error('No se pudo cargar el currículo activo de ciencias'); if (statesResult.error || attemptsResult.error || historyResult.error) throw new Error('No se pudo recuperar el progreso de ciencias')
     const unitIds = unitsResult.data.map((row) => String(row.id)); const { data: skillRows, error: skillsError } = await withTimeout(supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', unitIds), 'La carga de habilidades científicas'); if (skillsError) throw new Error('No se pudieron cargar las habilidades científicas')
     const loadedSkills = (skillRows as SkillRow[] ?? []).filter((skill) => LIFE_SKILL_IDS.has(skill.id)); if (!loadedSkills.length) throw new Error('No hay habilidades de biología y ecosistemas disponibles'); setSkills(loadedSkills)

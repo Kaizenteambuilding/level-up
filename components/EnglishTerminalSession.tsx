@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -13,7 +14,7 @@ const SESSION_LENGTH = 10
 const MODE = 'english_terminal'
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 const NETWORK_TIMEOUT_MS = 12_000
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
@@ -28,7 +29,7 @@ async function withTimeout<T>(operation: PromiseLike<T>, label: string, timeoutM
 }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 function hashText(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619) } return hash >>> 0 }
-function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+function template(value: string) { return semanticQuestionSignature(value) }
 
 export default function EnglishTerminalSession() {
   const [playerId, setPlayerId] = useState<string | null>(null), [sessionId, setSessionId] = useState<string | null>(null)

@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -12,7 +13,7 @@ import { userFacingError } from '@/lib/userFacingError'
 const SESSION_LENGTH = 10
 const MODE = 'spanish_words'
 const NETWORK_TIMEOUT_MS = 12_000
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 const WORD_SKILL_IDS = new Set(['L02S01','L02S02','L02S03','L02S04','L03S01','L03S02','L03S03','L03S04'])
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
@@ -35,7 +36,7 @@ function hashText(value: string) {
   return hash >>> 0
 }
 
-function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+function template(value: string) { return semanticQuestionSignature(value) }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 
 export default function SpanishWordsSession() {
@@ -87,7 +88,7 @@ export default function SpanishWordsSession() {
           withTimeout(supabase.from('curriculum_units').select('id').eq('subject_id', 'spanish').eq('active', true).order('sort_order'), 'La carga del currículo de Lengua'),
           withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso de Lengua'),
           withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at', { ascending: true }), 'La recuperación del taller'),
-          withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'L%').order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Lengua'),
+          withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).in('skill_id', Array.from(WORD_SKILL_IDS)).order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Lengua'),
         ])
         if (!active) return
         if (unitsResult.error || !unitsResult.data?.length) throw new Error('No se pudo cargar el currículo activo de Lengua')

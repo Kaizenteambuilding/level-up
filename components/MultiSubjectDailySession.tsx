@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -37,7 +38,7 @@ type StoredPlan = {
 const SESSION_LENGTH = 10
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -88,9 +89,7 @@ function hashText(value: string) {
   return hash >>> 0
 }
 
-function template(prompt: string) {
-  return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?\/\d+(?:[.,]\d+)?/g, '#/#').replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim()
-}
+function template(value: string) { return semanticQuestionSignature(value) }
 
 export default function MultiSubjectDailySession() {
   const [playerId, setPlayerId] = useState<string | null>(null)

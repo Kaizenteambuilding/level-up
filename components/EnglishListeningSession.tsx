@@ -10,7 +10,7 @@ import { buildEnglishListeningGeneratedBank } from '@/lib/englishListeningGenera
 const SESSION_LENGTH = 10
 const MODE = 'english_listening'
 const NETWORK_TIMEOUT_MS = 12_000
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 
 type ListeningItem = { skillId: string; difficulty: number; spoken: string; question: string; options: [string,string,string,string]; answerIndex: number; solution: string }
 type SkillState = { mastery: number; priority: number; difficulty: number }

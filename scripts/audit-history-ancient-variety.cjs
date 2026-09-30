@@ -13,7 +13,7 @@ assert(router.includes('generateHistoryAncientQuestion'),'Curriculum router must
 assert(router.includes("skill.id.startsWith('G04') || skill.id.startsWith('G05') || skill.id.startsWith('G06')"),'G04/G05/G06 must route to history generator')
 assert(session.includes('recentTemplates.current.includes(template(next.prompt))'),'History Archive must reject recently used prompt templates')
 assert(session.includes('limit(HISTORY)'),'History Archive must load recent geography/history attempts')
-assert(session.includes('HISTORY=120')||session.includes('HISTORY = 120'),'History Archive must retain 120 recent prompts')
+assert(session.includes('HISTORY=400')||session.includes('HISTORY = 400'),'History Archive must retain 400 recent prompts')
 assert(session.includes('attempt<64')||session.includes('attempt < 64'),'History Archive must try enough deterministic alternatives')
 assert(!session.includes('fallbackSeed=(base+Math.imul(recentTemplates.current.length+index+1,0x27d4eb2d))'),'History Archive must not bypass recent-history protection with a duplicate fallback')
 assert(session.includes('No quedan retos históricos nuevos disponibles sin repetir contenido reciente.'),'History Archive must fail closed when fresh content is exhausted')

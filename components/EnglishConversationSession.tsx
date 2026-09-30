@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -13,7 +14,7 @@ const SESSION_LENGTH = 10
 const MODE = 'english_conversation'
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 const NETWORK_TIMEOUT_MS = 12_000
 const CONVERSATION_SKILL_IDS = new Set(['E01S01','E01S04','E02S03','E03S03','E05S01','E05S03','E05S04','E06S04'])
 
@@ -29,7 +30,7 @@ async function withTimeout<T>(operation: PromiseLike<T>, label: string, timeoutM
 }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 function hashText(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619) } return hash >>> 0 }
-function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+function template(value: string) { return semanticQuestionSignature(value) }
 
 export default function EnglishConversationSession() {
   const [playerId, setPlayerId] = useState<string | null>(null), [sessionId, setSessionId] = useState<string | null>(null)
@@ -51,7 +52,7 @@ export default function EnglishConversationSession() {
       withTimeout(supabase.from('player_curriculum_plans').select('focus_unit_ids').eq('player_id', id).eq('subject_id', 'english').maybeSingle(), 'La carga del plan de Inglés'),
       withTimeout(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso adaptativo'),
       withTimeout(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', openedId).order('created_at', { ascending: true }), 'La recuperación de la práctica'),
-      withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'E%').order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Inglés')])
+      withTimeout(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).in('skill_id', Array.from(CONVERSATION_SKILL_IDS)).order('created_at', { ascending: false }).limit(RECENT_PROMPT_WINDOW), 'La carga del historial reciente de Inglés')])
     if (!active) return; if (unitsResult.error || !unitsResult.data?.length) throw new Error('No se pudo cargar el currículo activo de Inglés'); if (planResult.error) throw new Error(userFacingError(planResult.error, 'No se pudo cargar el plan de Inglés.')); if (statesResult.error) throw new Error(userFacingError(statesResult.error, 'No se pudo cargar el progreso de Inglés.')); if (attemptsResult.error) throw new Error(userFacingError(attemptsResult.error, 'No se pudo recuperar la práctica.')); if (historyResult.error) throw new Error(userFacingError(historyResult.error, 'No se pudo cargar el historial reciente de Inglés.'))
     const unitIds = unitsResult.data.map((row) => String(row.id)), plan = (planResult.data ?? null) as PlanRow | null
     const { data: skillRows, error: skillsError } = await withTimeout(supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', unitIds), 'La carga de habilidades de conversación'); if (!active) return; if (skillsError || !skillRows?.length) throw new Error('No hay habilidades activas de Inglés disponibles')
