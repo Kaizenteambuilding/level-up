@@ -13,7 +13,7 @@ const SESSION_LENGTH = 10
 const MODE = 'english_terminal'
 const RECENT_SKILL_WINDOW = 5
 const RECENT_UNIT_WINDOW = 3
-const RECENT_PROMPT_WINDOW = 120
+const RECENT_PROMPT_WINDOW = 400
 const NETWORK_TIMEOUT_MS = 12_000
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
