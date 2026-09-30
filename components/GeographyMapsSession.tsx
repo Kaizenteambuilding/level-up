@@ -12,7 +12,7 @@ const SESSION_LENGTH = 10
 const MODE = 'geography_maps'
 const SKILL_IDS = new Set(['G01S01', 'G01S02', 'G01S03', 'G01S04'])
 const TIMEOUT = 12_000
-const HISTORY = 120
+const HISTORY = 400
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
 type SkillState = { skill_id: string; mastery: number; confidence: number; difficulty: number; priority: number; last_practiced_at?: string | null }
@@ -44,7 +44,7 @@ export default function GeographyMapsSession() {
       timed(supabase.from('curriculum_units').select('id').eq('subject_id', 'geography_history').eq('active', true).order('sort_order'), 'La carga del currículo'),
       timed(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso'),
       timed(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', sid).order('created_at'), 'La recuperación de cartografía'),
-      timed(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'G%').order('created_at', { ascending: false }).limit(HISTORY), 'El historial de geografía')])
+      timed(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).in('skill_id', Array.from(SKILL_IDS)).order('created_at', { ascending: false }).limit(HISTORY), 'El historial de geografía')])
     if (units.error || stateRows.error || attempts.error || history.error || !units.data?.length) throw new Error('No se pudo recuperar el currículo o el progreso')
     const { data: rows, error: skillsError } = await timed(supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', units.data.map((row) => String(row.id))), 'La carga de cartografía')
     if (skillsError) throw new Error('No se pudieron cargar las habilidades de cartografía'); const loaded = ((rows ?? []) as SkillRow[]).filter((skill) => SKILL_IDS.has(skill.id)); if (!loaded.length) throw new Error('No hay habilidades de cartografía disponibles'); setSkills(loaded)
