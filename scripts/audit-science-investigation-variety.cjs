@@ -19,7 +19,7 @@ for (const skill of skills) {
 
 if (!router.includes("if (skill.id.startsWith('B01'))")) failures.push('b01_not_routed_to_specialized_generator')
 if (!router.includes('generateScienceInvestigationQuestion')) failures.push('specialized_generator_not_imported')
-if (!session.includes('const HISTORY = 120')) failures.push('history_window_missing')
+if (!session.includes('const HISTORY = 400')) failures.push('history_window_missing')
 if (!session.includes('recentTemplates.current.includes(template(next.prompt))')) failures.push('recent_template_guard_missing')
 if (!session.includes('attempt < 64')) failures.push('seed_retry_guard_missing')
 if (/generated\s*\?\?=\s*generateCurriculumQuestion/.test(session)) failures.push('permissive_duplicate_fallback')
