@@ -1,5 +1,5 @@
 const fs=require('node:fs')
-const paths=['components/GeographyMapsSession.tsx','components/ScienceLifeSession.tsx','components/ScienceInvestigationSession.tsx','components/MathDistrictSession.tsx','components/SpanishReadingSession.tsx','components/SpanishWordsSession.tsx','components/SpanishWritingSession.tsx','components/EnglishTerminalSession.tsx','components/EnglishConversationSession.tsx','components/EnglishListeningSession.tsx','components/MultiSubjectDailySession.tsx','components/HistoryAncientSession.tsx','components/GeographyPhysicalSession.tsx']
+const paths=['components/GeographyMapsSession.tsx','components/ScienceLifeSession.tsx','components/ScienceInvestigationSession.tsx','components/ScienceObservatorySession.tsx','components/MathDistrictSession.tsx','components/SpanishReadingSession.tsx','components/SpanishWordsSession.tsx','components/SpanishWritingSession.tsx','components/EnglishTerminalSession.tsx','components/EnglishConversationSession.tsx','components/EnglishListeningSession.tsx','components/MultiSubjectDailySession.tsx','components/HistoryAncientSession.tsx','components/GeographyPhysicalSession.tsx']
 const failures=[]
 for(const path of paths){
   const source=fs.readFileSync(path,'utf8')
@@ -14,6 +14,7 @@ const scoped=[
  ['components/HistoryAncientSession.tsx','Array.from(SKILL_IDS)'],
  ['components/ScienceInvestigationSession.tsx','Array.from(SKILL_IDS)'],
  ['components/ScienceLifeSession.tsx','Array.from(LIFE_SKILL_IDS)'],
+ ['components/ScienceObservatorySession.tsx','Array.from(OBSERVATORY_SKILL_IDS)'],
  ['components/SpanishReadingSession.tsx','Array.from(READING_SKILL_IDS)'],
  ['components/SpanishWordsSession.tsx','Array.from(WORD_SKILL_IDS)'],
  ['components/SpanishWritingSession.tsx','Array.from(WRITING_SKILL_IDS)'],
@@ -28,5 +29,7 @@ const reading=fs.readFileSync('components/SpanishReadingSession.tsx','utf8')
 if(!reading.includes('recentReadingSignatures')||!reading.includes('readingSignature(nextQuestion.prompt)'))failures.push('SpanishReadingSession: semantic passage guard missing')
 const science=fs.readFileSync('components/ScienceInvestigationSession.tsx','utf8')
 if(science.includes('fallbackSkill'))failures.push('ScienceInvestigationSession: duplicate fallback still present')
+const observatory=fs.readFileSync('components/ScienceObservatorySession.tsx','utf8')
+if(observatory.includes('const fallback = candidates'))failures.push('ScienceObservatorySession: duplicate fallback still present')
 console.log(JSON.stringify({checked:paths.length,modeScoped:scoped.length,minimumHistory:400,failures},null,2))
 if(failures.length)throw new Error('Cross-session anti-repeat audit failed: '+failures.join('; '))
