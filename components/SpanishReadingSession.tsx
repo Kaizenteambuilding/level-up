@@ -39,6 +39,12 @@ function hashText(value: string) {
 }
 
 function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+const READING_FRAME_MARKERS = [' ¿cuál es la idea principal?', ' ¿qué resumen recoge mejor', ' ¿qué opción sintetiza mejor', ' ¿cuál sería el mejor título-resumen?', ' ¿cuál es la intención principal', ' ¿qué pretende hacer principalmente', ' ¿para qué se ha emitido', ' ¿qué función cumple sobre todo', ' ¿qué podemos inferir?', ' ¿qué conclusión está mejor apoyada', ' ¿qué es lo más probable', ' ¿qué deducción encaja mejor', ' ¿qué conector completa mejor', ' elige la palabra o expresión', ' ¿qué enlace textual encaja', ' ¿qué conector mantiene la relación', ' ¿qué efecto produce el recurso', ' ¿qué aporta esta imagen', ' ¿cómo contribuye el lenguaje figurado', ' ¿qué interpretación explica mejor']
+function readingSignature(prompt: string) {
+  let value = prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/^lee:\s*/, '').replace(/\s+/g, ' ').trim()
+  for (const marker of READING_FRAME_MARKERS) { const normalized = marker.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); const index = value.indexOf(normalized); if (index >= 0) { value = value.slice(0, index).trim(); break } }
+  return value.replace(/[«»“”"'.,;:!?¿¡]/g, '').replace(/\s+/g, ' ').trim()
+}
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 
 export default function SpanishReadingSession() {
@@ -59,6 +65,7 @@ export default function SpanishReadingSession() {
   const [completedToday, setCompletedToday] = useState(false)
   const [closing, setClosing] = useState(false)
   const recentTemplates = useRef<string[]>([])
+  const recentReadingSignatures = useRef<string[]>([])
   const recentSkillIds = useRef<string[]>([])
   const recentUnitIds = useRef<string[]>([])
   const sessionUnitCounts = useRef<Record<string, number>>({})
@@ -128,10 +135,9 @@ export default function SpanishReadingSession() {
         sessionUnitCounts.current = counts
         recentSkillIds.current = recentSkillIds.current.slice(0, 5)
         recentUnitIds.current = recentUnitIds.current.slice(0, 3)
-        recentTemplates.current = Array.from(new Set([
-          ...(historyResult.data ?? []).map((attempt) => template(String(attempt.prompt_snapshot ?? ''))),
-          ...attempts.map((attempt) => template(String(attempt.prompt_snapshot ?? ''))),
-        ].filter(Boolean))).slice(0, RECENT_PROMPT_WINDOW)
+        const historicalPrompts = [...(historyResult.data ?? []), ...attempts].map((attempt) => String(attempt.prompt_snapshot ?? '')).filter(Boolean)
+        recentTemplates.current = Array.from(new Set(historicalPrompts.map(template).filter(Boolean))).slice(0, RECENT_PROMPT_WINDOW)
+        recentReadingSignatures.current = Array.from(new Set(historicalPrompts.map(readingSignature).filter(Boolean))).slice(0, RECENT_PROMPT_WINDOW)
         setIndex(Math.min(SESSION_LENGTH, attempts.length))
         setCorrect(attempts.filter((attempt) => attempt.correct === true).length)
         setXp(attempts.reduce((sum, attempt) => sum + Number(attempt.xp_awarded ?? 0), 0))
@@ -164,7 +170,7 @@ export default function SpanishReadingSession() {
         const galleryQuestion = generateSpanishReadingVariant(candidate, difficulty, seed)
         const curriculumQuestion = generateCurriculumQuestion(candidate, difficulty, seed)
         for (const nextQuestion of [courseDepthQuestion, galleryQuestion, curriculumQuestion]) {
-          if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt))) {
+          if (nextQuestion && !recentTemplates.current.includes(template(nextQuestion.prompt)) && !recentReadingSignatures.current.includes(readingSignature(nextQuestion.prompt))) {
             generated = nextQuestion
             break
           }
@@ -175,6 +181,7 @@ export default function SpanishReadingSession() {
     }
     if (!generated) { setError('No quedan retos nuevos disponibles sin repetir contenido reciente.'); return }
     recentTemplates.current = [template(generated.prompt), ...recentTemplates.current].slice(0, RECENT_PROMPT_WINDOW)
+    recentReadingSignatures.current = [readingSignature(generated.prompt), ...recentReadingSignatures.current].slice(0, RECENT_PROMPT_WINDOW)
     setQuestion(generated)
     setAnswered(false)
     setSelectedOption(null)
