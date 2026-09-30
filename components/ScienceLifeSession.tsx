@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -18,7 +19,7 @@ type SkillState = { skill_id: string; mastery: number; confidence: number; diffi
 type PracticeOpenResult = { data: unknown; error: { message?: string } | null }
 async function withTimeout<T>(operation: PromiseLike<T>, label: string): Promise<T> { let timer: ReturnType<typeof setTimeout> | undefined; try { return await Promise.race([Promise.resolve(operation), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${label} agotó el tiempo de espera`)), NETWORK_TIMEOUT_MS) })]) } finally { if (timer) clearTimeout(timer) } }
 function hashText(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619) }; return hash >>> 0 }
-function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+function template(value: string) { return semanticQuestionSignature(value) }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 
 export default function ScienceLifeSession() {
