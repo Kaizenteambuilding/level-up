@@ -131,12 +131,10 @@ function uniqueWrongExpressions(
 }
 
 function order(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
-  const routedSeed = seed >>> 1
-  const family = routedSeed % 12
-  const cycle = Math.floor(routedSeed / 12)
-  const a = 3 + ((routedSeed + cycle * 3) % 7)
-  const b = 2 + ((routedSeed * 3 + cycle * 5) % 6)
-  const c = 2 + ((routedSeed * 5 + cycle * 2) % 5)
+  const family = (seed >>> 1) % 12
+  const a = 3 + (seed % 7)
+  const b = 2 + ((seed >>> 4) % 6)
+  const c = 2 + ((seed >>> 8) % 5)
 
   if (family === 0) {
     const result = a + b * c
