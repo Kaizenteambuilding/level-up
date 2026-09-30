@@ -12,7 +12,7 @@ const SESSION_LENGTH = 10
 const MODE = 'science_investigation'
 const SKILL_IDS = new Set(['B01S01', 'B01S02', 'B01S03', 'B01S04'])
 const TIMEOUT = 12_000
-const HISTORY = 120
+const HISTORY = 400
 
 type SkillRow = { id: string; name: string; generator_key: string; unit_id: string }
 type SkillState = { skill_id: string; mastery: number; confidence: number; difficulty: number; priority: number; last_practiced_at?: string | null }
@@ -35,7 +35,7 @@ export default function ScienceInvestigationSession() {
     const { data: opened, error: openError } = await timed(openPractice('open_levelup_practice_session', { p_player_id: id, p_mode: MODE }), 'La apertura de Cámara de investigación'); if (!active) return
     if (openError) { if ((openError.message ?? '').toLowerCase().includes('practice already completed today')) { setCompletedToday(true); return } throw new Error(userFacingError(openError, 'No se pudo abrir Cámara de investigación.')) }
     const sid = String((opened as { session_id?: string } | null)?.session_id ?? ''); if (!sid) throw new Error('El servidor no devolvió una sesión'); setSessionId(sid)
-    const [units, stateRows, attempts, history] = await Promise.all([timed(supabase.from('curriculum_units').select('id').eq('subject_id', 'biology_geology').eq('active', true).order('sort_order'), 'La carga del currículo'), timed(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso'), timed(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', sid).order('created_at'), 'La recuperación de la investigación'), timed(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).like('skill_id', 'B%').order('created_at', { ascending: false }).limit(HISTORY), 'El historial de ciencias')])
+    const [units, stateRows, attempts, history] = await Promise.all([timed(supabase.from('curriculum_units').select('id').eq('subject_id', 'biology_geology').eq('active', true).order('sort_order'), 'La carga del currículo'), timed(supabase.from('player_skill_state').select('skill_id,mastery,confidence,difficulty,priority,last_practiced_at').eq('player_id', id), 'La carga del progreso'), timed(supabase.from('attempts').select('correct,xp_awarded,skill_id,prompt_snapshot,created_at').eq('session_id', sid).order('created_at'), 'La recuperación de la investigación'), timed(supabase.from('attempts').select('skill_id,prompt_snapshot,created_at').eq('player_id', id).in('skill_id', Array.from(SKILL_IDS)).order('created_at', { ascending: false }).limit(HISTORY), 'El historial de ciencias')])
     if (units.error || stateRows.error || attempts.error || history.error || !units.data?.length) throw new Error('No se pudo recuperar el currículo o el progreso')
     const { data: rows, error: skillsError } = await timed(supabase.from('skills').select('id,name,generator_key,unit_id').eq('active', true).in('unit_id', units.data.map((row) => String(row.id))), 'La carga de investigación científica'); if (skillsError) throw new Error('No se pudieron cargar las habilidades de investigación')
     const loaded = ((rows ?? []) as SkillRow[]).filter((skill) => SKILL_IDS.has(skill.id)); if (!loaded.length) throw new Error('No hay habilidades de investigación científica disponibles'); setSkills(loaded)
