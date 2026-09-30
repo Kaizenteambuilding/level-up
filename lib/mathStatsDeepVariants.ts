@@ -191,16 +191,18 @@ function medianVariant(skill: SkillMeta, difficulty: number, seed: number): Gene
 
 function modeVariant(skill: SkillMeta, difficulty: number, seed: number): GeneratedQuestion {
   const family = seed % 10
-  const base = 2 + (seed % 9)
-  const color = pick(COLORS, seed)
-  const otherColor = pick(COLORS, seed, 2)
-  const size = pick(SIZES, seed)
-  const otherSize = pick(SIZES, seed, 3)
+  const cycle = Math.floor(seed / 10)
+  const base = 2 + ((seed + cycle * 4) % 9)
+  const color = pick(COLORS, seed + cycle)
+  const otherColor = pick(COLORS, seed + cycle * 2, 2)
+  const size = pick(SIZES, seed + cycle)
+  const otherSize = pick(SIZES, seed + cycle * 2, 3)
+  const context = ['una encuesta','un inventario','un registro deportivo','una colección'][(seed + cycle) % 4]
 
   if (family === 0) {
     const values = [base, base + 1, base + 1, base + 3, base + 5]
     return question(skill, difficulty, seed,
-      `¿Cuál es la moda de ${values.join(', ')}?`,
+      `En ${context}, ¿cuál es la moda de ${values.join(', ')}?`,
       String(base + 1),
       [String(base), String(base + 3), String(base + 5)],
       `${base + 1} aparece dos veces y los demás valores una sola vez.`)
@@ -216,7 +218,7 @@ function modeVariant(skill: SkillMeta, difficulty: number, seed: number): Genera
     const a = base
     const b = base + 2
     return question(skill, difficulty, seed,
-      `En ${a}, ${a}, ${b}, ${b}, ${base + 5}, ¿cómo se describe la moda?`,
+      `En ${context}, los datos son ${a}, ${a}, ${b}, ${b}, ${base + 5}. ¿Cómo se describe la moda?`,
       `Hay dos modas: ${a} y ${b}`,
       [`La moda es ${base + 5}`, `La moda es ${(a + b) / 2}`, 'No hay ninguna moda'],
       `${a} y ${b} comparten la frecuencia máxima; la distribución es bimodal.`)
@@ -224,7 +226,7 @@ function modeVariant(skill: SkillMeta, difficulty: number, seed: number): Genera
   if (family === 3) {
     const values = [base, base + 1, base + 2, base + 3]
     return question(skill, difficulty, seed,
-      `En ${values.join(', ')}, todos los valores aparecen una vez. ¿Qué afirmación es correcta?`,
+      `En ${context}, ${values.join(', ')} aparecen una vez cada uno. ¿Qué afirmación es correcta?`,
       'No hay una moda única',
       [`La moda es ${base}`, `La moda es ${base + 3}`, `La moda es ${(base * 2 + 3) / 2}`],
       'Ningún valor tiene una frecuencia superior a los demás.')
@@ -248,14 +250,14 @@ function modeVariant(skill: SkillMeta, difficulty: number, seed: number): Genera
     const b = base + 2
     const c = base + 4
     return question(skill, difficulty, seed,
-      `Los valores ${a}, ${b} y ${c} aparecen exactamente tres veces cada uno y el resto menos. ¿Cuántas modas hay?`,
+      `En ${context}, los valores ${a}, ${b} y ${c} aparecen exactamente tres veces cada uno y el resto menos. ¿Cuántas modas hay?`,
       'Tres',
       ['Una', 'Dos', 'Ninguna'],
       'Los tres valores comparten la frecuencia máxima, así que la distribución tiene tres modas.')
   }
   if (family === 7) {
     return question(skill, difficulty, seed,
-      `Un conjunto tiene moda ${base}, pero casi todos los demás datos están muy alejados de ${base}. ¿Qué limitación muestra esto?`,
+      `En ${context}, un conjunto tiene moda ${base}, pero casi todos los demás datos están muy alejados de ${base}. ¿Qué limitación muestra esto?`,
       'La moda por sí sola no describe toda la distribución',
       ['La moda siempre coincide con la media', 'La moda deja de existir si hay valores alejados', 'La moda solo puede usarse con dos datos'],
       'Conocer el valor más frecuente no informa de cómo se reparten todos los demás datos.')
@@ -264,7 +266,7 @@ function modeVariant(skill: SkillMeta, difficulty: number, seed: number): Genera
     const oldMode = base
     const challenger = base + 4
     return question(skill, difficulty, seed,
-      `En ${oldMode}, ${oldMode}, ${oldMode}, ${challenger}, ${challenger}, se añade otro ${challenger}. ¿Qué ocurre con la moda?`,
+      `En ${context}, los datos son ${oldMode}, ${oldMode}, ${oldMode}, ${challenger}, ${challenger}; se añade otro ${challenger}. ¿Qué ocurre con la moda?`,
       `Pasa a haber dos modas: ${oldMode} y ${challenger}`,
       [`La moda sigue siendo solo ${oldMode}`, `La moda pasa a ser solo ${challenger}`, 'Desaparece la moda'],
       `Tras añadir el dato, ${oldMode} y ${challenger} aparecen tres veces cada uno.`)
