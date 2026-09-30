@@ -1,5 +1,6 @@
 'use client'
 
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase'
@@ -35,7 +36,7 @@ function hashText(value: string) {
   return hash >>> 0
 }
 
-function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
+function template(value: string) { return semanticQuestionSignature(value) }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 
 export default function SpanishWordsSession() {
