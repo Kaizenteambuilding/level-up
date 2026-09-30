@@ -34,6 +34,10 @@ for (const skillId of expectedSkills) {
 
 const session = fs.readFileSync('components/SpanishReadingSession.tsx', 'utf8')
 if (!session.includes('generateSpanishReadingGenerated')) failures.push('session:not_wired_to_course_depth_generator')
+if (!session.includes('recentReadingSignatures')) failures.push('session:missing_semantic_history')
+if (!session.includes('readingSignature(nextQuestion.prompt)')) failures.push('session:missing_semantic_repeat_guard')
+if (!session.includes("normalize('NFD')")) failures.push('session:semantic_signature_not_accent_folded')
+if (!session.includes('READING_FRAME_MARKERS')) failures.push('session:semantic_signature_not_frame_aware')
 
 console.log(JSON.stringify({ scenarios: generated.spanishReadingGeneratedScenarioCount(), skills: expectedSkills.length, uniquePrompts, minimumPromptsPerSkill: 48, failures }, null, 2))
 if (failures.length) process.exit(1)
