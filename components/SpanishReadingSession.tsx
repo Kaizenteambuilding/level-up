@@ -9,6 +9,7 @@ import { generateSpanishReadingVariant } from '@/lib/spanishReadingVariants'
 import { generateSpanishReadingGenerated } from '@/lib/spanishReadingGenerated'
 import type { GeneratedQuestion } from '@/lib/firstEvaluationGenerators'
 import { userFacingError } from '@/lib/userFacingError'
+import { semanticQuestionSignature } from '@/lib/questionAntiRepeat'
 
 const SESSION_LENGTH = 10
 const MODE = 'spanish_reading'
