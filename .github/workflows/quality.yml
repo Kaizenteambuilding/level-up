@@ -131,6 +131,8 @@ jobs:
 
       - name: Audit cross-session anti-repeat
         run: node scripts/audit-session-antirepeat.cjs
+      - name: Audit real anti-repeat regressions
+        run: node scripts/audit-antirepeat-real-regressions.cjs
 
       - name: Audit history course depth
         run: node scripts/audit-history-course-depth.cjs
