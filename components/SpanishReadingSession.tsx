@@ -39,12 +39,7 @@ function hashText(value: string) {
 }
 
 function template(prompt: string) { return prompt.toLowerCase().replace(/\d+(?:[.,]\d+)?/g, '#').replace(/\s+/g, ' ').trim() }
-const READING_FRAME_MARKERS = [' ¿cuál es la idea principal?', ' ¿qué resumen recoge mejor', ' ¿qué opción sintetiza mejor', ' ¿cuál sería el mejor título-resumen?', ' ¿cuál es la intención principal', ' ¿qué pretende hacer principalmente', ' ¿para qué se ha emitido', ' ¿qué función cumple sobre todo', ' ¿qué podemos inferir?', ' ¿qué conclusión está mejor apoyada', ' ¿qué es lo más probable', ' ¿qué deducción encaja mejor', ' ¿qué conector completa mejor', ' elige la palabra o expresión', ' ¿qué enlace textual encaja', ' ¿qué conector mantiene la relación', ' ¿qué efecto produce el recurso', ' ¿qué aporta esta imagen', ' ¿cómo contribuye el lenguaje figurado', ' ¿qué interpretación explica mejor']
-function readingSignature(prompt: string) {
-  let value = prompt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/^lee:\s*/, '').replace(/\s+/g, ' ').trim()
-  for (const marker of READING_FRAME_MARKERS) { const normalized = marker.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); const index = value.indexOf(normalized); if (index >= 0) { value = value.slice(0, index).trim(); break } }
-  return value.replace(/[«»“”"'.,;:!?¿¡]/g, '').replace(/\s+/g, ' ').trim()
-}
+function readingSignature(prompt: string) { return semanticQuestionSignature(prompt) }
 function errorMessage(error: unknown, fallback: string) { return error instanceof Error && error.message ? `${fallback} ${error.message}.` : fallback }
 
 export default function SpanishReadingSession() {
